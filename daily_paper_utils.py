@@ -6,8 +6,14 @@ from json import dumps
 from loguru import logger
 from httplib2 import Http
 from pypdf import PdfReader
+from dotenv import load_dotenv
 from datetime import datetime, timezone
 from geotab_genai.genai_gateway_client import GenaiGatewayClient
+
+
+load_dotenv()
+SPACE_ID = os.getenv("SPACE_ID")
+KEY = os.getenv("KEY")
 
 
 # hugging face utils
