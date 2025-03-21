@@ -3,6 +3,7 @@ import re
 import json
 import uuid
 import time
+import random
 import subprocess
 from string import Template 
 from tqdm import tqdm
@@ -73,8 +74,6 @@ INDEX_TEMPLATE = """
 </html>
 """
 
-
-# HTML 模板：子页面，使用 $ 作为占位符
 SUBPAGE_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -94,12 +93,15 @@ SUBPAGE_TEMPLATE = """
             color: #333;
         }
         .paper-card {
-            background-color: #f9f9f9;
+            background-color: #f9f9f9; /* Fallback background color */
             border: 1px solid #ddd;
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 20px;
             transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
+            background-size: cover; /* Ensure the background image covers the card */
+            background-repeat: no-repeat; /* Prevent the image from repeating */
+            background-position: center; /* Center the background image */
         }
         .paper-card:hover {
             transform: translateY(-5px); /* Lift effect on hover */
@@ -185,8 +187,41 @@ def extract_categories(text):
             results.append((category_name, match.group(1).strip()))    
     return results
 
+# def generate_paper_html(articles):
+#     """生成子页面的论文内容 HTML，与 Google Chat 推送内容一致"""
+#     logger.debug(articles)
+#     paper_html = ""
+#     for idx, article in enumerate(articles):
+#         title = article.get('title', 'No Title')
+#         published_at = article.get('published_at', 'No Date')
+#         url = article.get('url', '#')
+#         content = article.get('content', 'No Content')
+#         categories = extract_categories(content)
+#         logger.debug(categories)
+#         # 为每个类别添加 div 和样式
+#         content_html = ""
+#         for cat_idx, (cat, cat_content) in enumerate(categories):
+#             content_html += f"""<div class="category-chunk">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>"""
+
+#         paper_html += f"""
+#         <div class="paper-card">
+#             <h2>Paper: {idx+1}</h2>
+#             <p><strong>{title}</strong></p>
+#             <p><strong>Published: </strong>{published_at}</p>
+#             <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
+#             <div>{content_html}</div>
+#         </div>
+#         """
+#     return paper_html
+
 def generate_paper_html(articles):
     """生成子页面的论文内容 HTML，与 Google Chat 推送内容一致"""
+    # 获取 bg 文件夹中的所有图片文件
+    bg_folder = "bg"
+    bg_images = [f for f in os.listdir(bg_folder) if f.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    if not bg_images:
+        logger.warning("No background images found in the 'bg' folder. Using default background.")
+    
     logger.debug(articles)
     paper_html = ""
     for idx, article in enumerate(articles):
@@ -196,13 +231,21 @@ def generate_paper_html(articles):
         content = article.get('content', 'No Content')
         categories = extract_categories(content)
         logger.debug(categories)
+        
         # 为每个类别添加 div 和样式
         content_html = ""
         for cat_idx, (cat, cat_content) in enumerate(categories):
             content_html += f"""<div class="category-chunk">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>"""
 
+        # 随机选择一个背景图片
+        if bg_images:
+            selected_bg = random.choice(bg_images)
+            bg_style = f"background-image: url('{bg_folder}/{selected_bg}');"
+        else:
+            bg_style = ""  # Fallback to default background if no images are found
+
         paper_html += f"""
-        <div class="paper-card">
+        <div class="paper-card" style="{bg_style}">
             <h2>Paper: {idx+1}</h2>
             <p><strong>{title}</strong></p>
             <p><strong>Published: </strong>{published_at}</p>
