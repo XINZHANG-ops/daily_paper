@@ -1,21 +1,22 @@
 import os
-import re
 import json
 import uuid
 import time
 import random
 import subprocess
-from string import Template 
 from tqdm import tqdm
 from loguru import logger
 from datetime import date
+from string import Template 
 from threading import Thread
 from queue import Queue, Empty
+from dotenv import load_dotenv
 
 
 from daily_paper_utils import (
     find_not_proposed_papers,
     get_huggingface_papers,
+    extract_categories,
     client_anthropics,
     process_paper,
     send_articles,
@@ -29,190 +30,15 @@ from daily_paper_utils import (
     model
 )
 
-# HTML 模板：主页面，使用 $ 作为占位符
-INDEX_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Paper</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        li {
-            margin: 10px 0;
-        }
-        a {
-            text-decoration: none;
-            color: #1a73e8;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <h1>Daily Paper</h1>
-    <ul>
-        $date_links
-    </ul>
-</body>
-</html>
-"""
+from html_temps import (
+    INDEX_TEMPLATE,
+    SUBPAGE_TEMPLATE
+)
 
-SUBPAGE_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$date Papers</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        h1 {
-            color: #333;
-        }
-        .paper-card {
-            background-color: #f9f9f9; /* Fallback background color */
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
-            background-size: cover; /* Ensure the background image covers the card */
-            background-repeat: no-repeat; /* Prevent the image from repeating */
-            background-position: center; /* Center the background image */
-        }
-        .paper-card:hover {
-            transform: translateY(-5px); /* Lift effect on hover */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Shadow on hover */
-        }
-        .paper-card h2 {
-            margin: 0 0 10px;
-            font-size: 1.2em;
-        }
-        .paper-card p {
-            margin: 5px 0;
-        }
-        .paper-card a {
-            color: #1a73e8;
-            text-decoration: none;
-        }
-        .paper-card a:hover {
-            text-decoration: underline;
-        }
-        .category-chunk {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
-        }
-        .category-chunk:hover {
-            transform: translateY(-3px); /* Slightly smaller lift for categories */
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); /* Slightly smaller shadow for categories */
-        }
-        .category-chunk:nth-child(1) { /* 1. Topic and Domain */
-            background-color: #d3e3fd; /* Blue */
-        }
-        .category-chunk:nth-child(2) { /* 2. Previous Research and New Ideas */
-            background-color: #e6d6fa; /* Purple */
-        }
-        .category-chunk:nth-child(3) { /* 3. Problem */
-            background-color: #d4f8d9; /* Green */
-        }
-        .category-chunk:nth-child(4) { /* 4. Methods */
-            background-color: #ffd7d5; /* Pink */
-        }
-        .category-chunk:nth-child(5) { /* 5. Results and Evaluation */
-            background-color: #d3e3fd; /* Reuse Blue */
-        }
-    </style>
-</head>
-<body>
-    <h1>$date Papers</h1>
-    $paper_content
-</body>
-</html>
-"""
 
-def extract_categories(text):
-    """
-    Extract the 5 categories and their content from a formatted text string.
-    
-    Each category is identified by its unique emoji (📘, 💡, ❓, 🛠️, 📊) regardless of the
-    exact title text. The function maps these to standardized category names.
-    
-    Args:
-        text (str): The input text containing the 5 categories
-        
-    Returns:
-        dict: A dictionary with standardized category titles as keys and their content as values
-    """
-    # Define patterns based on emojis only, not the category titles
-    patterns = [
-        (r'\d+\.\s+\*\*📘.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "📘 Topic and Domain",),
-        (r'\d+\.\s+\*\*💡.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "💡 Previous Research and New Ideas"),
-        (r'\d+\.\s+\*\*❓.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "❓ Problem"),
-        (r'\d+\.\s+\*\*🛠️.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "🛠️ Methods"),
-        (r'\d+\.\s+\*\*📊.*?\*\*\s+(.*?)(?=\n\n|\Z)', "📊 Results and Evaluation")
-    ]
-    
-    # Create a dictionary to store results
-    results = []
-    
-    # Apply each pattern and store results with standardized category names
-    for pattern, category_name in patterns:
-        match = re.search(pattern, text, re.DOTALL)
-        if match:
-            results.append((category_name, match.group(1).strip()))    
-    return results
+load_dotenv()
+TEST = os.getenv("TEST")
 
-# def generate_paper_html(articles):
-#     """生成子页面的论文内容 HTML，与 Google Chat 推送内容一致"""
-#     logger.debug(articles)
-#     paper_html = ""
-#     for idx, article in enumerate(articles):
-#         title = article.get('title', 'No Title')
-#         published_at = article.get('published_at', 'No Date')
-#         url = article.get('url', '#')
-#         content = article.get('content', 'No Content')
-#         categories = extract_categories(content)
-#         logger.debug(categories)
-#         # 为每个类别添加 div 和样式
-#         content_html = ""
-#         for cat_idx, (cat, cat_content) in enumerate(categories):
-#             content_html += f"""<div class="category-chunk">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>"""
-
-#         paper_html += f"""
-#         <div class="paper-card">
-#             <h2>Paper: {idx+1}</h2>
-#             <p><strong>{title}</strong></p>
-#             <p><strong>Published: </strong>{published_at}</p>
-#             <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
-#             <div>{content_html}</div>
-#         </div>
-#         """
-#     return paper_html
 
 def generate_paper_html(articles):
     """生成子页面的论文内容 HTML，与 Google Chat 推送内容一致"""
@@ -338,8 +164,9 @@ if __name__ == "__main__":
             logger.debug(summary)
             paper_summaries.append(summary)
             
-            with open('summaries.jsonl', 'a') as f:
-                f.write(json.dumps(paper_info) + '\n')
+            if TEST == 'FALSE':
+                with open('summaries.jsonl', 'a') as f:
+                    f.write(json.dumps(paper_info) + '\n')
             
             articles.append(paper_info)
             
@@ -388,4 +215,6 @@ if __name__ == "__main__":
         subprocess.run(["git", "add", "index.html", "*.html"])
         subprocess.run(["git", "commit", "-m", "Daily Paper Push"])
         subprocess.run(["git", "push", "origin", "main"])
-    push_to_github()
+    
+    if TEST == "FALSE":
+        push_to_github()

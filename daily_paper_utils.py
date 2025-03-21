@@ -506,3 +506,36 @@ def process_paper(paper, queue, max_paper_length):
         queue.put((paper_info, summary))
     except Exception as e:
         queue.put(f"Error: {e}")
+
+
+def extract_categories(text):
+    """
+    Extract the 5 categories and their content from a formatted text string.
+    
+    Each category is identified by its unique emoji (📘, 💡, ❓, 🛠️, 📊) regardless of the
+    exact title text. The function maps these to standardized category names.
+    
+    Args:
+        text (str): The input text containing the 5 categories
+        
+    Returns:
+        dict: A dictionary with standardized category titles as keys and their content as values
+    """
+    # Define patterns based on emojis only, not the category titles
+    patterns = [
+        (r'\d+\.\s+\*\*📘.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "📘 Topic and Domain",),
+        (r'\d+\.\s+\*\*💡.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "💡 Previous Research and New Ideas"),
+        (r'\d+\.\s+\*\*❓.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "❓ Problem"),
+        (r'\d+\.\s+\*\*🛠️.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "🛠️ Methods"),
+        (r'\d+\.\s+\*\*📊.*?\*\*\s+(.*?)(?=\n\n|\Z)', "📊 Results and Evaluation")
+    ]
+    
+    # Create a dictionary to store results
+    results = []
+    
+    # Apply each pattern and store results with standardized category names
+    for pattern, category_name in patterns:
+        match = re.search(pattern, text, re.DOTALL)
+        if match:
+            results.append((category_name, match.group(1).strip()))    
+    return results
