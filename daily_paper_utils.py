@@ -16,6 +16,26 @@ SPACE_ID = os.getenv("SPACE_ID")
 KEY = os.getenv("KEY")
 
 
+summary_test = "The summary"
+paper_info_temp = {
+    'title': "test title",
+    'published_at': "1900-01-01",
+    'url': "http",
+    'content': summary_test,
+    'questions': [
+        {
+            'question': 'What is the main contribution of this paper?',
+            'choices': ['Option A', 'Option B', 'Option C', 'Option D'],
+            'answer': 'Option A'
+        },
+        {
+            'question': 'Which dataset was used in this study?',
+            'choices': ['Dataset X', 'Dataset Y', 'Dataset Z'],
+            'answer': 'Dataset Y'
+        }
+    ]
+}
+
 # hugging face utils
 def fetch_huggingface_papers(limit=100):
     """
@@ -293,25 +313,6 @@ def send_articles(articles, thread_id):
     )
     return response
 
-# def start_thread(current_date, additional_content, thread_key_value):
-#     """Google Chat incoming webhook that starts or replies to a message thread."""
-#     url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
-#     reminder = """Treat it as a tool for selecting papers rather than for fully understanding them. \nIt will help you understand the standing of a paper in the field, and once you’ve chosen one, you’ll read it more efficiently with a questioning mindset."""
-#     app_message = {
-#         "text": f"`{current_date}` Papers\n" + reminder + "\n\n" + f"{additional_content.strip()}",
-#         # To start a thread, set threadKey to an arbitratry string.
-#         # To reply to a thread, specify that thread's threadKey value.
-#         "thread": {"threadKey": thread_key_value},
-#     }
-#     message_headers = {"Content-Type": "application/json; charset=UTF-8"}
-#     http_obj = Http()
-#     response = http_obj.request(
-#         uri=url,
-#         method="POST",
-#         headers=message_headers,
-#         body=dumps(app_message),
-#     )
-    # logger.debug(response)
 def start_thread(current_date, additional_content, thread_key_value):
     """Google Chat incoming webhook that starts or replies to a message thread."""
     url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
@@ -495,14 +496,16 @@ def process_paper(paper, queue, max_paper_length):
             queue.put(None)  # Signal to skip this paper
             return
             
-        summary = summary_paper(title, content)
+        # summary = summary_paper(title, content)
         
-        paper_info = {
-            'title': title,
-            'published_at': published_at,
-            'url': paper_url,
-            'content': summary
-        }
+        # paper_info = {
+        #     'title': title,
+        #     'published_at': published_at,
+        #     'url': paper_url,
+        #     'content': summary
+        # }
+        paper_info = paper_info_temp,
+        summary = summary_test
         queue.put((paper_info, summary))
     except Exception as e:
         queue.put(f"Error: {e}")
