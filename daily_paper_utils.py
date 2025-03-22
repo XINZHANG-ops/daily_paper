@@ -16,25 +16,37 @@ SPACE_ID = os.getenv("SPACE_ID")
 KEY = os.getenv("KEY")
 
 
-summary_test = "The summary"
-paper_info_temp = {
-    'title': "test title",
-    'published_at': "1900-01-01",
-    'url': "http",
-    'content': summary_test,
-    'questions': [
-        {
-            'question': 'What is the main contribution of this paper?',
-            'choices': ['Option A', 'Option B', 'Option C', 'Option D'],
-            'answer': 'Option A'
-        },
-        {
-            'question': 'Which dataset was used in this study?',
-            'choices': ['Dataset X', 'Dataset Y', 'Dataset Z'],
-            'answer': 'Dataset Y'
-        }
-    ]
-}
+# summary_test = "The summary"
+# test_questions = [
+#         {
+#             'question': 'What is the main contribution of this paper?',
+#             'choices': ['Option A', 'Option B', 'Option C', 'Option D'],
+#             'answer': 'Option A'
+#         },
+#         {
+#             'question': 'Which dataset was used in this study?',
+#             'choices': ['Dataset X', 'Dataset Y', 'Dataset Z'],
+#             'answer': 'Dataset Y'
+#         }
+#     ]
+
+# test_questions = [
+#         {
+#             'question': 'What is the main focus?'*10,
+#             'choices': ['A'*100, 'B'*100, 'C'*100],
+#             'answer': 'B'*100
+#         },
+#         {
+#             'question': 'Which method is used?'*10,
+#             'choices': ['X'*100, 'Y'*100, 'Z'*100],
+#             'answer': 'Y'*100
+#         },
+#         {
+#             'question': 'Which method is used?'*10,
+#             'choices': ['X'*100, 'Y'*100, 'Z'*100],
+#             'answer': 'Y'*100
+#         }
+#     ]
 
 # hugging face utils
 def fetch_huggingface_papers(limit=100):
@@ -369,7 +381,6 @@ def start_thread(current_date, additional_content, thread_key_value):
     return response
 
 
-# LLM utils
 client_anthropics = GenaiGatewayClient(
     api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
     env="staging",
@@ -417,6 +428,66 @@ Follow this format of your output(reply with these 5 topics concisely and nothin
 5.  **📊 Results and Evaluation:** The results.
 """
 def summary_paper(paper_title, paper_content):
+    prompt = PROMPT.format(
+        title=paper_title,
+        content=paper_content
+    )
+    logger.debug(f"Prompt length: {len(prompt.split(' '))}")
+
+    summary = client_gemini.create_message(messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ],
+        max_tokens=1024,
+        provider=provider,
+        model=model,
+        version=None
+    )['message']['content']
+    return summary
+
+QUESTION_PROMPT = """
+You are a research expert skilled at reading academic papers.  
+Here is the paper:  
+Title: {title}  
+
+Content:  
+{content} 
+
+And here is a summary of the paper:
+{summary}
+
+--------------
+Your job is to create 3 multiple choices questions about the paper like a short quiz.
+It can about the problem solved of the paper, the method of the paper or impact of the paper or literally anything.
+Each question should has only 3 options, for each question you should generate the question, options and the correct answer.
+
+Follow exactly the format below for your outputs:
+
+- question: hello
+  option1: option1 statement
+  option2: option2 statement
+  option3: option3 statement
+  answer: option1 or option2 or option3
+
+- question: hello
+  option1: option1 statement
+  option2: option2 statement
+  option3: option3 statement
+  answer: option1 or option2 or option3
+
+- question: hello
+  option1: option1 statement
+  option2: option2 statement
+  option3: option3 statement
+  answer: option1 or option2 or option3
+
+Notice you need to generate 3 questions as shown in template.
+Now output your the questions and nothing else:
+"""
+
+def create_question(paper_title, paper_content):
     prompt = PROMPT.format(
         title=paper_title,
         content=paper_content
@@ -496,16 +567,14 @@ def process_paper(paper, queue, max_paper_length):
             queue.put(None)  # Signal to skip this paper
             return
             
-        # summary = summary_paper(title, content)
-        
-        # paper_info = {
-        #     'title': title,
-        #     'published_at': published_at,
-        #     'url': paper_url,
-        #     'content': summary
-        # }
-        paper_info = paper_info_temp,
-        summary = summary_test
+        summary = summary_paper(title, content)
+        paper_info = {
+            'title': title,
+            'published_at': published_at,
+            'url': paper_url,
+            'content': summary,
+            'questions': test_questions
+        }
         queue.put((paper_info, summary))
     except Exception as e:
         queue.put(f"Error: {e}")

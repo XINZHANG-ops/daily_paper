@@ -55,6 +55,7 @@ def generate_paper_html(articles):
         published_at = article.get('published_at', 'No Date')
         url = article.get('url', '#')
         content = article.get('content', 'No Content')
+        questions = article.get('questions', [])  # Get the list of questions
         categories = extract_categories(content)
         logger.debug(categories)
         
@@ -69,14 +70,49 @@ def generate_paper_html(articles):
             bg_style = f"background-image: url('{bg_folder}/{selected_bg}');"
         else:
             bg_style = ""  # Fallback to default background if no images are found
+        
+        # Generate quiz tabs HTML
+        quiz_tabs_html = ""
+        if questions:
+            quiz_tabs_html = '<div class="quiz-tabs">'
+            for q_idx, question_data in enumerate(questions):
+                question = question_data.get('question', 'No Question')
+                choices = question_data.get('choices', [])
+                answer = question_data.get('answer', '')
+                
+                # 生成选项HTML时添加处理长文本的代码
+                choices_html = '<div class="quiz-choices">'
+                for choice_idx, choice in enumerate(choices):
+                    # 如果选项超过一定长度，可能需要调整样式
+                    choice_class = "quiz-choice"
+                    if len(choice) > 100:  # 如果选项文本非常长
+                        choice_class += " long-text"
+                        
+                    choices_html += f'<div class="{choice_class}" data-value="{choice}">{choice}</div>'
+                choices_html += '</div>'
+                
+                # Generate the complete quiz tab
+                quiz_tabs_html += f'''
+                <div class="quiz-tab" title="点击查看问题 #{q_idx+1}">Q{q_idx+1}
+                    <div class="quiz-popup" data-answer="{answer}">
+                        <div class="quiz-question">{q_idx+1}. {question}</div>
+                        {choices_html}
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                '''
+            quiz_tabs_html += '</div>'
 
         paper_html += f"""
-        <div class="paper-card" style="{bg_style}">
-            <h2>Paper: {idx+1}</h2>
-            <p><strong>{title}</strong></p>
-            <p><strong>Published: </strong>{published_at}</p>
-            <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
-            <div>{content_html}</div>
+        <div class="paper-container">
+            <div class="paper-card" style="{bg_style}">
+                <h2>Paper {idx+1}</h2>
+                <p><strong>{title}</strong></p>
+                <p><strong>Published: </strong>{published_at}</p>
+                <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
+                <div>{content_html}</div>
+            </div>
+            {quiz_tabs_html}
         </div>
         """
     return paper_html
