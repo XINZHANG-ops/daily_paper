@@ -407,12 +407,12 @@ SUBPAGE_TEMPLATE = """
                     // 检查是否正确
                     if (this.getAttribute('data-value') === correctAnswer) {
                         this.classList.add('correct');
-                        feedbackElement.textContent = '答对了！';
+                        feedbackElement.textContent = '✔️ Correct！';
                         feedbackElement.classList.add('correct');
                         feedbackElement.classList.remove('incorrect');
                     } else {
                         this.classList.add('incorrect');
-                        feedbackElement.textContent = '答错了，再试一次！';
+                        feedbackElement.textContent = '❌ Wrong！';
                         feedbackElement.classList.add('incorrect');
                         feedbackElement.classList.remove('correct');
                     }

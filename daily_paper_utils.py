@@ -460,7 +460,7 @@ And here is a summary of the paper:
 
 --------------
 Your job is to create 3 multiple choices questions about the paper like a short quiz.
-It can about the problem solved of the paper, the method of the paper or impact of the paper or literally anything.
+It can about the problem solved of the paper, the method of the paper or impact of the paper or literally anything about the paper.
 Each question should has only 3 options, for each question you should generate the question, options and the correct answer.
 Try to be creative on your question and options.
 
@@ -503,8 +503,8 @@ def find_json_content(text):
 
 def parse_output(output: str) -> str:
     if '```json' in output:
-        return find_json_content(output)
-    return output
+        output =  find_json_content(output)
+    return json.loads(output)
 
 
 def create_question(paper_title, paper_content, summary):
