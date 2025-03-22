@@ -166,6 +166,7 @@ if __name__ == "__main__":
             
             if TEST == 'FALSE':
                 with open('summaries.jsonl', 'a') as f:
+                    paper_info['date'] = current_date
                     f.write(json.dumps(paper_info) + '\n')
             
             articles.append(paper_info)
@@ -213,6 +214,7 @@ if __name__ == "__main__":
 
     def push_to_github():
         subprocess.run(["git", "add", "index.html", "*.html"])
+        subprocess.run(["git", "add", "summaries.jsonl"])
         subprocess.run(["git", "commit", "-m", "Daily Paper Push"])
         subprocess.run(["git", "push", "origin", "main"])
     

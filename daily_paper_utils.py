@@ -293,25 +293,6 @@ def send_articles(articles, thread_id):
     )
     return response
 
-# def start_thread(current_date, additional_content, thread_key_value):
-#     """Google Chat incoming webhook that starts or replies to a message thread."""
-#     url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
-#     reminder = """Treat it as a tool for selecting papers rather than for fully understanding them. \nIt will help you understand the standing of a paper in the field, and once you’ve chosen one, you’ll read it more efficiently with a questioning mindset."""
-#     app_message = {
-#         "text": f"`{current_date}` Papers\n" + reminder + "\n\n" + f"{additional_content.strip()}",
-#         # To start a thread, set threadKey to an arbitratry string.
-#         # To reply to a thread, specify that thread's threadKey value.
-#         "thread": {"threadKey": thread_key_value},
-#     }
-#     message_headers = {"Content-Type": "application/json; charset=UTF-8"}
-#     http_obj = Http()
-#     response = http_obj.request(
-#         uri=url,
-#         method="POST",
-#         headers=message_headers,
-#         body=dumps(app_message),
-#     )
-    # logger.debug(response)
 def start_thread(current_date, additional_content, thread_key_value):
     """Google Chat incoming webhook that starts or replies to a message thread."""
     url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
