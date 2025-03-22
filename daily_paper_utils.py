@@ -18,19 +18,6 @@ KEY = os.getenv("KEY")
 
 
 # summary_test = "The summary"
-# test_questions = [
-#         {
-#             'question': 'What is the main contribution of this paper?',
-#             'choices': ['Option A', 'Option B', 'Option C', 'Option D'],
-#             'answer': 'Option A'
-#         },
-#         {
-#             'question': 'Which dataset was used in this study?',
-#             'choices': ['Dataset X', 'Dataset Y', 'Dataset Z'],
-#             'answer': 'Dataset Y'
-#         }
-#     ]
-
 # test_questions = {'question1': {'question': 'What is the primary innovation proposed in the paper for 3D shape tokenization?',
 #   'option1': 'Voxel-based representation with attention mechanisms',
 #   'option2': 'Phase-Modulated Positional Encoding with stochastic linear shortcut',
