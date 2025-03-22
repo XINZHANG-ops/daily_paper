@@ -17,10 +17,10 @@ from daily_paper_utils import (
     find_not_proposed_papers,
     get_huggingface_papers,
     extract_categories,
-    client_llm,
     process_paper,
     send_articles,
     start_thread,
+    client_llm,
     fetch_data
 )
 
@@ -55,7 +55,7 @@ def generate_paper_html(articles):
         published_at = article.get('published_at', 'No Date')
         url = article.get('url', '#')
         content = article.get('content', 'No Content')
-        questions = article.get('questions', [])  # Get the list of questions
+        questions_dict = article.get('questions', {})  # 获取问题字典
         categories = extract_categories(content)
         logger.debug(categories)
         
@@ -71,30 +71,49 @@ def generate_paper_html(articles):
         else:
             bg_style = ""  # Fallback to default background if no images are found
         
-        # Generate quiz tabs HTML
+        # 生成问题标签HTML
         quiz_tabs_html = ""
-        if questions:
+        if questions_dict:
             quiz_tabs_html = '<div class="quiz-tabs">'
-            for q_idx, question_data in enumerate(questions):
-                question = question_data.get('question', 'No Question')
-                choices = question_data.get('choices', [])
-                answer = question_data.get('answer', '')
+            
+            # 处理新的问题格式
+            question_items = [(k, v) for k, v in questions_dict.items() if k.startswith('question')]
+            question_items.sort()  # 确保问题按顺序排列
+            
+            for q_idx, (q_key, q_data) in enumerate(question_items):
+                question = q_data.get('question', 'No Question')
                 
-                # 生成选项HTML时添加处理长文本的代码
+                # 获取选项
+                options = []
+                option_keys = [k for k in q_data.keys() if k.startswith('option')]
+                option_keys.sort()  # 确保选项按顺序排列
+                
+                for opt_key in option_keys:
+                    options.append(q_data[opt_key])
+                
+                answer_key = q_data.get('answer', '')  # 例如 'option2'
+                answer_value = ''
+                
+                # 获取正确答案的值
+                if answer_key.startswith('option'):
+                    option_index = int(answer_key[6:]) - 1  # 从'option2'获取索引1
+                    if 0 <= option_index < len(options):
+                        answer_value = options[option_index]
+                
+                # 生成选项HTML
                 choices_html = '<div class="quiz-choices">'
-                for choice_idx, choice in enumerate(choices):
-                    # 如果选项超过一定长度，可能需要调整样式
+                for choice_idx, choice in enumerate(options):
                     choice_class = "quiz-choice"
                     if len(choice) > 100:  # 如果选项文本非常长
                         choice_class += " long-text"
-                        
+                    
                     choices_html += f'<div class="{choice_class}" data-value="{choice}">{choice}</div>'
                 choices_html += '</div>'
                 
-                # Generate the complete quiz tab
+                # 生成完整的问题标签
                 quiz_tabs_html += f'''
                 <div class="quiz-tab" title="点击查看问题 #{q_idx+1}">Q{q_idx+1}
-                    <div class="quiz-popup" data-answer="{answer}">
+                    <div class="quiz-popup" data-answer="{answer_value}">
                         <div class="quiz-question">{q_idx+1}. {question}</div>
                         {choices_html}
                         <div class="quiz-feedback"></div>

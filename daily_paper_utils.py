@@ -1,7 +1,7 @@
 import os
 import io
 import re
-import yaml
+import json
 import requests
 from json import dumps
 from loguru import logger
@@ -31,23 +31,21 @@ KEY = os.getenv("KEY")
 #         }
 #     ]
 
-# test_questions = [
-#         {
-#             'question': 'What is the main focus?'*10,
-#             'choices': ['A'*100, 'B'*100, 'C'*100],
-#             'answer': 'B'*100
-#         },
-#         {
-#             'question': 'Which method is used?'*10,
-#             'choices': ['X'*100, 'Y'*100, 'Z'*100],
-#             'answer': 'Y'*100
-#         },
-#         {
-#             'question': 'Which method is used?'*10,
-#             'choices': ['X'*100, 'Y'*100, 'Z'*100],
-#             'answer': 'Y'*100
-#         }
-#     ]
+# test_questions = {'question1': {'question': 'What is the primary innovation proposed in the paper for 3D shape tokenization?',
+#   'option1': 'Voxel-based representation with attention mechanisms',
+#   'option2': 'Phase-Modulated Positional Encoding with stochastic linear shortcut',
+#   'option3': 'Point cloud processing with graph neural networks',
+#   'answer': 'option2'},
+#  'question2': {'question': 'How does the paper evaluate the quality of shape reconstruction?',
+#   'option1': 'Using Mean Squared Error and PSNR metrics',
+#   'option2': 'Through user studies and qualitative assessments only',
+#   'option3': 'Using Surface IoU (S-IoU) and Volumetric IoU (V-IoU)',
+#   'answer': 'option3'},
+#  'question3': {'question': 'What is a key application of the proposed 3D shape tokenizer demonstrated in the paper?',
+#   'option1': 'Photorealistic rendering of natural landscapes',
+#   'option2': 'Text-to-shape and text-to-scene generation',
+#   'option3': 'Real-time physics simulation for gaming environments',
+#   'answer': 'option2'}}
 
 # hugging face utils
 def fetch_huggingface_papers(limit=100):
@@ -464,37 +462,58 @@ And here is a summary of the paper:
 Your job is to create 3 multiple choices questions about the paper like a short quiz.
 It can about the problem solved of the paper, the method of the paper or impact of the paper or literally anything.
 Each question should has only 3 options, for each question you should generate the question, options and the correct answer.
+Try to be creative on your question and options.
 
 Follow exactly the format below for your outputs:
 
-- question: hello
-  option1: option1 statement
-  option2: option2 statement
-  option3: option3 statement
-  answer: option1 or option2 or option3
+"""
 
-- question: hello
-  option1: option1 statement
-  option2: option2 statement
-  option3: option3 statement
-  answer: option1 or option2 or option3
-
-- question: hello
-  option1: option1 statement
-  option2: option2 statement
-  option3: option3 statement
-  answer: option1 or option2 or option3
-
+QUESTION_FORMAT = """
+{
+  "question1": {
+    "question": "question statemant",
+    "option1": "option1 statement",
+    "option2": "option2 statement",
+    "option3": "option3 statement"
+    "answer": "option1 or option2 or option3"
+  },
+  "question2": {
+    "question": "question statemant",
+    "option1": "option1 statement",
+    "option2": "option2 statement",
+    "option3": "option3 statement"
+    "answer": "option1 or option2 or option3"
+  },
+  "question3": {
+    "question": "question statemant",
+    "option1": "option1 statement",
+    "option2": "option2 statement",
+    "option3": "option3 statement"
+    "answer": "option1 or option2 or option3"
+  }
+}
 Notice you need to generate 3 questions as shown in template.
 Now output your the questions and nothing else:
 """
 
+def find_json_content(text):
+    pattern = r'```json\s*([\s\S]*?)\s*```'
+    matches = re.findall(pattern, text)
+    return matches[0]
+
+def parse_output(output: str) -> str:
+    if '```json' in output:
+        return find_json_content(output)
+    return output
+
+
 def create_question(paper_title, paper_content, summary):
     prompt = QUESTION_PROMPT.format(
-        title=paper_title,
-        content=paper_content,
-        summary=summary
-    )
+        title = paper_title,
+        content = paper_content,
+        summary = summary,
+    ) + QUESTION_FORMAT
+        
     questions_content = client_llm.create_message(messages=[
         {
             "role": "user",
@@ -506,7 +525,7 @@ def create_question(paper_title, paper_content, summary):
         model=model,
         version=None
     )['message']['content']
-    questions = yaml.safe_load(questions_content)
+    questions = parse_output(questions_content)
     return questions
 
 
@@ -555,7 +574,6 @@ def fetch_data(endpoint, params=None):
         print(f"Error fetching data: {e}")
         return None
 
-
 def process_paper(paper, queue, max_paper_length):
     """Run paper processing in a thread and put the result in a queue."""
     try:
@@ -570,13 +588,18 @@ def process_paper(paper, queue, max_paper_length):
             return
             
         summary = summary_paper(title, content)
-        
+
+        questions = create_question(
+            paper_title=title,
+            paper_content=content,
+            summary=summary
+        )
         paper_info = {
             'title': title,
             'published_at': published_at,
             'url': paper_url,
             'content': summary,
-            'questions': test_questions
+            'questions': questions
         }
         queue.put((paper_info, summary))
     except Exception as e:
