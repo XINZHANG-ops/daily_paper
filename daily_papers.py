@@ -17,7 +17,7 @@ from daily_paper_utils import (
     find_not_proposed_papers,
     get_huggingface_papers,
     extract_categories,
-    client_anthropics,
+    client_llm,
     process_paper,
     send_articles,
     start_thread,
@@ -219,7 +219,7 @@ if __name__ == "__main__":
         if random_quote:
             additional_content = f"{random_quote[0]['content']} --{random_quote[0]['author']}"
         else:
-            additional_content = client_anthropics.create_message(
+            additional_content = client_llm.create_message(
                 messages=[{
                     "role": "user",
                     "content": quotes_prompt

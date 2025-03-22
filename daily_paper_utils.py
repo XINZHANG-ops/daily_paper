@@ -1,6 +1,7 @@
 import os
 import io
 import re
+import yaml
 import requests
 from json import dumps
 from loguru import logger
@@ -380,8 +381,9 @@ def start_thread(current_date, additional_content, thread_key_value):
     )
     return response
 
-
-client_anthropics = GenaiGatewayClient(
+provider = 'anthropics'
+model = 'claude-3-5-sonnet-v2'
+client_llm = GenaiGatewayClient(
     api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
     env="staging",
     jurisdiction="us",
@@ -390,16 +392,16 @@ client_anthropics = GenaiGatewayClient(
     chat_model='claude-3-5-sonnet-v2',
 )
 
-provider = 'vertex-ai'
-model = 'gemini-2.0-pro'
-client_gemini = GenaiGatewayClient(
-    api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
-    env="staging",
-    jurisdiction="us",
-    temperature=0.5,
-    provider=provider,
-    chat_model=model,
-)
+# provider = 'vertex-ai'
+# model = 'gemini-2.0-pro'
+# client_llm = GenaiGatewayClient(
+#     api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
+#     env="staging",
+#     jurisdiction="us",
+#     temperature=0.5,
+#     provider=provider,
+#     chat_model=model,
+# )
 
 PROMPT = """
 You are a research expert skilled at reading academic papers.  
@@ -434,7 +436,7 @@ def summary_paper(paper_title, paper_content):
     )
     logger.debug(f"Prompt length: {len(prompt.split(' '))}")
 
-    summary = client_gemini.create_message(messages=[
+    summary = client_llm.create_message(messages=[
         {
             "role": "user",
             "content": prompt
@@ -487,14 +489,13 @@ Notice you need to generate 3 questions as shown in template.
 Now output your the questions and nothing else:
 """
 
-def create_question(paper_title, paper_content):
-    prompt = PROMPT.format(
+def create_question(paper_title, paper_content, summary):
+    prompt = QUESTION_PROMPT.format(
         title=paper_title,
-        content=paper_content
+        content=paper_content,
+        summary=summary
     )
-    logger.debug(f"Prompt length: {len(prompt.split(' '))}")
-
-    summary = client_gemini.create_message(messages=[
+    questions_content = client_llm.create_message(messages=[
         {
             "role": "user",
             "content": prompt
@@ -505,7 +506,8 @@ def create_question(paper_title, paper_content):
         model=model,
         version=None
     )['message']['content']
-    return summary
+    questions = yaml.safe_load(questions_content)
+    return questions
 
 
 def find_not_proposed_papers(
@@ -568,6 +570,7 @@ def process_paper(paper, queue, max_paper_length):
             return
             
         summary = summary_paper(title, content)
+        
         paper_info = {
             'title': title,
             'published_at': published_at,
