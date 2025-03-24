@@ -17,10 +17,10 @@ from daily_paper_utils import (
     find_not_proposed_papers,
     get_huggingface_papers,
     extract_categories,
-    client_anthropics,
     process_paper,
     send_articles,
     start_thread,
+    client_llm,
     fetch_data
 )
 
@@ -55,6 +55,7 @@ def generate_paper_html(articles):
         published_at = article.get('published_at', 'No Date')
         url = article.get('url', '#')
         content = article.get('content', 'No Content')
+        questions_dict = article.get('questions', {})  # 获取问题字典
         categories = extract_categories(content)
         logger.debug(categories)
         
@@ -69,14 +70,68 @@ def generate_paper_html(articles):
             bg_style = f"background-image: url('{bg_folder}/{selected_bg}');"
         else:
             bg_style = ""  # Fallback to default background if no images are found
+        
+        # 生成问题标签HTML
+        quiz_tabs_html = ""
+        if questions_dict:
+            quiz_tabs_html = '<div class="quiz-tabs">'
+            
+            # 处理新的问题格式
+            question_items = [(k, v) for k, v in questions_dict.items() if k.startswith('question')]
+            question_items.sort()  # 确保问题按顺序排列
+            
+            for q_idx, (q_key, q_data) in enumerate(question_items):
+                question = q_data.get('question', 'No Question')
+                
+                # 获取选项
+                options = []
+                option_keys = [k for k in q_data.keys() if k.startswith('option')]
+                option_keys.sort()  # 确保选项按顺序排列
+                
+                for opt_key in option_keys:
+                    options.append(q_data[opt_key])
+                
+                answer_key = q_data.get('answer', '')  # 例如 'option2'
+                answer_value = ''
+                
+                # 获取正确答案的值
+                if answer_key.startswith('option'):
+                    option_index = int(answer_key[6:]) - 1  # 从'option2'获取索引1
+                    if 0 <= option_index < len(options):
+                        answer_value = options[option_index]
+                
+                # 生成选项HTML
+                choices_html = '<div class="quiz-choices">'
+                for choice_idx, choice in enumerate(options):
+                    choice_class = "quiz-choice"
+                    if len(choice) > 100:  # 如果选项文本非常长
+                        choice_class += " long-text"
+                    
+                    choices_html += f'<div class="{choice_class}" data-value="{choice}">{choice}</div>'
+                choices_html += '</div>'
+                
+                # 生成完整的问题标签
+                quiz_tabs_html += f'''
+                <div class="quiz-tab" title="点击查看问题 #{q_idx+1}">Q{q_idx+1}
+                    <div class="quiz-popup" data-answer="{answer_value}">
+                        <div class="quiz-question">{q_idx+1}. {question}</div>
+                        {choices_html}
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                '''
+            quiz_tabs_html += '</div>'
 
         paper_html += f"""
-        <div class="paper-card" style="{bg_style}">
-            <h2>Paper: {idx+1}</h2>
-            <p><strong>{title}</strong></p>
-            <p><strong>Published: </strong>{published_at}</p>
-            <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
-            <div>{content_html}</div>
+        <div class="paper-container">
+            <div class="paper-card" style="{bg_style}">
+                <h2>Paper {idx+1}</h2>
+                <p><strong>{title}</strong></p>
+                <p><strong>Published: </strong>{published_at}</p>
+                <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
+                <div>{content_html}</div>
+            </div>
+            {quiz_tabs_html}
         </div>
         """
     return paper_html
@@ -184,7 +239,7 @@ if __name__ == "__main__":
         if random_quote:
             additional_content = f"{random_quote[0]['content']} --{random_quote[0]['author']}"
         else:
-            additional_content = client_anthropics.create_message(
+            additional_content = client_llm.create_message(
                 messages=[{
                     "role": "user",
                     "content": quotes_prompt
