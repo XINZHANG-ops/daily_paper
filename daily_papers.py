@@ -124,10 +124,10 @@ def generate_paper_html(articles):
 
         paper_html += f"""
         <div class="paper-container">
-            <div class="paper-card" style="{bg_style}">
-                <h2>Paper {idx+1}</h2>
-                <p><strong>{title}</strong></p>
-                <p><strong>Published: </strong>{published_at}</p>
+            <div class="paper-card" style="{bg_style}">             
+                <h2 style="color: #ffffff;">Paper {idx+1}</h2>
+                <p style="color: #badb12;"><strong>{title}</strong></p>
+                <p style="color: #ffffff;"><strong>Published: </strong>{published_at}</p>
                 <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
                 <div>{content_html}</div>
             </div>
