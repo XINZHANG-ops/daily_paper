@@ -1,54 +1,10 @@
-INDEX_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Paper</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        li {
-            margin: 10px 0;
-        }
-        a {
-            text-decoration: none;
-            color: #1a73e8;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <h1>Daily Paper</h1>
-    <ul>
-        $date_links
-    </ul>
-</body>
-</html>
-"""
-
 SUBPAGE_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$date Papers</title>
+    <title>${date} Papers</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,6 +29,17 @@ SUBPAGE_TEMPLATE = """
             max-width: 100%;
             transition: all 0.3s ease;
         }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
         .paper-card {
             background-color: #f9f9f9;
             border: 1px solid #ddd;
@@ -84,52 +51,131 @@ SUBPAGE_TEMPLATE = """
             background-position: center;
             background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
             background-blend-mode: overlay;
-            width: 100%;
-            margin-right: 20px;
             overflow-wrap: break-word;
         }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
         .paper-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
+        
         .paper-card h2 {
             margin: 0 0 10px;
             font-size: 1.2em;
         }
+        
         .paper-card p {
             margin: 5px 0;
         }
+        
         .paper-card a {
             color: #1a73e8;
             text-decoration: none;
         }
+        
         .paper-card a:hover {
             text-decoration: underline;
         }
+        
         .category-chunk {
             padding: 10px;
             margin: 5px 0;
             border-radius: 5px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+        
         .category-chunk:hover {
             transform: translateY(-3px);
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
         }
+        
         .category-chunk:nth-child(1) {
             background-color: #d3e3fd;
         }
+        
         .category-chunk:nth-child(2) {
             background-color: #e6d6fa;
         }
+        
         .category-chunk:nth-child(3) {
             background-color: #d4f8d9;
         }
+        
         .category-chunk:nth-child(4) {
             background-color: #ffd7d5;
         }
+        
         .category-chunk:nth-child(5) {
             background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
         }
 
         /* Quiz tabs and popup styles */
@@ -309,11 +355,19 @@ SUBPAGE_TEMPLATE = """
             .paper-container {
                 flex-direction: column;
             }
-            .paper-card {
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
                 width: 100% !important;
                 margin-bottom: 20px;
                 margin-right: 0;
             }
+            
             .quiz-tabs {
                 width: 100%;
                 flex-direction: row;
@@ -326,13 +380,12 @@ SUBPAGE_TEMPLATE = """
                 margin-right: 10px;
                 margin-bottom: 10px;
             }
-            /* 移动设备上弹窗已经是居中显示，无需额外样式 */
         }
     </style>
 </head>
 <body>
-    <h1>$date Papers</h1>
-    $paper_content
+    <h1>${date} Papers</h1>
+    ${paper_content}
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -418,6 +471,80 @@ SUBPAGE_TEMPLATE = """
                     }
                     
                     feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `$${currentIndex + 1}/$${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
                 });
             });
         });

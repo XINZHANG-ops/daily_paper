@@ -483,8 +483,63 @@ Notice you need to generate 3 questions as shown in template.
 Now output your the questions and nothing else:
 """
 
+
+FLOW_CHART_PROMPT = """
+You are a research assistant. You job is to help me to create a flow chart of the paper content. 
+Since it is about the workflow of the paper, your focus is the method applied in the paper.
+
+Your should contain your answer in a SVG format as following format:
+<format>
+you should have your output with this specific <svg> tag.
+
+<svg width="100%" viewBox="0 0 1000 800">
+Here are the content you can create freely, use all shapes, text format or styles as you like.
+Try to be creative, and make it look good and colorful.
+</svg>
+
+</format>
+
+Here is the content of the paper "{title}":
+<content>
+{article_content}
+</content>
+
+Now please give me the SVG format of the flow chart, you should only give me the SVG format directly, do not output backticks for formatting, no other text.
+"""
+
+def create_flow_chart(paper_title, paper_content):
+    prompt = FLOW_CHART_PROMPT.format(
+        title=paper_title,
+        article_content=paper_content
+    )
+    flow_chart = client_llm.create_message(messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ],
+        max_tokens=4096,
+        provider=provider,
+        model=model,
+        version=None
+    )['message']['content']
+    
+    return parse_flowchart(flow_chart)
+
+
+
 def find_json_content(text):
     pattern = r'```json\s*([\s\S]*?)\s*```'
+    matches = re.findall(pattern, text)
+    return matches[0]
+
+def find_svg_content(text):
+    pattern = r'```svg\s*([\s\S]*?)\s*```'
+    matches = re.findall(pattern, text)
+    return matches[0]
+
+def find_xml_content(text):
+    pattern = r'```xml\s*([\s\S]*?)\s*```'
     matches = re.findall(pattern, text)
     return matches[0]
 
@@ -492,6 +547,14 @@ def parse_output(output: str) -> str:
     if '```json' in output:
         output =  find_json_content(output)
     return json.loads(output)
+
+def parse_flowchart(output: str) -> str:
+    if '```svg' in output:
+        output =  find_svg_content(output)
+
+    if '```xml' in output:
+        output =  find_xml_content(output)
+    return output
 
 
 def create_question(paper_title, paper_content, summary):
@@ -548,6 +611,9 @@ Now Output Your Quote(do not output anything else exception for the Quote):
 """.strip()
 
 
+
+
+
 BASE_URL = "https://api.quotable.io"
 
 def fetch_data(endpoint, params=None):
@@ -575,6 +641,10 @@ def process_paper(paper, queue, max_paper_length):
             return
             
         summary = summary_paper(title, content)
+        flow_chart = create_flow_chart(
+            paper_title=title,
+            paper_content=content
+        )
 
         questions = create_question(
             paper_title=title,
@@ -586,7 +656,8 @@ def process_paper(paper, queue, max_paper_length):
             'published_at': published_at,
             'url': paper_url,
             'content': summary,
-            'questions': questions
+            'questions': questions,
+            'flow_chart': flow_chart
         }
         queue.put((paper_info, summary))
     except Exception as e:

@@ -30,8 +30,11 @@ from daily_paper_utils import (
     model
 )
 
+from index_temp import (
+    INDEX_TEMPLATE
+)
+
 from html_temps import (
-    INDEX_TEMPLATE,
     SUBPAGE_TEMPLATE
 )
 
@@ -41,7 +44,7 @@ TEST = os.getenv("TEST")
 
 
 def generate_paper_html(articles):
-    """生成子页面的论文内容 HTML，与 Google Chat 推送内容一致"""
+    """生成子页面的论文内容 HTML，与 Google Chat 推送内容一致，增加轮播卡片功能"""
     # 获取 bg 文件夹中的所有图片文件
     bg_folder = "bg"
     bg_images = [f for f in os.listdir(bg_folder) if f.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
@@ -55,7 +58,8 @@ def generate_paper_html(articles):
         published_at = article.get('published_at', 'No Date')
         url = article.get('url', '#')
         content = article.get('content', 'No Content')
-        questions_dict = article.get('questions', {})  # 获取问题字典
+        questions_dict = article.get('questions', {})
+        flowchart = article.get('flow_chart', "")
         categories = extract_categories(content)
         logger.debug(categories)
         
@@ -112,7 +116,7 @@ def generate_paper_html(articles):
                 
                 # 生成完整的问题标签
                 quiz_tabs_html += f'''
-                <div class="quiz-tab" title="点击查看问题 #{q_idx+1}">Q{q_idx+1}
+                <div class="quiz-tab" title="Click To Open Question #{q_idx+1}">Q{q_idx+1}
                     <div class="quiz-popup" data-answer="{answer_value}">
                         <div class="quiz-question">{q_idx+1}. {question}</div>
                         {choices_html}
@@ -122,19 +126,49 @@ def generate_paper_html(articles):
                 '''
             quiz_tabs_html += '</div>'
 
-        paper_html += f"""
-        <div class="paper-container">
-            <div class="paper-card" style="{bg_style}">             
-                <h2 style="color: #ffffff;">Paper {idx+1}</h2>
-                <p style="color: #badb12;"><strong>{title}</strong></p>
-                <p style="color: #ffffff;"><strong>Published: </strong>{published_at}</p>
-                <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
-                <div>{content_html}</div>
+        # 判断是否有流程图，如果有则创建轮播卡片，否则使用原来的单卡片
+        if flowchart:
+            # 创建卡片轮播，不包含指示器小点
+            paper_html += f"""
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="{bg_style}">
+                        <h2 style="color: #ffffff;">Paper {idx+1}</h2>
+                        <p style="color: #badb12;"><strong>{title}</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>{published_at}</p>
+                        <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
+                        <div>{content_html}</div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>{title}</h2>
+                        {flowchart}
+                    </div>
+                </div>
+                {quiz_tabs_html}
             </div>
-            {quiz_tabs_html}
-        </div>
-        """
+            """
+        else:
+            # 使用原来的单卡片
+            paper_html += f"""
+            <div class="paper-container">
+                <div class="paper-card" style="{bg_style}">             
+                    <h2 style="color: #ffffff;">Paper {idx+1}</h2>
+                    <p style="color: #badb12;"><strong>{title}</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>{published_at}</p>
+                    <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
+                    <div>{content_html}</div>
+                </div>
+                {quiz_tabs_html}
+            </div>
+            """
     return paper_html
+
 
 def update_index_page(dates):
     """更新主页面，添加日期链接"""
@@ -195,7 +229,7 @@ if __name__ == "__main__":
             thread.daemon = True
             thread.start()
             
-            thread.join(timeout=30)
+            thread.join(timeout=100)
             
             elapsed_time = time.time() - start_time
             

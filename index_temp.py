@@ -1,4 +1,4 @@
-
+INDEX_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -36,19 +36,8 @@
 <body>
     <h1>Daily Paper</h1>
     <ul>
-        <li><a href="test.html">test</a></li>
-<li><a href="2025-04-03.html">2025-04-03</a></li>
-<li><a href="2025-04-02.html">2025-04-02</a></li>
-<li><a href="2025-04-01.html">2025-04-01</a></li>
-<li><a href="2025-03-31.html">2025-03-31</a></li>
-<li><a href="2025-03-28.html">2025-03-28</a></li>
-<li><a href="2025-03-27.html">2025-03-27</a></li>
-<li><a href="2025-03-26.html">2025-03-26</a></li>
-<li><a href="2025-03-25.html">2025-03-25</a></li>
-<li><a href="2025-03-24.html">2025-03-24</a></li>
-<li><a href="2025-03-21.html">2025-03-21</a></li>
-<li><a href="2025-03-20.html">2025-03-20</a></li>
-
+        $date_links
     </ul>
 </body>
 </html>
+"""
