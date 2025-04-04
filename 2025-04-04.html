@@ -1,0 +1,866 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-04 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-04 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Envisioning Beyond the Pixels: Benchmarking Reasoning-Informed Visual
+  Editing</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.02826" target="_blank">http://arxiv.org/pdf/2504.02826</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on benchmarking reasoning-informed visual editing capabilities of large multimodal models (LMMs), which involves understanding and manipulating images based on logical reasoning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing research in visual understanding and generation by LMMs, it proposes RISEBench, the first benchmark specifically designed to evaluate reasoning-informed visual editing across multiple reasoning types.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of systematic evaluation methods for assessing how well AI models can perform complex visual editing tasks that require reasoning capabilities like temporal, causal, spatial, and logical understanding.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created RISEBench with curated test cases across four reasoning categories and evaluated models using both human judges and an LMM-as-a-judge framework across three dimensions: instruction reasoning, appearance consistency, and visual plausibility.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results showed GPT-4o-Native significantly outperformed other models with 35.9% accuracy, though still struggling with logical reasoning tasks, while open-source models performed poorly overall, highlighting substantial room for improvement in reasoning-informed visual editing.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Envisioning Beyond the Pixels: Benchmarking Reasoning-Informed Visual
+  Editing</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f0f8ff"/>
+
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Reasoning-Informed Visual Editing Benchmark</text>
+
+    <!-- Main Input Box -->
+    <rect x="400" y="80" width="200" height="60" rx="10" fill="#3498db"/>
+    <text x="500" y="115" text-anchor="middle" font-size="16" fill="white">Input Image + Instruction</text>
+
+    <!-- Four Main Categories -->
+    <rect x="100" y="200" width="180" height="60" rx="10" fill="#e74c3c"/>
+    <text x="190" y="235" text-anchor="middle" font-size="16" fill="white">Temporal Reasoning</text>
+
+    <rect x="300" y="200" width="180" height="60" rx="10" fill="#2ecc71"/>
+    <text x="390" y="235" text-anchor="middle" font-size="16" fill="white">Causal Reasoning</text>
+
+    <rect x="500" y="200" width="180" height="60" rx="10" fill="#f1c40f"/>
+    <text x="590" y="235" text-anchor="middle" font-size="16" fill="white">Spatial Reasoning</text>
+
+    <rect x="700" y="200" width="180" height="60" rx="10" fill="#9b59b6"/>
+    <text x="790" y="235" text-anchor="middle" font-size="16" fill="white">Logical Reasoning</text>
+
+    <!-- Evaluation Dimensions -->
+    <rect x="200" y="400" width="200" height="60" rx="10" fill="#34495e"/>
+    <text x="300" y="435" text-anchor="middle" font-size="16" fill="white">Instruction Reasoning</text>
+
+    <rect x="400" y="400" width="200" height="60" rx="10" fill="#34495e"/>
+    <text x="500" y="435" text-anchor="middle" font-size="16" fill="white">Appearance Consistency</text>
+
+    <rect x="600" y="400" width="200" height="60" rx="10" fill="#34495e"/>
+    <text x="700" y="435" text-anchor="middle" font-size="16" fill="white">Visual Plausibility</text>
+
+    <!-- Evaluation Method -->
+    <rect x="300" y="550" width="400" height="60" rx="10" fill="#16a085"/>
+    <text x="500" y="585" text-anchor="middle" font-size="16" fill="white">LMM-as-a-Judge Framework</text>
+
+    <!-- Final Output -->
+    <rect x="400" y="680" width="200" height="60" rx="10" fill="#8e44ad"/>
+    <text x="500" y="715" text-anchor="middle" font-size="16" fill="white">Final Evaluation Score</text>
+
+    <!-- Connecting Lines -->
+    <line x1="500" y1="140" x2="500" y2="180" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="190" y1="260" x2="190" y2="380" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="390" y1="260" x2="390" y2="380" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="590" y1="260" x2="590" y2="380" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="790" y1="260" x2="790" y2="380" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="500" y1="460" x2="500" y2="530" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="500" y1="610" x2="500" y2="660" stroke="#2c3e50" stroke-width="2"/>
+
+    <path d="M500 180 Q500 200 190 200" fill="none" stroke="#2c3e50" stroke-width="2"/>
+    <path d="M500 180 Q500 200 390 200" fill="none" stroke="#2c3e50" stroke-width="2"/>
+    <path d="M500 180 Q500 200 590 200" fill="none" stroke="#2c3e50" stroke-width="2"/>
+    <path d="M500 180 Q500 200 790 200" fill="none" stroke="#2c3e50" stroke-width="2"/>
+
+    <path d="M190 380 Q500 380 300 400" fill="none" stroke="#2c3e50" stroke-width="2"/>
+    <path d="M390 380 Q500 380 500 400" fill="none" stroke="#2c3e50" stroke-width="2"/>
+    <path d="M590 380 Q500 380 700 400" fill="none" stroke="#2c3e50" stroke-width="2"/>
+    <path d="M790 380 Q500 380 700 400" fill="none" stroke="#2c3e50" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="35.9% by GPT-4o-Native">
+                        <div class="quiz-question">1. What was the highest accuracy achieved by any model in the RISEBench evaluation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="10.9% by Gemini-2.0-Flash">10.9% by Gemini-2.0-Flash</div><div class="quiz-choice" data-value="35.9% by GPT-4o-Native">35.9% by GPT-4o-Native</div><div class="quiz-choice" data-value="58.4% by GPT-4o*">58.4% by GPT-4o*</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Logical reasoning">
+                        <div class="quiz-question">2. Which type of reasoning task proved to be most challenging even for the best performing model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Temporal reasoning">Temporal reasoning</div><div class="quiz-choice" data-value="Spatial reasoning">Spatial reasoning</div><div class="quiz-choice" data-value="Logical reasoning">Logical reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="LMM-as-a-judge framework">
+                        <div class="quiz-question">3. What unique evaluation approach did the authors use alongside human judges to assess model performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Traditional computer vision metrics">Traditional computer vision metrics</div><div class="quiz-choice" data-value="LMM-as-a-judge framework">LMM-as-a-judge framework</div><div class="quiz-choice" data-value="Crowd-sourced voting system">Crowd-sourced voting system</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>GPT-ImgEval: A Comprehensive Benchmark for Diagnosing GPT4o in Image
+  Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.02782" target="_blank">http://arxiv.org/pdf/2504.02782</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A comprehensive benchmark evaluation framework for assessing GPT-4o's image generation capabilities across various dimensions, in the domain of AI image generation and multimodal models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research in multimodal large language models and image generation, the paper proposes the first systematic evaluation framework specifically for GPT-4o through three specialized datasets and introduces a novel classification-based approach to investigate GPT-4o's architecture.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of systematic evaluation of GPT-4o's image generation capabilities, weaknesses, and architectural understanding.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors evaluate GPT-4o using three benchmarks (GenEval for generation quality, Reason-Edit for editing proficiency, and WISE for knowledge-informed synthesis) and employ a model-based classification approach to analyze its architecture.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> GPT-4o significantly outperforms existing methods across all three benchmarks, achieving 0.84 on GenEval, 0.929 on Reason-Edit, and 0.89 on WISE, while analysis suggests it uses a diffusion-based head for image decoding.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>GPT-ImgEval: A Comprehensive Benchmark for Diagnosing GPT4o in Image
+  Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f5f5f5"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">GPT-ImgEval Workflow</text>
+    
+    <!-- Main Flow Sections -->
+    <g transform="translate(0,100)">
+        <!-- Evaluation Section -->
+        <rect x="100" y="50" width="200" height="120" rx="10" fill="#4CAF50" opacity="0.8"/>
+        <text x="200" y="100" text-anchor="middle" fill="white" font-weight="bold">Generation Quality</text>
+        <text x="200" y="130" text-anchor="middle" fill="white" font-size="14">GenEval Dataset</text>
+        <text x="200" y="150" text-anchor="middle" fill="white" font-size="12">Text-to-Image Generation</text>
+
+        <rect x="400" y="50" width="200" height="120" rx="10" fill="#2196F3" opacity="0.8"/>
+        <text x="500" y="100" text-anchor="middle" fill="white" font-weight="bold">Editing Proficiency</text>
+        <text x="500" y="130" text-anchor="middle" fill="white" font-size="14">Reason-Edit Dataset</text>
+        <text x="500" y="150" text-anchor="middle" fill="white" font-size="12">Image Editing Tasks</text>
+
+        <rect x="700" y="50" width="200" height="120" rx="10" fill="#9C27B0" opacity="0.8"/>
+        <text x="800" y="100" text-anchor="middle" fill="white" font-weight="bold">Knowledge Synthesis</text>
+        <text x="800" y="130" text-anchor="middle" fill="white" font-size="14">WISE Dataset</text>
+        <text x="800" y="150" text-anchor="middle" fill="white" font-size="12">Semantic Understanding</text>
+
+        <!-- Architecture Analysis -->
+        <rect x="250" y="300" width="500" height="100" rx="10" fill="#FF5722" opacity="0.8"/>
+        <text x="500" y="350" text-anchor="middle" fill="white" font-weight="bold">Architecture Analysis</text>
+        <text x="500" y="375" text-anchor="middle" fill="white" font-size="14">Classifier-based Discrimination</text>
+
+        <!-- Weakness Analysis -->
+        <rect x="250" y="450" width="500" height="100" rx="10" fill="#795548" opacity="0.8"/>
+        <text x="500" y="500" text-anchor="middle" fill="white" font-weight="bold">Weakness Analysis</text>
+        <text x="500" y="525" text-anchor="middle" fill="white" font-size="14">Limitations &amp; Artifacts Study</text>
+
+        <!-- Connecting Arrows -->
+        <path d="M200,170 L200,300" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <path d="M500,170 L500,300" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <path d="M800,170 L800,300" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <path d="M500,400 L500,450" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+    </g>
+
+    <!-- Arrow Marker Definition -->
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+        </marker>
+    </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Diffusion-based head">
+                        <div class="quiz-question">1. Based on the paper's analysis, what type of architecture is most likely used in GPT-4o's image decoder?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Pure autoregressive (AR) architecture">Pure autoregressive (AR) architecture</div><div class="quiz-choice" data-value="Diffusion-based head">Diffusion-based head</div><div class="quiz-choice" data-value="Vector quantization (VQ) based decoder">Vector quantization (VQ) based decoder</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Reason-Edit with 0.929 score">
+                        <div class="quiz-question">2. Which benchmark dataset scored the highest accuracy when evaluating GPT-4o's performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="GenEval with 0.84 score">GenEval with 0.84 score</div><div class="quiz-choice" data-value="WISE with 0.89 score">WISE with 0.89 score</div><div class="quiz-choice" data-value="Reason-Edit with 0.929 score">Reason-Edit with 0.929 score</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Difficulties in generating non-English text and maintaining consistency in multi-person scenes">
+                        <div class="quiz-question">3. What is a notable limitation of GPT-4o identified in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Inability to generate any high-resolution images">Inability to generate any high-resolution images</div><div class="quiz-choice" data-value="Poor performance in English text generation">Poor performance in English text generation</div><div class="quiz-choice" data-value="Difficulties in generating non-English text and maintaining consistency in multi-person scenes">Difficulties in generating non-English text and maintaining consistency in multi-person scenes</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Rethinking RL Scaling for Vision Language Models: A Transparent,
+  From-Scratch Framework and Comprehensive Evaluation Scheme</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.02587" target="_blank">http://arxiv.org/pdf/2504.02587</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on reinforcement learning (RL) for vision language models (VLMs), specifically developing a framework and evaluation scheme for training VLMs using RL techniques.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research relied on complex, pre-packaged RL libraries, while this paper introduces a transparent, from-scratch implementation using only standard libraries like Transformers, FSDP2, and vLLM.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses two main issues: the lack of reproducible and accessible RL frameworks for VLMs, and the absence of standardized evaluation protocols for assessing RL training outcomes.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement a four-step pipeline (data flow, response collection, trajectory generation, policy update) and develop a comprehensive evaluation scheme tracking training dynamics, validation/test metrics, and reflection behaviors across multiple VLMs and datasets.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results show that RL consistently outperforms supervised fine-tuning even with high-quality data, response length is highly sensitive to random seeds, and reflective behaviors strongly correlate with output length, with improvements in both in-distribution and out-of-distribution performance.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Rethinking RL Scaling for Vision Language Models: A Transparent,
+  From-Scratch Framework and Comprehensive Evaluation Scheme</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Core Framework Box -->
+  <rect x="50" y="50" width="900" height="700" rx="20" fill="#f0f5ff" stroke="#2d5ba8" stroke-width="2"/>
+  <text x="450" y="100" font-size="24" fill="#2d5ba8" text-anchor="middle">MAYE Framework</text>
+  
+  <!-- Step 1: Data Flow -->
+  <rect x="100" y="150" width="200" height="150" rx="10" fill="#e6f3ff" stroke="#0066cc"/>
+  <text x="200" y="180" font-size="16" fill="#0066cc" text-anchor="middle">Step I: Data Flow</text>
+  <text x="200" y="210" font-size="14" fill="#666" text-anchor="middle">• Process Vision Data</text>
+  <text x="200" y="240" font-size="14" fill="#666" text-anchor="middle">• Process Text Data</text>
+  <text x="200" y="270" font-size="14" fill="#666" text-anchor="middle">• Create Input Tensors</text>
+
+  <!-- Step 2: Response Collection -->
+  <rect x="400" y="150" width="200" height="150" rx="10" fill="#fff0f5" stroke="#cc0066"/>
+  <text x="500" y="180" font-size="16" fill="#cc0066" text-anchor="middle">Step II: Response Collection</text>
+  <text x="500" y="210" font-size="14" fill="#666" text-anchor="middle">• Generate Responses</text>
+  <text x="500" y="240" font-size="14" fill="#666" text-anchor="middle">• Gather Parameters</text>
+  <text x="500" y="270" font-size="14" fill="#666" text-anchor="middle">• Process Outputs</text>
+
+  <!-- Step 3: Trajectory Generation -->
+  <rect x="100" y="400" width="200" height="150" rx="10" fill="#f0fff0" stroke="#006633"/>
+  <text x="200" y="430" font-size="16" fill="#006633" text-anchor="middle">Step III: Trajectory Generation</text>
+  <text x="200" y="460" font-size="14" fill="#666" text-anchor="middle">• Compute Log Probabilities</text>
+  <text x="200" y="490" font-size="14" fill="#666" text-anchor="middle">• Calculate Rewards</text>
+  <text x="200" y="520" font-size="14" fill="#666" text-anchor="middle">• Store Metrics</text>
+
+  <!-- Step 4: Policy Update -->
+  <rect x="400" y="400" width="200" height="150" rx="10" fill="#fff5e6" stroke="#cc6600"/>
+  <text x="500" y="430" font-size="16" fill="#cc6600" text-anchor="middle">Step IV: Policy Update</text>
+  <text x="500" y="460" font-size="14" fill="#666" text-anchor="middle">• Estimate KL Divergence</text>
+  <text x="500" y="490" font-size="14" fill="#666" text-anchor="middle">• Update Parameters</text>
+  <text x="500" y="520" font-size="14" fill="#666" text-anchor="middle">• Compute Total Loss</text>
+
+  <!-- Evaluation Metrics Box -->
+  <rect x="700" y="150" width="200" height="400" rx="10" fill="#f5f0ff" stroke="#6600cc"/>
+  <text x="800" y="180" font-size="16" fill="#6600cc" text-anchor="middle">Evaluation Metrics</text>
+  <text x="800" y="220" font-size="14" fill="#666" text-anchor="middle">Training Metrics</text>
+  <text x="800" y="250" font-size="12" fill="#666" text-anchor="middle">• Accuracy Curves</text>
+  <text x="800" y="280" font-size="12" fill="#666" text-anchor="middle">• Response Length</text>
+  <text x="800" y="320" font-size="14" fill="#666" text-anchor="middle">Validation/Test Metrics</text>
+  <text x="800" y="350" font-size="12" fill="#666" text-anchor="middle">• Accuracy Curves</text>
+  <text x="800" y="380" font-size="12" fill="#666" text-anchor="middle">• Accuracy Tabs</text>
+  <text x="800" y="420" font-size="14" fill="#666" text-anchor="middle">Reflection Metrics</text>
+  <text x="800" y="450" font-size="12" fill="#666" text-anchor="middle">• Words Count</text>
+  <text x="800" y="480" font-size="12" fill="#666" text-anchor="middle">• Ratio Curves</text>
+
+  <!-- Arrows -->
+  <path d="M300 225 L400 225" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M200 300 L200 400" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M300 475 L400 475" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M500 300 L500 400" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow Marker Definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It provides a transparent, from-scratch implementation using only standard libraries">
+                        <div class="quiz-question">1. What is the main innovation of the paper's framework compared to existing RL implementations for VLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It achieves better performance than all existing frameworks">It achieves better performance than all existing frameworks</div><div class="quiz-choice" data-value="It provides a transparent, from-scratch implementation using only standard libraries">It provides a transparent, from-scratch implementation using only standard libraries</div><div class="quiz-choice" data-value="It introduces new RL algorithms specifically designed for VLMs">It introduces new RL algorithms specifically designed for VLMs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="As responses become longer, models exhibit more reflective behaviors">
+                        <div class="quiz-question">2. According to the paper's findings, what is the relationship between response length and reflective behavior in VLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Response length has no correlation with reflective behavior">Response length has no correlation with reflective behavior</div><div class="quiz-choice" data-value="Shorter responses tend to show more reflective behavior">Shorter responses tend to show more reflective behavior</div><div class="quiz-choice" data-value="As responses become longer, models exhibit more reflective behaviors">As responses become longer, models exhibit more reflective behaviors</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="RL performed better than SFT even when using high-quality supervision data">
+                        <div class="quiz-question">3. What surprising finding did the paper reveal about RL versus supervised fine-tuning (SFT)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="RL performed better than SFT even when using high-quality supervision data">RL performed better than SFT even when using high-quality supervision data</div><div class="quiz-choice" data-value="SFT and RL performed equally well in all scenarios">SFT and RL performed equally well in all scenarios</div><div class="quiz-choice" data-value="SFT consistently outperformed RL in out-of-distribution tasks">SFT consistently outperformed RL in out-of-distribution tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
