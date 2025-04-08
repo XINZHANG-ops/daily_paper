@@ -1,0 +1,1185 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-08 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-08 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>One-Minute Video Generation with Test-Time Training</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.05298" target="_blank">http://arxiv.org/pdf/2504.05298</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper addresses one-minute video generation from text storyboards using Test-Time Training (TTT) layers to overcome the limitations of Transformer models in handling long contexts.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on Diffusion Transformers but proposes using TTT layers with neural network hidden states instead of traditional RNN approaches like Mamba or DeltaNet which use matrix hidden states.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the inefficiency of self-attention in generating long videos, as traditional Transformers struggle with one-minute videos due to quadratic complexity with context length.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors add TTT-MLP layers to a pre-trained Diffusion Transformer (CogVideo-X 5B), fine-tune on Tom and Jerry cartoons, and implement on-chip tensor parallelism for efficiency while limiting self-attention to 3-second segments.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> TTT-MLP outperformed baselines (Mamba 2, Gated DeltaNet, sliding-window attention) by 34 Elo points in human evaluation across four metrics, generating more coherent videos with complex stories, though still containing some artifacts.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>One-Minute Video Generation with Test-Time Training</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,220,255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,200,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,230,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,255,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,220);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,210,240);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,200,200);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,230,230);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,255,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,255,200);stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+    <style>
+      .box { stroke: #333; stroke-width: 1.5; rx: 8; ry: 8; filter: drop-shadow( 3px 3px 2px rgba(0,0,0,0.2)); }
+      .title-text { font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; fill: #222; text-anchor: middle; }
+      .main-text { font-family: 'Arial', sans-serif; font-size: 14px; fill: #333; }
+      .detail-text { font-family: 'Arial', sans-serif; font-size: 11px; fill: #555; }
+      .arrow { stroke: #555; stroke-width: 2; marker-end: url(#arrowhead); }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title-text">Workflow: One-Minute Video Generation with Test-Time Training</text>
+
+  <!-- Problem & Goal -->
+  <rect x="50" y="70" width="280" height="80" class="box" fill="url(#grad5)"/>
+  <text x="190" y="95" class="main-text" style="font-weight:bold; text-anchor: middle;">Problem & Goal</text>
+  <text x="60" y="120" class="detail-text">Generate long (1-min), coherent videos</text>
+  <text x="60" y="135" class="detail-text">with complex stories. Self-attention is too costly.</text>
+
+  <!-- Core Idea: TTT Layers -->
+  <rect x="360" y="70" width="280" height="80" class="box" fill="url(#grad6)"/>
+  <text x="500" y="95" class="main-text" style="font-weight:bold; text-anchor: middle;">Core Idea: Test-Time Training (TTT)</text>
+  <text x="370" y="120" class="detail-text">RNN layer with expressive hidden state (MLP).</text>
+  <text x="370" y="135" class="detail-text">Hidden state updated via gradient descent on</text>
+  <text x="370" y="147" class="detail-text">self-supervised loss during processing.</text>
+
+  <!-- Base Model -->
+  <rect x="670" y="70" width="280" height="80" class="box" fill="url(#grad1)"/>
+  <text x="810" y="95" class="main-text" style="font-weight:bold; text-anchor: middle;">Starting Point</text>
+  <text x="680" y="120" class="detail-text">Pre-trained Diffusion Transformer</text>
+  <text x="680" y="135" class="detail-text">(CogVideo-X 5B) - generates 3-sec clips.</text>
+
+  <!-- Arrow 1 -->
+  <line x1="330" y1="110" x2="360" y2="110" class="arrow" />
+  <line x1="640" y1="110" x2="670" y2="110" class="arrow" />
+
+  <!-- Architecture Modification -->
+  <rect x="360" y="175" width="280" height="130" class="box" fill="url(#grad2)"/>
+  <text x="500" y="200" class="main-text" style="font-weight:bold; text-anchor: middle;">Architecture Modification</text>
+  <text x="370" y="225" class="detail-text">1. Integrate TTT-MLP layers into Transformer.</text>
+  <text x="370" y="240" class="detail-text">2. Add Learnable Gating:</text>
+  <text x="380" y="253" class="detail-text">tanh(α) ⊗ TTT(X) + X (init α ≈ 0)</text>
+  <text x="370" y="270" class="detail-text">3. Use Bi-direction (TTT & TTT') for</text>
+  <text x="380" y="283" class="detail-text">non-causal Diffusion model.</text>
+  <text x="370" y="298" class="detail-text">Result: Modified Transformer Block</text>
+
+  <!-- Arrow 2 -->
+  <line x1="500" y1="150" x2="500" y2="175" class="arrow" />
+
+  <!-- Input Processing Pipeline -->
+  <rect x="50" y="175" width="280" height="150" class="box" fill="url(#grad3)"/>
+  <text x="190" y="200" class="main-text" style="font-weight:bold; text-anchor: middle;">Input Processing Pipeline</text>
+  <text x="60" y="225" class="detail-text">1. Text Prompt (Formats 1/2 -> 3: Storyboard)</text>
+  <text x="60" y="240" class="detail-text">2. Video Segmentation (Scenes -> 3-sec Segments)</text>
+  <text x="60" y="255" class="detail-text">3. Tokenization (Text + Noisy Video per segment)</text>
+  <text x="60" y="270" class="detail-text">4. Sequence Concatenation (Interleaved Segments)</text>
+  <text x="60" y="285" class="detail-text">5. Processing Strategy:</text>
+  <text x="70" y="300" class="detail-text">- Local Self-Attention (within 3-sec segments)</text>
+  <text x="70" y="315" class="detail-text">- Global TTT Layers (across full sequence)</text>
+
+  <!-- Arrow 3 -->
+  <line x1="360" y1="240" x2="330" y2="240" class="arrow" />
+
+  <!-- Dataset Creation -->
+  <rect x="670" y="175" width="280" height="130" class="box" fill="url(#grad1)"/>
+  <text x="810" y="200" class="main-text" style="font-weight:bold; text-anchor: middle;">Dataset Creation</text>
+  <text x="680" y="225" class="detail-text">1. Source: ~7h Tom & Jerry Cartoons</text>
+  <text x="680" y="240" class="detail-text">2. Preprocessing: Super-Resolution (720x480)</text>
+  <text x="680" y="255" class="detail-text">3. Annotation: Human-written storyboards</text>
+  <text x="690" y="268" class="detail-text">(Format 3) for 3-sec segments.</text>
+  <text x="680" y="285" class="detail-text">4. Multi-stage Data: Concatenate segments</text>
+  <text x="690" y="298" class="detail-text">into 3, 9, 18, 30, 63 sec videos.</text>
+
+  <!-- Arrow 4 -->
+  <line x1="640" y1="240" x2="670" y2="240" class="arrow" />
+
+  <!-- Fine-tuning -->
+  <rect x="50" y="350" width="420" height="160" class="box" fill="url(#grad4)"/>
+  <text x="260" y="375" class="main-text" style="font-weight:bold; text-anchor: middle;">Multi-Stage Fine-Tuning Strategy</text>
+  <text x="60" y="400" class="detail-text" style="font-weight:bold">Stage 1 (Domain Adaptation):</text>
+  <text x="70" y="415" class="detail-text">- Data: 3-sec segments</text>
+  <text x="70" y="430" class="detail-text">- Train: Entire Model (higher LR for TTT/Gates)</text>
+  <text x="60" y="448" class="detail-text" style="font-weight:bold">Stages 2-5 (Context Extension):</text>
+  <text x="70" y="463" class="detail-text">- Data: 9, 18, 30, 63 sec videos</text>
+  <text x="70" y="478" class="detail-text">- Train: Only TTT, Gates, Local Attention (lower LR)</text>
+  <text x="70" y="493" class="detail-text">- Goal: Gradually increase context length handling.</text>
+
+  <!-- TTT Implementation -->
+  <rect x="500" y="350" width="450" height="160" class="box" fill="url(#grad3)"/>
+  <text x="725" y="375" class="main-text" style="font-weight:bold; text-anchor: middle;">TTT Implementation & Optimization</text>
+  <text x="510" y="400" class="detail-text" style="font-weight:bold">Parallelization (Inner Loop):</text>
+  <text x="520" y="415" class="detail-text">- Update TTT hidden state (W) on mini-batches</text>
+  <text x="530" y="428" class="detail-text">of tokens (b=64) for parallelism.</text>
+  <text x="510" y="448" class="detail-text" style="font-weight:bold">On-Chip Tensor Parallel (GPU Efficiency):</text>
+  <text x="520" y="463" class="detail-text">- Shard TTT-MLP hidden state (W) across SMs.</text>
+  <text x="520" y="478" class="detail-text">- Use SMEM/DSMEM to compute updates on-chip.</text>
+  <text x="520" y="493" class="detail-text">- Minimize slow HBM transfers (load/store only).</text>
+  <text x="520" y="505" class="detail-text">- Use fused kernels, async transfers (ThunderKittens).</text>
+
+  <!-- Arrows 5 & 6 -->
+  <line x1="190" y1="325" x2="190" y2="350" class="arrow" />
+  <line x1="500" y1="305" x2="500" y2="350" class="arrow" />
+  <line x1="810" y1="305" x2="810" y2="350" class="arrow" />
+
+
+  <!-- Evaluation -->
+  <rect x="50" y="535" width="420" height="180" class="box" fill="url(#grad1)"/>
+  <text x="260" y="560" class="main-text" style="font-weight:bold; text-anchor: middle;">Evaluation Setup</text>
+  <text x="60" y="585" class="detail-text" style="font-weight:bold">Baselines Compared:</text>
+  <text x="70" y="600" class="detail-text">- Local Attention (no modification)</text>
+  <text x="70" y="613" class="detail-text">- TTT-Linear (simpler TTT hidden state)</text>
+  <text x="70" y="626" class="detail-text">- Mamba 2, Gated DeltaNet (matrix hidden states)</text>
+  <text x="70" y="639" class="detail-text">- Sliding Window Attention</text>
+  <text x="60" y="657" class="detail-text" style="font-weight:bold">Protocol:</text>
+  <text x="70" y="672" class="detail-text">- Human pairwise preference (blind comparison)</text>
+  <text x="70" y="685" class="detail-text">- Metrics: Text following, Motion naturalness,</text>
+  <text x="80" y="698" class="detail-text">Aesthetics, Temporal consistency (Elo scores)</text>
+  <text x="70" y="711" class="detail-text">- 18s elimination round -> 63s final evaluation</text>
+
+  <!-- Results & Limitations -->
+  <rect x="500" y="535" width="450" height="180" class="box" fill="url(#grad6)"/>
+  <text x="725" y="560" class="main-text" style="font-weight:bold; text-anchor: middle;">Results & Limitations</text>
+  <text x="510" y="585" class="detail-text" style="font-weight:bold">Key Findings:</text>
+  <text x="520" y="600" class="detail-text">- TTT-MLP significantly outperforms baselines on</text>
+  <text x="530" y="613" class="detail-text">63s videos (+34 Elo avg), esp. consistency.</text>
+  <text x="520" y="626" class="detail-text">- Gated DeltaNet better on shorter 18s videos.</text>
+  <text x="510" y="644" class="detail-text" style="font-weight:bold">Limitations:</text>
+  <text x="520" y="659" class="detail-text">- Video Artifacts persist (motion, aesthetics).</text>
+  <text x="520" y="672" class="detail-text">- Efficiency: TTT-MLP slower than Mamba/DeltaNet</text>
+  <text x="530" y="685" class="detail-text">(1.4x inference, 2.1x train vs GDeltaNet).</text>
+  <text x="520" y="698" class="detail-text">- Performance potentially limited by base model.</text>
+
+  <!-- Arrows 7 & 8 -->
+  <line x1="260" y1="510" x2="260" y2="535" class="arrow" />
+  <line x1="725" y1="510" x2="725" y2="535" class="arrow" />
+
+  <!-- Final Output -->
+  <rect x="360" y="730" width="280" height="50" class="box" fill="url(#grad3)"/>
+  <text x="500" y="760" class="main-text" style="font-weight:bold; text-anchor: middle;">Output: One-Minute Coherent Videos</text>
+
+  <!-- Arrows 9 & 10 -->
+   <line x1="260" y1="715" x2="400" y2="730" class="arrow" />
+   <line x1="725" y1="715" x2="580" y2="730" class="arrow" />
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Their hidden states are neural networks rather than matrices">
+                        <div class="quiz-question">1. What is the key innovation that allows TTT layers to generate more coherent long videos compared to Mamba and DeltaNet?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They use a more efficient self-attention mechanism">They use a more efficient self-attention mechanism</div><div class="quiz-choice" data-value="Their hidden states are neural networks rather than matrices">Their hidden states are neural networks rather than matrices</div><div class="quiz-choice" data-value="They combine multiple 3-second video segments with transitions">They combine multiple 3-second video segments with transitions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To focus on complex, multi-scene stories with dynamic motion rather than visual realism">
+                        <div class="quiz-question">2. Why did the authors choose Tom and Jerry cartoons as their dataset for the proof of concept?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To focus on complex, multi-scene stories with dynamic motion rather than visual realism">To focus on complex, multi-scene stories with dynamic motion rather than visual realism</div><div class="quiz-choice" data-value="Because cartoon generation is easier than photorealistic video generation">Because cartoon generation is easier than photorealistic video generation</div><div class="quiz-choice" data-value="To compete directly with OpenAI's Sora model which specializes in cartoons">To compete directly with OpenAI's Sora model which specializes in cartoons</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It was significantly slower in both inference and training compared to Gated DeltaNet">
+                        <div class="quiz-question">3. What was the most significant limitation of the TTT-MLP approach compared to other methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It performed worse on shorter videos (18 seconds) than Gated DeltaNet">It performed worse on shorter videos (18 seconds) than Gated DeltaNet</div><div class="quiz-choice" data-value="It required much more training data than other approaches">It required much more training data than other approaches</div><div class="quiz-choice" data-value="It was significantly slower in both inference and training compared to Gated DeltaNet">It was significantly slower in both inference and training compared to Gated DeltaNet</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>SmolVLM: Redefining small and efficient multimodal models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.05299" target="_blank">http://arxiv.org/pdf/2504.05299</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper introduces SmolVLM, a family of compact multimodal models for efficient vision-language understanding that can process both images and videos.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous large-scale VLMs like Flamingo and Idefics, proposing architectural innovations specifically for small models rather than simply scaling down larger models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the high computational requirements of current Vision-Language Models (VLMs) that limit their deployment on mobile and edge devices.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors systematically explore architectural configurations (balanced encoder-LM parameters), tokenization strategies (pixel shuffle), positional encoding (learned tokens), and training data composition optimized for small models.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> SmolVLM-256M (smallest model) uses less than 1GB GPU memory yet outperforms the 300-times larger Idefics-80B, while SmolVLM-2.2B rivals VLMs that consume twice the GPU memory, with all variants demonstrating strong performance on both image and video tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SmolVLM: Redefining small and efficient multimodal models</h2>
+                        <svg width="100%" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+
+    <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#FFC3A0; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#FFAFBD; stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#A1C4FD; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#C2E9FB; stop-opacity:1" />
+        </linearGradient>
+         <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#D4FC79; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#96E6A1; stop-opacity:1" />
+        </linearGradient>
+         <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#E0C3FC; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#8EC5FC; stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#FFF3B0; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#CAE9FF; stop-opacity:1" />
+        </linearGradient>
+        <style>
+            .title { font-family: 'Arial', sans-serif; font-size: 30px; font-weight: bold; fill: #333; text-anchor: middle; }
+            .subtitle { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #555; text-anchor: middle; }
+            .block-text { font-family: 'Arial', sans-serif; font-size: 12px; fill: #444; text-anchor: middle; }
+            .finding-text { font-family: 'Arial', sans-serif; font-size: 11px; fill: #222; text-anchor: start; }
+            .arrow { stroke: #666; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+            .dashed-arrow { stroke: #999; stroke-width: 1.5; stroke-dasharray: 5, 5; fill: none; marker-end: url(#arrowhead); }
+        </style>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+        </marker>
+    </defs>
+
+    <!-- Background -->
+    <rect width="1000" height="1000" fill="#F8F9FA"/>
+
+    <!-- Title -->
+    <text x="500" y="40" class="title">SmolVLM Methodology Flowchart</text>
+
+    <!-- Input Section -->
+    <g transform="translate(50, 80)">
+        <rect x="0" y="0" width="180" height="100" rx="10" ry="10" fill="url(#grad1)" stroke="#FFAFBD" stroke-width="1"/>
+        <text x="90" y="30" class="subtitle">Inputs</text>
+        <text x="90" y="60" class="block-text">Image / Video</text>
+        <text x="90" y="80" class="block-text">Text Prompt</text>
+    </g>
+
+    <!-- Vision Processing Branch -->
+    <g transform="translate(50, 200)">
+         <rect x="0" y="0" width="180" height="220" rx="10" ry="10" fill="url(#grad2)" stroke="#A1C4FD" stroke-width="1"/>
+         <text x="90" y="25" class="subtitle">Vision Processing</text>
+         <text x="90" y="55" class="block-text">1. Image Splitting /</text>
+         <text x="90" y="70" class="block-text">Video Frame Sampling</text>
+         <text x="90" y="100" class="block-text">(Finding 4: Prefer Splitting)</text>
+         <line x1="90" y1="115" x2="90" y2="130" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+         <text x="90" y="150" class="block-text">2. Vision Encoder (SigLIP)</text>
+         <text x="90" y="165" class="block-text">(Finding 1: Balance w/ LM size)</text>
+         <line x1="90" y1="175" x2="90" y2="190" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+         <text x="90" y="210" class="block-text">Encoded Features</text>
+    </g>
+
+    <!-- Text Processing Branch -->
+     <g transform="translate(250, 80)">
+        <rect x="0" y="0" width="180" height="100" rx="10" ry="10" fill="url(#grad3)" stroke="#96E6A1" stroke-width="1"/>
+        <text x="90" y="30" class="subtitle">Text Processing</text>
+        <text x="90" y="60" class="block-text">Text Tokenizer</text>
+         <line x1="90" y1="75" x2="90" y2="90" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="90" y="85" class="block-text">Text Embeddings</text>
+     </g>
+
+    <!-- Feature Transformation and Combination -->
+    <g transform="translate(50, 440)">
+        <rect x="0" y="0" width="180" height="140" rx="10" ry="10" fill="url(#grad2)" stroke="#A1C4FD" stroke-width="1"/>
+        <text x="90" y="25" class="subtitle">Feature Transform</text>
+        <text x="90" y="55" class="block-text">3. Pixel Shuffle</text>
+        <text x="90" y="70" class="block-text">(Finding 3: Aggressive OK)</text>
+         <line x1="90" y1="80" x2="90" y2="95" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="90" y="110" class="block-text">4. MLP Projection</text>
+        <text x="90" y="125" class="block-text">Visual Tokens</text>
+    </g>
+
+    <g transform="translate(250, 200)">
+        <rect x="0" y="0" width="180" height="220" rx="10" ry="10" fill="url(#grad4)" stroke="#8EC5FC" stroke-width="1"/>
+        <text x="90" y="25" class="subtitle">Token Combination</text>
+        <text x="90" y="55" class="block-text">Combine/Interleave</text>
+        <text x="90" y="70" class="block-text">Visual & Text Tokens</text>
+        <text x="90" y="90" class="block-text">(Finding 5: Learned Positional)</text>
+        <text x="90" y="110" class="block-text">(Finding 6: Media Markers)</text>
+         <line x1="90" y1="125" x2="90" y2="140" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="90" y="160" class="block-text">Input Sequence</text>
+        <text x="90" y="175" class="block-text">(Finding 2: Extended Context)</text>
+    </g>
+
+    <!-- Language Model -->
+     <g transform="translate(250, 440)">
+        <rect x="0" y="0" width="180" height="140" rx="10" ry="10" fill="#FFDAB9" stroke="#FFA07A" stroke-width="1"/>
+        <text x="90" y="30" class="subtitle">Language Model</text>
+        <text x="90" y="60" class="block-text">SmolLM2 Backbone</text>
+        <text x="90" y="80" class="block-text">(135M, 360M, 1.7B)</text>
+        <text x="90" y="100" class="block-text">(Finding 1: Balance w/ Encoder)</text>
+     </g>
+
+     <!-- Output -->
+     <g transform="translate(250, 600)">
+        <ellipse cx="90" cy="40" rx="90" ry="40" fill="#D3D3D3" stroke="#A9A9A9" stroke-width="1"/>
+        <text x="90" y="45" class="subtitle" fill="#444">Text Output</text>
+     </g>
+
+    <!-- Connections -->
+    <path d="M 140 180 Q 140 190, 140 200" class="arrow"/> <!-- Input -> Vision Processing -->
+    <path d="M 230 130 Q 240 130, 250 130 L 340 130 Q 340 190, 340 200" class="arrow"/> <!-- Input -> Text Processing -> Token Combination -->
+    <path d="M 140 420 Q 140 430, 140 440" class="arrow"/> <!-- Vision Processing -> Feature Transform -->
+    <path d="M 340 420 Q 340 430, 340 440" class="arrow"/> <!-- Token Combination -> Language Model -->
+    <path d="M 230 510 Q 240 510, 250 510" class="arrow"/> <!-- Feature Transform -> LM (Visual Tokens) -->
+    <path d="M 340 580 Q 340 590, 340 600" class="arrow"/> <!-- LM -> Output -->
+
+    <!-- Design Choices & Findings Section -->
+    <g transform="translate(480, 80)">
+        <rect x="0" y="0" width="470" height="340" rx="15" ry="15" fill="url(#grad5)" stroke="#CAE9FF" stroke-width="1"/>
+        <text x="235" y="30" class="subtitle">Key Design Choices & Findings (Architecture)</text>
+        <text x="20" y="60" class="finding-text"><tspan font-weight="bold">F1:</tspan> Balanced Encoder-LM parameters crucial for small models.</text>
+        <text x="20" y="80" class="finding-text"><tspan font-weight="bold">F2:</tspan> Extended context length (8k/16k) significantly improves performance.</text>
+        <text x="20" y="100" class="finding-text"><tspan font-weight="bold">F3:</tspan> Aggressive pixel shuffle (e.g., r=4) beneficial for smaller VLMs.</text>
+        <text x="20" y="120" class="finding-text"><tspan font-weight="bold">F4:</tspan> Image splitting useful; video frame averaging harmful for small models.</text>
+
+        <text x="235" y="160" class="subtitle">Key Design Choices & Findings (Instruction Tuning)</text>
+        <text x="20" y="190" class="finding-text"><tspan font-weight="bold">F5:</tspan> Learned positional tokens outperform string tokens for sub-images.</text>
+        <text x="20" y="210" class="finding-text"><tspan font-weight="bold">F6:</tspan> System prompts, media intro/outro tokens boost performance.</text>
+        <text x="20" y="230" class="finding-text"><tspan font-weight="bold"> </tspan> Masking user prompts during SFT improves generalization.</text>
+        <text x="20" y="250" class="finding-text"><tspan font-weight="bold">F7:</tspan> Reusing LLM-SFT text data degrades small VLM performance.</text>
+        <text x="20" y="270" class="finding-text"><tspan font-weight="bold">F8:</tspan> Minimal Chain-of-Thought (CoT) data is optimal; excess harms.</text>
+        <text x="20" y="290" class="finding-text"><tspan font-weight="bold">F9:</tspan> Moderate video sequence length (~3.5 min avg) is beneficial.</text>
+        <text x="20" y="310" class="finding-text"><tspan font-weight="bold">Data:</tspan> Two-stage training (Vision -> Video) with specific data mixes (Fig 8).</text>
+    </g>
+
+    <!-- Resulting Models & Evaluation Section -->
+     <g transform="translate(480, 440)">
+        <rect x="0" y="0" width="470" height="200" rx="15" ry="15" fill="#E6E6FA" stroke="#B0A8B9" stroke-width="1"/>
+        <text x="235" y="30" class="subtitle">Resulting Models & Evaluation</text>
+        <text x="20" y="60" class="block-text" text-anchor="start"><tspan font-weight="bold">SmolVLM-256M:</tspan> 93M Enc + 135M LM (<tspan fill="#E63946" font-weight="bold">0.8 GB RAM</tspan>)</text>
+        <text x="20" y="80" class="block-text" text-anchor="start"><tspan font-weight="bold">SmolVLM-500M:</tspan> 93M Enc + 360M LM (<tspan fill="#E63946" font-weight="bold">1.2 GB RAM</tspan>)</text>
+        <text x="20" y="100" class="block-text" text-anchor="start"><tspan font-weight="bold">SmolVLM-2.2B:</tspan> 400M Enc + 1.7B LM (<tspan fill="#E63946" font-weight="bold">4.9 GB RAM</tspan>)</text>
+
+        <text x="235" y="130" class="block-text" font-weight="bold">Evaluation Focus:</text>
+        <text x="235" y="150" class="block-text">Performance (VLMEvalKit Benchmarks)</text>
+        <text x="235" y="170" class="block-text">vs. <tspan fill="#E63946" font-weight="bold">GPU RAM Usage</tspan> (Efficiency)</text>
+     </g>
+
+     <!-- Dashed Arrows to Findings -->
+     <path d="M 430 130 Q 455 130, 480 130" class="dashed-arrow"/> <!-- Text Processing -> Findings -->
+     <path d="M 230 310 Q 355 310, 480 310" class="dashed-arrow"/> <!-- Vision/Token Comb -> Findings -->
+     <path d="M 430 510 Q 455 510, 480 510" class="dashed-arrow"/> <!-- LM -> Findings -->
+     <path d="M 430 620 Q 455 620, 480 620" class="dashed-arrow"/> <!-- Output -> Results/Eval -->
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Designing architecture specifically optimized for small-scale efficiency rather than scaling down large models">
+                        <div class="quiz-question">1. What is the main innovation of SmolVLM compared to previous Vision-Language Models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using larger language models with smaller vision encoders">Using larger language models with smaller vision encoders</div><div class="quiz-choice long-text" data-value="Designing architecture specifically optimized for small-scale efficiency rather than scaling down large models">Designing architecture specifically optimized for small-scale efficiency rather than scaling down large models</div><div class="quiz-choice" data-value="Focusing exclusively on image processing while ignoring video capabilities">Focusing exclusively on image processing while ignoring video capabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Aggressive pixel shuffle with learned positional tokens">
+                        <div class="quiz-question">2. Which tokenization strategy did the authors find most effective for small multimodal models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Frame averaging for video processing">Frame averaging for video processing</div><div class="quiz-choice" data-value="String-based position tokens for image splitting">String-based position tokens for image splitting</div><div class="quiz-choice" data-value="Aggressive pixel shuffle with learned positional tokens">Aggressive pixel shuffle with learned positional tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="A minimal fraction (0.02-0.05%) of CoT data is optimal, while higher proportions degrade performance">
+                        <div class="quiz-question">3. What surprising finding did the researchers discover about Chain-of-Thought (CoT) data when training small multimodal models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="CoT data should be completely avoided in small models">CoT data should be completely avoided in small models</div><div class="quiz-choice" data-value="A minimal fraction (0.02-0.05%) of CoT data is optimal, while higher proportions degrade performance">A minimal fraction (0.02-0.05%) of CoT data is optimal, while higher proportions degrade performance</div><div class="quiz-choice" data-value="CoT data should constitute at least 50% of the training mix for optimal reasoning">CoT data should constitute at least 50% of the training mix for optimal reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>URECA: Unique Region Caption Anything</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.05305" target="_blank">http://arxiv.org/pdf/2504.05305</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces URECA, a system for generating unique captions for specific regions within images at multiple levels of granularity in the computer vision and natural language processing domain.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds upon previous region-level captioning research but proposes a novel dataset with unique region-caption mapping and a new model architecture that preserves spatial properties of multi-granularity regions.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of generating distinctive captions for regions at any level of granularity that uniquely describe the target region while differentiating it from surrounding areas.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created a stage-wise data curation pipeline using mask tree structures to generate unique captions, and developed a model with a mask encoder and dynamic mask modeling to effectively condition regions without losing details.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> URECA achieved state-of-the-art performance on the authors' test dataset and demonstrated strong generalization on benchmark datasets like Visual Genome and RefCOCOg, outperforming previous methods in generating unique captions for multi-granularity regions.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>URECA: Unique Region Caption Anything</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,200,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,230,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,255,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255, 182, 193);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255, 223, 230);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(220, 220, 220);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(250, 250, 250);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; fill: #333; text-anchor: middle; }
+      .subtitle { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #555; text-anchor: middle; }
+      .box { stroke: #333; stroke-width: 1.5; filter: drop-shadow(2px 2px 2px rgb(0 0 0 / 0.2)); }
+      .step-text { font-family: 'Arial', sans-serif; font-size: 12px; fill: #222; text-anchor: middle; dominant-baseline: middle; }
+       .substep-text { font-family: 'Arial', sans-serif; font-size: 10px; fill: #444; text-anchor: middle; dominant-baseline: middle; }
+      .arrow { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .dashed-arrow { stroke: #888; stroke-width: 1; stroke-dasharray: 4, 2; fill: none; marker-end: url(#arrowhead-small); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+     <marker id="arrowhead-small" markerWidth="8" markerHeight="5" refX="0" refY="2.5" orient="auto">
+      <polygon points="0 0, 8 2.5, 0 5" fill="#888" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">URECA Paper Workflow: Method Focus</text>
+
+  <!-- Two Main Pillars -->
+  <rect x="50" y="70" width="430" height="680" rx="15" ry="15" fill="url(#grad1)" class="box" />
+  <text x="265" y="95" class="subtitle">Part 1: URECA Dataset Creation</text>
+
+  <rect x="520" y="70" width="430" height="480" rx="15" ry="15" fill="url(#grad2)" class="box" />
+  <text x="735" y="95" class="subtitle">Part 2: URECA Model Architecture</text>
+
+  <!-- URECA Dataset Creation Stages -->
+  <rect x="70" y="120" width="390" height="50" rx="10" ry="10" fill="#e6f0ff" class="box"/>
+  <text x="265" y="145" class="step-text">Input: SA-1B Dataset (Images + Multi-Granularity Masks)</text>
+
+  <!-- Stage 1 -->
+  <rect x="70" y="190" width="390" height="80" rx="10" ry="10" fill="#d9e8ff" class="box"/>
+  <text x="265" y="210" class="step-text" font-weight="bold">Stage 1: Mask Tree Generation</text>
+  <text x="265" y="235" class="substep-text">Build hierarchical tree based on mask IoU</text>
+  <text x="265" y="250" class="substep-text">(Subset/Superset relationships)</text>
+
+  <!-- Stage 2 -->
+  <rect x="70" y="290" width="390" height="100" rx="10" ry="10" fill="#cce0ff" class="box"/>
+  <text x="265" y="310" class="step-text" font-weight="bold">Stage 2: Top-Down Short Caption Generation</text>
+  <text x="265" y="335" class="substep-text">MLLM generates short captions (root -> leaves)</text>
+  <text x="265" y="350" class="substep-text">Input: Parent caption, Cropped/Blurred Images</text>
+  <text x="265" y="365" class="substep-text">Goal: Incorporate parent context</text>
+
+  <!-- Stage 3 -->
+  <rect x="70" y="410" width="390" height="100" rx="10" ry="10" fill="#bfd9ff" class="box"/>
+  <text x="265" y="430" class="step-text" font-weight="bold">Stage 3: Bottom-Up Detailed Caption Generation</text>
+  <text x="265" y="455" class="substep-text">MLLM refines captions (leaves -> root)</text>
+  <text x="265" y="470" class="substep-text">Input: Child captions, Short caption, Contoured Image</text>
+  <text x="265" y="485" class="substep-text">Goal: Incorporate child details, maintain context</text>
+
+  <!-- Stage 4 -->
+  <rect x="70" y="530" width="390" height="100" rx="10" ry="10" fill="#b3d1ff" class="box"/>
+  <text x="265" y="550" class="step-text" font-weight="bold">Stage 4: Uniqueness Refinement</text>
+  <text x="265" y="575" class="substep-text">Identify similar regions (DINOv2 features)</text>
+  <text x="265" y="590" class="substep-text">MLLM refines caption to differentiate target</text>
+  <text x="265" y="605" class="substep-text">Goal: Ensure uniqueness among similar regions</text>
+
+  <!-- Dataset Output -->
+  <rect x="70" y="650" width="390" height="70" rx="10" ry="10" fill="#a6c9ff" class="box"/>
+  <text x="265" y="675" class="step-text" font-weight="bold">Output: URECA Dataset</text>
+  <text x="265" y="695" class="substep-text">(Unique, Multi-Granularity Region Captions)</text>
+  <text x="265" y="710" class="substep-text">(+ Test set verification via GPT-4o)</text>
+
+  <!-- URECA Model Architecture -->
+  <rect x="540" y="120" width="390" height="50" rx="10" ry="10" fill="#fff0e6" class="box"/>
+  <text x="735" y="145" class="step-text">Input: Image, Target Region Mask, Query</text>
+
+  <!-- Model Components -->
+  <rect x="540" y="190" width="185" height="80" rx="10" ry="10" fill="#ffe8d9" class="box"/>
+  <text x="632.5" y="215" class="step-text">Image Encoder</text>
+  <text x="632.5" y="240" class="substep-text">(e.g., ViT)</text>
+  <text x="632.5" y="255" class="step-text" font-weight="bold">-> Image Tokens</text>
+
+  <rect x="745" y="190" width="185" height="80" rx="10" ry="10" fill="#ffe8d9" class="box"/>
+  <text x="837.5" y="215" class="step-text">Query Text</text>
+  <text x="837.5" y="240" class="substep-text">("Describe this region")</text>
+  <text x="837.5" y="255" class="step-text" font-weight="bold">-> Query Tokens</text>
+
+  <!-- Mask Processing -->
+  <rect x="540" y="290" width="390" height="130" rx="10" ry="10" fill="#ffddcc" class="box"/>
+  <text x="735" y="310" class="step-text" font-weight="bold">Mask Processing</text>
+  <rect x="555" y="330" width="170" height="70" rx="5" ry="5" fill="#fff8f5" class="box"/>
+  <text x="640" y="350" class="step-text">Dynamic Masking</text>
+  <text x="640" y="365" class="substep-text">Split High-Res Mask</text>
+  <text x="640" y="380" class="substep-text">-> Sub-Masks</text>
+  <rect x="745" y="330" width="170" height="70" rx="5" ry="5" fill="#fff8f5" class="box"/>
+  <text x="830" y="350" class="step-text">Mask Encoder</text>
+  <text x="830" y="365" class="substep-text">(CNNs)</text>
+  <text x="830" y="380" class="step-text" font-weight="bold">-> Mask Tokens</text>
+  <line x1="725" y1="365" x2="745" y2="365" class="arrow"/>
+
+
+  <!-- LLM Integration -->
+  <rect x="540" y="440" width="390" height="80" rx="10" ry="10" fill="#ffcfbf" class="box"/>
+  <text x="735" y="465" class="step-text">Combine Tokens (Image + Mask + Query)</text>
+  <text x="735" y="485" class="step-text">Feed into LLM (Frozen + LoRA)</text>
+  <text x="735" y="505" class="step-text" font-weight="bold">-> Generate Caption</text>
+
+  <!-- Output -->
+  <rect x="540" y="570" width="390" height="50" rx="10" ry="10" fill="#ffc2b3" class="box"/>
+  <text x="735" y="595" class="step-text" font-weight="bold">Output: Unique, Multi-Granularity Caption</text>
+
+  <!-- Evaluation Section -->
+   <rect x="520" y="640" width="430" height="110" rx="15" ry="15" fill="url(#grad3)" class="box" />
+   <text x="735" y="665" class="subtitle">Part 3: Training & Evaluation</text>
+   <rect x="540" y="685" width="390" height="50" rx="10" ry="10" fill="#e6ffe6" class="box"/>
+   <text x="735" y="700" class="step-text">Train URECA Model on URECA Dataset (LoRA)</text>
+   <text x="735" y="715" class="substep-text">Evaluate: URECA Test Set, VG/RefCOCOg (Zero-Shot), Ablations</text>
+
+
+  <!-- Arrows (Dataset Creation) -->
+  <line x1="265" y1="170" x2="265" y2="190" class="arrow"/>
+  <line x1="265" y1="270" x2="265" y2="290" class="arrow"/>
+  <line x1="265" y1="390" x2="265" y2="410" class="arrow"/>
+  <line x1="265" y1="510" x2="265" y2="530" class="arrow"/>
+  <line x1="265" y1="630" x2="265" y2="650" class="arrow"/>
+
+   <!-- Arrows (Model Architecture) -->
+   <line x1="735" y1="170" x2="735" y2="185" class="arrow"/> <!-- Input to components -->
+   <line x1="632.5" y1="185" x2="632.5" y2="190" class="arrow"/> <!-- -> Image Encoder -->
+   <line x1="837.5" y1="185" x2="837.5" y2="190" class="arrow"/> <!-- -> Query Text -->
+   <line x1="735" y1="170" x2="735" y2="290" class="arrow"/> <!-- Input Mask to Mask Processing -->
+
+   <line x1="632.5" y1="270" x2="632.5" y2="440" class="dashed-arrow"/> <!-- Image Tokens to Combine -->
+   <line x1="837.5" y1="270" x2="837.5" y2="440" class="dashed-arrow"/> <!-- Query Tokens to Combine -->
+   <line x1="735" y1="420" x2="735" y2="440" class="arrow"/> <!-- Mask Tokens to Combine -->
+   <line x1="735" y1="520" x2="735" y2="570" class="arrow"/> <!-- LLM to Output -->
+
+  <!-- Link Dataset to Model Training -->
+   <path d="M 460 685 Q 490 685, 520 685" class="arrow"/>
+   <text x="490" y="680" class="substep-text" fill="#006400">Used for Training</text>
+
+   <!-- Link Model to Evaluation -->
+    <line x="735" y1="620" x2="735" y2="640" class="arrow"/>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It ensures unique caption-region mapping across multiple granularities">
+                        <div class="quiz-question">1. What is the primary innovation in the URECA dataset compared to previous captioning datasets?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It contains more images than any previous dataset">It contains more images than any previous dataset</div><div class="quiz-choice" data-value="It ensures unique caption-region mapping across multiple granularities">It ensures unique caption-region mapping across multiple granularities</div><div class="quiz-choice" data-value="It only focuses on salient objects in images">It only focuses on salient objects in images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Dynamic mask modeling with a high-resolution mask encoder">
+                        <div class="quiz-question">2. What technical approach does URECA use to preserve region details that previous methods often lost?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Directly overlaying contours on the original image">Directly overlaying contours on the original image</div><div class="quiz-choice" data-value="Translating region coordinates into natural language">Translating region coordinates into natural language</div><div class="quiz-choice" data-value="Dynamic mask modeling with a high-resolution mask encoder">Dynamic mask modeling with a high-resolution mask encoder</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By using a stage-wise process with mask tree structures and visual similarity analysis">
+                        <div class="quiz-question">3. How does the URECA data curation pipeline ensure caption uniqueness?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using human annotators to manually verify each caption">By using human annotators to manually verify each caption</div><div class="quiz-choice" data-value="By using a stage-wise process with mask tree structures and visual similarity analysis">By using a stage-wise process with mask tree structures and visual similarity analysis</div><div class="quiz-choice" data-value="By limiting captions to only include object class names">By limiting captions to only include object class names</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
