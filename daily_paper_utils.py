@@ -9,7 +9,9 @@ from httplib2 import Http
 from pypdf import PdfReader
 from dotenv import load_dotenv
 from datetime import datetime, timezone
-from geotab_genai.genai_gateway_client import GenaiGatewayClient
+from models import (
+    model_response
+)
 
 
 load_dotenv()
@@ -366,27 +368,6 @@ def start_thread(current_date, additional_content, thread_key_value):
     )
     return response
 
-provider = 'anthropics'
-model = 'claude-3-5-sonnet-v2'
-client_llm = GenaiGatewayClient(
-    api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
-    env="staging",
-    jurisdiction="us",
-    temperature=1,
-    provider='anthropics',
-    chat_model='claude-3-5-sonnet-v2',
-)
-
-# provider = 'vertex-ai'
-# model = 'gemini-2.0-pro'
-# client_llm = GenaiGatewayClient(
-#     api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
-#     env="staging",
-#     jurisdiction="us",
-#     temperature=0.5,
-#     provider=provider,
-#     chat_model=model,
-# )
 
 PROMPT = """
 You are a research expert skilled at reading academic papers.  
@@ -421,17 +402,12 @@ def summary_paper(paper_title, paper_content):
     )
     logger.debug(f"Prompt length: {len(prompt.split(' '))}")
 
-    summary = client_llm.create_message(messages=[
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ],
-        max_tokens=1024,
-        provider=provider,
-        model=model,
-        version=None
-    )['message']['content']
+    summary = model_response(
+        prompt,
+        'claude37',
+        max_tokens=1024
+
+    )
     return summary
 
 QUESTION_PROMPT = """
@@ -495,6 +471,7 @@ you should have your output with this specific <svg> tag.
 <svg width="100%" viewBox="0 0 1000 800">
 Here are the content you can create freely, use all shapes, text format or styles as you like.
 Try to be creative, and make it look good and colorful.
+Try use less arrows, since the arrow you give tends to be messy.
 </svg>
 
 </format>
@@ -512,18 +489,12 @@ def create_flow_chart(paper_title, paper_content):
         title=paper_title,
         article_content=paper_content
     )
-    flow_chart = client_llm.create_message(messages=[
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ],
-        max_tokens=4096,
-        provider=provider,
-        model=model,
-        version=None
-    )['message']['content']
-    
+    flow_chart = model_response(
+        prompt,
+        'gemini_25_pro',
+        max_tokens=8192
+
+    )    
     return parse_flowchart(flow_chart)
 
 
@@ -563,18 +534,13 @@ def create_question(paper_title, paper_content, summary):
         content = paper_content,
         summary = summary,
     ) + QUESTION_FORMAT
-        
-    questions_content = client_llm.create_message(messages=[
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ],
-        max_tokens=1024,
-        provider=provider,
-        model=model,
-        version=None
-    )['message']['content']
+
+    questions_content = model_response(
+        prompt,
+        'claude37',
+        max_tokens=1024
+
+    )   
     questions = parse_output(questions_content)
     return questions
 

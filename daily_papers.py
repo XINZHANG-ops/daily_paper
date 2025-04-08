@@ -20,14 +20,15 @@ from daily_paper_utils import (
     process_paper,
     send_articles,
     start_thread,
-    client_llm,
     fetch_data
 )
 
+from models import (
+    model_response
+)
+
 from daily_paper_utils import (
-    quotes_prompt,
-    provider,
-    model
+    quotes_prompt
 )
 
 from index_temp import (
@@ -229,7 +230,7 @@ if __name__ == "__main__":
             thread.daemon = True
             thread.start()
             
-            thread.join(timeout=100)
+            thread.join(timeout=150)
             
             elapsed_time = time.time() - start_time
             
@@ -273,17 +274,11 @@ if __name__ == "__main__":
         if random_quote:
             additional_content = f"{random_quote[0]['content']} --{random_quote[0]['author']}"
         else:
-            additional_content = client_llm.create_message(
-                messages=[{
-                    "role": "user",
-                    "content": quotes_prompt
-                }],
-                max_tokens=1024,
-                provider=provider,
-                model=model,
-                version=None
-            )['message']['content'].strip()
-
+            additional_content = model_response(
+                quotes_prompt,
+                'claude35',
+                max_tokens=1024
+            ).strip()
         additional_content = f"{additional_content}"
         link = f"https://xinzhang-ops.github.io/daily_paper/{current_date}.html"
     
