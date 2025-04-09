@@ -1,0 +1,1076 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-09 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-09 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>OmniSVG: A Unified Scalable Vector Graphics Generation Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.06263" target="_blank">http://arxiv.org/pdf/2504.06263</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> OmniSVG is a unified model for Scalable Vector Graphics (SVG) generation in the domain of computer vision and graphics synthesis.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous optimization-based and auto-regressive SVG generation methods but introduces a novel approach that leverages pre-trained Vision-Language Models (VLMs) for multimodal SVG generation with a new tokenization strategy.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the limitations of existing SVG generation methods that either produce unstructured outputs with high computational costs or are limited to simple monochrome icons.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors parameterize SVG commands and coordinates into discrete tokens, use a pre-trained VLM (Qwen2.5-VL) architecture, and introduce MMSVG-2M, a dataset with two million richly annotated SVG assets for training and evaluation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> OmniSVG outperforms existing methods both quantitatively and qualitatively across text-to-SVG, image-to-SVG, and character-reference SVG generation tasks, demonstrating superior ability to generate complex, high-quality SVGs from icons to intricate anime characters.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>OmniSVG: A Unified Scalable Vector Graphics Generation Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .process-box { fill: #e0f7fa; stroke: #00796b; stroke-width: 1.5; rx: 10; ry: 10; }
+      .data-box { fill: #fff3e0; stroke: #ef6c00; stroke-width: 1.5; rx: 10; ry: 10; }
+      .model-box { fill: #e8eaf6; stroke: #3f51b5; stroke-width: 1.5; rx: 10; ry: 10; }
+      .eval-box { fill: #fce4ec; stroke: #d81b60; stroke-width: 1.5; rx: 10; ry: 10; }
+      .input-output { fill: #e8f5e9; stroke: #4caf50; stroke-width: 1.5; rx: 15; ry: 15; }
+      .title-text { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; text-anchor: middle; }
+      .header-text { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #444; text-anchor: middle; }
+      .body-text { font-family: Arial, sans-serif; font-size: 12px; fill: #555; }
+      .small-text { font-family: Arial, sans-serif; font-size: 10px; fill: #666; }
+      .arrow { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .dashed-arrow { stroke: #777; stroke-width: 1; stroke-dasharray: 5, 3; fill: none; marker-end: url(#arrowhead-small); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+     <marker id="arrowhead-small" markerWidth="8" markerHeight="5" refX="0" refY="2.5" orient="auto">
+      <polygon points="0 0, 8 2.5, 0 5" fill="#777" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title-text">OmniSVG Method Flowchart</text>
+
+  <!-- Inputs Section -->
+  <g id="inputs">
+    <rect x="50" y="80" width="190" height="100" class="input-output" />
+    <text x="145" y="105" class="header-text">Inputs</text>
+    <text x="70" y="130" class="body-text">• Text Description</text>
+    <text x="70" y="150" class="body-text">• Image(s)</text>
+    <text x="70" y="170" class="body-text">• Character Reference</text>
+  </g>
+
+  <!-- Data Preparation Section -->
+  <g id="data-prep">
+     <rect x="300" y="80" width="400" height="180" class="data-box" />
+     <text x="500" y="105" class="header-text">Data Preparation: MMSVG-2M Dataset</text>
+     <text x="320" y="130" class="body-text">• Sources: Iconfont, iconsount, Freepik, Generated</text>
+     <text x="320" y="150" class="body-text">• Curation: Deduplication, Viewbox (200x200), Captioning (BLIP-2)</text>
+     <text x="320" y="170" class="body-text">• SVG Simplification (using picosvg):</text>
+     <text x="340" y="190" class="small-text">- Remove complex tags (group, transform, rect, circle)</text>
+     <text x="340" y="205" class="small-text">- Convert to Atomic Commands: {M, L, C, A, Z}</text>
+     <text x="340" y="220" class="small-text">- Add Fill Command: {F} for color</text>
+     <text x="340" y="235" class="small-text">- Result: Simplified SVG Script (Paths of Atomic Commands)</text>
+  </g>
+
+  <!-- Model & Training Section -->
+  <g id="model-training">
+    <rect x="50" y="300" width="900" height="270" class="model-box"/>
+    <text x="500" y="325" class="header-text">OmniSVG Model & Training</text>
+
+    <!-- Architecture -->
+    <rect x="70" y="340" width="300" height="60" class="model-box" stroke-dasharray="3,3" />
+    <text x="220" y="360" class="header-text">Core Architecture</text>
+    <text x="80" y="385" class="body-text">• Pre-trained VLM: Qwen2.5-VL (3B, 7B)</text>
+
+    <!-- Tokenization -->
+    <rect x="390" y="340" width="540" height="140" class="process-box" />
+    <text x="660" y="360" class="header-text">Tokenization & Input Embedding</text>
+    <text x="410" y="380" class="body-text">• Input Tokenizer (VLM's): Text/Image(s) -> Prefix Tokens</text>
+    <text x="410" y="400" class="body-text">• SVG Tokenizer (Custom):</text>
+    <text x="430" y="418" class="small-text">- Flatten paths: `[<SOP>, C1, V1, C2, V2, ..., F_color, ..., <EOS>]`</text>
+    <text x="430" y="433" class="small-text">- Command Tokens: {M, L, C, A, Z, F}</text>
+    <text x="430" y="448" class="small-text">- Coordinate Parameterization: `<x, y> -> x*w+y` (single token)</text>
+    <text x="430" y="463" class="small-text">- Learnable Embedding Layer for SVG tokens</text>
+
+    <!-- Training -->
+    <rect x="70" y="490" width="860" height="60" class="process-box" />
+    <text x="500" y="510" class="header-text">Training</text>
+    <text x="90" y="535" class="body-text">• Objective: Next-Token Prediction Loss on SVG tokens (conditioned on prefix)</text>
+    <text x="500" y="535" class="body-text">• Dataset: MMSVG-2M</text>
+  </g>
+
+    <!-- Arrows -->
+    <path d="M 240 130 q 280 -20 60 0" class="dashed-arrow" /> <!-- Input to Data Prep -->
+    <path d="M 500 260 v 40" class="arrow" /> <!-- Data Prep to Model -->
+    <path d="M 370 370 h 20" class="arrow" /> <!-- Arch to Tokenization -->
+    <path d="M 660 480 v 10" class="arrow" /> <!-- Tokenization to Training -->
+    <path d="M 70 430 h -10 v 60 h 10" class="arrow" /> <!-- Arch to Training -->
+
+
+  <!-- Generation & Evaluation Section -->
+  <g id="generation-evaluation">
+      <!-- Generation -->
+      <rect x="50" y="600" width="430" height="150" class="input-output" />
+      <text x="265" y="620" class="header-text">Generation (Inference)</text>
+      <text x="70" y="645" class="body-text">• Input: Text / Image / Char Ref (+ Prompt)</text>
+      <text x="70" y="665" class="body-text">• Process: VLM autoregressively predicts SVG tokens</text>
+      <text x="70" y="685" class="body-text">• Output: Sequence of SVG Tokens</text>
+      <text x="70" y="705" class="body-text">• Decode: Tokens -> SVG Commands/Coords -> Final SVG File</text>
+      <text x="70" y="725" class="small-text">(Text-to-SVG, Image-to-SVG, Char-Ref-SVG)</text>
+
+      <!-- Evaluation -->
+      <rect x="520" y="600" width="430" height="150" class="eval-box" />
+      <text x="735" y="620" class="header-text">Evaluation (MMSVG-Bench)</text>
+      <text x="540" y="645" class="body-text">• Text-to-SVG: FID↓, CLIP↑, Aesthetic↑, HPS↑</text>
+      <text x="540" y="665" class="body-text">• Image-to-SVG: DINO↑, SSIM↑, LPIPS↓, MSE↓</text>
+      <text x="540" y="685" class="body-text">• Char-Ref: GPT-4o Score↑ (Alignment)</text>
+      <text x="540" y="705" class="body-text">• General: # Tokens, Time</text>
+  </g>
+
+  <!-- Arrows -->
+  <path d="M 500 570 v 30" class="arrow" /> <!-- Training to Generation/Eval -->
+  <path d="M 480 675 h 40" class="dashed-arrow" /> <!-- Generation to Eval -->
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Parameterizing SVG commands and coordinates into discrete tokens with pre-trained VLMs">
+                        <div class="quiz-question">1. What key innovation does OmniSVG introduce to overcome the limitations of previous SVG generation methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a multi-stage optimization pipeline to refine SVG paths">Using a multi-stage optimization pipeline to refine SVG paths</div><div class="quiz-choice" data-value="Parameterizing SVG commands and coordinates into discrete tokens with pre-trained VLMs">Parameterizing SVG commands and coordinates into discrete tokens with pre-trained VLMs</div><div class="quiz-choice" data-value="Generating SVGs exclusively from code-based XML templates">Generating SVGs exclusively from code-based XML templates</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Up to 30k tokens">
+                        <div class="quiz-question">2. What is the maximum token length that OmniSVG can handle for complex SVG generation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Up to 8k tokens">Up to 8k tokens</div><div class="quiz-choice" data-value="Up to 16k tokens">Up to 16k tokens</div><div class="quiz-choice" data-value="Up to 30k tokens">Up to 30k tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="MMSVG-2M with two million richly annotated SVG assets">
+                        <div class="quiz-question">3. Which dataset did the authors introduce to advance SVG synthesis research?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="FIGR-8-SVG with extended annotations">FIGR-8-SVG with extended annotations</div><div class="quiz-choice" data-value="MMSVG-2M with two million richly annotated SVG assets">MMSVG-2M with two million richly annotated SVG assets</div><div class="quiz-choice" data-value="StarVector with 500k vector graphics">StarVector with 500k vector graphics</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Hogwild! Inference: Parallel LLM Generation via Concurrent Attention</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.06261" target="_blank">http://arxiv.org/pdf/2504.06261</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores parallel Large Language Model (LLM) inference through a method called "Hogwild! Inference" that enables concurrent attention between multiple LLM instances.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous parallel inference frameworks that use voting mechanisms or explicit sub-task creation, proposing instead a more flexible approach where LLM instances run in parallel with a shared attention cache.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the limitations of fixed collaboration strategies in parallel LLM inference by allowing models to develop their own collaboration approaches dynamically.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement Hogwild! Inference with a shared Key-Value cache that allows multiple LLM instances to see each other's generated tokens in real-time, testing three different memory layouts: contiguous, interleaved, and combined.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Experiments on mathematical reasoning tasks showed that modern LLMs can effectively collaborate via the shared attention cache without additional fine-tuning, with the combined cache layout performing best, achieving better accuracy than single-threaded reasoning within the same computational budget.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Hogwild! Inference: Parallel LLM Generation via Concurrent Attention</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,220,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(150,180,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,200);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,180,150);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,255,220);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(150,255,180);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(240,240,240);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(210,210,210);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255, 255, 180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255, 255, 140);stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f9f9f9"/>
+
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="24" fill="#333" text-anchor="middle" font-weight="bold">Hogwild! Inference: Workflow</text>
+
+  <!-- Starting Point: Problem -->
+  <rect x="350" y="70" width="300" height="50" rx="10" ry="10" fill="url(#grad2)" stroke="#cc8866" stroke-width="1" filter="url(#shadow)"/>
+  <text x="500" y="100" font-family="Arial, sans-serif" font-size="16" fill="#553322" text-anchor="middle">Problem: Sequential LLM inference & Rigid Parallel Frameworks</text>
+
+  <!-- Core Idea -->
+  <rect x="350" y="140" width="300" height="50" rx="10" ry="10" fill="url(#grad5)" stroke="#ccccaa" stroke-width="1" filter="url(#shadow)"/>
+  <text x="500" y="170" font-family="Arial, sans-serif" font-size="16" fill="#666633" text-anchor="middle">Hypothesis: LLMs can dynamically collaborate</text>
+
+  <!-- Hogwild! Inference Core Box -->
+  <rect x="150" y="210" width="700" height="200" rx="15" ry="15" fill="url(#grad1)" stroke="#6688cc" stroke-width="2" filter="url(#shadow)"/>
+  <text x="500" y="240" font-family="Arial, sans-serif" font-size="20" fill="#223366" text-anchor="middle" font-weight="bold">Hogwild! Inference Engine</text>
+
+  <!-- Components within Hogwild! -->
+  <rect x="170" y="260" width="200" height="60" rx="5" ry="5" fill="#e0e8ff" stroke="#99aadd" stroke-width="1"/>
+  <text x="270" y="285" font-family="Arial, sans-serif" font-size="14" fill="#334477" text-anchor="middle">Parallel LLM Workers</text>
+  <text x="270" y="305" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">(Same Model, Weights)</text>
+
+  <rect x="400" y="260" width="200" height="130" rx="5" ry="5" fill="#e0e8ff" stroke="#99aadd" stroke-width="1"/>
+  <text x="500" y="285" font-family="Arial, sans-serif" font-size="14" fill="#334477" text-anchor="middle" font-weight="bold">Shared KV Cache</text>
+  <text x="500" y="310" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">Concurrent Access & Updates</text>
+  <text x="500" y="335" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">RoPE for Position</text>
+  <text x="500" y="355" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">Adjustment (No Recompute)</text>
+  <text x="500" y="375" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">(Concurrent Attention)</text>
+
+  <rect x="630" y="260" width="200" height="130" rx="5" ry="5" fill="#e0e8ff" stroke="#99aadd" stroke-width="1"/>
+  <text x="730" y="285" font-family="Arial, sans-serif" font-size="14" fill="#334477" text-anchor="middle" font-weight="bold">Prompting Strategy</text>
+  <text x="730" y="310" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">- System Prompt (Rules)</text>
+  <text x="730" y="330" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">- Few-Shot Examples</text>
+  <text x="730" y="350" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">- Periodic Redundancy</text>
+  <text x="730" y="370" font-family="Arial, sans-serif" font-size="12" fill="#334477" text-anchor="middle">  Checks (s1-like)</text>
+
+  <!-- Cache Layout Options -->
+  <rect x="100" y="430" width="800" height="140" rx="15" ry="15" fill="url(#grad3)" stroke="#66cc88" stroke-width="2" filter="url(#shadow)"/>
+  <text x="500" y="455" font-family="Arial, sans-serif" font-size="18" fill="#226633" text-anchor="middle" font-weight="bold">Cache Layout Variations</text>
+
+  <rect x="130" y="475" width="220" height="70" rx="5" ry="5" fill="#e0ffe8" stroke="#99ddaa" stroke-width="1"/>
+  <text x="240" y="500" font-family="Arial, sans-serif" font-size="14" fill="#337744" text-anchor="middle">Contiguous</text>
+  <text x="240" y="520" font-family="Arial, sans-serif" font-size="12" fill="#337744" text-anchor="middle">(Token-wise Sync, Own Blocks)</text>
+  <text x="240" y="535" font-family="Arial, sans-serif" font-size="10" fill="#337744" text-anchor="middle">(Like Google Docs)</text>
+
+  <rect x="390" y="475" width="220" height="70" rx="5" ry="5" fill="#e0ffe8" stroke="#99ddaa" stroke-width="1"/>
+  <text x="500" y="500" font-family="Arial, sans-serif" font-size="14" fill="#337744" text-anchor="middle">Interleaved</text>
+  <text x="500" y="520" font-family="Arial, sans-serif" font-size="12" fill="#337744" text-anchor="middle">(Step-wise Sync, Shared History)</text>
+    <text x="500" y="535" font-family="Arial, sans-serif" font-size="10" fill="#337744" text-anchor="middle">(Like Group Chat)</text>
+
+  <rect x="650" y="475" width="220" height="70" rx="5" ry="5" fill="#e0ffe8" stroke="#99ddaa" stroke-width="1"/>
+  <text x="760" y="500" font-family="Arial, sans-serif" font-size="14" fill="#337744" text-anchor="middle">Combined</text>
+  <text x="760" y="520" font-family="Arial, sans-serif" font-size="12" fill="#337744" text-anchor="middle">(Token-wise Sync + History)</text>
+    <text x="760" y="535" font-family="Arial, sans-serif" font-size="10" fill="#337744" text-anchor="middle">(Hybrid)</text>
+
+  <!-- Evaluation -->
+   <rect x="150" y="590" width="700" height="120" rx="15" ry="15" fill="url(#grad4)" stroke="#aaaaaa" stroke-width="2" filter="url(#shadow)"/>
+   <text x="500" y="615" font-family="Arial, sans-serif" font-size="18" fill="#444444" text-anchor="middle" font-weight="bold">Evaluation</text>
+
+   <rect x="170" y="635" width="200" height="60" rx="5" ry="5" fill="#f0f0f0" stroke="#cccccc" stroke-width="1"/>
+   <text x="270" y="655" font-family="Arial, sans-serif" font-size="14" fill="#555555" text-anchor="middle">Tasks:</text>
+   <text x="270" y="675" font-family="Arial, sans-serif" font-size="12" fill="#555555" text-anchor="middle">Synthetic (GSM8k), LIMO</text>
+
+   <rect x="400" y="635" width="200" height="60" rx="5" ry="5" fill="#f0f0f0" stroke="#cccccc" stroke-width="1"/>
+   <text x="500" y="655" font-family="Arial, sans-serif" font-size="14" fill="#555555" text-anchor="middle">Metrics:</text>
+   <text x="500" y="675" font-family="Arial, sans-serif" font-size="12" fill="#555555" text-anchor="middle">Accuracy vs. Compute Budget</text>
+
+   <rect x="630" y="635" width="200" height="60" rx="5" ry="5" fill="#f0f0f0" stroke="#cccccc" stroke-width="1"/>
+   <text x="730" y="655" font-family="Arial, sans-serif" font-size="14" fill="#555555" text-anchor="middle">Baselines:</text>
+   <text x="730" y="675" font-family="Arial, sans-serif" font-size="12" fill="#555555" text-anchor="middle">Single Worker, Independent</text>
+
+  <!-- Results/Conclusion -->
+  <rect x="350" y="730" width="300" height="50" rx="10" ry="10" fill="url(#grad5)" stroke="#ccccaa" stroke-width="1" filter="url(#shadow)"/>
+  <text x="500" y="760" font-family="Arial, sans-serif" font-size="16" fill="#666633" text-anchor="middle">Result: Hogwild! enables emergent collaboration & efficiency gains</text>
+
+  <!-- Arrows / Connectors (minimal) -->
+  <path d="M 500 120 Q 500 130 500 140" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 190 Q 500 200 500 210" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 410 Q 500 420 500 430" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 570 Q 500 580 500 590" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+   <path d="M 500 710 Q 500 720 500 730" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- Arrowhead definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#999" />
+    </marker>
+  </defs>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It allows LLM instances to dynamically collaborate through a shared attention cache">
+                        <div class="quiz-question">1. What is the key innovation of Hogwild! Inference compared to previous parallel LLM frameworks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a voting mechanism to select the best answer from multiple LLM instances">It uses a voting mechanism to select the best answer from multiple LLM instances</div><div class="quiz-choice" data-value="It allows LLM instances to dynamically collaborate through a shared attention cache">It allows LLM instances to dynamically collaborate through a shared attention cache</div><div class="quiz-choice" data-value="It pre-defines specialized roles for each LLM instance before starting inference">It pre-defines specialized roles for each LLM instance before starting inference</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Combined layout (token-wise with shared history)">
+                        <div class="quiz-question">2. Which cache layout performed best in the authors' experiments on LIMO tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Contiguous layout (token-wise)">Contiguous layout (token-wise)</div><div class="quiz-choice" data-value="Interleaved layout (step-wise)">Interleaved layout (step-wise)</div><div class="quiz-choice" data-value="Combined layout (token-wise with shared history)">Combined layout (token-wise with shared history)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Rotary Position Embeddings (RoPE)">
+                        <div class="quiz-question">3. What technique does Hogwild! Inference use to avoid recomputation when sharing Key-Value pairs between workers?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Rotary Position Embeddings (RoPE)">Rotary Position Embeddings (RoPE)</div><div class="quiz-choice" data-value="Mixture-of-Experts (MoE) architecture">Mixture-of-Experts (MoE) architecture</div><div class="quiz-choice" data-value="Parameter-Efficient Fine-Tuning (PEFT)">Parameter-Efficient Fine-Tuning (PEFT)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Skywork R1V: Pioneering Multimodal Reasoning with Chain-of-Thought</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.05599" target="_blank">http://arxiv.org/pdf/2504.05599</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces Skywork R1V, a multimodal reasoning model that extends language model capabilities to visual domains through efficient transfer methods.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on reasoning-capable large language models like DeepSeek-R1, proposing new techniques for transferring reasoning abilities to visual domains via a lightweight MLP projector with minimal training data requirements.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of extending language models' reasoning capabilities to multimodal contexts without requiring extensive multimodal reasoning data or retraining the base language or vision models.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors employ a three-part methodology: an efficient multimodal transfer approach using an MLP projector, a hybrid optimization framework combining iterative supervised fine-tuning with group relative policy optimization, and an adaptive-length chain-of-thought distillation technique.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Skywork R1V (38B parameters) achieves competitive performance on multimodal reasoning benchmarks (69.0 on MMMU, 67.5 on MathVista) while maintaining strong textual reasoning capabilities (72.0 on AIME, 94.0 on MATH500), comparable to much larger models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Skywork R1V: Pioneering Multimodal Reasoning with Chain-of-Thought</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(100,180,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(50,100,200);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(100,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(50,180,100);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,100);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,120,50);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200, 200, 200);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(150, 150, 150);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255, 220, 100);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255, 180, 50);stop-opacity:1" />
+    </linearGradient>
+     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">Skywork R1V Methodology Flowchart</text>
+
+  <!-- Inputs -->
+  <g id="inputs">
+     <rect x="50" y="70" rx="10" ry="10" width="280" height="100" fill="url(#grad4)" stroke="#555" stroke-width="1"/>
+     <text x="190" y="95" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">Initial Components</text>
+     <text x="190" y="120" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">Vision Encoder (fv: ViT)</text>
+     <text x="190" y="140" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">Reasoning LLM (fl: DeepSeek-R1-distill)</text>
+     <text x="190" y="160" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">Substitutive LLM (fs_l: Qwen2.5-Instruct)</text>
+  </g>
+
+  <!-- Block 1: Efficient Multimodal Transfer -->
+  <g id="block1-transfer">
+    <rect x="50" y="200" rx="10" ry="10" width="280" height="250" fill="#e0f0ff" stroke="#555" stroke-width="1"/>
+    <text x="190" y="225" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#0050a0">1. Efficient Multimodal Transfer</text>
+
+    <rect x="70" y="250" rx="5" ry="5" width="240" height="90" fill="url(#grad1)" stroke="#333" stroke-width="1"/>
+    <text x="190" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">1.1 MLP Initialization</text>
+    <text x="190" y="290" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Train MLP (θ) to align fv & fs_l</text>
+    <text x="190" y="305" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">(fv, fs_l frozen) via 3-step SFT</text>
+    <text x="190" y="320" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Output: Pretrained MLP θ</text>
+
+    <rect x="70" y="355" rx="5" ry="5" width="240" height="75" fill="url(#grad1)" stroke="#333" stroke-width="1"/>
+    <text x="190" y="375" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">1.2 Model Re-Assembly</text>
+    <text x="190" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Combine: fv + Pretrained θ + fl</text>
+    <text x="190" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Output: Initial Model M</text>
+
+  </g>
+
+  <!-- Block 2: AL-CoTD (Data Generation) -->
+  <g id="block2-data-gen">
+     <rect x="360" y="70" rx="10" ry="10" width="280" height="380" fill="#e0ffe0" stroke="#555" stroke-width="1"/>
+     <text x="500" y="95" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#008000">2. Adaptive-Length CoT Distillation (Data Gen)</text>
+     <text x="500" y="115" font-family="Arial, sans-serif" font-size="10" font-style="italic" text-anchor="middle" fill="#008000">(Runs before Stage 1 & each Stage 2 iteration)</text>
+
+     <ellipse cx="500" cy="145" rx="120" ry="20" fill="url(#grad4)" stroke="#555" stroke-width="1"/>
+     <text x="500" y="150" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">Input: Image-Text Queries</text>
+
+     <rect x="380" y="180" rx="5" ry="5" width="240" height="50" fill="url(#grad2)" stroke="#333" stroke-width="1"/>
+     <text x="500" y="200" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">2.1 QDAM</text>
+     <text x="500" y="218" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#111">Assess Quality/Difficulty (GPT-4o) -> Sv, St</text>
+
+     <rect x="380" y="240" rx="5" ry="5" width="240" height="50" fill="url(#grad2)" stroke="#333" stroke-width="1"/>
+     <text x="500" y="260" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">2.2 VTIA</text>
+     <text x="500" y="278" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#111">Analyze Integration (GPT-4o) -> SI</text>
+
+     <rect x="380" y="300" rx="5" ry="5" width="240" height="50" fill="url(#grad2)" stroke="#333" stroke-width="1"/>
+     <text x="500" y="320" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">2.3 DRLC</text>
+     <text x="500" y="338" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#111">Calculate Repetition Penalty P from Sv, St, SI</text>
+
+     <rect x="380" y="360" rx="5" ry="5" width="240" height="60" fill="url(#grad2)" stroke="#333" stroke-width="1"/>
+     <text x="500" y="380" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">2.4 Self-Distillation</text>
+     <text x="500" y="398" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#111">Generate/Revise <think> chains using P & GPT-4o</text>
+     <text x="500" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#111">Output: Reasoning Data D</text>
+  </g>
+
+  <!-- Block 3: Hybrid Optimization Framework -->
+  <g id="block3-optimization">
+     <rect x="670" y="70" rx="10" ry="10" width="280" height="660" fill="#fff0e0" stroke="#555" stroke-width="1"/>
+     <text x="810" y="95" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#a05000">3. Hybrid Optimization Framework</text>
+     <text x="810" y="115" font-family="Arial, sans-serif" font-size="10" font-style="italic" text-anchor="middle" fill="#a05000">(Applied to Initial Model M, using Data D)</text>
+     <text x="810" y="130" font-family="Arial, sans-serif" font-size="10" font-style="italic" text-anchor="middle" fill="#a05000">(Only MLP θ is tuned)</text>
+
+     <rect x="690" y="150" rx="5" ry="5" width="240" height="60" fill="url(#grad3)" stroke="#333" stroke-width="1"/>
+     <text x="810" y="170" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">3.1 Stage 1: Initial SFT</text>
+     <text x="810" y="190" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">Train M on full dataset D</text>
+     <text x="810" y="203" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">Output: Model M0</text>
+
+     <!-- Iterative SFT Stage -->
+     <rect x="690" y="230" rx="5" ry="5" width="240" height="320" fill="rgba(255,180,100,0.3)" stroke="#aa6020" stroke-width="1" stroke-dasharray="4"/>
+     <text x="810" y="250" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">3.2 Stage 2: Iterative SFT (T=4)</text>
+
+     <rect x="710" y="270" rx="5" ry="5" width="200" height="100" fill="url(#grad3)" stroke="#333" stroke-width="1"/>
+     <text x="810" y="290" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#333">For t = 1 to 4:</text>
+     <text x="810" y="310" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">1. Select Data:</text>
+     <text x="810" y="325" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333"> Drm (RM score >= τ)</text>
+     <text x="810" y="340" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333"> Et-1 (Mt-1 errors)</text>
+     <text x="810" y="355" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333"> Dt = Drm U Et-1</text>
+
+     <text x="810" y="380" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#333">↓</text>
+
+     <rect x="710" y="395" rx="5" ry="5" width="200" height="50" fill="url(#grad3)" stroke="#333" stroke-width="1"/>
+     <text x="810" y="415" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">2. Fine-tune Mt-1 on Dt</text>
+     <text x="810" y="430" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">Output: Model Mt</text>
+
+     <text x="810" y="460" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#333">↓</text>
+     <text x="810" y="485" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">(Repeat T=4 times)</text>
+     <text x="810" y="500" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">Final Iteration Output: Model MT</text>
+
+
+     <rect x="690" y="570" rx="5" ry="5" width="240" height="70" fill="url(#grad3)" stroke="#333" stroke-width="1"/>
+     <text x="810" y="590" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">3.3 Stage 3: GRPO (RL)</text>
+     <text x="810" y="610" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">Apply GRPO to MT using Drm (τ=5)</text>
+     <text x="810" y="625" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">Rule-based rewards (Accuracy, Format)</text>
+
+     <!-- Final Output -->
+     <ellipse cx="810" cy="695" rx="120" ry="25" fill="url(#grad5)" stroke="#555" stroke-width="1"/>
+     <text x="810" y="700" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">Final Skywork R1V Model</text>
+
+  </g>
+
+  <!-- Arrows -->
+  <line x1="190" y1="170" x2="190" y2="200" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- Input to Block 1 -->
+  <line x1="190" y1="430" x2="190" y2="450" stroke="#555" stroke-width="2" /> <!-- Within Block 1 -->
+  <line x1="190" y1="450" x2="670" y2="125" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- Block 1 Output (M) to Block 3 Input -->
+
+  <line x1="500" y1="165" x2="500" y2="180" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- Input Query to QDAM -->
+  <line x1="500" y1="230" x2="500" y2="240" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- QDAM to VTIA -->
+  <line x1="500" y1="290" x2="500" y2="300" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- VTIA to DRLC -->
+  <line x1="500" y1="350" x2="500" y2="360" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- DRLC to Self-Distill -->
+  <line x1="500" y1="420" x2="500" y2="450" stroke="#555" stroke-width="2" />
+  <line x1="500" y1="450" x2="670" y2="125" stroke="#008000" stroke-width="2" marker-end="url(#arrowhead)" stroke-dasharray="5,5" /> <!-- Block 2 Output (D) to Block 3 Input -->
+
+  <line x1="810" y1="210" x2="810" y2="230" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- Stage 1 to Stage 2 -->
+  <line x1="810" y1="550" x2="810" y2="570" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- Stage 2 (after loop) to Stage 3 -->
+  <line x1="810" y1="640" x2="810" y2="670" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" /> <!-- Stage 3 to Final Output -->
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Using a lightweight MLP projector to connect existing vision and language models">
+                        <div class="quiz-question">1. What is the primary innovation of Skywork R1V's multimodal transfer approach?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Training the vision encoder and language model together from scratch">Training the vision encoder and language model together from scratch</div><div class="quiz-choice" data-value="Using a lightweight MLP projector to connect existing vision and language models">Using a lightweight MLP projector to connect existing vision and language models</div><div class="quiz-choice" data-value="Expanding the token vocabulary to include visual tokens">Expanding the token vocabulary to include visual tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Excessive reasoning or overthinking during inference">
+                        <div class="quiz-question">2. What problem does the Adaptive-Length Chain-of-Thought Distillation (AL-CoTD) framework address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Inefficient computational resource usage during training">Inefficient computational resource usage during training</div><div class="quiz-choice" data-value="Lack of high-quality multimodal reasoning data">Lack of high-quality multimodal reasoning data</div><div class="quiz-choice" data-value="Excessive reasoning or overthinking during inference">Excessive reasoning or overthinking during inference</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It achieves competitive performance despite having only 38B parameters">
+                        <div class="quiz-question">3. What is notable about Skywork R1V's performance compared to larger models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It outperforms all closed-source models on every benchmark">It outperforms all closed-source models on every benchmark</div><div class="quiz-choice" data-value="It achieves competitive performance despite having only 38B parameters">It achieves competitive performance despite having only 38B parameters</div><div class="quiz-choice" data-value="It excels only at visual tasks but performs poorly on pure reasoning tasks">It excels only at visual tasks but performs poorly on pure reasoning tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
