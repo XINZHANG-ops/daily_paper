@@ -1,0 +1,1168 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-11 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-11 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>VisualCloze: A Universal Image Generation Framework via Visual
+  In-Context Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.07960" target="_blank">http://arxiv.org/pdf/2504.07960</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Universal image generation framework called VisualCloze that leverages visual in-context learning to handle diverse image generation tasks within a single model.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on diffusion models and task-specific image generation approaches, proposing visual in-context learning where models learn tasks from visual demonstrations rather than relying solely on language instructions.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing limitations of current image generation approaches that either require task-specific models or face challenges with task ambiguity, sparse task distributions, and lack of generalization to unseen tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Creating a graph-structured dataset (Graph200K) with interrelated tasks, formulating image generation as an image infilling problem, and fine-tuning FLUX.1-Fill-dev to support visual in-context learning where tasks are demonstrated through examples.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model successfully handles various in-domain tasks with reduced ambiguity, generalizes to unseen tasks, enables task unification, and supports reverse generation, outperforming comparable methods in conditional generation, style transfer, and subject-driven image generation tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VisualCloze: A Universal Image Generation Framework via Visual
+  In-Context Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,220,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,240,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(160,255,160);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(210,255,210);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,220,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200, 180, 255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230, 220, 255);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-size: 28px; font-weight: bold; text-anchor: middle; fill: #333; }
+      .subtitle { font-size: 18px; font-weight: bold; fill: #555; }
+      .text-main { font-size: 14px; fill: #444; }
+      .text-detail { font-size: 12px; fill: #666; }
+      .box { stroke: #aaa; stroke-width: 1; rx: 10; ry: 10; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.1)); }
+      .box-problem { fill: #ffebee; stroke: #e57373; }
+      .box-solution { fill: url(#grad1); stroke: #64b5f6; }
+      .box-paradigm { fill: url(#grad2); stroke: #ffb74d; }
+      .box-formulation { fill: url(#grad3); stroke: #81c784; }
+      .box-data { fill: url(#grad4); stroke: #ff8a65; }
+      .box-model { fill: url(#grad5); stroke: #9575cd; }
+      .box-outcome { fill: #e0f7fa; stroke: #4dd0e1; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">VisualCloze Methodology Flowchart</text>
+
+  <!-- Problem Statement -->
+  <rect x="250" y="70" width="500" height="60" class="box box-problem" />
+  <text x="500" y="95" class="subtitle" text-anchor="middle">Problem</text>
+  <text x="500" y="115" class="text-main" text-anchor="middle">Task-specific models lack efficiency; Universal models face instruction, distribution, & architecture issues.</text>
+
+  <!-- Central Solution Block -->
+  <rect x="50" y="150" width="900" height="450" class="box box-solution" />
+  <text x="500" y="180" class="subtitle" text-anchor="middle">Solution: VisualCloze Framework</text>
+
+  <!-- Core Components within Solution -->
+  <g transform="translate(70, 210)">
+    <!-- 1. Visual In-Context Learning Paradigm -->
+    <rect x="0" y="0" width="420" height="180" class="box box-paradigm" />
+    <text x="210" y="25" class="subtitle" text-anchor="middle">1. Visual In-Context Learning (VICL)</text>
+    <text x="10" y="55" class="text-main">Input Format:</text>
+    <text x="20" y="75" class="text-detail">• C In-Context Examples (Demos)</text>
+    <text x="20" y="95" class="text-detail">  - Each: L images (Conditions + Target)</text>
+    <text x="20" y="115" class="text-detail">• 1 Query</text>
+    <text x="20" y="135" class="text-detail">  - L-1 Condition Images + 1 Blank Target</text>
+    <text x="10" y="165" class="text-main">Goal: Learn task from visual examples, not just text.</text>
+  </g>
+
+  <g transform="translate(510, 210)">
+    <!-- 2. Unified Task Formulation -->
+    <rect x="0" y="0" width="420" height="180" class="box box-formulation" />
+    <text x="210" y="25" class="subtitle" text-anchor="middle">2. Unified Task as Infilling</text>
+    <text x="10" y="55" class="text-main">Process:</text>
+    <text x="20" y="75" class="text-detail">• Concatenate all input images into a grid.</text>
+    <text x="20" y="95" class="text-detail">• Mask the target image region (M).</text>
+    <text x="20" y="115" class="text-detail">• Use Infilling Model: Generate masked region.</text>
+    <text x="20" y="135" class="text-detail">• Objective: `X_hat = f(X_grid | T_layout, M)`</text>
+    <text x="10" y="165" class="text-main">Benefit: Aligns with pre-trained infilling models.</text>
+  </g>
+
+  <g transform="translate(70, 410)">
+    <!-- 3. Graph200K Dataset -->
+    <rect x="0" y="0" width="420" height="180" class="box box-data" />
+    <text x="210" y="25" class="subtitle" text-anchor="middle">3. Graph200K Dataset</text>
+    <text x="10" y="55" class="text-main">Structure & Purpose:</text>
+    <text x="20" y="75" class="text-detail">• Built on Subjects200K.</text>
+    <text x="20" y="95" class="text-detail">• Graph: Images (nodes) + Annotations (edges).</text>
+    <text x="20" y="115" class="text-detail">• 5 Meta-Tasks (CondGen, Edit, Restore, Style, IP).</text>
+    <text x="20" y="135" class="text-detail">• Increases task density & overlap.</text>
+    <text x="10" y="165" class="text-main">Benefit: Promotes learning transferable knowledge.</text>
+  </g>
+
+  <g transform="translate(510, 410)">
+    <!-- 4. Model & Training -->
+    <rect x="0" y="0" width="420" height="180" class="box box-model" />
+    <text x="210" y="25" class="subtitle" text-anchor="middle">4. Model & Training</text>
+    <text x="10" y="55" class="text-main">Implementation:</text>
+    <text x="20" y="75" class="text-detail">• Base Model: FLUX.1-Fill-dev (Infilling).</text>
+    <text x="20" y="95" class="text-detail">• Fine-tuning: LoRA (Rank 256, minimal changes).</text>
+    <text x="20" y="115" class="text-detail">• Training Data: Graph200K + others (VITON, etc.).</text>
+    <text x="20" y="135" class="text-detail">• Positional Embedding: 3D-RoPE for aspect ratios.</text>
+    <text x="10" y="165" class="text-main">Benefit: Leverages strong priors with low cost.</text>
+  </g>
+
+  <!-- Outcomes/Capabilities -->
+  <text x="500" y="630" class="subtitle" text-anchor="middle">Key Capabilities Enabled by VisualCloze</text>
+  <g transform="translate(50, 650)">
+     <rect x="0" y="0" width="210" height="100" class="box box-outcome"/>
+     <text x="105" y="30" class="text-main" text-anchor="middle">Improved Seen Tasks</text>
+     <text x="105" y="55" class="text-detail" text-anchor="middle">Reduced ambiguity,</text>
+     <text x="105" y="70" class="text-detail" text-anchor="middle">better performance.</text>
+  </g>
+   <g transform="translate(275, 650)">
+     <rect x="0" y="0" width="210" height="100" class="box box-outcome"/>
+     <text x="105" y="30" class="text-main" text-anchor="middle">Unseen Task Generalization</text>
+     <text x="105" y="55" class="text-detail" text-anchor="middle">Adapts to new tasks</text>
+      <text x="105" y="70" class="text-detail" text-anchor="middle">via VICL examples.</text>
+  </g>
+   <g transform="translate(500, 650)">
+     <rect x="0" y="0" width="210" height="100" class="box box-outcome"/>
+     <text x="105" y="30" class="text-main" text-anchor="middle">Task Unification</text>
+     <text x="105" y="55" class="text-detail" text-anchor="middle">Combines multiple sub-tasks</text>
+     <text x="105" y="70" class="text-detail" text-anchor="middle">into a single step.</text>
+  </g>
+  <g transform="translate(725, 650)">
+     <rect x="0" y="0" width="210" height="100" class="box box-outcome"/>
+     <text x="105" y="30" class="text-main" text-anchor="middle">Reverse Generation</text>
+     <text x="105" y="55" class="text-detail" text-anchor="middle">Infers conditions</text>
+     <text x="105" y="70" class="text-detail" text-anchor="middle">from target image.</text>
+  </g>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Visual in-context learning instead of relying on language instructions">
+                        <div class="quiz-question">1. What is the main innovation of VisualCloze compared to previous universal image generation approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a larger and more diverse training dataset">Using a larger and more diverse training dataset</div><div class="quiz-choice" data-value="Visual in-context learning instead of relying on language instructions">Visual in-context learning instead of relying on language instructions</div><div class="quiz-choice" data-value="Developing a completely new diffusion model architecture">Developing a completely new diffusion model architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The sparsity and isolation of visual tasks that limits knowledge transfer">
+                        <div class="quiz-question">2. What problem does the Graph200K dataset address in the context of visual tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The lack of high-quality training images">The lack of high-quality training images</div><div class="quiz-choice" data-value="The sparsity and isolation of visual tasks that limits knowledge transfer">The sparsity and isolation of visual tasks that limits knowledge transfer</div><div class="quiz-choice" data-value="The computational complexity of training large generative models">The computational complexity of training large generative models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Real-time video generation with temporal consistency">
+                        <div class="quiz-question">3. Which of the following capabilities was NOT demonstrated by VisualCloze?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Generating frontal faces from side-view images (unseen task)">Generating frontal faces from side-view images (unseen task)</div><div class="quiz-choice" data-value="Reverse generation (inferring conditions from target images)">Reverse generation (inferring conditions from target images)</div><div class="quiz-choice" data-value="Real-time video generation with temporal consistency">Real-time video generation with temporal consistency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>MM-IFEngine: Towards Multimodal Instruction Following</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.07957" target="_blank">http://arxiv.org/pdf/2504.07957</a></p>
+                        <div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MM-IFEngine: Towards Multimodal Instruction Following</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,200,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,230,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,255,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,255,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(220,180,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(240,220,255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,255,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,255,200);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #555; }
+      .text { font-family: Arial, sans-serif; font-size: 12px; fill: #444; }
+      .box { stroke: #666; stroke-width: 1; filter: drop-shadow( 3px 3px 2px rgba(0,0,0,0.2)); }
+      .process-box { fill: url(#grad1); rx: 10; ry: 10; }
+      .input-output { fill: url(#grad2); } /* Parallelogram shape for I/O */
+      .dataset-box { fill: url(#grad3); rx: 5; ry: 5; }
+      .benchmark-box { fill: url(#grad4); rx: 5; ry: 5; }
+      .eval-box { fill: url(#grad5); rx: 5; ry: 5; }
+      .connector { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .dashed-connector { stroke: #777; stroke-width: 1.5; stroke-dasharray: 4, 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title" text-anchor="middle">MM-IFEngine Workflow</text>
+
+  <!-- Section 1: MM-IFEngine Pipeline -->
+  <rect x="50" y="70" width="900" height="280" fill="#f0f8ff" rx="15" ry="15" stroke="#cce0ff" stroke-width="1"/>
+  <text x="500" y="95" class="subtitle" text-anchor="middle">MM-IFEngine: Image-Instruction Pair Generation</text>
+
+  <!-- Input Images -->
+  <path d="M 60 120 l 20 -20 h 150 l -20 20 h -150 z" class="box input-output"/>
+  <text x="145" y="118" class="text" text-anchor="middle">Diverse Image Sources</text>
+  <text x="145" y="133" class="text" text-anchor="middle">(CC3M, ALLaVA, UI, Geo, Chart)</text>
+
+  <!-- Step 1: Image Filtering -->
+  <rect x="270" y="110" width="160" height="50" class="box process-box"/>
+  <text x="350" y="130" class="text" text-anchor="middle">Step 1: Image Filter</text>
+  <text x="350" y="145" class="text" text-anchor="middle">(Resolution, Semantics)</text>
+  <path d="M 230 120 h 40" class="connector"/>
+
+  <!-- Step 2: Task Generation -->
+  <rect x="470" y="110" width="160" height="50" class="box process-box"/>
+  <text x="550" y="130" class="text" text-anchor="middle">Step 2: Task Generation</text>
+  <text x="550" y="145" class="text" text-anchor="middle">(GPT-4o/Refine Existing)</text>
+  <path d="M 430 135 h 40" class="connector"/>
+
+  <!-- Step 3: Constraints Integration -->
+  <rect x="670" y="110" width="160" height="50" class="box process-box"/>
+  <text x="750" y="130" class="text" text-anchor="middle">Step 3: Constraints Integration</text>
+  <text x="750" y="145" class="text" text-anchor="middle">(LLM Generate & Validate)</text>
+  <path d="M 630 135 h 40" class="connector"/>
+
+  <!-- Constraint Pool -->
+  <rect x="670" y="175" width="160" height="50" fill="#ffe0b3" rx="5" ry="5" class="box"/>
+  <text x="750" y="195" class="text" text-anchor="middle">Constraint Pool</text>
+  <text x="750" y="210" class="text" text-anchor="middle">(32 Types, 6 Categories)</text>
+  <path d="M 750 160 v 15" class="dashed-connector"/>
+
+  <!-- Output: Image-Instruction Pairs -->
+  <path d="M 850 250 l 20 -20 h 100 l -20 20 h -100 z" class="box input-output"/>
+  <text x="915" y="248" class="text" text-anchor="middle">High-Quality</text>
+  <text x="915" y="263" class="text" text-anchor="middle">Image-Instruction Pairs</text>
+  <path d="M 750 160 c 0 40, 100 60, 180 85" class="connector"/>
+
+
+  <!-- Section 2: Dataset Generation -->
+  <rect x="50" y="360" width="430" height="200" fill="#f0fff0" rx="15" ry="15" stroke="#cce0cc" stroke-width="1"/>
+  <text x="265" y="385" class="subtitle" text-anchor="middle">Dataset Generation</text>
+
+  <!-- Path from Image-Instruction Pairs -->
+  <path d="M 915 275 c 0 50, -200 75, -550 75 L 265 350 v 10" class="dashed-connector"/>
+
+  <!-- MM-IFInstruct-23k (SFT) -->
+  <rect x="70" y="400" width="180" height="80" class="box dataset-box"/>
+  <text x="160" y="420" class="text" text-anchor="middle">Generate Responses</text>
+  <text x="160" y="435" class="text" text-anchor="middle">(InternVL2.5-78B)</text>
+  <text x="160" y="450" class="text" text-anchor="middle">Post-Process (Filter)</text>
+  <text x="160" y="465" class="text" text-anchor="middle">-> MM-IFInstruct-23k (SFT)</text>
+  <path d="M 265 400 h -15" class="connector"/>
+
+  <!-- MM-IFDPO-23k (DPO) -->
+  <rect x="280" y="400" width="180" height="100" class="box dataset-box"/>
+  <text x="370" y="420" class="text" text-anchor="middle">Generate Rejected Responses</text>
+  <text x="370" y="435" class="text" text-anchor="middle">(Qwen2-VL-7B)</text>
+  <text x="370" y="450" class="text" text-anchor="middle">Settings:</text>
+  <text x="370" y="465" class="text" text-anchor="middle">-Remove Constraints (33/66/100%)</text>
+  <text x="370" y="480" class="text" text-anchor="middle">-Remove Image</text>
+  <text x="370" y="495" class="text" text-anchor="middle">-> MM-IFDPO-23k (DPO)</text>
+   <path d="M 265 450 h 15" class="connector"/>
+
+
+  <!-- Section 3: Benchmark Creation -->
+  <rect x="500" y="360" width="450" height="120" fill="#f8f0ff" rx="15" ry="15" stroke="#e0ccee" stroke-width="1"/>
+  <text x="725" y="385" class="subtitle" text-anchor="middle">MM-IFEval Benchmark Creation</text>
+
+  <!-- Path from Image-Instruction Pairs -->
+  <path d="M 915 275 c 0 50, -50 75, -150 75 L 725 350 v 10" class="dashed-connector"/>
+
+  <rect x="520" y="400" width="180" height="60" class="box benchmark-box"/>
+  <text x="610" y="420" class="text" text-anchor="middle">Human Annotation &</text>
+  <text x="610" y="435" class="text" text-anchor="middle">LLM Conflict Check</text>
+  <text x="610" y="450" class="text" text-anchor="middle">(400 Qs: 300C + 100P)</text>
+   <path d="M 725 400 h -15" class="connector"/>
+
+  <path d="M 700 430 h 20" class="connector"/>
+  <path d="M 720 430 l 20 -20 h 180 l -20 20 h -180 z" class="box input-output" fill="#e6e6fa"/>
+  <text x="830" y="428" class="text" text-anchor="middle">MM-IFEval Benchmark</text>
+
+
+  <!-- Section 4: Hybrid Evaluation (for MM-IFEval) -->
+   <rect x="500" y="490" width="450" height="160" fill="#fffacd" rx="15" ry="15" stroke="#eedd82" stroke-width="1"/>
+   <text x="725" y="515" class="subtitle" text-anchor="middle">MM-IFEval Hybrid Evaluation Method</text>
+
+   <!-- Link from Benchmark -->
+   <path d="M 830 440 v 50 " class="dashed-connector"/>
+
+   <!-- Evaluation Methods -->
+   <rect x="520" y="535" width="130" height="100" class="box eval-box"/>
+   <text x="585" y="555" class="text" text-anchor="middle">Rule-based</text>
+   <text x="585" y="570" class="text" text-anchor="middle">Verification</text>
+   <text x="585" y="585" class="text" text-anchor="middle">(Objective Constraints)</text>
+   <text x="585" y="600" class="text" text-anchor="middle">e.g., word count,</text>
+   <text x="585" y="615" class="text" text-anchor="middle">format, numbers</text>
+
+   <rect x="665" y="535" width="130" height="100" class="box eval-box"/>
+   <text x="730" y="555" class="text" text-anchor="middle">LLM-based</text>
+   <text x="730" y="570" class="text" text-anchor="middle">Direct Judgment</text>
+    <text x="730" y="585" class="text" text-anchor="middle">(Clear Constraints)</text>
+   <text x="730" y="600" class="text" text-anchor="middle">e.g., keyword</text>
+    <text x="730" y="615" class="text" text-anchor="middle">mention</text>
+
+   <rect x="810" y="535" width="130" height="100" class="box eval-box"/>
+   <text x="875" y="555" class="text" text-anchor="middle">LLM-based</text>
+   <text x="875" y="570" class="text" text-anchor="middle">Comparative Judgment</text>
+   <text x="875" y="585" class="text" text-anchor="middle">(Subjective Constraints)</text>
+   <text x="875" y="600" class="text" text-anchor="middle">e.g., tone, style,</text>
+   <text x="875" y="615" class="text" text-anchor="middle">role-play</text>
+
+   <!-- Linking Evaluation methods -->
+   <path d="M 830 490 c 10 -20 -50 -20 -100 -10 L 585 535" class="dashed-connector"/>
+   <path d="M 830 490 c 0 -20 -10 -20 -10 -10 L 730 535" class="dashed-connector"/>
+   <path d="M 830 490 c 10 -20 50 -20 50 -10 L 875 535" class="dashed-connector"/>
+
+
+  <!-- Section 5: Model Training & Evaluation -->
+  <rect x="50" y="580" width="430" height="180" fill="#e0f2f7" rx="15" ry="15" stroke="#b3dfea" stroke-width="1"/>
+  <text x="265" y="605" class="subtitle" text-anchor="middle">Model Training & Evaluation</text>
+
+  <!-- Input Base Models -->
+  <path d="M 60 620 l 20 -20 h 100 l -20 20 h -100 z" class="box input-output"/>
+  <text x="125" y="618" class="text" text-anchor="middle">Base MLLMs</text>
+  <text x="125" y="633" class="text" text-anchor="middle">(e.g., LLaVA, Qwen2)</text>
+
+  <!-- Links from Datasets -->
+  <path d="M 160 480 v 120 c 0 10 0 10 60 10 l 10 0 " class="dashed-connector"/>
+  <path d="M 370 505 v 75 c 0 10 -10 10 -10 10 l -110 0" class="dashed-connector"/>
+
+  <!-- Training Processes -->
+  <rect x="200" y="650" width="100" height="40" class="box process-box" fill="#cceeff"/>
+  <text x="250" y="670" class="text" text-anchor="middle">SFT Training</text>
+  <text x="250" y="685" class="text" text-anchor="middle">(on Instruct-23k)</text>
+
+  <rect x="320" y="650" width="100" height="40" class="box process-box" fill="#cceeff"/>
+  <text x="370" y="670" class="text" text-anchor="middle">DPO Training</text>
+  <text x="370" y="685" class="text" text-anchor="middle">(on DPO-23k)</text>
+
+  <path d="M 180 620 h 20" class="connector"/>
+  <path d="M 180 620 c 10 0, 50 30, 70 30" class="connector"/> <!-- to SFT -->
+  <path d="M 180 620 c 30 0, 100 30, 190 30" class="connector"/> <!-- to DPO -->
+
+  <!-- Output Fine-tuned Models -->
+  <path d="M 250 690 v 10" class="connector"/>
+  <path d="M 370 690 v 10" class="connector"/>
+
+  <path d="M 230 700 l 20 -20 h 140 l -20 20 h -140 z" class="box input-output"/>
+  <text x="300" y="698" class="text" text-anchor="middle">Fine-tuned MLLMs</text>
+
+  <!-- Evaluation -->
+  <path d="M 300 720 v 10" class="connector"/>
+  <rect x="200" y="730" width="200" height="40" class="box process-box" fill="#e0ffff"/>
+  <text x="300" y="750" class="text" text-anchor="middle">Evaluate on Benchmarks</text>
+  <text x="300" y="765" class="text" text-anchor="middle">(MM-IFEval, MIA, IFEval, VQA)</text>
+
+   <!-- Link Evaluation to MM-IFEval Benchmark -->
+   <path d="M 400 750 h 100 c 100 0 200 -150 200 -250 L 700 450" class="dashed-connector"/>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It incorporates both compose-level and perception-level constraints with strong visual correlations">
+                        <div class="quiz-question">1. What is the primary innovation of MM-IFEngine compared to existing instruction following benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses only proprietary models for evaluation">It uses only proprietary models for evaluation</div><div class="quiz-choice" data-value="It focuses exclusively on text-based constraints">It focuses exclusively on text-based constraints</div><div class="quiz-choice" data-value="It incorporates both compose-level and perception-level constraints with strong visual correlations">It incorporates both compose-level and perception-level constraints with strong visual correlations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="32 categories with an average of 5.1 constraints per question">
+                        <div class="quiz-question">2. How many distinct constraint categories are included in MM-IFEval?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="8 categories with an average of 2.6 constraints per question">8 categories with an average of 2.6 constraints per question</div><div class="quiz-choice" data-value="32 categories with an average of 5.1 constraints per question">32 categories with an average of 5.1 constraints per question</div><div class="quiz-choice" data-value="16 categories with an average of 3.5 constraints per question">16 categories with an average of 3.5 constraints per question</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="A hybrid approach combining rule-based verification and judge models">
+                        <div class="quiz-question">3. What evaluation strategy does MM-IFEval use that makes it more precise than previous benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It relies exclusively on GPT-4o for all evaluations">It relies exclusively on GPT-4o for all evaluations</div><div class="quiz-choice" data-value="A hybrid approach combining rule-based verification and judge models">A hybrid approach combining rule-based verification and judge models</div><div class="quiz-choice" data-value="It uses only human evaluators to ensure accuracy">It uses only human evaluators to ensure accuracy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>HoloPart: Generative 3D Part Amodal Segmentation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.07943" target="_blank">http://arxiv.org/pdf/2504.07943</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces "3D part amodal segmentation," a novel task in 3D computer vision that decomposes 3D shapes into complete semantic parts, even when parts are occluded.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing 3D part segmentation techniques but extends beyond them by proposing a diffusion-based model (HoloPart) that can complete partial segments into full 3D parts, similar to how 2D amodal segmentation has evolved for images.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper solves the challenge of generating complete 3D parts from incomplete surface segments, addressing key difficulties in inferring occluded geometry, maintaining global shape consistency, and handling diverse shapes with limited training data.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a two-stage approach: first applying existing 3D part segmentation to obtain initial surface patches, then using their novel HoloPart diffusion model with local attention and context-aware attention mechanisms to complete these segments into full 3D parts.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> HoloPart significantly outperforms state-of-the-art shape completion methods on new benchmarks based on ABO and PartObjaverse-Tiny datasets, demonstrating superior performance in Chamfer Distance, IoU, and F-Score metrics, while enabling applications in geometry editing, animation, and material assignment.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>HoloPart: Generative 3D Part Amodal Segmentation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(100,150,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,180,100);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(120,220,120);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(220,180,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(180,140,220);stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 28px; font-weight: bold; fill: #333; text-anchor: middle; }
+      .stage-title { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #444; text-anchor: middle; }
+      .process-text { font-family: 'Arial', sans-serif; font-size: 14px; fill: #555; text-anchor: middle; }
+      .io-text { font-family: 'Consolas', monospace; font-size: 13px; fill: #222; text-anchor: middle; }
+      .note-text { font-family: 'Arial', sans-serif; font-size: 12px; fill: #666; }
+      .arrow-head { fill: #555; }
+      .arrow-line { stroke: #555; stroke-width: 2; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f9f9f9"/>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">HoloPart Methodology: 3D Part Amodal Segmentation</text>
+
+  <!-- Input Shape -->
+  <g filter="url(#shadow)">
+    <rect x="380" y="70" width="240" height="50" rx="10" ry="10" fill="url(#grad3)" stroke="#aaa" stroke-width="1"/>
+    <text x="500" y="100" class="io-text">Input: 3D Shape (Mesh/Point Cloud)</text>
+  </g>
+
+  <!-- Arrow -->
+  <line x1="500" y1="120" x2="500" y2="150" class="arrow-line" marker-end="url(#arrowhead)"/>
+
+  <!-- Stage 1: Part Segmentation -->
+  <g filter="url(#shadow)">
+    <rect x="300" y="150" width="400" height="100" rx="15" ry="15" fill="url(#grad1)" stroke="#88aacc" stroke-width="1.5"/>
+    <text x="500" y="180" class="stage-title">Stage 1: Initial Part Segmentation</text>
+    <text x="500" y="205" class="process-text">Apply existing method (e.g., SAMPart3D)</text>
+    <text x="500" y="230" class="io-text">Output: Incomplete Segments {si}, Whole Shape (X), Mask (M)</text>
+  </g>
+
+  <!-- Arrow -->
+  <line x1="500" y1="250" x2="500" y2="280" class="arrow-line" marker-end="url(#arrowhead)"/>
+
+  <!-- Stage 2: HoloPart Completion -->
+  <g filter="url(#shadow)">
+    <rect x="150" y="280" width="700" height="360" rx="15" ry="15" fill="url(#grad2)" stroke="#ccaa88" stroke-width="1.5"/>
+    <text x="500" y="310" class="stage-title">Stage 2: HoloPart - Part Completion (for each segment si)</text>
+
+    <!-- Input to Stage 2 -->
+    <text x="500" y="335" class="io-text">Input: Segment (si -> S), Whole Shape (X), Mask (M)</text>
+
+    <!-- Sub-Process 1: Attention Encoding -->
+    <rect x="180" y="360" width="640" height="80" rx="10" ry="10" fill="#fff8e8" stroke="#e0c8a0" stroke-width="1"/>
+    <text x="500" y="385" class="process-text" font-weight="bold">1. Attention Encoding</text>
+    <text x="340" y="415" class="io-text">Context-Aware Attn (S0, X, M) -> co</text>
+    <text x="660" y="415" class="io-text">Local Attn (S0, S) -> cl</text>
+    <line x1="500" y1="395" x2="500" y2="430" stroke="#aaa" stroke-width="1" stroke-dasharray="4 2"/>
+
+
+    <!-- Arrow -->
+    <line x1="500" y1="440" x2="500" y2="460" class="arrow-line" marker-end="url(#arrowhead)"/>
+
+    <!-- Sub-Process 2: Part Diffusion Model -->
+    <rect x="180" y="460" width="640" height="90" rx="10" ry="10" fill="#fff8e8" stroke="#e0c8a0" stroke-width="1"/>
+    <text x="500" y="485" class="process-text" font-weight="bold">2. Part Diffusion Model (vθ)</text>
+    <text x="500" y="505" class="process-text" font-size="12px">(Pretrained on Objects, Finetuned on Parts)</text>
+    <text x="500" y="525" class="io-text">Inputs: Noise (ε), Time (t), co, cl</text>
+    <text x="500" y="540" class="io-text">Process: Iterative Denoising (CFG) -> Complete Part Latent (z_part)</text>
+
+    <!-- Arrow -->
+    <line x1="500" y1="550" x2="500" y2="570" class="arrow-line" marker-end="url(#arrowhead)"/>
+
+    <!-- Sub-Process 3: Decoding -->
+    <rect x="180" y="570" width="640" height="60" rx="10" ry="10" fill="#fff8e8" stroke="#e0c8a0" stroke-width="1"/>
+    <text x="500" y="590" class="process-text" font-weight="bold">3. Decoding &amp; Mesh Extraction</text>
+    <text x="500" y="610" class="io-text">VAE Decoder (D) -> Occupancy -> Marching Cubes -> Complete Part (pi)</text>
+
+  </g>
+
+   <!-- Arrow -->
+  <line x1="500" y1="640" x2="500" y2="670" class="arrow-line" marker-end="url(#arrowhead)"/>
+
+   <!-- Final Output -->
+  <g filter="url(#shadow)">
+    <rect x="300" y="670" width="400" height="60" rx="10" ry="10" fill="url(#grad3)" stroke="#aaa" stroke-width="1"/>
+    <text x="500" y="695" class="io-text">Output: Set of Complete Parts {p1, ..., pn}</text>
+    <text x="500" y="715" class="io-text">(3D Part Amodal Segmentation)</text>
+  </g>
+
+  <!-- Supporting Notes -->
+   <g>
+    <rect x="20" y="300" width="120" height="120" rx="10" ry="10" fill="#e8e8f8" stroke="#b0b0d0" stroke-width="1" filter="url(#shadow)"/>
+    <text x="80" y="320" class="note-text" font-weight="bold" text-anchor="middle">Pretraining</text>
+    <text x="30" y="340" class="note-text">VAE + Diffusion</text>
+    <text x="30" y="355" class="note-text">trained on large</text>
+    <text x="30" y="370" class="note-text">dataset of WHOLE</text>
+    <text x="30" y="385" class="note-text">shapes to learn</text>
+    <text x="30" y="400" class="note-text">general 3D priors.</text>
+   </g>
+
+   <g>
+    <rect x="860" y="300" width="120" height="120" rx="10" ry="10" fill="#e8f8e8" stroke="#b0d0b0" stroke-width="1" filter="url(#shadow)"/>
+    <text x="920" y="320" class="note-text" font-weight="bold" text-anchor="middle">Data Curation</text>
+    <text x="870" y="340" class="note-text">Process ABO &amp;</text>
+    <text x="870" y="355" class="note-text">Objaverse (filtered).</text>
+     <text x="870" y="370" class="note-text">Create Whole-Part</text>
+    <text x="870" y="385" class="note-text">pairs ({si}, {K}) for</text>
+    <text x="870" y="400" class="note-text">finetuning HoloPart.</text>
+   </g>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It completes the geometry of occluded parts rather than just identifying visible surface patches">
+                        <div class="quiz-question">1. What is the key innovation that distinguishes HoloPart from traditional 3D part segmentation methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger training dataset with more diverse 3D shapes">It uses a larger training dataset with more diverse 3D shapes</div><div class="quiz-choice" data-value="It completes the geometry of occluded parts rather than just identifying visible surface patches">It completes the geometry of occluded parts rather than just identifying visible surface patches</div><div class="quiz-choice" data-value="It performs segmentation in a single end-to-end process instead of using a two-stage approach">It performs segmentation in a single end-to-end process instead of using a two-stage approach</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Local attention and shape context-aware attention">
+                        <div class="quiz-question">2. Which two key attention mechanisms does HoloPart incorporate to balance local details and global context?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Temporal attention and spatial attention">Temporal attention and spatial attention</div><div class="quiz-choice" data-value="Cross-modal attention and self-supervised attention">Cross-modal attention and self-supervised attention</div><div class="quiz-choice" data-value="Local attention and shape context-aware attention">Local attention and shape context-aware attention</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Facial recognition and biometric authentication">
+                        <div class="quiz-question">3. What practical downstream application is NOT mentioned as a benefit of 3D part amodal segmentation in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Geometry editing and material assignment">Geometry editing and material assignment</div><div class="quiz-choice" data-value="Animation of individual parts">Animation of individual parts</div><div class="quiz-choice" data-value="Facial recognition and biometric authentication">Facial recognition and biometric authentication</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
