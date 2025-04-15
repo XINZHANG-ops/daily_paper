@@ -1,0 +1,1137 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-15 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-15 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>S1-Bench: A Simple Benchmark for Evaluating System 1 Thinking Capability
+  of Large Reasoning Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.10368" target="_blank">http://arxiv.org/pdf/2504.10368</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces S1-Bench, a benchmark for evaluating Large Reasoning Models' (LRMs) performance on simple tasks that favor intuitive system 1 thinking rather than deliberative system 2 reasoning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on research about LRMs' chain-of-thought capabilities but identifies a gap in evaluating their performance on simple tasks; it proposes a novel benchmark specifically designed to assess system 1 thinking capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the problem of LRMs' over-reliance on system 2 thinking (deliberative reasoning) when confronting extremely simple questions better suited for intuition-driven system 1 processing.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors constructed S1-Bench by creating simple, diverse, and naturally clear questions across multiple domains and languages, validated by both human annotators and smaller LLMs, then evaluated 22 different LRMs on this benchmark.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results revealed significant inefficiency in LRMs on simple tasks, with outputs averaging 15.5 times longer than traditional small LLMs, and showed that LRMs often identify correct answers early but continue unnecessary deliberation, sometimes even producing numerous errors.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>S1-Bench: A Simple Benchmark for Evaluating System 1 Thinking Capability
+  of Large Reasoning Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; text-anchor: middle; fill: #333; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; fill: #555; }
+      .process-box { fill: #e0f7fa; stroke: #00796b; stroke-width: 1.5; rx: 8; ry: 8; }
+      .process-text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; fill: #004d40; }
+      .input-output { fill: #fff3e0; stroke: #ff8f00; stroke-width: 1.5; rx: 8; ry: 8; }
+      .input-output-text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; fill: #e65100; }
+      .decision { fill: #ffebee; stroke: #c62828; stroke-width: 1.5; }
+      .decision-text { font-family: Arial, sans-serif; font-size: 11px; text-anchor: middle; fill: #b71c1c; }
+      .analysis-box { fill: #e8eaf6; stroke: #303f9f; stroke-width: 1.5; rx: 8; ry: 8; }
+      .analysis-text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; fill: #1a237e; }
+      .connector { stroke: #9e9e9e; stroke-width: 1.5; fill: none; }
+      .arrow-head { fill: #9e9e9e; }
+      .iteration-text { font-family: Arial, sans-serif; font-size: 10px; fill: #757575; text-anchor: middle; }
+      .section-bg { fill: #f5f5f5; rx: 15; ry: 15; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">S1-Bench Methodology Flowchart</text>
+
+  <!-- Section Backgrounds -->
+  <rect x="10" y="60" width="480" height="650" class="section-bg" />
+  <rect x="510" y="60" width="480" height="650" class="section-bg" />
+
+  <!-- Section Titles -->
+  <text x="250" y="85" class="subtitle">S1-Bench Construction</text>
+  <text x="750" y="85" class="subtitle">LRM Evaluation on S1-Bench</text>
+
+  <!-- Column 1: S1-Bench Construction -->
+  <g id="construction-workflow">
+    <!-- Step 1: Input/Preparation -->
+    <rect x="50" y="100" width="180" height="50" class="input-output"/>
+    <text x="140" y="120" class="input-output-text">Input: Benchmark Surveys,</text>
+    <text x="140" y="135" class="input-output-text">Define Simple Subcategories</text>
+
+    <!-- Step 2: Generation -->
+    <rect x="50" y="170" width="180" height="60" class="process-box"/>
+    <text x="140" y="190" class="process-text">Initial Q&A Generation</text>
+    <text x="140" y="205" class="process-text">(Generators + A Priori</text>
+    <text x="140" y="220" class="process-text">Simplicity Constraints)</text>
+
+    <!-- Step 3: Quality Assessment -->
+    <rect x="50" y="250" width="180" height="60" class="process-box"/>
+    <text x="140" y="270" class="process-text">Quality Assessment</text>
+    <text x="140" y="285" class="process-text">(Annotators + Discriminators)</text>
+    <text x="140" y="300" class="process-text">Check Clarity, Uniqueness</text>
+
+    <!-- Step 4: Decision -->
+    <path d="M 140 355 m -70 0 l 70 -40 l 70 40 l -70 40 z" class="decision"/>
+    <text x="140" y="352" class="decision-text">Retain /</text>
+    <text x="140" y="364" class="decision-text">Modify /</text>
+    <text x="140" y="376" class="decision-text">Discard?</text>
+
+    <!-- Step 5: A Posteriori Verification -->
+    <rect x="270" y="280" width="180" height="60" class="process-box"/>
+    <text x="360" y="300" class="process-text">A Posteriori Verification</text>
+    <text x="360" y="315" class="process-text">(Validators: Small LLMs,</text>
+    <text x="360" y="330" class="process-text">Multi-Temp Sampling)</text>
+
+    <!-- Step 6: Correctness Evaluation -->
+    <rect x="270" y="360" width="180" height="50" class="process-box"/>
+    <text x="360" y="380" class="process-text">Correctness Evaluation</text>
+    <text x="360" y="395" class="process-text">(Evaluator: GPT-4o)</text>
+
+    <!-- Step 7: Decision -->
+     <path d="M 360 455 m -70 0 l 70 -40 l 70 40 l -70 40 z" class="decision"/>
+    <text x="360" y="452" class="decision-text">All Correct</text>
+    <text x="360" y="464" class="decision-text">& Robust?</text>
+
+    <!-- Step 8: Iterative Reduction -->
+    <rect x="270" y="515" width="180" height="60" class="process-box"/>
+    <text x="360" y="535" class="process-text">Iterative Difficulty</text>
+    <text x="360" y="550" class="process-text">Reduction (Max 3)</text>
+    <text x="360" y="565" class="process-text">(Modify Q&A)</text>
+
+    <!-- Step 9: Output -->
+    <rect x="270" y="600" width="180" height="50" class="input-output"/>
+    <text x="360" y="625" class="input-output-text">Output: S1-Bench Dataset</text>
+
+    <!-- Construction Connectors -->
+    <line x1="140" y1="150" x2="140" y2="170" class="connector" marker-end="url(#arrow)"/>
+    <line x1="140" y1="230" x2="140" y2="250" class="connector" marker-end="url(#arrow)"/>
+    <line x1="140" y1="310" x2="140" y2="315" class="connector" marker-end="url(#arrow)"/>
+    <line x1="210" y1="355" x2="270" y2="310" class="connector" marker-end="url(#arrow)"/>
+    <text x="245" y="340" class="iteration-text">Retain</text>
+    <line x1="360" y1="340" x2="360" y2="360" class="connector" marker-end="url(#arrow)"/>
+    <line x1="360" y1="410" x2="360" y2="415" class="connector" marker-end="url(#arrow)"/>
+    <line x1="430" y1="455" x2="450" y2="455" class="connector"/>
+    <line x1="450" y1="455" x2="450" y2="600" class="connector"/>
+    <line x1="450" y1="600" x2="450" y2="625" class="connector"/>
+    <line x1="450" y1="625" x2="450" y2="625" class="connector" marker-end="url(#arrow)"/>
+    <text x="445" y="530" class="iteration-text">Yes</text>
+    <line x1="360" y1="495" x2="360" y2="515" class="connector" marker-end="url(#arrow)"/>
+    <text x="380" y="510" class="iteration-text">No</text>
+    <line x1="270" y1="545" x2="250" y2="545" class="connector"/>
+    <line x1="250" y1="545" x2="250" y2="200" class="connector"/>
+    <line x1="250" y1="200" x2="230" y2="200" class="connector" marker-end="url(#arrow)"/>
+    <text x="210" y="550" class="iteration-text">Loop (≤3 times)</text>
+    <line x1="140" y1="395" x2="140" y2="420" class="connector"/>
+    <line x1="140" y1="420" x2="40" y2="420" class="connector"/>
+    <line x1="40" y1="420" x2="40" y2="200" class="connector"/>
+    <line x1="40" y1="200" x2="50" y2="200" class="connector" marker-end="url(#arrow)"/>
+    <text x="80" y="410" class="iteration-text">Modify</text>
+
+  </g>
+
+  <!-- Column 2: LRM Evaluation -->
+  <g id="evaluation-workflow">
+    <!-- Step 1: Input -->
+    <rect x="550" y="100" width="180" height="50" class="input-output"/>
+    <text x="640" y="120" class="input-output-text">Input: S1-Bench,</text>
+    <text x="640" y="135" class="input-output-text">22 LRMs</text>
+
+    <!-- Step 2: Configuration & Generation -->
+    <rect x="550" y="170" width="180" height="60" class="process-box"/>
+    <text x="640" y="190" class="process-text">Configure LRMs</text>
+    <text x="640" y="205" class="process-text">(Greedy & Top-p)</text>
+    <text x="640" y="220" class="process-text">Generate Responses</text>
+
+    <!-- Step 3: Define Metrics -->
+    <rect x="550" y="250" width="180" height="70" class="process-box"/>
+    <text x="640" y="270" class="process-text">Define Evaluation Metrics:</text>
+    <text x="640" y="285" class="process-text">- Format (S/L-Corr)</text>
+    <text x="640" y="300" class="process-text">- Efficiency (ART)</text>
+    <text x="640" y="315" class="process-text">- Accuracy (Pass@1, Acc@k)</text>
+
+    <!-- Step 4: Main Results Analysis -->
+    <rect x="550" y="340" width="180" height="60" class="analysis-box"/>
+    <text x="640" y="360" class="analysis-text">Main Results Analysis</text>
+    <text x="640" y="375" class="analysis-text">(Overthinking,</text>
+    <text x="640" y="390" class="analysis-text">Under-accuracy)</text>
+
+    <!-- Step 5: Detailed Analysis Group -->
+    <rect x="770" y="170" width="190" height="370" class="analysis-box"/>
+    <text x="865" y="190" class="analysis-text" style="font-weight:bold;">In-depth Analyses</text>
+
+    <!-- Sub-Step 5a: Efficiency Analysis -->
+    <rect x="780" y="210" width="170" height="90" fill="#c5cae9" rx="5" ry="5"/>
+    <text x="865" y="230" class="analysis-text">Efficiency Analysis:</text>
+    <text x="865" y="245" class="analysis-text">- ART by Question Type</text>
+    <text x="865" y="260" class="analysis-text">- Solution Segmentation</text>
+    <text x="865" y="275" class="analysis-text"> (Initial vs Additional Cost)</text>
+    <text x="865" y="290" class="analysis-text">- Redundancy (Similarity)</text>
+
+    <!-- Sub-Step 5b: Error Analysis -->
+     <rect x="780" y="310" width="170" height="60" fill="#c5cae9" rx="5" ry="5"/>
+    <text x="865" y="330" class="analysis-text">Error Analysis:</text>
+    <text x="865" y="345" class="analysis-text">- Thinking Process (TP)</text>
+    <text x="865" y="360" class="analysis-text"> vs Final Answer (FA)</text>
+
+    <!-- Sub-Step 5c: Prejudgement Analysis -->
+     <rect x="780" y="380" width="170" height="70" fill="#c5cae9" rx="5" ry="5"/>
+    <text x="865" y="400" class="analysis-text">Simplicity Prejudgement:</text>
+    <text x="865" y="415" class="analysis-text">- Identify Prejudgements</text>
+    <text x="865" y="430" class="analysis-text">- Count Instances</text>
+    <text x="865" y="445" class="analysis-text">- Compare ART</text>
+
+    <!-- Step 6: Output Findings -->
+    <rect x="660" y="560" width="180" height="70" class="input-output"/>
+    <text x="750" y="580" class="input-output-text">Output: Key Findings</text>
+    <text x="750" y="595" class="input-output-text">(LRM Inefficiency,</text>
+    <text x="750" y="610" class="input-output-text">Under-accuracy,</text>
+    <text x="750" y="625" class="input-output-text">Redundancy, Prejudgement)</text>
+
+    <!-- Evaluation Connectors -->
+    <line x1="640" y1="150" x2="640" y2="170" class="connector" marker-end="url(#arrow)"/>
+    <line x1="640" y1="230" x2="640" y2="250" class="connector" marker-end="url(#arrow)"/>
+    <line x1="640" y1="320" x2="640" y2="340" class="connector" marker-end="url(#arrow)"/>
+    <line x1="640" y1="400" x2="640" y2="420" class="connector"/>
+    <line x1="640" y1="420" x2="770" y2="420" class="connector"/>
+    <line x1="770" y1="420" x2="770" y2="355" class="connector" marker-end="url(#arrow)"/> <!-- Connects Main Results to Detailed Analysis Box -->
+     <line x1="865" y1="540" x2="865" y2="560" class="connector"/>
+    <line x1="865" y1="560" x2="750" y2="560" class="connector" marker-end="url(#arrow)"/> <!-- Connects Detailed Analysis to Output -->
+
+  </g>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="LRMs generate outputs that are 15.5 times longer than traditional small LLMs on simple tasks">
+                        <div class="quiz-question">1. What is the primary finding of S1-Bench regarding Large Reasoning Models' efficiency?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="LRMs generate outputs that are 15.5 times longer than traditional small LLMs on simple tasks">LRMs generate outputs that are 15.5 times longer than traditional small LLMs on simple tasks</div><div class="quiz-choice" data-value="LRMs are significantly faster at processing simple questions than traditional LLMs">LRMs are significantly faster at processing simple questions than traditional LLMs</div><div class="quiz-choice" data-value="LRMs and traditional LLMs show equivalent efficiency on simple tasks">LRMs and traditional LLMs show equivalent efficiency on simple tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Through both a priori constraints and a posteriori verification using smaller LLMs">
+                        <div class="quiz-question">2. How does S1-Bench ensure that its questions are truly simple?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By only including mathematics problems with single-digit numbers">By only including mathematics problems with single-digit numbers</div><div class="quiz-choice" data-value="Through both a priori constraints and a posteriori verification using smaller LLMs">Through both a priori constraints and a posteriori verification using smaller LLMs</div><div class="quiz-choice" data-value="By limiting questions to those that can be answered in one word only">By limiting questions to those that can be answered in one word only</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="LRMs can prejudge question simplicity but still exhibit inefficiency in their responses">
+                        <div class="quiz-question">3. What interesting phenomenon did the researchers discover about LRMs' ability to recognize question simplicity?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="LRMs completely lack the ability to identify simple questions">LRMs completely lack the ability to identify simple questions</div><div class="quiz-choice" data-value="LRMs can prejudge question simplicity but still exhibit inefficiency in their responses">LRMs can prejudge question simplicity but still exhibit inefficiency in their responses</div><div class="quiz-choice" data-value="LRMs only recognize simplicity in English questions but not in Chinese ones">LRMs only recognize simplicity in English questions but not in Chinese ones</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Iterative Self-Training for Code Generation via Reinforced Re-Ranking</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-13</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.09643" target="_blank">http://arxiv.org/pdf/2504.09643</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores code generation using large language models with a novel reranking approach called RewardRanker.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The work builds upon previous code generation models and RLHF techniques, proposing a novel iterative self-training approach that uses Proximal Policy Optimization to improve reranking models rather than just generative models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of generating high-quality code that solves complex programming tasks, particularly with decoder-based models that produce stochastic outputs where even minor errors can break entire solutions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed an iterative self-training method combining supervised fine-tuning, reward model training, and PPO, with a cycle that incorporates hard negative examples into training to continuously improve reranking performance.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Their 13.4B parameter model outperformed a 33B parameter model while being three times faster, achieved performance comparable to GPT-4, and surpassed it in C++ programming language when evaluated on the MultiPL-E benchmark.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Iterative Self-Training for Code Generation via Reinforced Re-Ranking</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(100,150,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,200,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,150,100);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,255,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(100,230,100);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,220);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,150,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,200,200);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(170,170,170);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,230,130);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,210,100);stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#333" font-weight="bold">
+    Iterative Self-Training for Code Generation via Reinforced Re-Ranking
+  </text>
+  <text x="500" y="65" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#666">
+    Methodology Flowchart (RewardRanker)
+  </text>
+
+  <!-- Step 1: Initial Datasets -->
+  <rect x="50" y="100" rx="10" ry="10" width="200" height="100" fill="url(#grad5)" stroke="#aaa" stroke-width="1"/>
+  <text x="150" y="140" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#333">Prepare Initial Datasets</text>
+  <text x="150" y="160" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">- SFT Data (Prompt-Completion)</text>
+  <text x="150" y="175" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">- Alignment Data (Triplets)</text>
+
+  <!-- Step 2: SFT -->
+  <rect x="350" y="100" rx="10" ry="10" width="300" height="100" fill="url(#grad1)" stroke="#88aaff" stroke-width="1"/>
+  <text x="500" y="135" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#333" font-weight="bold">(A) Supervised Fine-Tuning (SFT)</text>
+  <text x="500" y="160" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">Fine-tune base Generator Model</text>
+  <text x="500" y="175" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">using SFT dataset.</text>
+
+  <!-- Step 3: Train Reward Model -->
+  <rect x="350" y="250" rx="10" ry="10" width="300" height="100" fill="url(#grad2)" stroke="#ffaa88" stroke-width="1"/>
+  <text x="500" y="285" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#333" font-weight="bold">(B) Train RewardRanker</text>
+  <text x="500" y="310" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">Train Reranker/Reward Model</text>
+  <text x="500" y="325" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">using Alignment Triplets.</text>
+
+  <!-- Step 4: PPO Training -->
+  <rect x="350" y="400" rx="10" ry="10" width="300" height="100" fill="url(#grad3)" stroke="#88ff88" stroke-width="1"/>
+  <text x="500" y="435" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#333" font-weight="bold">(C) Proximal Policy Optimization (PPO)</text>
+  <text x="500" y="460" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">Train Generator (from SFT)</text>
+  <text x="500" y="475" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">using RewardRanker for rewards.</text>
+
+  <!-- Step 5: Generate & Evaluate -->
+  <rect x="350" y="550" rx="10" ry="10" width="300" height="120" fill="url(#grad4)" stroke="#ffaac0" stroke-width="1"/>
+  <text x="500" y="580" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#333" font-weight="bold">(D) Generate & Evaluate New Examples</text>
+  <text x="500" y="605" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">Use PPO-trained Generator to create solutions.</text>
+  <text x="500" y="620" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">Evaluate with test cases.</text>
+  <text x="500" y="635" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">Identify: Positive Examples</text>
+  <text x="500" y="650" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333" font-weight="bold" fill="#D32F2F">Identify: Hard Negative Examples</text>
+
+  <!-- Step 6: Update Dataset -->
+   <ellipse cx="150" cy="450" rx="100" ry="50" fill="url(#grad6)" stroke="#ffd282" stroke-width="1"/>
+  <text x="150" y="440" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#333" font-weight="bold">(E) Refine Dataset</text>
+  <text x="150" y="460" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">Add generated Positive &</text>
+   <text x="150" y="475" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333" font-weight="bold" fill="#D32F2F">Hard Negative examples</text>
+   <text x="150" y="490" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#333">to Alignment Dataset.</text>
+
+
+  <!-- Arrows / Connections -->
+  <line x1="250" y1="150" x2="350" y2="150" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="200" x2="500" y2="250" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="350" x2="500" y2="400" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="500" x2="500" y2="550" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Iteration Loop -->
+  <path d="M 350 610 Q 250 610 200 550 Q 150 490 150 400" stroke="#555" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <text x="250" y="580" font-family="Arial, sans-serif" font-size="12" fill="#555">Generated Examples</text>
+
+  <path d="M 150 395 L 150 325 Q 150 275 350 300" stroke="#D32F2F" stroke-width="2" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="5,5"/>
+   <text x="220" y="270" font-family="Arial, sans-serif" font-size="14" fill="#D32F2F" font-weight="bold">Iterative Refinement Loop</text>
+   <text x="220" y="290" font-family="Arial, sans-serif" font-size="12" fill="#D32F2F">(Feed refined dataset back to RewardRanker Training)</text>
+
+
+  <!-- Annotations -->
+   <rect x="700" y="100" rx="5" ry="5" width="250" height="60" fill="#f0f8ff" stroke="#add8e6" stroke-width="1"/>
+   <text x="825" y="125" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">SFT prepares the generator</text>
+   <text x="825" y="140" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">for domain-specific tasks.</text>
+
+   <rect x="700" y="250" rx="5" ry="5" width="250" height="70" fill="#fff0f0" stroke="#ffc0cb" stroke-width="1"/>
+   <text x="825" y="275" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">RewardRanker learns to</text>
+   <text x="825" y="290" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">prefer correct over incorrect</text>
+   <text x="825" y="305" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">code via pairwise comparison.</text>
+
+   <rect x="700" y="400" rx="5" ry="5" width="250" height="70" fill="#f0fff0" stroke="#90ee90" stroke-width="1"/>
+   <text x="825" y="425" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">PPO optimizes the generator</text>
+   <text x="825" y="440" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">to maximize scores from the</text>
+   <text x="825" y="455" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">current RewardRanker.</text>
+
+   <rect x="700" y="550" rx="5" ry="5" width="250" height="70" fill="#fff5ee" stroke="#ffdab9" stroke-width="1"/>
+   <text x="825" y="575" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">Crucial step: Identify</text>
+   <text x="825" y="590" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333" font-weight="bold" fill="#D32F2F">'Hard Negatives'</text>
+   <text x="825" y="605" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">(high-scoring failures).</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It emphasizes developing a robust reward/reranking model rather than just the generative model">
+                        <div class="quiz-question">1. What is the primary innovation of RewardRanker compared to traditional PPO approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It focuses on optimizing the generative model with a reward model">It focuses on optimizing the generative model with a reward model</div><div class="quiz-choice" data-value="It emphasizes developing a robust reward/reranking model rather than just the generative model">It emphasizes developing a robust reward/reranking model rather than just the generative model</div><div class="quiz-choice" data-value="It eliminates the need for any reward model in code generation">It eliminates the need for any reward model in code generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The inclusion of hard negative examples in the training dataset">
+                        <div class="quiz-question">2. What key component makes the iterative self-training cycle of RewardRanker particularly effective?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The inclusion of hard negative examples in the training dataset">The inclusion of hard negative examples in the training dataset</div><div class="quiz-choice" data-value="The exclusive use of correct solutions in training">The exclusive use of correct solutions in training</div><div class="quiz-choice" data-value="Pre-defined test cases during inference">Pre-defined test cases during inference</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It outperformed a 33B model while being three times faster">
+                        <div class="quiz-question">3. How did the 13.4B parameter RewardRanker model compare to larger models in the evaluation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It performed significantly worse but was much faster">It performed significantly worse but was much faster</div><div class="quiz-choice" data-value="It matched performance but required more computational resources">It matched performance but required more computational resources</div><div class="quiz-choice" data-value="It outperformed a 33B model while being three times faster">It outperformed a 33B model while being three times faster</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>SocioVerse: A World Model for Social Simulation Powered by LLM Agents
+  and A Pool of 10 Million Real-World Users</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.10157" target="_blank">http://arxiv.org/pdf/2504.10157</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces SocioVerse, a world model framework for social simulation using LLM-based agents to model human behavior across political, news, and economic domains.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on prior social simulation research but proposes a comprehensive framework with four alignment components (social environment, user engine, scenario engine, and behavior engine) and a 10-million real user pool to enhance simulation realism.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses alignment challenges between simulated environments and the real world, including maintaining up-to-date context, precisely modeling target users, aligning interaction mechanisms, and capturing diverse behavioral patterns.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implemented the framework with a 10-million user pool from social media platforms, demographic annotation systems, and standardized simulation pipelines across three scenarios: presidential election prediction, breaking news feedback, and national economic surveys.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results demonstrated that SocioVerse can accurately reflect large-scale population dynamics with over 90% accuracy in election predictions, consistent user reactions to breaking news, and close alignment with real-world economic statistics, while showing that both prior distribution and real-world knowledge enhance simulation accuracy.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SocioVerse: A World Model for Social Simulation Powered by LLM Agents
+  and A Pool of 10 Million Real-World Users</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,240,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(160,255,160);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(210,255,210);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,220,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,180,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,220,255);stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="30" fill="#333" text-anchor="middle" font-weight="bold">SocioVerse Methodological Workflow</text>
+
+  <!-- Overall Framework Box -->
+  <rect x="50" y="70" width="900" height="580" rx="15" ry="15" fill="#f9f9f9" stroke="#ccc" stroke-width="1"/>
+  <text x="500" y="100" font-family="Arial, sans-serif" font-size="20" fill="#555" text-anchor="middle" font-weight="bold">SocioVerse Framework: Aligning Simulation with Reality</text>
+
+  <!-- Input Data -->
+   <rect x="80" y="130" width="200" height="60" rx="10" ry="10" fill="url(#grad1)" stroke="#99c2ff" stroke-width="1.5" filter="url(#shadow)"/>
+   <text x="180" y="160" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" text-anchor="middle" font-weight="bold">Real-World Data Sources</text>
+   <text x="180" y="178" font-family="Arial, sans-serif" font-size="11" fill="#34495e" text-anchor="middle">(Social Media, News, Stats)</text>
+
+  <!-- Four Engines -->
+  <!-- 1. Social Environment -->
+  <rect x="80" y="220" width="200" height="150" rx="10" ry="10" fill="url(#grad2)" stroke="#ffcc66" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="180" y="245" font-family="Arial, sans-serif" font-size="16" fill="#8c6d31" text-anchor="middle" font-weight="bold">Social Environment</text>
+  <text x="180" y="270" font-family="Arial, sans-serif" font-size="12" fill="#a58446" text-anchor="middle">Aligns Context</text>
+  <text x="180" y="295" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">Collect & Update:</text>
+  <text x="180" y="310" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">- Social Structure</text>
+  <text x="180" y="325" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">- Social Dynamics (Events)</text>
+  <text x="180" y="340" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">- Personalized Context</text>
+  <text x="180" y="360" font-family="Arial, sans-serif" font-size="12" fill="#a58446" text-anchor="middle" font-style="italic">Output: Dynamic Knowledge</text>
+
+  <!-- 2. User Engine -->
+  <rect x="80" y="400" width="200" height="220" rx="10" ry="10" fill="url(#grad3)" stroke="#99ff99" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="180" y="425" font-family="Arial, sans-serif" font-size="16" fill="#318c31" text-anchor="middle" font-weight="bold">User Engine</text>
+  <text x="180" y="450" font-family="Arial, sans-serif" font-size="12" fill="#46a546" text-anchor="middle">Aligns Agents with Users</text>
+  <text x="180" y="475" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">1. Build 10M User Pool</text>
+  <text x="180" y="490" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">(X, Rednote Data)</text>
+  <text x="180" y="510" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">2. Infer User Labels</text>
+  <text x="180" y="525" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">(LLM -> Human Eval -> Classifier)</text>
+  <text x="180" y="545" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">3. Sample Target Group</text>
+  <text x="180" y="560" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">(IPF / IDS based on Task)</text>
+   <text x="180" y="580" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">4. Filter Anomalous Data</text>
+  <text x="180" y="605" font-family="Arial, sans-serif" font-size="12" fill="#46a546" text-anchor="middle" font-style="italic">Output: Aligned User Profiles</text>
+
+  <!-- 3. Scenario Engine -->
+  <rect x="350" y="130" width="200" height="180" rx="10" ry="10" fill="url(#grad4)" stroke="#ffaaaa" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="450" y="155" font-family="Arial, sans-serif" font-size="16" fill="#8c3131" text-anchor="middle" font-weight="bold">Scenario Engine</text>
+  <text x="450" y="180" font-family="Arial, sans-serif" font-size="12" fill="#a54646" text-anchor="middle">Aligns Interaction Structure</text>
+  <text x="450" y="205" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">1. Define Task/Query</text>
+  <text x="450" y="225" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">2. Select Scenario Template:</text>
+  <text x="450" y="240" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">- Questionnaire (1-N)</text>
+  <text x="450" y="255" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">- In-depth Interview (1-1)</text>
+  <text x="450" y="270" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">- Behavior Experiment (N-N)</text>
+  <text x="450" y="285" font-family="Arial, sans-serif" font-size="12" fill="#a54646" text-anchor="middle" font-style="italic">Output: Simulation Setup</text>
+
+  <!-- 4. Behavior Engine (Central Integration Point) -->
+  <ellipse cx="450" cy="460" rx="120" ry="100" fill="url(#grad5)" stroke="#ccb3ff" stroke-width="2" filter="url(#shadow)"/>
+  <text x="450" y="430" font-family="Arial, sans-serif" font-size="18" fill="#5c3f99" text-anchor="middle" font-weight="bold">Behavior Engine</text>
+  <text x="450" y="450" font-family="Arial, sans-serif" font-size="13" fill="#754fd6" text-anchor="middle">Aligns Agent Behavior</text>
+  <text x="450" y="475" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">Integrates Inputs:</text>
+  <text x="450" y="490" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">(Context, Profiles, Setup)</text>
+  <text x="450" y="510" font-family="Verdana, sans-serif" font-size="11" fill="#333" text-anchor="middle">Selects Agent Model:</text>
+  <text x="450" y="525" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">(ABM / LLM - General,</text>
+  <text x="450" y="538" font-family="Verdana, sans-serif" font-size="10" fill="#333" text-anchor="middle">Expert, Domain)</text>
+  <text x="450" y="560" font-family="Arial, sans-serif" font-size="12" fill="#754fd6" text-anchor="middle" font-style="italic">Output: Simulated Behaviors</text>
+
+  <!-- Connections (Implied by proximity, but add a few subtle ones) -->
+  <path d="M 280 295 Q 330 370 370 410" stroke="#aaa" stroke-width="1.5" fill="none" stroke-dasharray="5,5"/> <!-- Env -> Behavior -->
+  <path d="M 280 490 Q 320 470 350 460" stroke="#aaa" stroke-width="1.5" fill="none" stroke-dasharray="5,5"/> <!-- User -> Behavior -->
+  <path d="M 450 310 V 360" stroke="#aaa" stroke-width="1.5" fill="none" stroke-dasharray="5,5"/> <!-- Scenario -> Behavior -->
+
+  <!-- Validation Block -->
+  <rect x="620" y="130" width="300" height="490" rx="10" ry="10" fill="#e9e9ff" stroke="#c0c0ff" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="770" y="155" font-family="Arial, sans-serif" font-size="16" fill="#4d4d99" text-anchor="middle" font-weight="bold">Validation & Application</text>
+
+  <!-- Simulation Output -->
+   <rect x="650" y="180" width="240" height="50" rx="8" ry="8" fill="#ffffff" stroke="#ccc" stroke-width="1"/>
+   <text x="770" y="210" font-family="Arial, sans-serif" font-size="13" fill="#333" text-anchor="middle">Simulated Agent Behaviors / Responses</text>
+
+  <!-- Analysis -->
+   <rect x="650" y="250" width="240" height="70" rx="8" ry="8" fill="#ffffff" stroke="#ccc" stroke-width="1"/>
+   <text x="770" y="270" font-family="Arial, sans-serif" font-size="13" fill="#333" text-anchor="middle" font-weight="bold">Analysis & Evaluation</text>
+   <text x="770" y="290" font-family="Verdana, sans-serif" font-size="11" fill="#555" text-anchor="middle">Compare vs. Ground Truth</text>
+   <text x="770" y="305" font-family="Verdana, sans-serif" font-size="10" fill="#555" text-anchor="middle">(Metrics: Acc, RMSE, NRMSE, KL-Div)</text>
+
+  <!-- Final Output -->
+   <rect x="650" y="340" width="240" height="50" rx="8" ry="8" fill="#d0f0c0" stroke="#8fbc8f" stroke-width="1"/>
+   <text x="770" y="370" font-family="Arial, sans-serif" font-size="14" fill="#2e8b57" text-anchor="middle" font-weight="bold">Aligned Simulation Results</text>
+
+  <!-- Example Scenarios -->
+  <text x="770" y="410" font-family="Arial, sans-serif" font-size="14" fill="#4d4d99" text-anchor="middle" font-weight="bold">Example Applications:</text>
+  <rect x="640" y="430" width="280" height="50" rx="5" ry="5" fill="#fdf5e6" stroke="#deb887" stroke-width="1"/>
+  <text x="780" y="460" font-family="Verdana, sans-serif" font-size="11" fill="#8b4513" text-anchor="middle">1. Presidential Election Prediction (US)</text>
+
+  <rect x="640" y="490" width="280" height="50" rx="5" ry="5" fill="#f0f8ff" stroke="#add8e6" stroke-width="1"/>
+  <text x="780" y="520" font-family="Verdana, sans-serif" font-size="11" fill="#4682b4" text-anchor="middle">2. Breaking News Feedback (ChatGPT)</text>
+
+  <rect x="640" y="550" width="280" height="50" rx="5" ry="5" fill="#fff0f5" stroke="#dda0dd" stroke-width="1"/>
+  <text x="780" y="580" font-family="Verdana, sans-serif" font-size="11" fill="#ba55d3" text-anchor="middle">3. National Economic Survey (China)</text>
+
+  <!-- Arrows from Behavior Engine to Validation -->
+   <path d="M 570 460 H 620" stroke="#aaa" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#aaa" />
+      </marker>
+    </defs>
+   <path d="M 770 230 V 250" stroke="#aaa" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+   <path d="M 770 320 V 340" stroke="#aaa" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+   <path d="M 770 390 V 405" stroke="#aaa" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It incorporates a 10-million real user pool with four alignment components">
+                        <div class="quiz-question">1. What is the primary innovation of SocioVerse compared to previous social simulation approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more powerful LLMs than previous approaches">It uses more powerful LLMs than previous approaches</div><div class="quiz-choice" data-value="It incorporates a 10-million real user pool with four alignment components">It incorporates a 10-million real user pool with four alignment components</div><div class="quiz-choice" data-value="It focuses exclusively on political simulations">It focuses exclusively on political simulations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The prior demographics distribution of users">
+                        <div class="quiz-question">2. In the presidential election prediction simulation, which factor had the most significant impact on improving accuracy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The choice of underlying LLM model">The choice of underlying LLM model</div><div class="quiz-choice" data-value="The social environment's real-world knowledge">The social environment's real-world knowledge</div><div class="quiz-choice" data-value="The prior demographics distribution of users">The prior demographics distribution of users</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="All models performed best on daily necessities spending and worst on housing spending">
+                        <div class="quiz-question">3. What interesting pattern was observed about LLM performance in the national economic survey?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="All models performed best on housing spending and worst on daily necessities">All models performed best on housing spending and worst on daily necessities</div><div class="quiz-choice" data-value="Models showed inconsistent performance across different spending categories">Models showed inconsistent performance across different spending categories</div><div class="quiz-choice" data-value="All models performed best on daily necessities spending and worst on housing spending">All models performed best on daily necessities spending and worst on housing spending</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
