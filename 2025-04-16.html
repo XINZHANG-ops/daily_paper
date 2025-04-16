@@ -1,0 +1,1107 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-16 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-16 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Seedream 3.0 Technical Report</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.11346" target="_blank">http://arxiv.org/pdf/2504.11346</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents Seedream 3.0, a high-performance Chinese-English bilingual image generation foundation model in the domain of AI-generated imagery.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds upon Seedream 2.0 while proposing new techniques including defect-aware training, dual-axis collaborative data sampling, mixed-resolution training, cross-modality RoPE, and novel acceleration methods.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve limitations in Seedream 2.0 including alignment with complicated prompts, fine-grained typography generation, suboptimal visual aesthetics, and limited image resolutions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors employed improvements across the entire pipeline including doubling the dataset size, implementing mixed-resolution training, using cross-modality RoPE, applying representation alignment loss, and developing a novel acceleration paradigm with consistent noise expectation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Seedream 3.0 demonstrates significant improvements over previous models, ranking first on the Artificial Analysis Text to Image Model Leaderboard with superior performance in text rendering (especially Chinese characters), photorealistic portrait generation, and native high-resolution output (up to 2K).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Seedream 3.0 Technical Report</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f0f8ff"/>
+
+  <!-- Title -->
+  <text x="500" y="40" font-size="28" font-weight="bold" text-anchor="middle" fill="#003366">Seedream 3.0 Methodological Workflow</text>
+
+  <!-- Main Stages Containers -->
+  <rect x="30" y="80" width="940" height="150" rx="15" ry="15" fill="#e6f0ff" stroke="#b3cde0" stroke-width="1.5"/>
+  <text x="50" y="105" font-size="20" font-weight="bold" fill="#003366">1. Data Stratum</text>
+
+  <rect x="30" y="250" width="940" height="180" rx="15" ry="15" fill="#e6ffe6" stroke="#b3e0b3" stroke-width="1.5"/>
+  <text x="50" y="275" font-size="20" font-weight="bold" fill="#006600">2. Model Pre-training</text>
+
+  <rect x="30" y="450" width="940" height="150" rx="15" ry="15" fill="#fff0e6" stroke="#e0b3b3" stroke-width="1.5"/>
+  <text x="50" y="475" font-size="20" font-weight="bold" fill="#663300">3. Model Post-training (CT, SFT, RLHF, PE)</text>
+
+  <rect x="30" y="620" width="940" height="110" rx="15" ry="15" fill="#f2e6ff" stroke="#c0b3e0" stroke-width="1.5"/>
+  <text x="50" y="645" font-size="20" font-weight="bold" fill="#4d0099">4. Model Acceleration</text>
+
+  <!-- Data Stratum Details -->
+  <g transform="translate(50, 120)">
+    <rect x="0" y="0" width="290" height="90" rx="10" ry="10" fill="#cce0ff" stroke="#8cb3d9" stroke-width="1"/>
+    <text x="145" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#00264d">Defect-Aware Training</text>
+    <text x="10" y="45" font-size="12" fill="#00264d">- Defect Detector (Active Learning)</text>
+    <text x="10" y="60" font-size="12" fill="#00264d">- Mask Latent Space Optimization</text>
+    <text x="10" y="75" font-size="12" fill="#00264d">(Expands dataset by 21.7%)</text>
+
+    <rect x="310" y="0" width="290" height="90" rx="10" ry="10" fill="#cce0ff" stroke="#8cb3d9" stroke-width="1"/>
+    <text x="455" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#00264d">Dual-Axis Data Sampling</text>
+    <text x="320" y="45" font-size="12" fill="#00264d">- Visual: Hierarchical Clustering</text>
+    <text x="320" y="60" font-size="12" fill="#00264d">- Textual: TF-IDF Balancing</text>
+    <text x="320" y="75" font-size="12" fill="#00264d">(Optimize visual & semantic distribution)</text>
+
+    <rect x="620" y="0" width="290" height="90" rx="10" ry="10" fill="#cce0ff" stroke="#8cb3d9" stroke-width="1"/>
+    <text x="765" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#00264d">Cross-Modal Retrieval</text>
+    <text x="630" y="45" font-size="12" fill="#00264d">- Joint Embedding Space</text>
+    <text x="630" y="60" font-size="12" fill="#00264d">- Targeted Concept Injection</text>
+    <text x="630" y="75" font-size="12" fill="#00264d">- Distribution Calibration, Enhancement</text>
+  </g>
+
+  <!-- Model Pre-training Details -->
+  <g transform="translate(50, 290)">
+    <!-- Architecture -->
+    <rect x="0" y="0" width="440" height="120" rx="10" ry="10" fill="#ccffcc" stroke="#8cd98c" stroke-width="1"/>
+    <text x="220" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004d00">Architecture (MMDiT based)</text>
+    <rect x="10" y="35" width="200" height="75" rx="5" ry="5" fill="#e6ffe6" stroke="#b3e0b3" stroke-width="0.5"/>
+    <text x="110" y="50" text-anchor="middle" font-size="13" font-weight="bold" fill="#004d00">Mixed-Resolution Training</text>
+    <text x="20" y="70" font-size="12" fill="#004d00">- Varied aspect ratios/resolutions</text>
+    <text x="20" y="85" font-size="12" fill="#004d00">- Size embedding condition</text>
+    <rect x="230" y="35" width="200" height="75" rx="5" ry="5" fill="#e6ffe6" stroke="#b3e0b3" stroke-width="0.5"/>
+    <text x="330" y="50" text-anchor="middle" font-size="13" font-weight="bold" fill="#004d00">Cross-Modality RoPE</text>
+    <text x="240" y="70" font-size="12" fill="#004d00">- Extends Scaling RoPE</text>
+    <text x="240" y="85" font-size="12" fill="#004d00">- 2D RoPE on text tokens</text>
+    <text x="240" y="100" font-size="12" fill="#004d00">- Enhances visual-text alignment</text>
+
+    <!-- Training Details -->
+    <rect x="460" y="0" width="440" height="120" rx="10" ry="10" fill="#ccffcc" stroke="#8cd98c" stroke-width="1"/>
+    <text x="680" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004d00">Training Details</text>
+    <rect x="470" y="35" width="200" height="75" rx="5" ry="5" fill="#e6ffe6" stroke="#b3e0b3" stroke-width="0.5"/>
+    <text x="570" y="50" text-anchor="middle" font-size="13" font-weight="bold" fill="#004d00">Training Objectives</text>
+    <text x="480" y="70" font-size="12" fill="#004d00">- Flow Matching Objective</text>
+    <text x="480" y="85" font-size="12" fill="#004d00">- Representation Alignment</text>
+    <text x="480" y="100" font-size="12" fill="#004d00">  Loss (REPA) with DINOv2</text>
+    <rect x="690" y="35" width="200" height="75" rx="5" ry="5" fill="#e6ffe6" stroke="#b3e0b3" stroke-width="0.5"/>
+    <text x="790" y="50" text-anchor="middle" font-size="13" font-weight="bold" fill="#004d00">Resolution-Aware</text>
+    <text x="790" y="65" text-anchor="middle" font-size="13" font-weight="bold" fill="#004d00">Timestep Sampling</text>
+    <text x="700" y="85" font-size="12" fill="#004d00">- Adaptive p(t; D)</text>
+    <text x="700" y="100" font-size="12" fill="#004d00">- Shift based on resolution</text>
+  </g>
+
+  <!-- Model Post-training Details -->
+  <g transform="translate(50, 490)">
+    <rect x="0" y="0" width="290" height="90" rx="10" ry="10" fill="#ffe0cc" stroke="#d9a68c" stroke-width="1"/>
+    <text x="145" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#4d2600">Aesthetic Captioning</text>
+    <text x="10" y="45" font-size="12" fill="#4d2600">- Specialized caption models</text>
+    <text x="10" y="60" font-size="12" fill="#4d2600">- Detailed descriptions (style, layout)</text>
+    <text x="10" y="75" font-size="12" fill="#4d2600">- Improves controllability</text>
+
+    <rect x="310" y="0" width="290" height="90" rx="10" ry="10" fill="#ffe0cc" stroke="#d9a68c" stroke-width="1"/>
+    <text x="455" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#4d2600">Resolution Balancing</text>
+    <text x="320" y="45" font-size="12" fill="#4d2600">- Strategy during training</text>
+    <text x="320" y="60" font-size="12" fill="#4d2600">- Ensures adequate sampling</text>
+    <text x="320" y="75" font-size="12" fill="#4d2600">  across resolutions</text>
+
+    <rect x="620" y="0" width="290" height="90" rx="10" ry="10" fill="#ffe0cc" stroke="#d9a68c" stroke-width="1"/>
+    <text x="765" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#4d2600">VLM Reward Model Scaling</text>
+    <text x="630" y="45" font-size="12" fill="#4d2600">- Use VLM (not CLIP)</text>
+    <text x="630" y="60" font-size="12" fill="#4d2600">- Generative RM ("Yes" token prob)</text>
+    <text x="630" y="75" font-size="12" fill="#4d2600">- Scaled up to >20B params</text>
+  </g>
+
+  <!-- Model Acceleration Details -->
+  <g transform="translate(50, 660)">
+     <rect x="0" y="0" width="440" height="50" rx="10" ry="10" fill="#e0cce6" stroke="#a48cb3" stroke-width="1"/>
+     <text x="220" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#330066">Consistent Noise Expectation</text>
+     <text x="10" y="40" font-size="12" fill="#330066">- Unified expectation vector (global reference) -> Stable sampling, step compression</text>
+
+     <rect x="460" y="0" width="440" height="50" rx="10" ry="10" fill="#e0cce6" stroke="#a48cb3" stroke-width="1"/>
+     <text x="680" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#330066">Importance-Aware Timestep Sampling</text>
+     <text x="470" y="40" font-size="12" fill="#330066">- Learn data-dependent distribution over timesteps (SSD + NN) -> Faster convergence</text>
+  </g>
+
+  <!-- Arrows (Minimal) -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+  <line x1="500" y1="230" x2="500" y2="250" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="500" y1="430" x2="500" y2="450" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="500" y1="600" x2="500" y2="620" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="500" y1="730" x2="500" y2="750" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+
+  <!-- Output -->
+  <ellipse cx="500" cy="770" rx="150" ry="20" fill="#d1e0e0" stroke="#808080" stroke-width="1.5"/>
+  <text x="500" y="775" font-size="18" font-weight="bold" text-anchor="middle" fill="#000">Seedream 3.0 Model</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Defect-aware training with mask latent space optimization">
+                        <div class="quiz-question">1. What innovative approach did Seedream 3.0 use to expand its training dataset while maintaining quality?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Synthetic data generation using GANs">Synthetic data generation using GANs</div><div class="quiz-choice" data-value="Defect-aware training with mask latent space optimization">Defect-aware training with mask latent space optimization</div><div class="quiz-choice" data-value="Crowdsourced human annotation of all training images">Crowdsourced human annotation of all training images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Consistent noise expectation and importance-aware timestep sampling">
+                        <div class="quiz-question">2. What is the primary technical advancement that allows Seedream 3.0 to achieve a 4 to 8 times speedup during inference?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Mixed-resolution training and cross-modality RoPE">Mixed-resolution training and cross-modality RoPE</div><div class="quiz-choice" data-value="Consistent noise expectation and importance-aware timestep sampling">Consistent noise expectation and importance-aware timestep sampling</div><div class="quiz-choice" data-value="VLM-based reward model with scaling">VLM-based reward model with scaling</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Chinese text rendering and typography generation">
+                        <div class="quiz-question">3. In which capability area does Seedream 3.0 particularly excel compared to other leading models like GPT-4o?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Chinese text rendering and typography generation">Chinese text rendering and typography generation</div><div class="quiz-choice" data-value="3D object generation with accurate physics">3D object generation with accurate physics</div><div class="quiz-choice" data-value="Multi-round image editing capabilities">Multi-round image editing capabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>TextArena</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.11442" target="_blank">http://arxiv.org/pdf/2504.11442</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces TextArena, a framework for evaluating large language models through competitive text-based games that assess social skills and agentic behavior.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing game-based evaluation frameworks but uniquely offers a comprehensive collection of 57+ text-based games with online evaluation capabilities, addressing limitations of traditional benchmarks that fail to assess dynamic social skills.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper solves the problem of evaluating complex social and strategic capabilities in language models that traditional benchmarks miss, such as negotiation, theory of mind, and deception.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created a Gym-compatible framework with diverse text-based games (single/multi-player), implemented online evaluation using TrueSkill™ ratings, and developed a system for model-vs-model and model-vs-human competitions.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results show comparative performance of various language models across different soft skills (like strategic planning, theory of mind, and bluffing), with preliminary rankings displayed on a public leaderboard that includes both frontier models and community submissions.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>TextArena</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(100,150,255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,190,100);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(120,230,120);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,130,130);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; fill: #333; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #555; text-anchor: middle; }
+      .box { stroke: #666; stroke-width: 1.5; rx: 10; ry: 10; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.2)); }
+      .box-text { font-family: Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+      .box-text-small { font-family: Arial, sans-serif; font-size: 11px; fill: #444; text-anchor: middle; }
+      .arrow { stroke: #555; stroke-width: 2; marker-end: url(#arrowhead); }
+      .connector { stroke: #888; stroke-width: 1.5; stroke-dasharray: 5, 5; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">TextArena Workflow</text>
+  <text x="500" y="65" class="subtitle">Methodology for LLM Evaluation via Competitive Gameplay</text>
+
+  <!-- Step 1: Problem Definition -->
+  <rect x="350" y="90" width="300" height="60" class="box" fill="url(#grad4)" />
+  <text x="500" y="115" class="box-text" font-weight="bold">Problem: LLM Benchmark Saturation</text>
+  <text x="500" y="135" class="box-text-small">Need for dynamic evaluation, especially social skills.</text>
+
+  <!-- Step 2: Proposed Solution - TextArena Framework -->
+  <rect x="300" y="180" width="400" height="70" class="box" fill="url(#grad1)" />
+  <text x="500" y="210" class="box-text" font-weight="bold">Solution: TextArena Framework</text>
+  <text x="500" y="230" class="box-text-small">Open-source competitive text-game platform for LLM training & evaluation.</text>
+
+  <!-- Line connecting Problem to Solution -->
+  <line x1="500" y1="150" x2="500" y2="180" class="arrow" />
+
+  <!-- Step 3: Core Components (Grouped) -->
+  <g id="components">
+    <rect x="50" y="280" width="900" height="220" fill="#f0f0f0" rx="15" ry="15" stroke="#ccc" stroke-width="1"/>
+    <text x="500" y="305" class="subtitle" fill="#444">Core Components</text>
+
+    <!-- Component 1: Game Library -->
+    <rect x="80" y="330" width="250" height="150" class="box" fill="url(#grad2)" />
+    <text x="205" y="350" class="box-text" font-weight="bold">1. Diverse Game Library</text>
+    <text x="205" y="370" class="box-text-small">57+ Text-Based Games</text>
+    <text x="205" y="385" class="box-text-small">(Single, Two, Multi-Player)</text>
+    <text x="205" y="400" class="box-text-small">Covering various skills:</text>
+    <text x="205" y="415" class="box-text-small">Reasoning, ToM, Planning,</text>
+    <text x="205" y="430" class="box-text-small">Negotiation, Deception, etc.</text>
+    <text x="205" y="445" class="box-text-small">Games tagged with skills.</text>
+
+    <!-- Component 2: Unified Framework -->
+    <rect x="375" y="330" width="250" height="150" class="box" fill="url(#grad3)" />
+    <text x="500" y="350" class="box-text" font-weight="bold">2. Unified Interaction Framework</text>
+    <text x="500" y="370" class="box-text-small">Gym-like API (OpenAI Gym style)</text>
+    <text x="500" y="385" class="box-text-small">Standardized Agent-Env Loop:</text>
+    <text x="500" y="400" class="box-text-small">Obs -> Agent Action -> Env Step</text>
+    <text x="500" y="415" class="box-text-small">Suitable for RL Training</text>
+    <text x="500" y="430" class="box-text-small">Easy Extensibility (Games/Models)</text>
+    <text x="500" y="445" class="box-text-small">Wrappers (e.g., LLMObservation)</text>
+
+    <!-- Component 3: Online Evaluation System -->
+    <rect x="670" y="330" width="250" height="150" class="box" fill="url(#grad1)" />
+    <text x="795" y="350" class="box-text" font-weight="bold">3. Online Evaluation System</text>
+    <text x="795" y="370" class="box-text-small">Real-time Matchmaking</text>
+    <text x="795" y="385" class="box-text-small">(Model vs Model, Model vs Human)</text>
+    <text x="795" y="400" class="box-text-small">TrueSkill™ Rating System</text>
+    <text x="795" y="415" class="box-text-small">Dynamic Leaderboard</text>
+    <text x="795" y="430" class="box-text-small">(Models & "Humanity" baseline)</text>
+     <text x="795" y="445" class="box-text-small">Soft-Skill Profiling (Weighted Avg.)</text>
+  </g>
+
+  <!-- Connector Line from Solution to Components -->
+  <line x1="500" y1="250" x2="500" y2="280" class="arrow" />
+
+  <!-- Step 4: Outputs & Resources (Grouped) -->
+   <g id="outputs">
+    <rect x="50" y="530" width="900" height="120" fill="#f9f9f9" rx="15" ry="15" stroke="#ddd" stroke-width="1"/>
+    <text x="500" y="555" class="subtitle" fill="#444">Outputs & Resources</text>
+
+    <!-- Output 1: Performance Metrics -->
+    <rect x="80" y="575" width="250" height="60" class="box" fill="url(#grad2)" />
+    <text x="205" y="595" class="box-text" font-weight="bold">Performance Metrics</text>
+    <text x="205" y="615" class="box-text-small">Relative Rankings (Leaderboard)</text>
+    <text x="205" y="625" class="box-text-small">Granular Soft-Skill Profiles</text>
+
+    <!-- Output 2: Community Resources -->
+    <rect x="375" y="575" width="250" height="60" class="box" fill="url(#grad3)" />
+    <text x="500" y="595" class="box-text" font-weight="bold">Community Resources</text>
+    <text x="500" y="615" class="box-text-small">Open-Source Code (GitHub)</text>
+    <text x="500" y="625" class="box-text-small">Website (Play UI, Leaderboard)</text>
+
+     <!-- Output 3: Potential for Training Data -->
+    <rect x="670" y="575" width="250" height="60" class="box" fill="url(#grad1)" />
+    <text x="795" y="595" class="box-text" font-weight="bold">Training Potential</text>
+    <text x="795" y="615" class="box-text-small">Source of RL Training Data</text>
+    <text x="795" y="625" class="box-text-small">(Game Trajectories)</text>
+   </g>
+
+    <!-- Connector Line from Components to Outputs -->
+   <line x1="500" y1="500" x2="500" y2="530" class="arrow" />
+
+   <!-- Step 5: Future Directions -->
+   <rect x="350" y="680" width="300" height="80" class="box" fill="url(#grad4)" />
+   <text x="500" y="700" class="box-text" font-weight="bold">Future Directions</text>
+   <text x="500" y="720" class="box-text-small">RL Training Paradigms</text>
+   <text x="500" y="735" class="box-text-small">Public Engagement & Data Release</text>
+   <text x="500" y="750" class="box-text-small">VideoGameArena Extension</text>
+
+    <!-- Connector Line from Outputs to Future -->
+   <line x1="500" y1="650" x2="500" y2="680" class="arrow" />
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It has no clear upper limit of performance that can be reached">
+                        <div class="quiz-question">1. What is the primary advantage of TextArena's relative evaluation approach compared to traditional benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It eliminates the need for human evaluation entirely">It eliminates the need for human evaluation entirely</div><div class="quiz-choice" data-value="It has no clear upper limit of performance that can be reached">It has no clear upper limit of performance that can be reached</div><div class="quiz-choice" data-value="It focuses exclusively on single-player environments">It focuses exclusively on single-player environments</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="TrueSkill™ bayesian skill rating system">
+                        <div class="quiz-question">2. Which skill assessment methodology does TextArena use to rank models on its leaderboard?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Elo rating system with manual adjustments">Elo rating system with manual adjustments</div><div class="quiz-choice" data-value="Simple win/loss percentage calculations">Simple win/loss percentage calculations</div><div class="quiz-choice" data-value="TrueSkill™ bayesian skill rating system">TrueSkill™ bayesian skill rating system</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Support for both model-vs-model and model-vs-human evaluation">
+                        <div class="quiz-question">3. What unique capability does TextArena offer that most other game-based LLM evaluation frameworks lack?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Support for both model-vs-model and model-vs-human evaluation">Support for both model-vs-model and model-vs-human evaluation</div><div class="quiz-choice" data-value="The ability to test only strategic planning skills">The ability to test only strategic planning skills</div><div class="quiz-choice" data-value="A focus exclusively on two-player competitive games">A focus exclusively on two-player competitive games</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Pixel-SAIL: Single Transformer For Pixel-Grounded Understanding</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.10465" target="_blank">http://arxiv.org/pdf/2504.10465</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces Pixel-SAIL, a single transformer architecture for pixel-grounded multimodal understanding tasks in computer vision and natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on recent SAIL (Single trAnsformer as a unified vIsion-Language Model) designs but extends them to pixel-level understanding tasks, proposing a simplified architecture without the multiple components (vision encoders, segmentation experts) used in current MLLMs.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the high complexity of current Multimodal Large Language Models for pixel-level understanding tasks, which rely on multiple specialized components that limit model scaling and efficiency.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors propose three key improvements: a learnable upsampling module for visual token features, a novel visual prompt injection strategy, and a vision expert distillation strategy to enhance fine-grained feature extraction capabilities.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Pixel-SAIL achieves comparable or better results than state-of-the-art MLLMs on referring segmentation benchmarks, with the 3B model outperforming larger 7B models, while also introducing a new benchmark (PerBench) for comprehensive pixel understanding evaluation.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Pixel-SAIL: Single Transformer For Pixel-Grounded Understanding</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define Styles and Gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(100,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(150,220,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,100);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,200,130);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(120,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(160,255,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(220,180,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,200,255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgb(200, 200, 200);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230, 230, 230);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,150,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad7" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150, 150, 255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(180, 180, 255);stop-opacity:1" />
+    </linearGradient>
+
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 28px; font-weight: bold; fill: #333; text-anchor: middle; }
+      .subtitle { font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; fill: #555; text-anchor: middle; }
+      .box-text { font-family: 'Arial', sans-serif; font-size: 12px; fill: #000; text-anchor: middle; }
+      .box-text-small { font-family: 'Arial', sans-serif; font-size: 10px; fill: #333; text-anchor: middle; }
+      .connector { stroke: #888; stroke-width: 1.5; fill: none; }
+      .dashed-connector { stroke: #aaa; stroke-width: 1.5; stroke-dasharray: 4, 2; fill: none; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">Pixel-SAIL Method Flowchart</text>
+
+  <!-- Inputs -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="120" height="80" rx="10" ry="10" fill="url(#grad1)" stroke="#777" stroke-width="1"/>
+    <text x="60" y="30" class="subtitle">Inputs</text>
+    <text x="60" y="50" class="box-text">Image</text>
+    <text x="60" y="65" class="box-text">Text Instruction</text>
+  </g>
+  <g transform="translate(50, 180)">
+      <rect x="0" y="0" width="120" height="50" rx="10" ry="10" fill="url(#grad1)" stroke="#777" stroke-width="1"/>
+      <text x="60" y="20" class="box-text">Visual Prompts</text>
+      <text x="60" y="35" class="box-text-small">(Masks/Points/Boxes)</text>
+  </g>
+
+  <!-- Initial Processing -->
+   <g transform="translate(220, 80)">
+    <rect x="0" y="0" width="140" height="50" rx="10" ry="10" fill="url(#grad2)" stroke="#777" stroke-width="1"/>
+    <text x="70" y="20" class="box-text">Image Patch</text>
+    <text x="70" y="35" class="box-text">Embedding</text>
+    <path d="M 170 120 L 220 105" class="connector"/> <!-- Connector from Image input -->
+  </g>
+  <g transform="translate(220, 140)">
+    <rect x="0" y="0" width="140" height="50" rx="10" ry="10" fill="url(#grad2)" stroke="#777" stroke-width="1"/>
+    <text x="70" y="20" class="box-text">Text Tokenizer</text>
+    <text x="70" y="35" class="box-text">(Text Tokens)</text>
+     <path d="M 170 140 L 220 165" class="connector"/> <!-- Connector from Text input -->
+  </g>
+
+  <!-- Core Transformer Block -->
+  <rect x="400" y="100" width="200" height="180" rx="15" ry="15" fill="url(#grad5)" stroke="#555" stroke-width="2"/>
+  <text x="500" y="130" class="subtitle">Single Transformer</text>
+  <text x="500" y="155" class="box-text">Jointly Learns</text>
+  <text x="500" y="175" class="box-text">Vision Tokens</text>
+  <text x="500" y="195" class="box-text">Text Tokens</text>
+  <text x="500" y="215" class="box-text">Visual Prompt Tokens</text>
+  <text x="500" y="235" class="box-text">(Encoder-Free)</text>
+
+
+  <!-- Improvement 1: Visual Prompt Injection -->
+  <g transform="translate(220, 210)">
+      <rect x="0" y="0" width="140" height="100" rx="10" ry="10" fill="url(#grad3)" stroke="#777" stroke-width="1"/>
+      <text x="70" y="20" class="subtitle">Improvement 1</text>
+      <text x="70" y="40" class="box-text">Visual Prompt</text>
+      <text x="70" y="55" class="box-text">Injection</text>
+      <text x="70" y="75" class="box-text-small">Map Prompts to Embeds</text>
+      <text x="70" y="88" class="box-text-small">Add to Vision Tokens</text>
+  </g>
+  <path d="M 170 205 L 220 230" class="connector"/> <!-- Connector from Visual Prompt input -->
+  <path d="M 360 260 Q 380 230 400 220" class="connector" /> <!-- Connector to Transformer -->
+  <path d="M 360 105 Q 380 130 400 140" class="connector" /> <!-- Connector from Patch Embedding -->
+  <path d="M 360 165 Q 380 180 400 185" class="connector" /> <!-- Connector from Text Tokens -->
+
+  <!-- Processing after Transformer -->
+   <g transform="translate(650, 100)">
+    <rect x="0" y="0" width="140" height="60" rx="10" ry="10" fill="url(#grad2)" stroke="#777" stroke-width="1"/>
+    <text x="70" y="25" class="box-text">Reshape Vision Tokens</text>
+    <text x="70" y="45" class="box-text">(Low-Res Features Fl)</text>
+  </g>
+  <path d="M 600 150 L 650 130" class="connector" /> <!-- Connector from Transformer -->
+
+  <!-- Improvement 2: Learnable Upsampling -->
+  <g transform="translate(650, 180)">
+    <rect x="0" y="0" width="140" height="90" rx="10" ry="10" fill="url(#grad3)" stroke="#777" stroke-width="1"/>
+    <text x="70" y="20" class="subtitle">Improvement 2</text>
+    <text x="70" y="40" class="box-text">Learnable</text>
+    <text x="70" y="55" class="box-text">Upsampling</text>
+    <text x="70" y="75" class="box-text-small">Refine Low-Res Fl</text>
+    <text x="70" y="88" class="box-text-small">(High-Res Features Fh)</text>
+  </g>
+  <path d="M 720 160 V 180" class="connector" /> <!-- Connector from Low-Res Features -->
+
+
+  <!-- Outputs -->
+   <g transform="translate(840, 120)">
+    <rect x="0" y="0" width="120" height="50" rx="10" ry="10" fill="url(#grad6)" stroke="#777" stroke-width="1"/>
+    <text x="60" y="30" class="box-text">Text Response</text>
+  </g>
+   <g transform="translate(840, 200)">
+    <rect x="0" y="0" width="120" height="60" rx="10" ry="10" fill="url(#grad6)" stroke="#777" stroke-width="1"/>
+    <text x="60" y="25" class="box-text">Segmentation</text>
+    <text x="60" y="45" class="box-text">Mask</text>
+  </g>
+  <path d="M 600 190 Q 700 160 840 145" class="connector" /> <!-- Connector from Transformer to Text Output -->
+  <path d="M 790 225 L 840 230" class="connector" /> <!-- Connector from Upsampling to Mask Output -->
+
+
+  <!-- Improvement 3: Dense Feature Distillation (Training Strategy) -->
+  <g transform="translate(400, 350)">
+    <rect x="0" y="0" width="200" height="110" rx="15" ry="15" fill="url(#grad3)" stroke="#777" stroke-width="1"/>
+    <text x="100" y="25" class="subtitle">Improvement 3</text>
+    <text x="100" y="45" class="box-text">Dense Feature Distillation</text>
+    <text x="100" y="65" class="box-text-small">From Pre-trained Experts</text>
+    <text x="100" y="80" class="box-text-small">(Mask2Former, SAM2)</text>
+    <text x="100" y="95" class="box-text-small">(Training Strategy)</text>
+  </g>
+  <path d="M 500 280 V 350" class="dashed-connector" /> <!-- Dashed Connector from Transformer to Distillation -->
+
+  <!-- Training Data & Benchmark -->
+  <g transform="translate(50, 350)">
+    <rect x="0" y="0" width="200" height="110" rx="15" ry="15" fill="url(#grad4)" stroke="#777" stroke-width="1"/>
+    <text x="100" y="25" class="subtitle">Training & Evaluation</text>
+    <text x="100" y="45" class="box-text">Dataset Engine:</text>
+    <text x="100" y="60" class="box-text-small">RefCOCO, COCO, LISA,</text>
+    <text x="100" y="73" class="box-text-small">GLaMM, MUSE, Pixel2Cap,</text>
+    <text x="100" y="86" class="box-text-small">Osprey, SA-1B captions, LLaVA</text>
+    <text x="100" y="102" class="box-text">PerBench (Evaluation)</text>
+  </g>
+  <path d="M 250 405 H 400" class="dashed-connector" /> <!-- Dashed Connector from Data to Distillation -->
+
+  <!-- Overall Output -->
+   <g transform="translate(650, 350)">
+    <rect x="0" y="0" width="310" height="110" rx="15" ry="15" fill="url(#grad7)" stroke="#777" stroke-width="1"/>
+    <text x="155" y="25" class="subtitle">Pixel-SAIL Output Capabilities</text>
+     <text x="155" y="45" class="box-text">General Conversation (VQA)</text>
+    <text x="155" y="65" class="box-text">Pixel-Grounded Understanding:</text>
+    <text x="155" y="80" class="box-text-small">- Referring Segmentation</text>
+    <text x="155" y="95" class="box-text-small">- Visual Prompt Understanding (Caption, MCQ)</text>
+  </g>
+   <path d="M 600 405 H 650" class="dashed-connector" /> <!-- Dashed Connector from Distillation to Output Caps -->
+   <path d="M 900 170 V 350" class="connector"/> <!-- Connector from Text Output -->
+   <path d="M 900 260 V 350" class="connector"/> <!-- Connector from Mask Output -->
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It employs a single transformer architecture without additional vision encoders or segmentation experts">
+                        <div class="quiz-question">1. What is the primary innovation of Pixel-SAIL compared to previous multimodal models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a much larger transformer with billions more parameters">It uses a much larger transformer with billions more parameters</div><div class="quiz-choice long-text" data-value="It employs a single transformer architecture without additional vision encoders or segmentation experts">It employs a single transformer architecture without additional vision encoders or segmentation experts</div><div class="quiz-choice" data-value="It focuses exclusively on text understanding while ignoring visual inputs">It focuses exclusively on text understanding while ignoring visual inputs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A specialized contrastive learning framework for text-image alignment">
+                        <div class="quiz-question">2. Which of the following is NOT one of the three technical improvements proposed in Pixel-SAIL?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A learnable upsampling module for visual token features">A learnable upsampling module for visual token features</div><div class="quiz-choice" data-value="A specialized contrastive learning framework for text-image alignment">A specialized contrastive learning framework for text-image alignment</div><div class="quiz-choice" data-value="A vision expert distillation strategy to enhance feature extraction">A vision expert distillation strategy to enhance feature extraction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="A new comprehensive benchmark for pixel-understanding that includes detailed object description, visual prompt-based QA, and visual-text referring segmentation">
+                        <div class="quiz-question">3. What is PerBench, as described in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A hardware benchmark for measuring transformer efficiency">A hardware benchmark for measuring transformer efficiency</div><div class="quiz-choice long-text" data-value="A new comprehensive benchmark for pixel-understanding that includes detailed object description, visual prompt-based QA, and visual-text referring segmentation">A new comprehensive benchmark for pixel-understanding that includes detailed object description, visual prompt-based QA, and visual-text referring segmentation</div><div class="quiz-choice" data-value="A training methodology that periodically evaluates model performance">A training methodology that periodically evaluates model performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
