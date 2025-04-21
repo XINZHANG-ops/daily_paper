@@ -1,0 +1,1091 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-21 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-21 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>CLIMB: CLustering-based Iterative Data Mixture Bootstrapping for
+  Language Model Pre-training</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.13161" target="_blank">http://arxiv.org/pdf/2504.13161</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces CLIMB, a framework for optimizing data mixtures for language model pre-training through clustering-based iterative bootstrapping.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous data mixture approaches but proposes a novel method to automatically identify, evaluate, and refine data mixtures without relying on predefined domain labels.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of finding optimal pre-training data mixtures for language models when working with large-scale web datasets that lack inherent domain divisions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors cluster documents in semantic space, then iteratively optimize mixture weights using a bootstrapping process with proxy models and predictors to progressively refine the data mixture.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Using the optimal data mixture, their 1B model exceeded state-of-the-art Llama-3.2-1B by 2.0% on reasoning tasks, with domain-specific optimization yielding 5% improvement over random sampling; they also released ClimbLab and ClimbMix datasets.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>CLIMB: CLustering-based Iterative Data Mixture Bootstrapping for
+  Language Model Pre-training</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(135, 206, 250);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(70, 130, 180);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(144, 238, 144);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(60, 179, 113);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255, 223, 186);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255, 160, 122);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(221, 160, 221);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(186, 85, 211);stop-opacity:1" />
+    </linearGradient>
+     <marker id="arrowhead" markerWidth="10" markerHeight="7"
+      refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">CLIMB Methodology Flowchart</text>
+
+  <!-- Phase 1: Data Preprocessing -->
+  <rect x="50" y="80" width="900" height="200" rx="15" ry="15" fill="#E6F7FF" stroke="#B0E0E6" stroke-width="2"/>
+  <text x="500" y="105" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#005f73">Phase 1: Data Preprocessing & Clustering</text>
+
+  <!-- Steps in Phase 1 -->
+  <g transform="translate(80, 130)">
+    <rect width="200" height="120" rx="10" ry="10" fill="url(#grad1)" stroke="#4682B4" stroke-width="1"/>
+    <text x="100" y="40" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white" font-weight="bold">1. Embed Texts</text>
+    <text x="100" y="70" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="white">Large Raw Dataset (^D)</text>
+    <text x="100" y="90" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="white">-> Embedding Vectors (E)</text>
+  </g>
+
+  <g transform="translate(310, 130)">
+    <rect width="200" height="120" rx="10" ry="10" fill="url(#grad1)" stroke="#4682B4" stroke-width="1"/>
+    <text x="100" y="40" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white" font-weight="bold">2. Cluster Embeddings</text>
+    <text x="100" y="70" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="white">K-means on E</text>
+    <text x="100" y="90" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="white">-> Initial Clusters (K_init)</text>
+  </g>
+
+  <g transform="translate(540, 130)">
+    <rect width="200" height="120" rx="10" ry="10" fill="url(#grad1)" stroke="#4682B4" stroke-width="1"/>
+    <text x="100" y="40" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white" font-weight="bold">3. Refine Clusters</text>
+    <text x="100" y="65" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="white">- Prune low-quality (K_pruned)</text>
+    <text x="100" y="85" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="white">- Merge similar (K_enhanced)</text>
+    <text x="100" y="105" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="white">-> Final Clusters (D)</text>
+  </g>
+
+  <!-- Arrows for Phase 1 -->
+  <line x1="285" y1="190" x2="305" y2="190" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="515" y1="190" x2="535" y2="190" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="745" y1="190" x2="765" y2="190" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+
+  <!-- Output of Phase 1 -->
+   <g transform="translate(770, 130)">
+     <rect width="150" height="120" rx="10" ry="10" fill="#ADD8E6" stroke="#4682B4" stroke-width="1"/>
+     <text x="75" y="60" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#000" font-weight="bold">Set of</text>
+     <text x="75" y="80" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#000" font-weight="bold">Data Clusters (D)</text>
+   </g>
+
+  <!-- Phase 2: Iterative Bootstrapping -->
+  <rect x="50" y="300" width="900" height="400" rx="15" ry="15" fill="#F0FFF0" stroke="#90EE90" stroke-width="2"/>
+  <text x="500" y="325" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#2E8B57">Phase 2: Iterative Mixture Bootstrapping (K Iterations)</text>
+
+  <!-- Iteration Loop Representation -->
+  <path d="M 100 400 C 50 450, 50 600, 100 650" stroke="#8FBC8F" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+  <path d="M 900 400 C 950 450, 950 600, 900 650" stroke="#8FBC8F" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+  <text x="75" y="525" font-family="Arial, sans-serif" font-size="16" fill="#2E8B57" transform="rotate(-90, 75, 525)">Iteration k</text>
+  <text x="925" y="525" font-family="Arial, sans-serif" font-size="16" fill="#2E8B57" transform="rotate(90, 925, 525)">k = 1 to K</text>
+
+  <!-- Steps Inside Iteration -->
+  <g transform="translate(150, 360)">
+    <rect width="280" height="100" rx="10" ry="10" fill="url(#grad2)" stroke="#3CB371" stroke-width="1"/>
+    <text x="140" y="30" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#fff" font-weight="bold">Sample/Select Mixtures (α)</text>
+    <text x="140" y="55" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff">(Random for k=1)</text>
+    <text x="140" y="75" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff">(Guided by Predictor f_k-1 for k>1)</text>
+  </g>
+
+  <g transform="translate(570, 360)">
+     <rect width="280" height="100" rx="10" ry="10" fill="url(#grad2)" stroke="#3CB371" stroke-width="1"/>
+     <text x="140" y="35" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#fff" font-weight="bold">Train Proxy Models</text>
+     <text x="140" y="60" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff">(on sampled mixtures)</text>
+     <text x="140" y="80" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff">-> Get Performance (ℓ(α, ω*))</text>
+  </g>
+
+  <g transform="translate(150, 500)">
+     <rect width="280" height="100" rx="10" ry="10" fill="url(#grad3)" stroke="#FFA07A" stroke-width="1"/>
+     <text x="140" y="35" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#8B4513" font-weight="bold">Update Evaluated Set (S_k)</text>
+     <text x="140" y="60" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#8B4513">Combine previous S_k-1</text>
+     <text x="140" y="80" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#8B4513">with new (α, Performance) pairs</text>
+  </g>
+
+  <g transform="translate(570, 500)">
+     <rect width="280" height="100" rx="10" ry="10" fill="url(#grad3)" stroke="#FFA07A" stroke-width="1"/>
+     <text x="140" y="35" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#8B4513" font-weight="bold">Train/Update Predictor (f_k)</text>
+     <text x="140" y="60" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#8B4513">(e.g., LightGBM Regression)</text>
+     <text x="140" y="80" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#8B4513">Uses all data in S_k</text>
+  </g>
+
+  <!-- Arrows for Phase 2 -->
+  <line x1="435" y1="410" x2="565" y2="410" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="710" y1="465" x2="710" y2="495" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="565" y1="550" x2="435" y2="550" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="290" y1="465" x2="290" y2="495" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+
+   <!-- Connect Phase 1 output to Phase 2 input -->
+   <path d="M 845 250 C 845 290, 300 300, 290 355" stroke="#555" stroke-width="2" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="4,4"/>
+   <text x="560" y="290" font-family="Arial, sans-serif" font-size="12" fill="#555">Input Clusters</text>
+
+   <!-- Connect Predictor back to Sampling -->
+    <path d="M 710 605 C 710 635, 290 635, 290 605" stroke="#555" stroke-width="2" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="4,4"/>
+    <text x="500" y="650" font-family="Arial, sans-serif" font-size="12" fill="#555">Predictor guides next iteration's sampling</text>
+
+  <!-- Final Output -->
+  <g transform="translate(350, 670)">
+    <rect width="300" height="80" rx="10" ry="10" fill="url(#grad4)" stroke="#9932CC" stroke-width="1"/>
+    <text x="150" y="35" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white" font-weight="bold">Use Final Predictor (f_K)</text>
+    <text x="150" y="60" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="white">-> Identify Optimal Mixture (α*)</text>
+  </g>
+
+  <!-- Arrow from loop to final output -->
+  <line x1="500" y1="605" x2="500" y2="665" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+  <text x="520" y="640" font-family="Arial, sans-serif" font-size="12" fill="#555">After K Iterations</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It automatically identifies and optimizes data mixtures without relying on predefined domain labels">
+                        <div class="quiz-question">1. What is the main innovation of CLIMB compared to previous data mixture methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses larger proxy models to evaluate data quality">It uses larger proxy models to evaluate data quality</div><div class="quiz-choice" data-value="It automatically identifies and optimizes data mixtures without relying on predefined domain labels">It automatically identifies and optimizes data mixtures without relying on predefined domain labels</div><div class="quiz-choice" data-value="It focuses exclusively on reasoning tasks rather than general capabilities">It focuses exclusively on reasoning tasks rather than general capabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To progressively refine the search space and eliminate suboptimal data mixture candidates">
+                        <div class="quiz-question">2. In the CLIMB framework, what is the purpose of the iterative bootstrapping process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To train increasingly larger language models at each iteration">To train increasingly larger language models at each iteration</div><div class="quiz-choice" data-value="To gradually filter out low-quality web content">To gradually filter out low-quality web content</div><div class="quiz-choice" data-value="To progressively refine the search space and eliminate suboptimal data mixture candidates">To progressively refine the search space and eliminate suboptimal data mixture candidates</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="More search iterations improved performance, but compute should be balanced between depth and breadth">
+                        <div class="quiz-question">3. What was a key finding from the ablation studies on CLIMB?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a 62M proxy model performed better than using a 350M proxy model">Using a 62M proxy model performed better than using a 350M proxy model</div><div class="quiz-choice long-text" data-value="More search iterations improved performance, but compute should be balanced between depth and breadth">More search iterations improved performance, but compute should be balanced between depth and breadth</div><div class="quiz-choice" data-value="Random initialization consistently outperformed Dirichlet initialization">Random initialization consistently outperformed Dirichlet initialization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Does Reinforcement Learning Really Incentivize Reasoning Capacity in
+  LLMs Beyond the Base Model?</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.13837" target="_blank">http://arxiv.org/pdf/2504.13837</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper examines whether reinforcement learning (RL) actually creates new reasoning capabilities in large language models (LLMs) beyond what exists in base models, focusing on mathematical, programming, and visual reasoning tasks.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous research in Reinforcement Learning with Verifiable Rewards (RLVR) but challenges the common belief that RLVR enables LLMs to develop novel reasoning abilities beyond their base models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to determine whether RLVR training genuinely introduces new reasoning capabilities to LLMs or merely optimizes existing capabilities from the base model.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors used the pass@k metric with large k values across multiple model families and benchmarks to measure the reasoning capability boundaries of both base and RL-trained models, combined with perplexity analysis.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results showed that while RL-trained models outperform base models at small k values, base models achieve higher pass@k scores at large k values, indicating that RLVR improves sampling efficiency but does not introduce new reasoning abilities beyond what already exists in the base models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Does Reinforcement Learning Really Incentivize Reasoning Capacity in
+  LLMs Beyond the Base Model?</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,240,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,255,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,220,220);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; }
+      .question { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #D32F2F; }
+      .method { font-family: Arial, sans-serif; font-size: 14px; fill: #0277BD; }
+      .sub-method { font-family: Arial, sans-serif; font-size: 12px; fill: #388E3C; }
+      .detail { font-family: Arial, sans-serif; font-size: 11px; fill: #555; }
+      .connector { stroke: #777; stroke-width: 1.5; fill: none; }
+      .arrow-head { fill: #777; }
+      .box { stroke: #aaa; stroke-width: 1; rx: 5; ry: 5; }
+      .analysis-box { stroke: #666; stroke-width: 1.5; rx: 8; ry: 8; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#777" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" class="title">Paper Workflow: Re-examining RLVR's Impact on Reasoning</text>
+
+  <!-- Starting Point: Research Question -->
+  <rect x="250" y="70" width="500" height="50" rx="10" ry="10" fill="url(#grad4)" class="box"/>
+  <text x="500" y="100" text-anchor="middle" class="question">Does RLVR truly add NEW reasoning capabilities beyond the Base Model?</text>
+
+  <!-- Core Methodological Idea -->
+  <rect x="150" y="140" width="700" height="100" rx="10" ry="10" fill="url(#grad1)" class="box"/>
+  <text x="500" y="165" text-anchor="middle" class="method">Challenge: Traditional metrics (e.g., pass@1) show average performance, not capability limits.</text>
+  <text x="500" y="190" text-anchor="middle" class="method">Proposed Method: Evaluate Reasoning Boundary using pass@k with LARGE k.</text>
+  <text x="500" y="210" text-anchor="middle" class="detail">(Rationale: If Base Model solves problems with enough samples (large k),</text>
+  <text x="500" y="225" text-anchor="middle" class="detail">the capability might already exist, just less efficiently sampled.)</text>
+  <line x1="500" y1="120" x2="500" y2="140" class="connector" marker-end="url(#arrow)"/>
+
+  <!-- Experimental Setup -->
+  <rect x="50" y="260" width="900" height="150" rx="10" ry="10" fill="url(#grad2)" class="box"/>
+  <text x="500" y="285" text-anchor="middle" class="method">Experimental Setup: Compare Base vs. RLVR Models</text>
+  <text x="100" y="310" class="sub-method">Models:</text>
+  <text x="100" y="325" class="detail">- Qwen-2.5 (7B, 14B, 32B)</text>
+  <text x="100" y="340" class="detail">- LLaMA-3.1-8B</text>
+  <text x="100" y="355" class="detail">- Qwen-2.5-VL-7B</text>
+
+  <text x="350" y="310" class="sub-method">Tasks & Benchmarks:</text>
+  <text x="350" y="325" class="detail">- Math: GSM8K, MATH500, Minerva, Olympiad, AIME24, AMC23</text>
+  <text x="350" y="340" class="detail">- Code: LiveCodeBench, HumanEval+, MBPP+</text>
+  <text x="350" y="355" class="detail">- Visual Reasoning: MathVista (filtered), MathVision (filtered)</text>
+
+  <text x="700" y="310" class="sub-method">RL Approach:</text>
+  <text x="700" y="325" class="detail">- Primarily "Zero RL" (RL on Base)</text>
+  <text x="700" y="340" class="detail">- Algorithms: GRPO (main), PPO, etc. (later analysis)</text>
+  <text x="700" y="355" class="detail">- Evaluation: Zero-shot prompts, T=0.6, Top-p=0.95, large k (e.g., 256, 1024)</text>
+  <text x="500" y="380" class="sub-method">Key Measurement: Plot pass@k curves for Base vs. RLVR models.</text>
+  <line x1="500" y1="240" x2="500" y2="260" class="connector" marker-end="url(#arrow)"/>
+
+  <!-- Deep Analysis Section -->
+   <text x="500" y="435" text-anchor="middle" class="method">Deep Analysis to Understand the Observed pass@k Trends</text>
+   <line x1="500" y1="410" x2="500" y2="420" class="connector" marker-end="url(#arrow)"/>
+
+  <g transform="translate(0, 450)">
+    <!-- Analysis 1: CoT Validity & Filtering -->
+    <rect x="30" y="0" width="280" height="110" class="analysis-box" fill="url(#grad3)"/>
+    <text x="170" y="20" text-anchor="middle" class="sub-method">1. CoT Validity Check (Math/Visual)</text>
+    <text x="40" y="40" class="detail">Problem: Correct answer via wrong reasoning?</text>
+    <text x="40" y="55" class="detail">Method:</text>
+    <text x="50" y="70" class="detail">- Filter guessable problems (AIME24).</text>
+    <text x="50" y="85" class="detail">- Manually inspect CoTs for hardest</text>
+    <text x="50" y="100" class="detail">  problems solved at large k.</text>
+
+    <!-- Analysis 2: Coverage & Perplexity -->
+    <rect x="360" y="0" width="280" height="110" class="analysis-box" fill="url(#grad3)"/>
+    <text x="500" y="20" text-anchor="middle" class="sub-method">2. Coverage & Perplexity Analysis</text>
+    <text x="370" y="40" class="detail">Method 1: Solvable Set Comparison</text>
+    <text x="380" y="55" class="detail">- Check if {Problems solved by RL} ⊆</text>
+    <text x="380" y="70" class="detail">  {Problems solved by Base} at large k.</text>
+    <text x="370" y="85" class="detail">Method 2: Perplexity</text>
+    <text x="380" y="100" class="detail">- Calculate PPL_Base(Y_RL) vs PPL_Base(Y_Base).</text>
+
+    <!-- Analysis 3: Distillation -->
+    <rect x="690" y="0" width="280" height="110" class="analysis-box" fill="url(#grad3)"/>
+    <text x="830" y="20" text-anchor="middle" class="sub-method">3. Comparison with Distillation</text>
+    <text x="700" y="40" class="detail">Question: Does distillation behave differently?</text>
+    <text x="700" y="55" class="detail">Method:</text>
+    <text x="710" y="70" class="detail">- Compare pass@k curves of Base vs. RL</text>
+    <text x="710" y="85" class="detail">  vs. Distilled Model (e.g., DeepSeek-R1</text>
+    <text x="710" y="100" class="detail">  distilled into Qwen).</text>
+
+    <!-- Analysis 4: RL Algorithms -->
+    <rect x="30" y="130" width="450" height="130" class="analysis-box" fill="url(#grad3)"/>
+    <text x="255" y="150" text-anchor="middle" class="sub-method">4. RL Algorithm & Training Step Analysis</text>
+    <text x="40" y="170" class="detail">Method 1: Algorithm Comparison</text>
+    <text x="50" y="185" class="detail">- Use VeRL framework for fair comparison (PPO, GRPO, RLOO...).</text>
+    <text x="50" y="200" class="detail">- Define Sampling Efficiency Gap (ΔSE) = pass@k(Base) - pass@1(RL).</text>
+    <text x="50" y="215" class="detail">- Evaluate on Omni-MATH splits.</text>
+    <text x="40" y="230" class="detail">Method 2: Training Steps</text>
+    <text x="50" y="245" class="detail">- Track pass@1 and pass@k(large) vs. training steps.</text>
+
+    <!-- Link to Overall Goal -->
+    <rect x="510" y="130" width="460" height="130" class="analysis-box" fill="url(#grad4)"/>
+    <text x="740" y="150" text-anchor="middle" class="sub-method">Connecting Analyses to Research Question</text>
+    <text x="520" y="170" class="detail">- Does large-k base performance match/exceed RL (pass@k)?</text>
+    <text x="520" y="185" class="detail">- Are RL solutions already likely under the base model (Perplexity)?</text>
+    <text x="520" y="200" class="detail">- Is the set of RL-solvable problems a subset of base-solvable (Coverage)?</text>
+    <text x="520" y="215" class="detail">- Does distillation show different boundary expansion (Distillation)?</text>
+    <text x="520" y="230" class="detail">- How close are RL algos to the base model's boundary (ΔSE)?</text>
+    <text x="520" y="245" class="detail">- Does longer RL training shrink the boundary (Training Steps)?</text>
+
+    <!-- Connectors for Analysis Boxes -->
+    <path d="M 170 110 L 170 125 Q 170 130 175 130 L 250 130" class="connector" marker-end="url(#arrow)"/>
+    <path d="M 500 110 L 500 125 Q 500 130 495 130 L 260 130" class="connector" marker-end="url(#arrow)"/>
+    <path d="M 830 110 L 830 125 Q 830 130 825 130 L 745 130" class="connector" marker-end="url(#arrow)"/>
+     <path d="M 255 260 L 255 270 Q 255 275 260 275 L 510 275 L 510 255" class="connector" marker-start="url(#arrow)" /> --> <!-- No, arrow goes other way -->
+     <line x1="480" y1="200" x2="510" y2="200" class="connector" marker-end="url(#arrow)"/>
+
+  </g>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It improves sampling efficiency by biasing the model toward rewarded reasoning paths">
+                        <div class="quiz-question">1. According to the paper, what is the primary effect of Reinforcement Learning with Verifiable Rewards (RLVR) on LLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It creates entirely new reasoning capabilities beyond what exists in the base model">It creates entirely new reasoning capabilities beyond what exists in the base model</div><div class="quiz-choice" data-value="It improves sampling efficiency by biasing the model toward rewarded reasoning paths">It improves sampling efficiency by biasing the model toward rewarded reasoning paths</div><div class="quiz-choice" data-value="It increases the model's ability to explore novel reasoning patterns">It increases the model's ability to explore novel reasoning patterns</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Base models consistently outperformed their RL-trained counterparts">
+                        <div class="quiz-question">2. What surprising phenomenon did the researchers observe when comparing base models to RL-trained models at large k values?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Base models consistently outperformed their RL-trained counterparts">Base models consistently outperformed their RL-trained counterparts</div><div class="quiz-choice" data-value="Both models performed equally well regardless of k value">Both models performed equally well regardless of k value</div><div class="quiz-choice" data-value="RL-trained models showed exponential improvement as k increased">RL-trained models showed exponential improvement as k increased</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="RLVR is bounded by the base model's capabilities, while distillation can genuinely introduce new knowledge">
+                        <div class="quiz-question">3. How does the paper distinguish between the effects of RLVR and distillation on LLM reasoning capabilities?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="RLVR and distillation both reduce the model's reasoning boundary in similar ways">RLVR and distillation both reduce the model's reasoning boundary in similar ways</div><div class="quiz-choice long-text" data-value="RLVR is bounded by the base model's capabilities, while distillation can genuinely introduce new knowledge">RLVR is bounded by the base model's capabilities, while distillation can genuinely introduce new knowledge</div><div class="quiz-choice" data-value="Distillation improves sampling efficiency while RLVR expands reasoning patterns">Distillation improves sampling efficiency while RLVR expands reasoning patterns</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Antidistillation Sampling</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.13146" target="_blank">http://arxiv.org/pdf/2504.13146</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces "Antidistillation Sampling," a technique in AI security that prevents language models from being effectively distilled while maintaining their functionality.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on prior work in model distillation and data poisoning, proposing a novel approach to strategically modify a model's token probability distributions to resist distillation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the problem of protecting proprietary large language models from being easily distilled by competitors who could use the models' reasoning traces to train their own systems at much lower cost.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a gradient-based approach that modifies the sampling distribution by adding a penalty term based on a directional derivative capturing how token choices would impact a distilled model's performance, implemented efficiently using a finite-difference approximation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results show that antidistillation sampling successfully reduces student model performance (24.73% vs 51.86% on GSM8K) while maintaining comparable teacher model accuracy (68.51% vs 68.90%), demonstrating effective protection against distillation attempts.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Antidistillation Sampling</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,200,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,230,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,255,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(220, 180, 255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(240, 220, 255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="gradGoal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: 'Arial Black', sans-serif; font-size: 30px; fill: #333; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #555; text-anchor: middle; }
+      .box { stroke: #666; stroke-width: 1.5; rx: 10; ry: 10; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.2)); }
+      .init-box { fill: url(#grad1); }
+      .loop-box { fill: url(#grad2); }
+      .eval-box { fill: url(#grad3); }
+      .penalty-box { fill: url(#grad4); }
+      .goal-box { fill: url(#gradGoal); stroke: #DAA520; }
+      .box-text { font-family: Arial, sans-serif; font-size: 13px; fill: #222; text-anchor: middle; dominant-baseline: middle; }
+      .small-text { font-family: 'Courier New', monospace; font-size: 11px; fill: #444; text-anchor: middle; dominant-baseline: middle;}
+      .arrow { stroke: #555; stroke-width: 2; marker-end: url(#arrowhead); }
+      .dashed-arrow { stroke: #888; stroke-width: 1.5; stroke-dasharray: 5, 5; marker-end: url(#arrowhead-small); }
+      .highlight { font-weight: bold; fill: #00509E; }
+      .formula { font-family: 'Times New Roman', serif; font-style: italic; font-size: 12px; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+     <marker id="arrowhead-small" markerWidth="8" markerHeight="5" refX="0" refY="2.5" orient="auto">
+      <polygon points="0 0, 8 2.5, 0 5" fill="#888" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">Antidistillation Sampling Workflow</text>
+  <text x="500" y="65" class="subtitle">Methodology Flowchart</text>
+
+  <!-- Goal Definition -->
+  <rect x="300" y="90" width="400" height="60" class="box goal-box" />
+  <text x="500" y="110" class="box-text highlight">Goal: Modify Sampling to Achieve:</text>
+  <text x="500" y="130" class="box-text">1. <tspan fill="red">Non-distillability</tspan> (Poison student training)</text>
+  <text x="500" y="145" class="box-text">2. <tspan fill="green">Nominal Utility</tspan> (Maintain teacher performance)</text>
+
+  <!-- Initialization Phase -->
+  <rect x="50" y="180" width="250" height="160" class="box init-box" />
+  <text x="175" y="200" class="box-text highlight">Phase 1: Initialization (Once)</text>
+  <text x="175" y="230" class="box-text">Define Models:</text>
+  <text x="175" y="245" class="small-text">Teacher (θT), Proxy (θP)</text>
+  <text x="175" y="265" class="box-text">Define Downstream Loss (ℓ)</text>
+  <text x="175" y="280" class="small-text">(e.g., NLL on benchmark)</text>
+  <text x="175" y="300" class="box-text">Compute Loss Gradient:</text>
+  <text x="175" y="315" class="small-text formula">g ← ∇ℓ(θP)</text>
+  <text x="175" y="330" class="small-text">(Store g and θP + ϵg)</text>
+
+
+  <!-- Token Generation Loop -->
+  <rect x="350" y="180" width="600" height="360" class="box loop-box" />
+  <text x="650" y="200" class="box-text highlight">Phase 2: Token Generation Loop (For each token t)</text>
+  <text x="650" y="220" class="small-text">Input: Current sequence x1:t</text>
+
+  <!-- Steps within the loop -->
+  <rect x="380" y="240" width="250" height="50" class="box" style="fill:#FFF0E1;"/>
+  <text x="505" y="265" class="box-text">1. Get Teacher Probs:</text>
+  <text x="505" y="280" class="small-text formula">log p( · | x1:t ; θT )</text>
+
+  <rect x="670" y="240" width="250" height="130" class="box penalty-box"/>
+  <text x="795" y="260" class="box-text">2. Compute Approx. Penalty <tspan class="formula">b∆</tspan>:</text>
+  <text x="795" y="285" class="small-text"> Get Proxy Probs:</text>
+  <text x="795" y="300" class="small-text formula"> P_orig = log p( · | x1:t ; θP )</text>
+  <text x="795" y="320" class="small-text"> Get Perturbed Proxy Probs:</text>
+  <text x="795" y="335" class="small-text formula"> P_pert = log p( · | x1:t ; θP + ϵg )</text>
+  <text x="795" y="355" class="small-text formula">b∆ ← (P_pert - P_orig) / ϵ</text>
+
+  <rect x="380" y="390" width="540" height="60" class="box" style="fill:#FFE1E1;"/>
+  <text x="650" y="410" class="box-text">3. Combine & Adjust Scores:</text>
+  <text x="650" y="430" class="small-text formula">Scores(·) = log p(·|x1:t; θT)/τ + λb∆(·|x1:t)</text>
+  <text x="650" y="445" class="small-text">(τ: temperature, λ: penalty weight)</text>
+
+  <rect x="380" y="470" width="540" height="50" class="box" style="fill:#E1FFE1;"/>
+  <text x="650" y="495" class="box-text highlight">4. Sample Next Token:</text>
+  <text x="650" y="510" class="small-text formula">xt+1 ∼ Softmax( Scores(·) )</text>
+
+  <!-- Arrows within Loop -->
+  <path d="M 505 290 V 385 H 650" fill="none" class="dashed-arrow" /> <!-- Teacher Probs to Combine -->
+  <path d="M 795 370 V 385 H 650" fill="none" class="dashed-arrow" /> <!-- Penalty to Combine -->
+  <path d="M 650 450 V 465" fill="none" class="arrow" /> <!-- Combine to Sample -->
+  <path d="M 650 520 V 535" fill="none" class="arrow" /> <!-- Sample to Output -->
+
+
+  <!-- Loop Control (Implicit) -->
+   <text x="890" y="510" class="small-text">(Append xt+1)</text>
+   <path d="M 355 500 C 330 500 330 260 355 260" fill="none" stroke="#AAA" stroke-width="1.5" stroke-dasharray="4 4"/>
+   <text x="300" y="380" class="small-text" transform="rotate(-90 300 380)">Repeat for N tokens</text>
+
+
+  <!-- Output -->
+  <ellipse cx="650" cy="570" rx="150" ry="30" class="box" style="fill:#FFFFE0;" />
+  <text x="650" y="570" class="box-text highlight">Output: Poisoned Reasoning Trace x1:N</text>
+
+  <!-- Evaluation Phase -->
+  <rect x="150" y="630" width="700" height="140" class="box eval-box" />
+  <text x="500" y="650" class="box-text highlight">Phase 3: Evaluation</text>
+  <text x="500" y="675" class="box-text">1. Generate traces using Antidistillation (varying λ) and Baseline (Temperature) Sampling.</text>
+  <text x="500" y="695" class="box-text">2. Distill Student Model (e.g., Llama-3.2-3B) on generated traces.</text>
+  <text x="500" y="715" class="box-text">3. Measure Performance:</text>
+  <text x="350" y="735" class="box-text">Teacher Accuracy (e.g., GSM8K, MATH)</text>
+  <text x="650" y="735" class="box-text">Student Accuracy (e.g., GSM8K, MATH)</text>
+  <text x="500" y="755" class="box-text">4. Analyze Trade-off: Compare Teacher Utility vs. Student Distillability (Fig 1, Fig 2).</text>
+
+  <!-- Connecting Arrows -->
+  <path d="M 175 340 V 400 H 345" fill="none" class="arrow" /> <!-- Init to Loop Start (Implicit) -->
+  <path d="M 500 150 V 175" fill="none" class="arrow" /> <!-- Goal to Init/Loop Area -->
+  <path d="M 650 600 V 625" fill="none" class="arrow" /> <!-- Output to Evaluation -->
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="To protect proprietary models by preventing effective distillation while maintaining model utility">
+                        <div class="quiz-question">1. What is the primary goal of antidistillation sampling?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To improve the accuracy of language models on reasoning tasks">To improve the accuracy of language models on reasoning tasks</div><div class="quiz-choice" data-value="To protect proprietary models by preventing effective distillation while maintaining model utility">To protect proprietary models by preventing effective distillation while maintaining model utility</div><div class="quiz-choice" data-value="To reduce the computational cost of training large language models">To reduce the computational cost of training large language models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By adding a penalty term based on the directional derivative of student model performance">
+                        <div class="quiz-question">2. How does antidistillation sampling technically work?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By completely hiding token probabilities from model outputs">By completely hiding token probabilities from model outputs</div><div class="quiz-choice" data-value="By adding random noise to the sampling distribution">By adding random noise to the sampling distribution</div><div class="quiz-choice" data-value="By adding a penalty term based on the directional derivative of student model performance">By adding a penalty term based on the directional derivative of student model performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It maintained teacher accuracy around 68% while reducing student accuracy to about 25% (compared to 52% with temperature sampling)">
+                        <div class="quiz-question">3. In the GSM8K benchmark experiments, what was demonstrated about antidistillation sampling?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It improved both teacher and student model performance">It improved both teacher and student model performance</div><div class="quiz-choice long-text" data-value="It maintained teacher accuracy around 68% while reducing student accuracy to about 25% (compared to 52% with temperature sampling)">It maintained teacher accuracy around 68% while reducing student accuracy to about 25% (compared to 52% with temperature sampling)</div><div class="quiz-choice" data-value="It completely eliminated the possibility of distillation but severely degraded teacher performance">It completely eliminated the possibility of distillation but severely degraded teacher performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
