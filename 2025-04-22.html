@@ -1,0 +1,1133 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-22 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-22 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>FlowReasoner: Reinforcing Query-Level Meta-Agents</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-21</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.15257" target="_blank">http://arxiv.org/pdf/2504.15257</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces FlowReasoner, a query-level meta-agent for automating the design of personalized multi-agent systems in the domain of AI agent systems.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous task-level meta-agents that create fixed workflows for specific tasks, proposing instead a query-level approach that generates a unique multi-agent system for each individual user query through reasoning-based optimization.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitation of existing multi-agent systems that are either manually designed (requiring significant human effort) or task-level automated (creating one-size-fits-all systems that lack adaptability to individual queries).</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors distill reasoning abilities from DeepSeek R1 to endow FlowReasoner with basic multi-agent system generation capabilities, then enhance it through reinforcement learning with external execution feedback using a multi-purpose reward focused on performance, complexity, and efficiency.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> FlowReasoner outperforms existing methods across engineering and competition code benchmarks, notably surpassing o1-mini by 10.52% accuracy across three benchmarks, while demonstrating superior adaptability by generating personalized workflows tailored to specific queries.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>FlowReasoner: Reinforcing Query-Level Meta-Agents</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(170,255,170);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,255,220);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,240,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,220,220);stop-opacity:1" />
+    </linearGradient>
+    <filter id="dropshadow" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .title { font-family: 'Arial Black', sans-serif; font-size: 28px; fill: #333; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555; text-anchor: middle; }
+      .phase-title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #444; text-anchor: middle; }
+      .box-text { font-family: Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+      .small-text { font-family: Arial, sans-serif; font-size: 11px; fill: #555; text-anchor: middle; }
+      .arrow { stroke: #666; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .dashed-arrow { stroke: #888; stroke-width: 2; stroke-dasharray: 5,5; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f9f9f9"/>
+
+  <!-- Title -->
+  <text x="500" y="50" class="title">FlowReasoner Methodology Flowchart</text>
+  <text x="500" y="80" class="subtitle">Training and Inference Pipeline for Query-Level Meta-Agent</text>
+
+  <!-- Training Phase -->
+  <rect x="50" y="120" width="900" height="350" rx="15" ry="15" fill="#eef" stroke="#ccc" stroke-width="1"/>
+  <text x="500" y="150" class="phase-title">Phase 1: Training FlowReasoner</text>
+
+  <!-- Step 1: Data Distillation -->
+  <rect x="100" y="180" width="220" height="110" rx="10" ry="10" fill="url(#grad1)" filter="url(#dropshadow)"/>
+  <text x="210" y="205" class="box-text" font-weight="bold">1. Reasoning Data</text>
+  <text x="210" y="225" class="box-text" font-weight="bold">Distillation</text>
+  <text x="210" y="250" class="small-text">Use Teacher LLM (DeepSeek R1</text>
+  <text x="210" y="265" class="small-text">671B) to generate multi-round</text>
+  <text x="210" y="280" class="small-text">reasoning & system data</text>
+  <text x="210" y="295" class="small-text" fill="#0066cc">(+ initial feedback)</text>
+
+  <!-- Step 2: SFT Warmup -->
+  <rect x="390" y="180" width="220" height="110" rx="10" ry="10" fill="url(#grad1)" filter="url(#dropshadow)"/>
+  <text x="500" y="205" class="box-text" font-weight="bold">2. SFT Warmup</text>
+  <text x="500" y="235" class="small-text">Finetune Student LLM</text>
+  <text x="500" y="250" class="small-text">(DeepSeek-R1-Distill-Qwen-7B)</text>
+  <text x="500" y="265" class="small-text">on distilled data (D).</text>
+  <text x="500" y="285" class="small-text" fill="#0066cc">Goal: Basic reasoning ability.</text>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="320" y1="235" x2="390" y2="235" class="arrow"/>
+  <text x="355" y="225" class="small-text">Distilled Data</text>
+
+  <!-- Step 3: RL Enhancement -->
+  <rect x="680" y="180" width="240" height="260" rx="10" ry="10" fill="url(#grad2)" filter="url(#dropshadow)"/>
+  <text x="800" y="205" class="box-text" font-weight="bold">3. Reinforce Reasoning</text>
+  <text x="800" y="225" class="box-text" font-weight="bold">via RL (GRPO)</text>
+
+  <text x="800" y="250" class="small-text" font-weight="bold">Input:</text>
+  <text x="800" y="265" class="small-text">SFT Model, User Queries (q)</text>
+
+  <text x="800" y="285" class="small-text" font-weight="bold">Process:</text>
+  <text x="800" y="300" class="small-text">a) Sample multiple trajectories (oi)</text>
+  <text x="800" y="315" class="small-text">b) Execute in Sandbox</text>
+  <text x="800" y="330" class="small-text">c) Get External Feedback</text>
+  <text x="800" y="345" class="small-text">(Multi-Purpose Reward)</text>
+  <rect x="700" y="355" width="200" height="55" rx="5" ry="5" fill="#e0ffe0" stroke="#aaccaa"/>
+    <text x="800" y="370" class="small-text" font-weight="bold">Reward Components:</text>
+    <text x="800" y="385" class="small-text">Performance (Pass Rate)</text>
+    <text x="800" y="400" class="small-text">Complexity + Diversity</text>
+  <text x="800" y="420" class="small-text">d) Update policy via GRPO</text>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="610" y1="235" x2="680" y2="235" class="arrow"/>
+  <text x="645" y="225" class="small-text">SFT Model</text>
+
+  <!-- Output of Training -->
+  <ellipse cx="500" cy="440" rx="120" ry="25" fill="url(#grad4)" filter="url(#dropshadow)"/>
+  <text x="500" y="445" class="box-text" font-weight="bold">Trained FlowReasoner Model</text>
+
+  <!-- Arrow 3 -> Output -->
+  <path d="M 680 310 Q 600 350, 500 415" class="arrow"/>
+
+  <!-- Inference Phase -->
+  <rect x="50" y="490" width="900" height="280" rx="15" ry="15" fill="#fff0e0" stroke="#ccc" stroke-width="1"/>
+  <text x="500" y="520" class="phase-title">Phase 2: Inference with FlowReasoner</text>
+
+  <!-- Input Query -->
+  <rect x="100" y="550" width="180" height="60" rx="10" ry="10" fill="url(#grad3)" filter="url(#dropshadow)"/>
+  <text x="190" y="575" class="box-text" font-weight="bold">Input:</text>
+  <text x="190" y="595" class="box-text">New User Query (q)</text>
+
+  <!-- FlowReasoner Generation -->
+  <rect x="330" y="550" width="340" height="200" rx="10" ry="10" fill="url(#grad3)" filter="url(#dropshadow)"/>
+  <text x="500" y="575" class="box-text" font-weight="bold">FlowReasoner Generates System</text>
+  <text x="500" y="600" class="small-text">(Using Trained Model from Phase 1)</text>
+
+  <circle cx="500" cy="660" r="60" fill="#fff8e8" stroke="#e0c8a0"/>
+  <text x="500" y="640" class="small-text" font-weight="bold">Process:</text>
+  <text x="500" y="655" class="small-text">Deliberative Reasoning</text>
+  <text x="500" y="670" class="small-text">(l-round optimization)</text>
+  <text x="500" y="685" class="small-text" fill="#cc8400">Iterative Refinement</text>
+  <text x="500" y="700" class="small-text" fill="#cc8400">using External Feedback</text>
+  <text x="500" y="715" class="small-text" fill="#cc8400">(e.g., Pass Rate)</text>
+
+  <!-- Arrow Input -> Generation -->
+  <line x1="280" y1="580" x2="330" y2="580" class="arrow"/>
+
+  <!-- Output System -->
+  <ellipse cx="810" cy="580" rx="120" ry="30" fill="url(#grad4)" filter="url(#dropshadow)"/>
+  <text x="810" y="575" class="box-text" font-weight="bold">Output:</text>
+  <text x="810" y="595" class="box-text">Query-Specific</text>
+  <text x="810" y="610" class="box-text">Multi-Agent System (S*query)</text>
+
+  <!-- Arrow Generation -> Output -->
+  <line x1="670" y1="580" x2="690" y2="580" class="arrow"/>
+
+  <!-- Optional Execution Step -->
+   <rect x="710" y="650" width="200" height="80" rx="10" ry="10" fill="#f0f0f0" stroke="#aaaaaa" filter="url(#dropshadow)"/>
+   <text x="810" y="670" class="box-text" font-weight="bold">System Execution</text>
+   <text x="810" y="690" class="small-text">S*query processes input query q</text>
+   <text x="810" y="710" class="small-text" font-weight="bold">Result: Final Answer (a)</text>
+
+   <!-- Arrow Output -> Execution -->
+   <path d="M 810 610 Q 810 630, 810 650" class="dashed-arrow"/>
+
+   <!-- Connect Training Output to Inference Input -->
+   <path d="M 500 465 Q 500 490, 500 550" class="dashed-arrow"/>
+   <text x="520" y="500" class="small-text" fill="#555">(Use Trained Model)</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="FlowReasoner generates a personalized multi-agent system for each individual user query">
+                        <div class="quiz-question">1. What is the key difference between FlowReasoner and previous task-level meta-agents?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="FlowReasoner uses more complex search algorithms">FlowReasoner uses more complex search algorithms</div><div class="quiz-choice" data-value="FlowReasoner generates a personalized multi-agent system for each individual user query">FlowReasoner generates a personalized multi-agent system for each individual user query</div><div class="quiz-choice" data-value="FlowReasoner requires less computational resources">FlowReasoner requires less computational resources</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Through reinforcement learning with external execution feedback">
+                        <div class="quiz-question">2. How does FlowReasoner enhance its reasoning capabilities after the initial training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Through manual optimization by human experts">Through manual optimization by human experts</div><div class="quiz-choice" data-value="Through Monte Carlo Tree Search (MCTS)">Through Monte Carlo Tree Search (MCTS)</div><div class="quiz-choice" data-value="Through reinforcement learning with external execution feedback">Through reinforcement learning with external execution feedback</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="10.52%">
+                        <div class="quiz-question">3. In the experimental evaluation, by what percentage did FlowReasoner outperform the o1-mini model across three benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="5.26%">5.26%</div><div class="quiz-choice" data-value="10.52%">10.52%</div><div class="quiz-choice" data-value="15.78%">15.78%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Learning to Reason under Off-Policy Guidance</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-21</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.14945" target="_blank">http://arxiv.org/pdf/2504.14945</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on enhancing large language models' reasoning capabilities through reinforcement learning that integrates off-policy guidance.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on zero-RL approaches that train reasoning models using only on-policy rollouts and rule-based rewards, and proposes LUFFY, a framework that incorporates off-policy reasoning traces from stronger models to expand learning beyond the model's initial capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitation of existing zero-RL methods which constrain learning to a model's own outputs, preventing acquisition of reasoning abilities beyond its initial capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a mixed-policy approach that combines off-policy demonstrations with on-policy rollouts during training, employing policy shaping via regularized importance sampling to emphasize low-probability but crucial actions.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> LUFFY achieves an average gain of over +7.0 points across six math benchmarks and +6.2 points on out-of-distribution tasks, outperforming both imitation-based supervised fine-tuning and existing zero-RL methods in both performance and generalization.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Learning to Reason under Off-Policy Guidance</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+  <!-- Background -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgb(240,248,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,230,255);stop-opacity:1" />
+    </linearGradient>
+     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grad1)" />
+
+  <!-- Title -->
+  <text x="500" y="50" font-size="30" font-weight="bold" text-anchor="middle" fill="#333">LUFFY: Learning to Reason under Off-Policy Guidance - Method Flowchart</text>
+
+  <!-- Inputs -->
+  <g transform="translate(50, 100)">
+    <rect x="0" y="0" width="250" height="100" rx="10" ry="10" fill="#AED6F1" stroke="#3498DB" stroke-width="2" filter="url(#shadow)"/>
+    <text x="125" y="40" font-size="18" font-weight="bold" text-anchor="middle" fill="#2C3E50">Base Policy Model</text>
+    <text x="125" y="70" font-size="16" text-anchor="middle" fill="#2C3E50">π_θ_old (e.g., Qwen2.5-Math)</text>
+  </g>
+  <g transform="translate(700, 100)">
+     <rect x="0" y="0" width="250" height="100" rx="10" ry="10" fill="#A9DFBF" stroke="#2ECC71" stroke-width="2" filter="url(#shadow)"/>
+    <text x="125" y="40" font-size="18" font-weight="bold" text-anchor="middle" fill="#1E8449">Off-Policy Traces</text>
+    <text x="125" y="70" font-size="16" text-anchor="middle" fill="#1E8449">τ_j ~ π_ϕ (e.g., DeepSeek-R1)</text>
+  </g>
+
+  <!-- Generation & Combination -->
+   <line x1="175" y1="200" x2="175" y2="250" stroke="#5DADE2" stroke-width="2"/>
+   <line x1="825" y1="200" x2="825" y2="250" stroke="#58D68D" stroke-width="2"/>
+
+  <g transform="translate(50, 250)">
+    <rect x="0" y="0" width="250" height="70" rx="10" ry="10" fill="#AED6F1" stroke="#3498DB" stroke-width="2" filter="url(#shadow)"/>
+    <text x="125" y="40" font-size="16" text-anchor="middle" fill="#2C3E50">Generate On-Policy Rollouts</text>
+    <text x="125" y="60" font-size="14" text-anchor="middle" fill="#2C3E50">τ_i ~ π_θ_old</text>
+  </g>
+
+   <line x1="175" y1="320" x2="400" y2="385" stroke="#7FB3D5" stroke-width="2"/>
+   <line x1="825" y1="250" x2="600" y2="385" stroke="#7DCEA0" stroke-width="2"/>
+
+  <g transform="translate(375, 350)">
+    <ellipse cx="125" cy="50" rx="125" ry="50" fill="#E8DAEF" stroke="#8E44AD" stroke-width="2" filter="url(#shadow)"/>
+    <text x="125" y="45" font-size="18" font-weight="bold" text-anchor="middle" fill="#5B2C6F">Combine Samples</text>
+    <text x="125" y="70" font-size="14" text-anchor="middle" fill="#5B2C6F">(On-Policy Rollouts τ_i & Off-Policy Traces τ_j)</text>
+  </g>
+
+  <!-- Advantage Calculation -->
+  <line x1="500" y1="400" x2="500" y2="450" stroke="#A569BD" stroke-width="2"/>
+  <g transform="translate(375, 450)">
+    <rect x="0" y="0" width="250" height="70" rx="10" ry="10" fill="#FADBD8" stroke="#E74C3C" stroke-width="2" filter="url(#shadow)"/>
+    <text x="125" y="35" font-size="16" text-anchor="middle" fill="#B03A2E">Compute Mixed Advantage (Â)</text>
+    <text x="125" y="55" font-size="14" text-anchor="middle" fill="#B03A2E">Based on Rewards R(τ) of combined set</text>
+  </g>
+
+  <!-- LUFFY Core Update -->
+   <line x1="500" y1="520" x2="500" y2="560" stroke="#E74C3C" stroke-width="2"/>
+
+  <rect x="150" y="560" width="700" height="180" rx="15" ry="15" fill="#FCF3CF" stroke="#F1C40F" stroke-width="2.5" filter="url(#shadow)"/>
+  <text x="500" y="585" font-size="20" font-weight="bold" text-anchor="middle" fill="#B7950B">LUFFY Objective Calculation & Optimization</text>
+
+  <!-- On-Policy Component -->
+  <g transform="translate(170, 600)">
+    <rect x="0" y="0" width="320" height="120" rx="10" ry="10" fill="#D6EAF8" stroke="#3498DB" stroke-width="2"/>
+    <text x="160" y="25" font-size="16" font-weight="bold" text-anchor="middle" fill="#2874A6">On-Policy Signal</text>
+    <text x="160" y="50" font-size="14" text-anchor="middle" fill="#2874A6">Importance Sampling: r_i,t = π_θ / π_θ_old</text>
+    <text x="160" y="70" font-size="14" text-anchor="middle" fill="#2874A6">Objective Term: r_i,t * Â</text>
+    <text x="160" y="100" font-size="14" font-weight="bold" fill="#E67E22" text-anchor="middle">Modification: No Clipping</text>
+    <text x="160" y="115" font-size="12" fill="#E67E22" text-anchor="middle">(Allows larger updates)</text>
+  </g>
+
+  <!-- Off-Policy Component -->
+   <g transform="translate(510, 600)">
+    <rect x="0" y="0" width="320" height="120" rx="10" ry="10" fill="#D5F5E3" stroke="#2ECC71" stroke-width="2"/>
+    <text x="160" y="25" font-size="16" font-weight="bold" text-anchor="middle" fill="#1D8348">Off-Policy Signal</text>
+     <text x="160" y="50" font-size="14" text-anchor="middle" fill="#1D8348">Base Importance Sampling: r̂_j,t = π_θ / π_ϕ</text>
+     <text x="160" y="80" font-size="14" font-weight="bold" fill="#E67E22" text-anchor="middle">Modification: Policy Shaping</text>
+     <text x="160" y="100" font-size="14" fill="#E67E22" text-anchor="middle">Objective Term: f(r̂_j,t) * Â</text>
+     <text x="160" y="115" font-size="12" fill="#E67E22" text-anchor="middle">(f(x)=x/(x+γ), boosts low π_θ)</text>
+   </g>
+
+   <!-- Combine line -->
+   <path d="M 330 720 Q 500 735 670 720" stroke="#F39C12" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+   <text x="500" y="700" font-size="18" font-weight="bold" fill="#E67E22" text-anchor="middle">+</text>
+
+  <!-- Optimization Step -->
+  <line x1="500" y1="740" x2="500" y2="770" stroke="#F1C40F" stroke-width="2"/>
+  <g transform="translate(425, 770)">
+      <ellipse cx="75" cy="25" rx="75" ry="25" fill="#F5B041" stroke="#D35400" stroke-width="2" filter="url(#shadow)"/>
+      <text x="75" y="30" font-size="16" text-anchor="middle" fill="#6E2C00">Update π_θ</text>
+  </g>
+
+  <!-- Output -->
+   <g transform="translate(700, 760)">
+    <rect x="0" y="0" width="250" height="50" rx="25" ry="25" fill="#58D68D" stroke="#1E8449" stroke-width="2" filter="url(#shadow)"/>
+    <text x="125" y="32" font-size="18" font-weight="bold" text-anchor="middle" fill="#0E6251">Trained LUFFY Model</text>
+  </g>
+   <line x1="575" y1="795" x2="700" y2="785" stroke="#D35400" stroke-width="2"/>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Inability to learn reasoning abilities beyond the model's initial capabilities">
+                        <div class="quiz-question">1. What is the primary limitation of existing zero-RL methods that LUFFY aims to overcome?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High computational cost and training instability">High computational cost and training instability</div><div class="quiz-choice" data-value="Inability to learn reasoning abilities beyond the model's initial capabilities">Inability to learn reasoning abilities beyond the model's initial capabilities</div><div class="quiz-choice" data-value="Poor performance on simple mathematical problems">Poor performance on simple mathematical problems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By amplifying learning signals for low-probability but crucial actions">
+                        <div class="quiz-question">2. How does LUFFY's policy shaping mechanism enhance learning from off-policy traces?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By eliminating all low-probability actions from the model's policy">By eliminating all low-probability actions from the model's policy</div><div class="quiz-choice" data-value="By assigning more importance to high-probability actions only">By assigning more importance to high-probability actions only</div><div class="quiz-choice" data-value="By amplifying learning signals for low-probability but crucial actions">By amplifying learning signals for low-probability but crucial actions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Superior generalization capability, especially on out-of-distribution tasks">
+                        <div class="quiz-question">3. What advantage did LUFFY demonstrate over supervised fine-tuning (SFT) in the experimental results?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Superior generalization capability, especially on out-of-distribution tasks">Superior generalization capability, especially on out-of-distribution tasks</div><div class="quiz-choice" data-value="Significantly faster training times with less computational resources">Significantly faster training times with less computational resources</div><div class="quiz-choice" data-value="Ability to completely eliminate hallucinations in mathematical reasoning">Ability to completely eliminate hallucinations in mathematical reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>StyleMe3D: Stylization with Disentangled Priors by Multiple Encoders on
+  3D Gaussians</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-21</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.15281" target="_blank">http://arxiv.org/pdf/2504.15281</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents StyleMe3D, a framework for transferring artistic styles to 3D Gaussian Splatting representations while preserving geometric integrity.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds upon 3D Gaussian Splatting and existing style transfer techniques, proposing a novel approach that integrates multi-modal style conditioning, multi-level semantic alignment, and perceptual quality enhancement.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of stylizing 3D Gaussian Splatting scenes with artistic styles while maintaining geometric details, semantic coherence, and visual harmony.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use four key components: Dynamic Style Score Distillation (DSSD) for semantic alignment, Contrastive Style Descriptor (CSD) for content-aware textures, Simultaneously Optimized Scale (SOS) for detail preservation, and 3D Gaussian Quality Assessment (3DG-QA) for aesthetic quality.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> StyleMe3D outperforms state-of-the-art methods in preserving geometric details and ensuring stylistic consistency across scenes, achieving higher PSNR, SSIM, and LPIPS scores while maintaining real-time rendering capabilities.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>StyleMe3D: Stylization with Disentangled Priors by Multiple Encoders on
+  3D Gaussians</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,200,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,230,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(160,240,160);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(210,250,210);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,220);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,220,240);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,230,255);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,240,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad_loop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgb(245,245,245);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,220,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad_final" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,255,220);stop-opacity:1" />
+    </linearGradient>
+
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; }
+      .input { font-family: Arial, sans-serif; font-size: 14px; fill: #444; }
+      .output { font-family: Arial, sans-serif; font-size: 14px; fill: #444; }
+      .process { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #555; }
+      .loss-title { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #222; }
+      .loss-desc { font-family: Arial, sans-serif; font-size: 11px; fill: #555; }
+      .connector-label { font-family: Arial, sans-serif; font-size: 10px; fill: #666; }
+      .loop-label { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #666; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" class="title">StyleMe3D Workflow: Stylizing 3D Gaussians</text>
+
+  <!-- Inputs -->
+  <rect x="50" y="80" width="200" height="60" rx="10" ry="10" fill="url(#grad1)" stroke="#aaa" stroke-width="1"/>
+  <text x="150" y="105" text-anchor="middle" class="input">Pre-trained 3D GS</text>
+  <text x="150" y="125" text-anchor="middle" class="input">(Fixed Geometry Θ_geo)</text>
+
+  <rect x="300" y="80" width="200" height="60" rx="10" ry="10" fill="url(#grad2)" stroke="#aaa" stroke-width="1"/>
+  <text x="400" y="105" text-anchor="middle" class="input">Style Reference</text>
+  <text x="400" y="125" text-anchor="middle" class="input">(Image or Text Prompt)</text>
+
+  <!-- Style Purification -->
+  <rect x="550" y="80" width="280" height="60" rx="10" ry="10" fill="url(#grad3)" stroke="#aaa" stroke-width="1"/>
+  <text x="690" y="100" text-anchor="middle" class="process">Style Purification (using CLIP)</text>
+  <text x="690" y="120" text-anchor="middle" class="loss-desc">Isolate style embeddings, remove content</text>
+
+  <!-- Connect Inputs to Purification -->
+  <line x1="400" y1="140" x2="400" y2="160" stroke="#999" stroke-width="2"/>
+  <line x1="400" y1="160" x2="690" y2="160" stroke="#999" stroke-width="2"/>
+  <line x1="690" y1="140" x2="690" y2="160" stroke="#999" stroke-width="2"/>
+  <polygon points="685,155 695,160 685,165" fill="#999"/>
+  <text x="545" y="170" class="connector-label">Purified Style Embedding</text>
+
+  <!-- Optimization Loop Box -->
+  <rect x="30" y="200" width="940" height="480" rx="15" ry="15" fill="url(#grad_loop)" stroke="#bbb" stroke-width="2"/>
+  <text x="500" y="225" text-anchor="middle" class="loop-label">Main Optimization Loop (Optimize only Color Θ_color)</text>
+
+  <!-- Render Step -->
+  <ellipse cx="150" cy="270" rx="100" ry="30" fill="url(#grad4)" stroke="#aaa" stroke-width="1"/>
+  <text x="150" y="275" text-anchor="middle" class="process">Render Image (I_v)</text>
+  <text x="150" y="290" text-anchor="middle" class="loss-desc">From current 3D GS (Θ_color)</text>
+
+  <!-- Connect Purification Output to Loop Input (implicitly to Render) -->
+   <line x1="690" y1="160" x2="800" y2="180" stroke="#999" stroke-width="2"/>
+   <line x1="800" y1="180" x2="800" y2="240" stroke="#999" stroke-width="2"/>
+   <polygon points="795,235 800,245 805,235" fill="#999"/>
+   <text x="720" y="210" class="connector-label">Style Info</text>
+
+  <!-- Connect Initial 3D GS to Loop -->
+   <line x1="150" y1="140" x2="150" y2="240" stroke="#999" stroke-width="2"/>
+   <polygon points="145,235 150,245 155,235" fill="#999"/>
+   <text x="160" y="190" class="connector-label">Initial Colors</text>
+
+
+  <!-- Loss Components -->
+  <g transform="translate(30, 330)">
+    <!-- DSSD -->
+    <rect x="20" y="0" width="200" height="130" rx="10" ry="10" fill="url(#grad1)" stroke="#aaa" stroke-width="1"/>
+    <text x="120" y="20" text-anchor="middle" class="loss-title">DSSD</text>
+    <text x="120" y="40" text-anchor="middle" class="loss-desc">Dynamic Style Score Distillation</text>
+    <text x="120" y="60" text-anchor="middle" class="loss-desc">(Stable Diffusion Prior)</text>
+    <text x="120" y="80" text-anchor="middle" class="loss-desc">- High-level semantics</text>
+    <text x="120" y="95" text-anchor="middle" class="loss-desc">- Dynamic CFG, Timesteps</text>
+    <text x="120" y="110" text-anchor="middle" class="loss-desc">- Incl. Style Outpainting (PSO)</text>
+    <text x="120" y="125" text-anchor="middle" class="process">(L_style)</text>
+
+    <!-- SOS -->
+    <rect x="250" y="0" width="200" height="130" rx="10" ry="10" fill="url(#grad2)" stroke="#aaa" stroke-width="1"/>
+    <text x="350" y="20" text-anchor="middle" class="loss-title">SOS</text>
+    <text x="350" y="40" text-anchor="middle" class="loss-desc">Simultaneously Optimized Scale</text>
+    <text x="350" y="60" text-anchor="middle" class="loss-desc">(VGG Prior)</text>
+    <text x="350" y="80" text-anchor="middle" class="loss-desc">- Low-level texture details</text>
+    <text x="350" y="95" text-anchor="middle" class="loss-desc">- Multi-scale Gram matrices</text>
+    <text x="350" y="125" text-anchor="middle" class="process">(L_SOS)</text>
+
+    <!-- CSD -->
+    <rect x="480" y="0" width="200" height="130" rx="10" ry="10" fill="url(#grad3)" stroke="#aaa" stroke-width="1"/>
+    <text x="580" y="20" text-anchor="middle" class="loss-title">CSD</text>
+    <text x="580" y="40" text-anchor="middle" class="loss-desc">Contrastive Style Descriptor</text>
+    <text x="580" y="60" text-anchor="middle" class="loss-desc">(ViT Prior)</text>
+    <text x="580" y="80" text-anchor="middle" class="loss-desc">- Mid-level style fidelity</text>
+    <text x="580" y="95" text-anchor="middle" class="loss-desc">- Cosine similarity on style features</text>
+    <text x="580" y="125" text-anchor="middle" class="process">(L_CSD)</text>
+
+    <!-- 3DG-QA -->
+    <rect x="710" y="0" width="200" height="130" rx="10" ry="10" fill="url(#grad5)" stroke="#aaa" stroke-width="1"/>
+    <text x="810" y="20" text-anchor="middle" class="loss-title">3DG-QA</text>
+    <text x="810" y="40" text-anchor="middle" class="loss-desc">3D Gaussian Quality Assessment</text>
+    <text x="810" y="60" text-anchor="middle" class="loss-desc">(CLIP-IQA Prior)</text>
+    <text x="810" y="80" text-anchor="middle" class="loss-desc">- Global aesthetic quality</text>
+    <text x="810" y="95" text-anchor="middle" class="loss-desc">- Antonym prompts, artifact removal</text>
+    <text x="810" y="125" text-anchor="middle" class="process">(L_3DG-QA)</text>
+  </g>
+
+  <!-- Connect Render to Loss Components -->
+  <line x1="150" y1="300" x2="150" y2="320" stroke="#999" stroke-width="2"/>
+  <line x1="150" y1="320" x2="480" y2="320" stroke="#999" stroke-width="2"/>
+  <polygon points="475,315 485,320 475,325" fill="#999"/>
+  <text x="300" y="315" class="connector-label">Rendered Image (I_v)</text>
+
+  <!-- Connect Loss Components to Combine Loss -->
+  <line x1="150" y1="460" x2="480" y2="490" stroke="#88f" stroke-width="2"/>
+  <line x1="380" y1="460" x2="480" y2="490" stroke="#f88" stroke-width="2"/>
+  <line x1="610" y1="460" x2="480" y2="490" stroke="#8f8" stroke-width="2"/>
+  <line x1="840" y1="460" x2="480" y2="490" stroke="#ccf" stroke-width="2"/>
+
+  <!-- Combine Loss -->
+  <rect x="380" y="490" width="240" height="70" rx="10" ry="10" fill="url(#grad6)" stroke="#aaa" stroke-width="1"/>
+  <text x="500" y="515" text-anchor="middle" class="process">Combine Losses (L_final)</text>
+  <text x="500" y="535" text-anchor="middle" class="loss-desc">λ1*L_style + λ2*L_SOS +</text>
+  <text x="500" y="550" text-anchor="middle" class="loss-desc">λ3*L_CSD + λ4*L_3DG-QA</text>
+
+  <!-- Gradient Calculation and Update -->
+   <rect x="380" y="580" width="240" height="60" rx="10" ry="10" fill="#e0e0e0" stroke="#aaa" stroke-width="1"/>
+   <text x="500" y="605" text-anchor="middle" class="process">Calculate Gradients ∇Θ_color</text>
+   <text x="500" y="625" text-anchor="middle" class="process">Update Colors Θ_color</text>
+
+  <!-- Connect Combine Loss to Update -->
+  <line x1="500" y1="560" x2="500" y2="580" stroke="#aaa" stroke-width="2"/>
+  <polygon points="495,575 500,585 505,575" fill="#aaa"/>
+
+  <!-- Loop Back -->
+  <path d="M 380 610 Q 250 610, 200 500 Q 150 400, 150 300" stroke="#aaa" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  <polygon points="145,305 150,295 155,305" fill="#aaa"/>
+  <text x="260" y="550" class="connector-label">Iterate</text>
+
+  <!-- Output -->
+  <rect x="350" y="700" width="300" height="60" rx="10" ry="10" fill="url(#grad_final)" stroke="#aaa" stroke-width="1"/>
+  <text x="500" y="730" text-anchor="middle" class="output">Stylized 3D Gaussian Splatting</text>
+  <text x="500" y="750" text-anchor="middle" class="output">(Optimized Θ_color)</text>
+
+  <!-- Connect Loop End to Output -->
+  <line x1="500" y1="640" x2="500" y2="700" stroke="#888" stroke-width="2"/>
+  <polygon points="495,695 500,705 505,695" fill="#888"/>
+  <text x="510" y="670" class="connector-label">Convergence</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Integration of Stable Diffusion into 3D Gaussian Splatting optimization">
+                        <div class="quiz-question">1. What is the primary innovation of StyleMe3D compared to previous 3D stylization approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using only VGG-based feature extraction for style transfer">Using only VGG-based feature extraction for style transfer</div><div class="quiz-choice" data-value="Integration of Stable Diffusion into 3D Gaussian Splatting optimization">Integration of Stable Diffusion into 3D Gaussian Splatting optimization</div><div class="quiz-choice" data-value="Complete modification of geometry during stylization">Complete modification of geometry during stylization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Contrastive Style Descriptor (CSD)">
+                        <div class="quiz-question">2. Which component of StyleMe3D is specifically designed to extract medium-level style descriptors for content-aware stylization?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Dynamic Style Score Distillation (DSSD)">Dynamic Style Score Distillation (DSSD)</div><div class="quiz-choice" data-value="Contrastive Style Descriptor (CSD)">Contrastive Style Descriptor (CSD)</div><div class="quiz-choice" data-value="3D Gaussian Quality Assessment (3DG-QA)">3D Gaussian Quality Assessment (3DG-QA)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Only the color parameters">
+                        <div class="quiz-question">3. During the stylization process in StyleMe3D, which parameters of the 3D Gaussian Splatting representation are optimized?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Only the geometric parameters">Only the geometric parameters</div><div class="quiz-choice" data-value="Only the color parameters">Only the color parameters</div><div class="quiz-choice" data-value="Both geometric and color parameters">Both geometric and color parameters</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
