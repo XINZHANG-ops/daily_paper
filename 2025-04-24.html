@@ -1,0 +1,1177 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-24 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-24 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>DreamO: A Unified Framework for Image Customization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.16915" target="_blank">http://arxiv.org/pdf/2504.16915</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces DreamO, a unified framework for image customization within the domain of generative AI and computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous task-specific image customization approaches and diffusion transformer (DiT) models, proposing a new unified framework that can handle multiple customization types simultaneously and combine different conditions.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of developing a unified framework for various image customization tasks (identity, subject, style, try-on) that can seamlessly integrate multiple conditions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a diffusion transformer framework with feature routing constraints, a placeholder strategy for condition placement, and a progressive three-stage training strategy on a large-scale custom dataset.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results demonstrate that DreamO effectively performs various image customization tasks with high quality and flexibly integrates different types of control conditions within a single model.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>DreamO: A Unified Framework for Image Customization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(200,230,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,240,200);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,255,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,220,220);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,180,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,220,255);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; }
+      .stage-title { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #555; }
+      .box { fill: url(#grad1); stroke: #6699CC; stroke-width: 1.5; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.1)); }
+      .input-box { fill: url(#grad2); stroke: #CC9966; stroke-width: 1.5; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.1)); }
+      .output-box { fill: url(#grad3); stroke: #66CC66; stroke-width: 1.5; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.1)); }
+      .loss-box { fill: url(#grad4); stroke: #CC6666; stroke-width: 1.5; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.1)); }
+      .stage-box { fill: url(#grad5); stroke: #9966CC; stroke-width: 2; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.1)); }
+      .text-main { font-family: Arial, sans-serif; font-size: 12px; fill: #333; }
+      .text-small { font-family: Arial, sans-serif; font-size: 10px; fill: #555; }
+      .text-bold { font-weight: bold; }
+      .arrow { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .connector { stroke: #AAA; stroke-width: 1; fill: none; stroke-dasharray: 4 2;}
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title" text-anchor="middle">DreamO Methodology Flowchart</text>
+
+  <!-- Inputs -->
+  <g id="inputs">
+    <rect x="50" y="80" width="180" height="70" rx="10" ry="10" class="input-box"/>
+    <text x="140" y="105" class="text-main text-bold" text-anchor="middle">Condition Images</text>
+    <text x="140" y="125" class="text-main" text-anchor="middle">(C1, C2, ... Cn)</text>
+    <text x="140" y="140" class="text-small" text-anchor="middle">(Identity, Subject, Style, Try-on)</text>
+
+    <rect x="280" y="80" width="180" height="70" rx="10" ry="10" class="input-box"/>
+    <text x="370" y="105" class="text-main text-bold" text-anchor="middle">Text Prompt</text>
+    <text x="370" y="125" class="text-main" text-anchor="middle">(with optional placeholders</text>
+    <text x="370" y="140" class="text-main" text-anchor="middle">[ref#i])</text>
+
+    <rect x="50" y="170" width="180" height="50" rx="10" ry="10" class="input-box"/>
+    <text x="140" y="200" class="text-main text-bold" text-anchor="middle" dy="-5">Noisy Latent zt</text>
+    <text x="140" y="200" class="text-small" text-anchor="middle" dy="10">(from target image + noise)</text>
+
+    <rect x="280" y="170" width="180" height="50" rx="10" ry="10" class="input-box"/>
+    <text x="370" y="200" class="text-main text-bold" text-anchor="middle">Timestep t</text>
+  </g>
+
+  <!-- Input Processing -->
+  <g id="input-processing">
+    <rect x="50" y="250" width="410" height="100" rx="10" ry="10" class="box"/>
+    <text x="255" y="270" class="text-main text-bold" text-anchor="middle">Input Tokenization & Embedding</text>
+    <text x="70" y="295" class="text-small" text-anchor="start">• VAE Encode + Patchify (Conditions)</text>
+    <text x="70" y="310" class="text-small" text-anchor="start">• Text Encoder (Prompt)</text>
+    <text x="70" y="325" class="text-small" text-anchor="start">• Add Embeddings (PE, CE, IE)</text>
+    <text x="70" y="340" class="text-small text-bold" text-anchor="start">Output: Unified Input Sequence</text>
+  </g>
+
+  <!-- Core Model -->
+  <g id="core-model">
+    <rect x="500" y="160" width="200" height="100" rx="15" ry="15" class="box" style="fill:#e0f0ff; stroke:#5a8fcc;"/>
+    <text x="600" y="190" class="text-main text-bold" text-anchor="middle">Base Model: Flux (DiT)</text>
+    <text x="600" y="210" class="text-small" text-anchor="middle">+ Trainable LoRA Modules</text>
+    <text x="600" y="230" class="text-small" text-anchor="middle">(Input: Unified Sequence, t)</text>
+    <text x="600" y="245" class="text-small" text-anchor="middle">(Output: Predicted Velocity Vθ)</text>
+  </g>
+
+  <!-- Connections to Model -->
+  <path d="M 255 250 Q 255 200 500 200" class="arrow" /> <!-- Input Processing to Model -->
+  <path d="M 700 210 Q 780 210 780 300" class="connector" /> <!-- Model to Losses -->
+
+  <!-- Loss Functions -->
+  <g id="losses">
+     <rect x="750" y="80" width="200" height="60" rx="10" ry="10" class="loss-box"/>
+     <text x="850" y="100" class="text-main text-bold" text-anchor="middle">L_diff (Diffusion Loss)</text>
+     <text x="850" y="120" class="text-small" text-anchor="middle">Flow Matching Objective</text>
+
+     <rect x="750" y="160" width="200" height="90" rx="10" ry="10" class="loss-box"/>
+     <text x="850" y="180" class="text-main text-bold" text-anchor="middle">L_route (Routing Constraint)</text>
+     <text x="850" y="200" class="text-small" text-anchor="middle">• Cross-Attention (Condition<->Latent)</text>
+     <text x="850" y="215" class="text-small" text-anchor="middle">• Match Attention Map to Target Mask</text>
+     <text x="850" y="230" class="text-small" text-anchor="middle">• Improves Fidelity & Disentanglement</text>
+
+     <rect x="750" y="270" width="200" height="80" rx="10" ry="10" class="loss-box"/>
+     <text x="850" y="290" class="text-main text-bold" text-anchor="middle">L_holder (Placeholder Loss)</text>
+     <text x="850" y="310" class="text-small" text-anchor="middle">• Cross-Attention (Condition<->Placeholder)</text>
+     <text x="850" y="325" class="text-small" text-anchor="middle">• Match Condition to [ref#i]</text>
+     <text x="850" y="340" class="text-small" text-anchor="middle">• Enables Positional Control</text>
+
+     <rect x="750" y="370" width="200" height="40" rx="10" ry="10" class="loss-box" style="fill:#ffe0b3; stroke:#cc8400;"/>
+     <text x="850" y="395" class="text-main text-bold" text-anchor="middle">Total Loss = λ_diff*L_diff + ...</text>
+  </g>
+
+  <!-- Training Data -->
+  <g id="training-data">
+    <rect x="50" y="380" width="410" height="120" rx="10" ry="10" class="input-box" style="fill:#fff0e0; stroke:#e6a85c;"/>
+    <text x="255" y="400" class="text-main text-bold" text-anchor="middle">Training Data Construction</text>
+    <text x="70" y="420" class="text-small">• Identity Pairs (PuLID)</text>
+    <text x="70" y="435" class="text-small">• Subject-driven (Subject200k, X2I, etc.)</text>
+    <text x="70" y="450" class="text-small">• Try-on Data (Web + Segmentation)</text>
+    <text x="70" y="465" class="text-small">• Style-driven Data (Internal Model + Canny/Flux)</text>
+    <text x="70" y="480" class="text-small">• Routing Masks (InternVL + LISA)</text>
+    <text x="70" y="495" class="text-small">• High-Quality Data (Flux-generated for Stage 3)</text>
+  </g>
+
+  <!-- Progressive Training -->
+  <g id="progressive-training">
+    <rect x="50" y="530" width="900" height="180" rx="15" ry="15" class="stage-box"/>
+    <text x="500" y="555" class="stage-title" text-anchor="middle">Progressive Training Strategy</text>
+
+    <!-- Stage 1 -->
+    <rect x="70" y="575" width="260" height="115" rx="10" ry="10" class="box" style="fill:#e6f0ff;"/>
+    <text x="200" y="595" class="text-main text-bold" text-anchor="middle">Stage 1: Warm-up</text>
+    <text x="80" y="615" class="text-small" text-anchor="start">• Data: Subject-driven (easier)</text>
+    <text x="80" y="630" class="text-small" text-anchor="start">  (Subject200k, concatenated)</text>
+    <text x="80" y="645" class="text-small" text-anchor="start">• Focus: L_diff</text>
+    <text x="80" y="660" class="text-small" text-anchor="start">• Goal: Baseline Consistency</text>
+    <text x="80" y="675" class="text-small" text-anchor="start">• Iterations: ~20k</text>
+
+    <!-- Stage 2 -->
+    <rect x="370" y="575" width="260" height="115" rx="10" ry="10" class="box" style="fill:#e6f0ff;"/>
+    <text x="500" y="595" class="text-main text-bold" text-anchor="middle">Stage 2: Full Training</text>
+    <text x="380" y="615" class="text-small" text-anchor="start">• Data: All Customization Data</text>
+    <text x="380" y="630" class="text-small" text-anchor="start">  (ID, Subject, Try-on, Style, Masks)</text>
+    <text x="380" y="645" class="text-small" text-anchor="start">• Focus: L_diff + L_route + L_holder</text>
+    <text x="380" y="660" class="text-small" text-anchor="start">• Goal: Multi-task Capability</text>
+    <text x="380" y="675" class="text-small" text-anchor="start">• Iterations: ~90k</text>
+
+    <!-- Stage 3 -->
+    <rect x="670" y="575" width="260" height="115" rx="10" ry="10" class="box" style="fill:#e6f0ff;"/>
+    <text x="800" y="595" class="text-main text-bold" text-anchor="middle">Stage 3: Quality Alignment</text>
+    <text x="680" y="615" class="text-small" text-anchor="start">• Data: High-Quality Flux Data</text>
+    <text x="680" y="630" class="text-small" text-anchor="start">  (with ref token dropping)</text>
+    <text x="680" y="645" class="text-small" text-anchor="start">• Focus: L_diff (modified)</text>
+    <text x="680" y="660" class="text-small" text-anchor="start">• Goal: Align w/ Flux Quality Prior</text>
+    <text x="680" y="675" class="text-small" text-anchor="start">• Iterations: ~3k</text>
+
+    <!-- Arrows between stages -->
+    <path d="M 330 632.5 L 370 632.5" class="arrow" style="stroke-width:2;"/>
+    <path d="M 630 632.5 L 670 632.5" class="arrow" style="stroke-width:2;"/>
+  </g>
+
+  <!-- Output -->
+  <g id="output">
+    <rect x="360" y="730" width="280" height="50" rx="10" ry="10" class="output-box"/>
+    <text x="500" y="760" class="text-main text-bold" text-anchor="middle">Final Output: Customized Image</text>
+  </g>
+
+  <!-- Connections -->
+   <path d="M 255 350 L 255 380" class="arrow" /> <!-- Input Processing to Training Data -->
+   <path d="M 255 500 L 255 530" class="arrow" /> <!-- Training Data to Training Stages -->
+   <path d="M 500 710 L 500 730" class="arrow" /> <!-- Training Stages to Output -->
+   <path d="M 600 260 Q 600 450 500 530" class="connector" /> <!-- Model to Training -->
+   <path d="M 850 410 Q 850 480 500 530" class="connector" /> <!-- Losses to Training -->
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It unifies multiple customization tasks in a single model with flexible condition integration">
+                        <div class="quiz-question">1. What is the primary innovation of DreamO compared to previous image customization approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a completely new architecture different from diffusion models">It uses a completely new architecture different from diffusion models</div><div class="quiz-choice" data-value="It unifies multiple customization tasks in a single model with flexible condition integration">It unifies multiple customization tasks in a single model with flexible condition integration</div><div class="quiz-choice" data-value="It requires no training data and works entirely through zero-shot learning">It requires no training data and works entirely through zero-shot learning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Feature routing constraint">
+                        <div class="quiz-question">2. What technique does DreamO use to ensure precise querying of relevant information from reference images?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Feature routing constraint">Feature routing constraint</div><div class="quiz-choice" data-value="Progressive distillation">Progressive distillation</div><div class="quiz-choice" data-value="Gradient-based attention mapping">Gradient-based attention mapping</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Three stages: initial consistency, full-scale training, and quality alignment">
+                        <div class="quiz-question">3. How many stages are in DreamO's progressive training strategy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Two stages: initial training and quality alignment">Two stages: initial training and quality alignment</div><div class="quiz-choice" data-value="Three stages: initial consistency, full-scale training, and quality alignment">Three stages: initial consistency, full-scale training, and quality alignment</div><div class="quiz-choice" data-value="Four stages: pretraining, fine-tuning, distillation, and alignment">Four stages: pretraining, fine-tuning, distillation, and alignment</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Decoupled Global-Local Alignment for Improving Compositional
+  Understanding</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.16801" target="_blank">http://arxiv.org/pdf/2504.16801</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces a framework called Decoupled Global-Local Alignment (DeGLA) for improving compositional understanding in vision-language models while preserving general capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on CLIP's contrastive language-image pretraining approach, proposing a new framework that addresses the limitation of previous methods which improved compositional understanding at the cost of reduced general capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of improving a vision-language model's compositional understanding (ability to comprehend relations and attributes) without compromising its inherent general capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a self-distillation mechanism within global alignment to preserve general capabilities, and propose Image-Grounded Contrast and Text-Grounded Contrast losses for local alignment, supported by high-quality negative captions generated using Large Language Models.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> DeGLA achieved an average improvement of 3.5% across compositional understanding benchmarks (VALSE, SugarCrepe, ARO) while simultaneously improving zero-shot classification performance by 13.0% compared to previous state-of-the-art methods.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Decoupled Global-Local Alignment for Improving Compositional
+  Understanding</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define Styles and Gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(173, 216, 230);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(135, 206, 250);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255, 223, 186);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255, 218, 185);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(144, 238, 144);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(60, 179, 113);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255, 182, 193);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255, 105, 180);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(221, 160, 221);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(186, 85, 211);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(240, 230, 140);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255, 215, 0);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #555; }
+      .text { font-family: Arial, sans-serif; font-size: 12px; fill: #444; }
+      .box { stroke: #666; stroke-width: 1.5; rx: 10; ry: 10; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.1)); }
+      .line { stroke: #888; stroke-width: 2; }
+      .arrow-head { fill: #888; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">DeGLA Methodology Flowchart</text>
+
+  <!-- Inputs -->
+  <g id="inputs">
+     <rect x="50" y="70" width="180" height="50" class="box" fill="url(#grad1)" />
+     <text x="140" y="95" class="subtitle" text-anchor="middle">Pre-trained CLIP</text>
+     <text x="140" y="110" class="text" text-anchor="middle">(Student & Initial Teacher)</text>
+
+     <rect x="280" y="70" width="180" height="50" class="box" fill="url(#grad1)" />
+     <text x="370" y="95" class="subtitle" text-anchor="middle">Image-Text Data</text>
+      <text x="370" y="110" class="text" text-anchor="middle">(e.g., MSCOCO)</text>
+  </g>
+
+  <!-- Negative Caption Generation Pipeline -->
+  <g id="negative-generation">
+    <rect x="550" y="70" width="400" height="200" class="box" fill="url(#grad2)" stroke="#D2B48C"/>
+    <text x="750" y="95" class="subtitle" text-anchor="middle">LLM-Driven Negative Caption Generation</text>
+
+    <rect x="570" y="115" width="170" height="40" class="box" fill="#FFF8DC" />
+    <text x="655" y="135" class="text" text-anchor="middle">Define Rewrite Rules (5 Types)</text>
+    <text x="655" y="148" class="text" font-size="9px" text-anchor="middle">(Reshuffle, Substitution)</text>
+
+    <rect x="760" y="115" width="170" height="40" class="box" fill="#FFF8DC" />
+    <text x="845" y="135" class="text" text-anchor="middle">Generate Examples (ChatGPT)</text>
+
+    <rect x="570" y="170" width="360" height="40" class="box" fill="#FFF8DC" />
+    <text x="750" y="190" class="text" text-anchor="middle">Large-Scale Generation (Llama 3.1) via In-Context Learning</text>
+    <text x="750" y="203" class="text" font-size="9px" text-anchor="middle">(with semantic divergence filtering)</text>
+
+    <rect x="650" y="225" width="200" height="35" class="box" fill="#FFEBCD" stroke="#DAA520"/>
+    <text x="750" y="245" class="text" font-weight="bold" text-anchor="middle">Generated Negative Captions</text>
+
+    <!-- Connection Line -->
+    <line x1="460" y1="95" x2="550" y2="170" class="line" />
+    <line x1="750" y1="260" x2="750" y2="290" class="line" marker-end="url(#arrow)" />
+  </g>
+
+  <!-- DeGLA Training Framework -->
+  <g id="deqla-framework">
+    <rect x="200" y="290" width="600" height="450" class="box" fill="#F0F8FF" stroke="#ADD8E6"/>
+    <text x="500" y="315" class="subtitle" text-anchor="middle">DeGLA Training Framework</text>
+
+    <!-- Encoders -->
+    <g id="encoders">
+        <rect x="220" y="335" width="270" height="60" class="box" fill="url(#grad3)" />
+        <text x="355" y="355" class="text" font-weight="bold" text-anchor="middle">Learnable Student Encoders</text>
+        <text x="355" y="370" class="text" text-anchor="middle">Image Encoder (E_I)</text>
+        <text x="355" y="385" class="text" text-anchor="middle">Text Encoder (E_T)</text>
+
+        <rect x="510" y="335" width="270" height="60" class="box" fill="url(#grad4)" />
+        <text x="645" y="355" class="text" font-weight="bold" text-anchor="middle">Frozen Teacher Encoders (EMA)</text>
+        <text x="645" y="370" class="text" text-anchor="middle">Image Encoder (E*_I)</text>
+        <text x="645" y="385" class="text" text-anchor="middle">Text Encoder (E*_T)</text>
+    </g>
+
+    <!-- Data Flow to Encoders -->
+    <line x1="140" y1="120" x2="355" y2="335" class="line" /> <!-- CLIP to Student -->
+    <line x1="140" y1="120" x2="645" y2="335" class="line" /> <!-- CLIP to Teacher -->
+    <line x1="370" y1="120" x2="355" y2="335" class="line" /> <!-- Data to Student -->
+    <line x1="370" y1="120" x2="645" y2="335" class="line" /> <!-- Data to Teacher -->
+    <line x1="750" y1="260" x2="355" y2="335" class="line" /> <!-- Negatives to Student -->
+    <line x1="750" y1="260" x2="645" y2="335" class="line" /> <!-- Negatives to Teacher -->
+
+
+    <!-- Alignment Modules -->
+    <g id="alignment-modules">
+        <!-- Global Alignment -->
+        <rect x="220" y="410" width="270" height="180" class="box" fill="url(#grad5)" />
+        <text x="355" y="430" class="text" font-weight="bold" text-anchor="middle">Global Alignment</text>
+
+        <ellipse cx="355" cy="465" rx="110" ry="25" class="box" fill="#E6E6FA"/>
+        <text x="355" y="465" class="text" text-anchor="middle">Base Contrastive Loss (L_base)</text>
+        <text x="355" y="478" class="text" font-size="9px" text-anchor="middle">(InfoNCE with Negatives)</text>
+
+        <ellipse cx="355" cy="535" rx="110" ry="25" class="box" fill="#E6E6FA"/>
+        <text x="355" y="535" class="text" text-anchor="middle">Self-Distillation Loss (L_Distill)</text>
+        <text x="355" y="548" class="text" font-size="9px" text-anchor="middle">(Student vs. Teacher Embeddings)</text>
+
+        <!-- Local Alignment -->
+        <rect x="510" y="410" width="270" height="180" class="box" fill="url(#grad6)" />
+        <text x="645" y="430" class="text" font-weight="bold" text-anchor="middle">Local Alignment</text>
+
+        <ellipse cx="645" cy="465" rx="110" ry="25" class="box" fill="#FFFACD"/>
+        <text x="645" y="465" class="text" text-anchor="middle">Image-Grounded Contrast (L_IGC)</text>
+        <text x="645" y="478" class="text" font-size="9px" text-anchor="middle">(Image vs. Pos/Neg Texts)</text>
+
+        <ellipse cx="645" cy="535" rx="110" ry="25" class="box" fill="#FFFACD"/>
+        <text x="645" y="535" class="text" text-anchor="middle">Text-Grounded Contrast (L_TGC)</text>
+        <text x="645" y="548" class="text" font-size="9px" text-anchor="middle">(Pos Text vs. Teacher Pos/Neg Texts)</text>
+
+        <!-- Connections from Encoders to Losses -->
+         <line x1="355" y1="395" x2="355" y2="440" class="line" /> <!-- Student to Global -->
+         <line x1="645" y1="395" x2="355" y2="510" class="line" /> <!-- Teacher to Distill -->
+         <line x1="355" y1="395" x2="645" y2="440" class="line" /> <!-- Student to Local -->
+         <line x1="645" y1="395" x2="645" y2="510" class="line" /> <!-- Teacher to TGC -->
+
+    </g>
+
+    <!-- Combined Loss and Optimization -->
+    <g id="optimization">
+        <rect x="350" y="610" width="300" height="60" class="box" fill="#D3D3D3" />
+        <text x="500" y="630" class="text" font-weight="bold" text-anchor="middle">Combine Losses (L_all)</text>
+        <text x="500" y="645" class="text" font-size="10px" text-anchor="middle">L_Base + λ1*L_IGC + λ2*L_TGC + λ3*L_Distill</text>
+
+        <rect x="350" y="685" width="300" height="40" class="box" fill="url(#grad3)" />
+        <text x="500" y="705" class="text" font-weight="bold" text-anchor="middle">Optimize Student Encoders (E_I, E_T)</text>
+
+        <!-- Connections to Combined Loss -->
+        <line x1="355" y1="560" x2="400" y2="610" class="line" /> <!-- Global to Combine -->
+        <line x1="645" y1="560" x2="600" y2="610" class="line" /> <!-- Local to Combine -->
+
+        <!-- Optimization Loop -->
+         <line x1="500" y1="670" x2="500" y2="685" class="line" marker-end="url(#arrow)"/>
+
+        <!-- EMA Update -->
+        <path d="M 650 695 Q 750 695 750 650 L 750 365 Q 750 335 780 365" stroke="#FF69B4" stroke-dasharray="5,5" fill="none" stroke-width="1.5" marker-end="url(#arrow)" />
+         <text x="760" y="500" transform="rotate(90 760 500)" fill="#FF69B4" font-size="10px" font-style="italic">Update Teacher (EMA)</text>
+
+    </g>
+
+    <!-- Output -->
+    <rect x="400" y="750" width="200" height="40" class="box" fill="#98FB98" />
+    <text x="500" y="770" class="subtitle" text-anchor="middle">Fine-tuned DeGLA Model</text>
+    <line x1="500" y1="725" x2="500" y2="750" class="line" marker-end="url(#arrow)"/>
+
+  </g>
+
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Previous approaches improved compositional understanding but compromised general capabilities">
+                        <div class="quiz-question">1. What is the main limitation of previous approaches that DeGLA aims to address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Previous approaches were too computationally expensive for practical use">Previous approaches were too computationally expensive for practical use</div><div class="quiz-choice" data-value="Previous approaches improved compositional understanding but compromised general capabilities">Previous approaches improved compositional understanding but compromised general capabilities</div><div class="quiz-choice" data-value="Previous approaches required too much training data to be effective">Previous approaches required too much training data to be effective</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Self-distillation with a frozen teacher model from an exponential moving average">
+                        <div class="quiz-question">2. Which mechanism does DeGLA use to retain the model's inherent general capabilities?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Self-distillation with a frozen teacher model from an exponential moving average">Self-distillation with a frozen teacher model from an exponential moving average</div><div class="quiz-choice" data-value="Transfer learning from multiple pre-trained vision models">Transfer learning from multiple pre-trained vision models</div><div class="quiz-choice" data-value="Curriculum learning with gradually increasing task difficulty">Curriculum learning with gradually increasing task difficulty</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By leveraging the in-context learning capability of Large Language Models">
+                        <div class="quiz-question">3. How does DeGLA generate high-quality negative captions for training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By randomly shuffling words in positive captions">By randomly shuffling words in positive captions</div><div class="quiz-choice" data-value="By leveraging the in-context learning capability of Large Language Models">By leveraging the in-context learning capability of Large Language Models</div><div class="quiz-choice" data-value="By extracting incorrect captions from existing image-text datasets">By extracting incorrect captions from existing image-text datasets</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Learning Adaptive Parallel Reasoning with Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-21</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.15466" target="_blank">http://arxiv.org/pdf/2504.15466</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents Adaptive Parallel Reasoning (APR), a framework for language models to efficiently distribute reasoning computation across both serial and parallel operations.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous reasoning approaches like chain-of-thought and self-consistency, proposing a novel method that allows language models to orchestrate both serialized and parallel computations end-to-end using spawn() and join() operations.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses limitations of existing reasoning methods where serialized approaches exhaust context windows and increase latency, while parallel methods lack coordination resulting in redundant computations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implemented a parent-child threading mechanism allowing language models to delegate subtasks to multiple child inference threads in parallel, and used end-to-end reinforcement learning to optimize this process without requiring predefined reasoning structures.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> APR demonstrated significant benefits on the Countdown reasoning task: higher performance within the same context window (83.4% vs. 60.0%), superior scalability with increased computation (80.1% vs. 66.6%), and improved accuracy at equivalent latency (75.2% vs. 57.3%).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Learning Adaptive Parallel Reasoning with Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif" font-size="14">
+
+  <!-- Define styles -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(100,150,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,220,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,180,100);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(120,220,120);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(220,120,120);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(200,180,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(150,130,220);stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+    <style>
+      .title { font-size: 24px; font-weight: bold; text-anchor: middle; fill: #333; }
+      .subtitle { font-size: 18px; font-weight: bold; fill: #555; }
+      .box { stroke: #333; stroke-width: 1.5; rx: 8; ry: 8; filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.2)); }
+      .text-main { fill: #222; }
+      .text-small { font-size: 12px; fill: #444; }
+      .arrow { stroke: #555; stroke-width: 1.5; marker-end: url(#arrowhead); }
+      .parallel-box { stroke-dasharray: 4; stroke-width: 1; stroke: #888; fill: rgba(230, 230, 230, 0.3); rx: 5; ry: 5; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">Adaptive Parallel Reasoning (APR) Workflow</text>
+
+  <!-- Section 1: Problem Context -->
+  <rect x="50" y="70" width="900" height="70" fill="url(#grad4)" class="box"/>
+  <text x="500" y="95" text-anchor="middle" class="subtitle">Problem: Limitations of Existing Methods</text>
+  <text x="100" y="120" class="text-main">Serialized CoT: High latency, context window exhaustion.</text>
+  <text x="550" y="120" class="text-main">Parallel Self-Consistency: Redundant computation, lack of coordination.</text>
+
+  <!-- Section 2: APR Core Mechanism -->
+  <rect x="50" y="160" width="900" height="220" fill="url(#grad1)" class="box"/>
+  <text x="500" y="185" text-anchor="middle" class="subtitle">APR Core Mechanism: Adaptive Multi-Threading</text>
+
+  <!-- Parent Thread Start -->
+  <rect x="100" y="210" width="180" height="50" fill="#eef" stroke="#aaa" rx="5" ry="5"/>
+  <text x="190" y="240" text-anchor="middle" class="text-main">Parent Thread Starts</text>
+
+  <!-- Decision to Spawn -->
+  <ellipse cx="190" cy="300" rx="100" ry="35" fill="#fff" stroke="#aaa"/>
+  <text x="190" y="305" text-anchor="middle" class="text-main">Model Decides:</text>
+  <text x="190" y="325" text-anchor="middle" class="text-small">Continue Serially or Spawn?</text>
+  <path d="M 190 260 V 265" class="arrow"/>
+
+  <!-- Spawn Operation -->
+  <rect x="350" y="210" width="180" height="50" fill="#ffe" stroke="#aaa" rx="5" ry="5"/>
+  <text x="440" y="230" text-anchor="middle" class="text-main">Generate `spawn(msgs)`</text>
+  <text x="440" y="250" text-anchor="middle" class="text-small">(Passes context to children)</text>
+  <path d="M 290 300 H 350" class="arrow"/> <!-- From decision to spawn -->
+
+  <!-- Parallel Child Threads -->
+  <rect x="320" y="275" width="580" height="90" class="parallel-box"/>
+  <text x="610" y="295" text-anchor="middle" class="text-small" fill="#555">Parallel Execution</text>
+  <rect x="350" y="310" width="150" height="40" fill="#fff8e1" stroke="#f57f17" rx="5" ry="5"/>
+  <text x="425" y="335" text-anchor="middle" class="text-main">Child Thread 1</text>
+  <rect x="550" y="310" width="150" height="40" fill="#fff8e1" stroke="#f57f17" rx="5" ry="5"/>
+  <text x="625" y="335" text-anchor="middle" class="text-main">Child Thread 2</text>
+  <rect x="750" y="310" width="150" height="40" fill="#fff8e1" stroke="#f57f17" rx="5" ry="5"/>
+  <text x="825" y="335" text-anchor="middle" class="text-main">... Child Thread N</text>
+  <path d="M 440 260 V 290" class="arrow"/> <!-- From spawn to parallel box -->
+
+  <!-- Join Operation -->
+  <rect x="550" y="390" width="180" height="50" fill="#ffe" stroke="#aaa" rx="5" ry="5"/>
+  <text x="640" y="410" text-anchor="middle" class="text-main">Children Generate `join(msg)`</text>
+  <text x="640" y="430" text-anchor="middle" class="text-small">(Return results/summaries)</text>
+  <path d="M 425 350 C 425 370, 580 380, 580 390" fill="none" class="arrow"/>
+  <path d="M 625 350 V 390" class="arrow"/>
+  <path d="M 825 350 C 825 370, 690 380, 690 390" fill="none" class="arrow"/>
+
+  <!-- Parent Thread Continues -->
+  <rect x="780" y="210" width="180" height="50" fill="#eef" stroke="#aaa" rx="5" ry="5"/>
+  <text x="870" y="230" text-anchor="middle" class="text-main">Parent Thread Continues</text>
+  <text x="870" y="250" text-anchor="middle" class="text-small">(Conditioned on join msgs)</text>
+  <path d="M 730 415 H 780" class="arrow"/> <!-- From join to parent continue -->
+  <path d="M 190 335 V 360 H 870 V 260" fill="none" class="arrow"/> <!-- From decision (serial path) to parent continue -->
+
+
+  <!-- Section 3: Training Pipeline -->
+  <rect x="50" y="450" width="900" height="220" fill="url(#grad3)" class="box"/>
+  <text x="500" y="475" text-anchor="middle" class="subtitle">Training Pipeline: Learning to Parallelize</text>
+
+  <!-- Step 1: Supervised Initialization -->
+  <rect x="80" y="500" width="400" height="150" fill="#e8f5e9" stroke="#a5d6a7" rx="5" ry="5"/>
+  <text x="280" y="520" text-anchor="middle" font-weight="bold">1. Supervised Initialization</text>
+  <foreignObject x="90" y="535" width="380" height="110">
+    <body xmlns="http://www.w3.org/1999/xhtml">
+      <ul>
+        <li>Generate Demonstrations using Symbolic Solvers:</li>
+          <li style="margin-left: 15px;">APR Solver: Creates parallel traces with `spawn()`/`join()`.</li>
+          <li style="margin-left: 15px;">SoS+ Solver (Baseline): Creates serialized traces.</li>
+        <li>Train LM from scratch to imitate APR demonstrations.</li>
+        <li>Goal: Teach the model syntax and basic usage of `spawn()`/`join()`.</li>
+      </ul>
+    </body>
+  </foreignObject>
+
+  <!-- Step 2: Reinforcement Learning -->
+  <rect x="520" y="500" width="400" height="150" fill="#e8f5e9" stroke="#a5d6a7" rx="5" ry="5"/>
+  <text x="720" y="520" text-anchor="middle" font-weight="bold">2. Reinforcement Learning (RL)</text>
+   <foreignObject x="530" y="535" width="380" height="110">
+    <body xmlns="http://www.w3.org/1999/xhtml">
+      <ul>
+        <li>Fine-tune the supervised model using RL (GRPO).</li>
+        <li>Sample reasoning traces (using APR mechanism).</li>
+        <li>Assign reward based on task success (e.g., correct Countdown solution).</li>
+        <li>Optimize policy end-to-end.</li>
+        <li>Goal: Learn optimal strategies for *when*, *how*, and *how broadly* to parallelize for best performance/efficiency.</li>
+      </ul>
+    </body>
+  </foreignObject>
+
+  <path d="M 480 575 H 520" class="arrow"/> <!-- Arrow between Training steps -->
+
+  <!-- Section 4: Evaluation & Results -->
+  <rect x="50" y="690" width="900" height="90" fill="url(#grad5)" class="box"/>
+  <text x="500" y="715" text-anchor="middle" class="subtitle">Evaluation & Key Results</text>
+  <text x="70" y="745" class="text-main">• Compare APR vs. SoS+ (Serialized) & Self-Consistency.</text>
+  <text x="70" y="765" class="text-main">• Metrics: Accuracy, Compute (Total Tokens), Latency (Seq. Tokens, Wall Clock), Context Usage.</text>
+  <text x="550" y="745" class="text-main" fill="#006400" font-weight="bold">• APR Wins: Higher accuracy (fixed context/latency), better scaling with compute.</text>
+  <text x="550" y="765" class="text-main" fill="#006400" font-weight="bold">• RL Boost: Significantly improves APR by learning efficient parallelization.</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables language models to adaptively distribute computation between serial and parallel operations">
+                        <div class="quiz-question">1. What is the primary innovation of Adaptive Parallel Reasoning (APR) compared to previous reasoning methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger context window than previous methods">It uses a larger context window than previous methods</div><div class="quiz-choice long-text" data-value="It enables language models to adaptively distribute computation between serial and parallel operations">It enables language models to adaptively distribute computation between serial and parallel operations</div><div class="quiz-choice" data-value="It eliminates the need for language models completely">It eliminates the need for language models completely</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Scaling test-time compute by increasing both sequence length and number of child threads">
+                        <div class="quiz-question">2. In the Countdown task experiments, what did reinforcement learning primarily help APR achieve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Improved decision quality within a fixed compute budget">Improved decision quality within a fixed compute budget</div><div class="quiz-choice" data-value="Reduced the number of child threads needed">Reduced the number of child threads needed</div><div class="quiz-choice" data-value="Scaling test-time compute by increasing both sequence length and number of child threads">Scaling test-time compute by increasing both sequence length and number of child threads</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="spawn() and join()">
+                        <div class="quiz-question">3. What operations does APR introduce to enable parallel reasoning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="pause() and continue()">pause() and continue()</div><div class="quiz-choice" data-value="spawn() and join()">spawn() and join()</div><div class="quiz-choice" data-value="fork() and merge()">fork() and merge()</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
