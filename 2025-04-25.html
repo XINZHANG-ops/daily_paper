@@ -1,0 +1,1083 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-25 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-25 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>RefVNLI: Towards Scalable Evaluation of Subject-driven Text-to-image
+  Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-24</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.17502" target="_blank">http://arxiv.org/pdf/2504.17502</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on evaluating subject-driven text-to-image generation, which aims to generate images that match a text prompt while preserving a referenced subject's identity.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing evaluation metrics that separately assess textual alignment or subject preservation, proposing REFVNLI as a cost-effective metric that evaluates both aspects simultaneously without relying on expensive API calls.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Current evaluation methods for subject-driven text-to-image generation either assess only one aspect of the task, correlate poorly with human judgments, or rely on costly API-based evaluation, limiting progress in the field.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors fine-tuned PaliGemma on a large-scale dataset of 1.2 million triplets (reference image, prompt, target image) automatically curated from video frames and image perturbations, with both textual alignment and subject preservation labels.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> REFVNLI consistently matches or outperforms existing baselines across multiple benchmarks and subject categories, achieving up to 6.4-point gains in textual alignment and 8.5-point gains in subject consistency, while aligning with human preferences at over 87% accuracy for rare concepts.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>RefVNLI: Towards Scalable Evaluation of Subject-driven Text-to-image
+  Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; text-anchor: middle; fill: #333; }
+      .subtitle { font-family: 'Arial', sans-serif; font-size: 16px; text-anchor: middle; fill: #555; }
+      .process-rect { fill: #e6f7ff; stroke: #91d5ff; stroke-width: 1.5; rx: 8; ry: 8; }
+      .data-rect { fill: #d9f7be; stroke: #b7eb8f; stroke-width: 1.5; rx: 8; ry: 8; }
+      .model-rect { fill: #fffbe6; stroke: #ffe58f; stroke-width: 1.5; rx: 8; ry: 8; }
+      .eval-rect { fill: #fff0f6; stroke: #ffadd2; stroke-width: 1.5; rx: 8; ry: 8; }
+      .label-text { font-family: 'Arial', sans-serif; font-size: 12px; text-anchor: middle; fill: #444; }
+      .label-text-bold { font-family: 'Arial', sans-serif; font-size: 12px; font-weight: bold; text-anchor: middle; fill: #333; }
+      .connector-line { stroke: #b0b0b0; stroke-width: 2; }
+      .arrow-head { fill: #b0b0b0; }
+      .data-source { font-family: 'Arial', sans-serif; font-size: 10px; font-style: italic; text-anchor: middle; fill: #777; }
+      .highlight-text { font-family: 'Arial', sans-serif; font-size: 11px; fill: #006d75; }
+      .highlight-text-red { font-family: 'Arial', sans-serif; font-size: 11px; fill: #c41d7f; }
+    </style>
+    <!-- Arrow marker definition -->
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">REFVNLI Methodology Flowchart</text>
+  <text x="500" y="65" class="subtitle">Creating a Metric for Subject-Driven Text-to-Image Generation</text>
+
+  <!-- Section 1: Dataset Construction -->
+  <rect x="50" y="100" width="900" height="380" fill="#f0f0f0" rx="10" ry="10" stroke="#cccccc" stroke-width="1"/>
+  <text x="500" y="125" class="label-text-bold" font-size="16px">1. Training Dataset Construction (<imageref, prompt, imagetgt> + Labels)</text>
+
+  <!-- Step 1.1: Subject Preservation Data -->
+  <rect x="70" y="150" width="420" height="150" class="data-rect"/>
+  <text x="280" y="170" class="label-text-bold">1.1 Generate Subject Preservation Pairs {imageref, imagetgt}</text>
+
+  <!-- Sub-step 1.1.1: Video Data -->
+  <rect x="85" y="185" width="190" height="100" fill="#cff2a5" stroke="#a0d911" stroke-width="1" rx="5" ry="5"/>
+  <text x="180" y="200" class="label-text-bold" font-size="11px">From Videos</text>
+  <text x="180" y="215" class="data-source">(Mementos, TVQA+)</text>
+  <text x="180" y="235" class="highlight-text">Pos Pairs: Same Subject</text>
+  <text x="180" y="250" class="highlight-text-red">Neg Pairs: Different Subjects</text>
+  <text x="180" y="265" class="label-text" font-size="10px">Goal: Robustness to pose,</text>
+  <text x="180" y="275" class="label-text" font-size="10px">lighting, background changes</text>
+
+  <!-- Sub-step 1.1.2: Static Image Data -->
+  <rect x="285" y="185" width="190" height="100" fill="#cff2a5" stroke="#a0d911" stroke-width="1" rx="5" ry="5"/>
+  <text x="380" y="200" class="label-text-bold" font-size="11px">From Static Images</text>
+  <text x="380" y="215" class="data-source">(Open Images)</text>
+  <text x="380" y="235" class="highlight-text">Pos Pairs: Original Subject</text>
+  <text x="380" y="250" class="highlight-text-red">Neg Pairs: Inpainted Subject</text>
+  <text x="380" y="265" class="label-text" font-size="10px">Goal: Sensitivity to identity</text>
+  <text x="380" y="275" class="label-text" font-size="10px">defining traits (face, shape)</text>
+
+  <!-- Output of 1.1 -->
+  <rect x="170" y="315" width="220" height="40" class="data-rect" stroke-width="2"/>
+  <text x="280" y="340" class="label-text">Subject-Driven Image Pairs</text>
+
+  <!-- Step 1.2: Textual Alignment Data -->
+  <rect x="510" y="150" width="420" height="150" class="data-rect"/>
+  <text x="720" y="170" class="label-text-bold">1.2 Generate Textual Alignment Pairs {prompt, imagetgt}</text>
+
+  <!-- Sub-step 1.2.1: Positive Prompts -->
+  <rect x="525" y="185" width="120" height="100" fill="#cff2a5" stroke="#a0d911" stroke-width="1" rx="5" ry="5"/>
+  <text x="585" y="200" class="label-text-bold" font-size="11px">Positive Prompts</text>
+  <text x="585" y="215" class="data-source">(Gemini + BBox Focus)</text>
+  <text x="585" y="240" class="highlight-text">Accurate Captions</text>
+  <text x="585" y="255" class="label-text" font-size="10px">Focus on subject</text>
+
+  <!-- Sub-step 1.2.2: Negative Prompts -->
+  <rect x="655" y="185" width="120" height="100" fill="#cff2a5" stroke="#a0d911" stroke-width="1" rx="5" ry="5"/>
+  <text x="715" y="200" class="label-text-bold" font-size="11px">Negative Prompts</text>
+  <text x="715" y="215" class="data-source">(Caption Swapping)</text>
+  <text x="715" y="240" class="highlight-text-red">Mismatched Captions</text>
+  <text x="715" y="255" class="label-text" font-size="10px">Same entity type</text>
+
+  <!-- Sub-step 1.2.3: Hard Negative Prompts -->
+  <rect x="785" y="185" width="130" height="100" fill="#cff2a5" stroke="#a0d911" stroke-width="1" rx="5" ry="5"/>
+  <text x="850" y="200" class="label-text-bold" font-size="11px">Hard Negative Prompts</text>
+  <text x="850" y="215" class="data-source">(Gemini + Detail Corruption)</text>
+  <text x="850" y="240" class="highlight-text-red">Subtly Incorrect</text>
+  <text x="850" y="255" class="label-text" font-size="10px">Single detail changed</text>
+
+  <!-- Output of 1.2 -->
+  <rect x="610" y="315" width="220" height="40" class="data-rect" stroke-width="2"/>
+  <text x="720" y="340" class="label-text">Subject-Focused Prompts</text>
+
+  <!-- Merge Point -->
+  <circle cx="500" cy="380" r="15" fill="#f0f0f0" stroke="#cccccc" stroke-width="1"/>
+  <text x="500" y="385" class="label-text-bold">+</text>
+
+  <!-- Output of Section 1 -->
+  <rect x="350" y="410" width="300" height="50" class="data-rect" stroke-width="2.5" stroke="#52c41a"/>
+  <text x="500" y="430" class="label-text-bold">1.2M Training Triplets</text>
+  <text x="500" y="448" class="label-text"><imageref, prompt, imagetgt></text>
+  <text x="500" y="460" class="label-text" font-size="10px">+ Labels (Text Align ∈ {0,1}, Subject Pres. ∈ {0,1})</text>
+
+  <!-- Connectors for Section 1 -->
+  <line x1="280" y1="300" x2="280" y2="315" class="connector-line" marker-end="url(#arrow)"/>
+  <line x1="720" y1="300" x2="720" y2="315" class="connector-line" marker-end="url(#arrow)"/>
+  <line x1="280" y1="355" x2="500" y2="380" class="connector-line"/>
+  <line x1="720" y1="355" x2="500" y2="380" class="connector-line"/>
+  <line x1="500" y1="395" x2="500" y2="410" class="connector-line" marker-end="url(#arrow)"/>
+
+  <!-- Section 2: Model Training -->
+  <rect x="300" y="500" width="400" height="120" class="model-rect"/>
+  <text x="500" y="520" class="label-text-bold" font-size="16px">2. REFVNLI Model Training</text>
+
+  <text x="500" y="545" class="label-text">Fine-tune PaliGemma (3B VLM)</text>
+  <text x="500" y="560" class="data-source">(Multi-image Input Variant)</text>
+  <text x="500" y="580" class="label-text-bold">Task: Sequential Binary Classification</text>
+  <text x="500" y="595" class="highlight-text">1st Token: Textual Alignment (0/1)</text>
+  <text x="500" y="610" class="highlight-text">2nd Token: Subject Preservation (0/1)</text>
+
+  <!-- Connector from Data to Training -->
+  <line x1="500" y1="460" x2="500" y2="500" class="connector-line" marker-end="url(#arrow)"/>
+
+  <!-- Section 3: Evaluation & Analysis -->
+  <rect x="300" y="640" width="400" height="120" class="eval-rect"/>
+  <text x="500" y="660" class="label-text-bold" font-size="16px">3. Evaluation & Analysis</text>
+
+  <text x="500" y="685" class="label-text">Meta-evaluate using Human Annotations</text>
+  <text x="500" y="700" class="data-source">(DreamBench++, ImagenHub, KITTEN)</text>
+  <text x="500" y="715" class="label-text-bold">Metrics:</text>
+  <text x="500" y="730" class="highlight-text-red">ROC AUC (TA, SP), Harmonic Mean</text>
+  <text x="500" y="745" class="label-text">Compare vs Baselines, Ablation Study, Rare Entity Test</text>
+
+  <!-- Connector from Training to Evaluation -->
+  <line x1="500" y1="620" x2="500" y2="640" class="connector-line" marker-end="url(#arrow)"/>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It evaluates both textual alignment and subject preservation in a single prediction">
+                        <div class="quiz-question">1. What is the main innovation of REFVNLI compared to previous evaluation metrics?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses GPT-4 to evaluate images more accurately">It uses GPT-4 to evaluate images more accurately</div><div class="quiz-choice" data-value="It evaluates both textual alignment and subject preservation in a single prediction">It evaluates both textual alignment and subject preservation in a single prediction</div><div class="quiz-choice" data-value="It only focuses on rare entities and concepts">It only focuses on rare entities and concepts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By masking and inpainting identity-critical regions of subjects">
+                        <div class="quiz-question">2. How did the authors create negative examples for subject preservation during training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using AI-generated fake images of the subjects">By using AI-generated fake images of the subjects</div><div class="quiz-choice" data-value="By pairing frames from different video scenes with different subjects">By pairing frames from different video scenes with different subjects</div><div class="quiz-choice" data-value="By masking and inpainting identity-critical regions of subjects">By masking and inpainting identity-critical regions of subjects</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Multi-subject setting in ImagenHub (8.5 points gain)">
+                        <div class="quiz-question">3. In which category did REFVNLI show the largest performance improvement for subject consistency?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Landmarks category (8.5 points gain)">Landmarks category (8.5 points gain)</div><div class="quiz-choice" data-value="Multi-subject setting in ImagenHub (8.5 points gain)">Multi-subject setting in ImagenHub (8.5 points gain)</div><div class="quiz-choice" data-value="Human category in DreamBench++ (6.3 points gain)">Human category in DreamBench++ (6.3 points gain)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Breaking the Modality Barrier: Universal Embedding Learning with
+  Multimodal LLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-24</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.17432" target="_blank">http://arxiv.org/pdf/2504.17432</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces "UniME," a framework for universal embedding learning with multimodal large language models to enable cross-modal representation learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous multimodal models like CLIP and E5-V but proposes a novel two-stage framework to overcome limitations like text token truncation, isolated encoding, and deficient compositionality.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of learning discriminative universal representations that can handle diverse multimodal tasks while maintaining compositional understanding.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a two-stage approach: first applying textual discriminative knowledge distillation from a powerful LLM teacher model, then implementing hard negative enhanced instruction tuning with false negative filtering.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> UniME achieves state-of-the-art performance on the MMEB benchmark and multiple retrieval tasks, showing consistent improvements in both discriminative power and compositional understanding compared to previous models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Breaking the Modality Barrier: Universal Embedding Learning with
+  Multimodal LLMs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+  <!-- Define styles and markers -->
+  <defs>
+    <style>
+      .stage-box { fill: #e3f2fd; stroke: #1e88e5; stroke-width: 2; rx: 15; ry: 15; }
+      .process-box { fill: #ffffff; stroke: #bdbdbd; stroke-width: 1; rx: 5; ry: 5; }
+      .io-box { fill: #c8e6c9; stroke: #4caf50; stroke-width: 1.5; rx: 5; ry: 5; }
+      .teacher-box { fill: #fff9c4; stroke: #fdd835; stroke-width: 1.5; rx: 5; ry: 5; }
+      .final-box { fill: #ffccbc; stroke: #ff5722; stroke-width: 2; rx: 10; ry: 10; }
+      .title-text { font-size: 24px; font-weight: bold; text-anchor: middle; fill: #1a237e; }
+      .stage-title { font-size: 18px; font-weight: bold; text-anchor: middle; fill: #0d47a1; }
+      .process-text { font-size: 12px; text-anchor: middle; }
+      .detail-text { font-size: 11px; text-anchor: middle; fill: #555; }
+      .arrow { stroke: #424242; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#424242" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title-text">UniME Framework Workflow</text>
+
+  <!-- Base MLLM (Input) -->
+  <rect x="400" y="70" width="200" height="40" class="io-box" />
+  <text x="500" y="95" class="process-text" font-weight="bold">Start: Base MLLM</text>
+  <line x1="500" y1="110" x2="500" y2="140" class="arrow" />
+
+  <!-- Stage 1 Box -->
+  <rect x="50" y="140" width="900" height="250" class="stage-box" />
+  <text x="500" y="165" class="stage-title">Stage 1: Textual Discriminative Knowledge Distillation</text>
+
+  <!-- Stage 1 Inputs -->
+  <rect x="80" y="190" width="180" height="50" class="io-box" />
+  <text x="170" y="210" class="process-text">Input: Text-only Data</text>
+  <text x="170" y="225" class="detail-text">(e.g., NLI dataset)</text>
+
+  <rect x="740" y="190" width="180" height="50" class="teacher-box" />
+  <text x="830" y="205" class="process-text">Teacher Embeddings (𝑒𝑡)</text>
+  <text x="830" y="220" class="detail-text">(Offline, from NV-Embed V2)</text>
+
+  <!-- Stage 1 Process Flow -->
+  <rect x="100" y="270" width="200" height="60" class="process-box" />
+  <text x="200" y="295" class="process-text">1. Decouple LLM from MLLM</text>
+  <text x="200" y="310" class="detail-text">(Focus on Language Component)</text>
+  <line x1="300" y1="300" x2="350" y2="300" class="arrow" />
+
+  <rect x="350" y="270" width="300" height="60" class="process-box" />
+  <text x="500" y="290" class="process-text">2. Extract Student Embeddings (𝑒𝑠)</text>
+  <text x="500" y="305" class="detail-text">Prompt: "Summarize..."</text>
+  <text x="500" y="320" class="detail-text">Distill Knowledge via KL Divergence (L_KL)</text>
+  <line x1="650" y1="300" x2="700" y2="300" class="arrow" />
+
+  <rect x="700" y="270" width="200" height="60" class="process-box" />
+  <text x="800" y="295" class="process-text">3. Train LLM Component</text>
+  <text x="800" y="310" class="detail-text">(QLoRA, &lt;5% params)</text>
+
+  <!-- Stage 1 Output -->
+  <text x="500" y="365" class="process-text" font-weight="bold">Output: MLLM with Enhanced Text Embedding</text>
+  <line x1="500" y1="390" x2="500" y2="420" class="arrow" />
+
+
+  <!-- Stage 2 Box -->
+  <rect x="50" y="420" width="900" height="300" class="stage-box" fill="#e8f5e9" stroke="#2e7d32"/>
+  <text x="500" y="445" class="stage-title" fill="#1b5e20">Stage 2: Hard Negative Enhanced Instruction Tuning</text>
+
+  <!-- Stage 2 Inputs -->
+   <rect x="80" y="470" width="200" height="60" class="io-box" fill="#dcedc8" stroke="#558b2f"/>
+   <text x="180" y="490" class="process-text">Input: Multimodal Data</text>
+   <text x="180" y="505" class="detail-text">(MMEB Train Set)</text>
+   <text x="180" y="520" class="detail-text">+ Task Instructions</text>
+
+  <!-- Stage 2 Process Flow -->
+  <rect x="300" y="470" width="180" height="60" class="process-box" />
+  <text x="390" y="495" class="process-text">1. Extract Embeddings</text>
+  <text x="390" y="510" class="detail-text">(Query 𝑒𝑞, Candidates 𝑒𝑐)</text>
+  <line x1="480" y1="500" x2="510" y2="500" class="arrow" />
+
+  <rect x="510" y="470" width="200" height="60" class="process-box" />
+  <text x="610" y="485" class="process-text">2. False Negative Filtering</text>
+  <text x="610" y="500" class="detail-text">Calculate Threshold α (β=0.1)</text>
+  <text x="610" y="515" class="detail-text">(Filter negatives with sim > α)</text>
+  <line x1="710" y1="500" x2="740" y2="500" class="arrow" />
+
+  <rect x="740" y="470" width="180" height="60" class="process-box" />
+  <text x="830" y="495" class="process-text">3. Hard Negative Sampling</text>
+  <text x="830" y="510" class="detail-text">(Select Top-k=8 hardest 𝑒−𝑐)</text>
+
+  <!-- Arrow connecting sampling to loss -->
+  <line x1="500" y1="530" x2="500" y2="550" class="arrow" />
+
+  <rect x="350" y="550" width="300" height="60" class="process-box" />
+  <text x="500" y="575" class="process-text">4. Compute InfoNCE Loss (L)</text>
+  <text x="500" y="590" class="detail-text">(Using 𝑒𝑞, 𝑒+𝑐, and 𝑒−𝑐)</text>
+  <line x1="500" y1="610" x2="500" y2="630" class="arrow" />
+
+  <rect x="350" y="630" width="300" height="60" class="process-box" />
+  <text x="500" y="655" class="process-text">5. Train Full MLLM</text>
+  <text x="500" y="670" class="detail-text">(QLoRA, GradCache)</text>
+
+  <!-- Stage 2 Output -->
+  <line x1="500" y1="690" x2="500" y2="720" class="arrow" />
+  <rect x="350" y="720" width="300" height="50" class="final-box" />
+  <text x="500" y="740" class="process-text" font-weight="bold">Output: Final UniME Model</text>
+  <text x="500" y="755" class="detail-text">(Universal Multimodal Embeddings)</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It introduces a two-stage framework with textual knowledge distillation and hard negative enhanced instruction tuning">
+                        <div class="quiz-question">1. What is the primary innovation of the UniME framework compared to previous multimodal embedding approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a simpler single-stage training process with fewer parameters">It uses a simpler single-stage training process with fewer parameters</div><div class="quiz-choice long-text" data-value="It introduces a two-stage framework with textual knowledge distillation and hard negative enhanced instruction tuning">It introduces a two-stage framework with textual knowledge distillation and hard negative enhanced instruction tuning</div><div class="quiz-choice" data-value="It completely replaces the vision encoder with a more powerful component">It completely replaces the vision encoder with a more powerful component</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By using a similarity threshold to filter out candidates that are too similar to the query">
+                        <div class="quiz-question">2. How does UniME address the problem of false negatives during training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using a similarity threshold to filter out candidates that are too similar to the query">By using a similarity threshold to filter out candidates that are too similar to the query</div><div class="quiz-choice" data-value="By manually annotating all potential false negatives in the dataset">By manually annotating all potential false negatives in the dataset</div><div class="quiz-choice" data-value="By training only on positive examples and ignoring negatives entirely">By training only on positive examples and ignoring negatives entirely</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Compositional retrieval tasks, particularly in attribute addition">
+                        <div class="quiz-question">3. On which type of retrieval task did UniME show the most dramatic improvement compared to previous models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Short-caption retrieval tasks like Flickr30K">Short-caption retrieval tasks like Flickr30K</div><div class="quiz-choice" data-value="Visual Question Answering (VQA) tasks">Visual Question Answering (VQA) tasks</div><div class="quiz-choice" data-value="Compositional retrieval tasks, particularly in attribute addition">Compositional retrieval tasks, particularly in attribute addition</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Perspective-Aware Reasoning in Vision-Language Models via Mental Imagery
+  Simulation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.17207" target="_blank">http://arxiv.org/pdf/2504.17207</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper addresses perspective-aware reasoning in vision-language models (VLMs), focusing on enabling VLMs to understand and reason about scenes from viewpoints other than the camera's.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous research in spatial reasoning for VLMs, but identifies that current models struggle with allocentric reasoning (non-camera perspectives); it proposes a novel framework called Abstract Perspective Change (APC) that simulates human mental imagery to enable perspective shifts.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve VLMs' inherent bias toward egocentric (camera-based) interpretations, which prevents them from effectively reasoning about spatial relationships from alternative viewpoints.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a three-stage approach: first building a 3D scene abstraction using vision foundation models for object detection and orientation estimation, then transforming this abstraction to align with a reference viewer's perspective, and finally generating either a numerical or visual prompt to help the VLM reason from the new perspective.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The APC framework significantly outperforms baseline VLMs and previous spatial reasoning approaches on synthetic and real-image benchmarks, achieving up to 90% accuracy on perspective-aware reasoning tasks where other models perform near chance level.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Perspective-Aware Reasoning in Vision-Language Models via Mental Imagery
+  Simulation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; fill: #333; }
+      .stage-title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #555; }
+      .box-text { font-family: Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; dominant-baseline: middle; }
+      .small-text { font-family: Arial, sans-serif; font-size: 11px; fill: #666; text-anchor: middle; dominant-baseline: middle; }
+      .arrow-head { fill: #666; }
+      .arrow-line { stroke: #666; stroke-width: 2; }
+      .input-output { fill: #e6f7ff; stroke: #91d5ff; stroke-width: 1.5; }
+      .stage1-box { fill: #fffbe6; stroke: #ffe58f; stroke-width: 1.5; }
+      .stage2-box { fill: #f6ffed; stroke: #b7eb8f; stroke-width: 1.5; }
+      .stage3-box { fill: #e6f7ff; stroke: #91d5ff; stroke-width: 1.5; }
+      .vlm-box { fill: #fff0f6; stroke: #ffadd2; stroke-width: 1.5; }
+      .vision-box { fill: #fff7e6; stroke: #ffd591; stroke-width: 1.5; }
+      .prompt-box { fill: #f0f5ff; stroke: #adc6ff; stroke-width: 1.5; }
+      .final-box { fill: #d9f7be; stroke: #73d13d; stroke-width: 2; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title" text-anchor="middle">APC Framework: Perspective-Aware Reasoning Workflow</text>
+
+  <!-- Inputs -->
+  <rect x="50" y="80" width="180" height="60" rx="10" class="input-output"/>
+  <text x="140" y="110" class="box-text">Input Image (I)</text>
+  <rect x="250" y="80" width="200" height="60" rx="10" class="input-output"/>
+  <text x="350" y="110" class="box-text">Input Question (Q)</text>
+  <text x="350" y="128" class="small-text">(Perspective-based)</text>
+
+  <!-- Stage 1: Scene Abstraction -->
+  <rect x="30" y="180" width="440" height="220" rx="15" fill="#f9f9f9" stroke="#ccc" stroke-width="1"/>
+  <text x="250" y="205" class="stage-title" text-anchor="middle">Stage 1: Scene Abstraction</text>
+
+  <rect x="50" y="230" width="180" height="70" rx="10" class="vlm-box"/>
+  <text x="140" y="260" class="box-text">Parse Question (Q)</text>
+  <text x="140" y="280" class="small-text">Identify Objects of Interest (VLM)</text>
+
+  <rect x="270" y="230" width="180" height="150" rx="10" class="vision-box"/>
+  <text x="360" y="255" class="box-text">Extract Object Properties</text>
+  <text x="360" y="275" class="small-text">(Vision Foundation Models)</text>
+  <text x="360" y="300" class="small-text">- Detection (GroundingDINO)</text>
+  <text x="360" y="318" class="small-text">- Segmentation (SAM)</text>
+  <text x="360" y="336" class="small-text">- Depth (DepthPro)</text>
+  <text x="360" y="354" class="small-text">- Orientation (OrientAnything)</text>
+
+  <line x1="140" y1="140" x2="140" y2="230" class="arrow-line" marker-end="url(#arrow)" />
+  <line x1="350" y1="140" x2="350" y2="230" class="arrow-line" marker-end="url(#arrow)" />
+  <line x1="140" y1="300" x2="140" y2="350" class="arrow-line" />
+  <line x1="140" y1="350" x2="270" y2="305" class="arrow-line" marker-end="url(#arrow)" />
+
+
+  <rect x="50" y="310" width="180" height="70" rx="10" class="stage1-box"/>
+  <text x="140" y="340" class="box-text">Build Egocentric</text>
+  <text x="140" y="360" class="box-text">Scene Abstraction (SE)</text>
+  <text x="140" y="378" class="small-text">(Objects: t_i, c_i, p_i in camera frame)</text>
+
+  <line x1="230" y1="345" x2="270" y2="345" class="arrow-line" marker-end="url(#arrow)" />
+
+
+  <!-- Stage 2: Perspective Change -->
+  <rect x="500" y="180" width="470" height="220" rx="15" fill="#f9f9f9" stroke="#ccc" stroke-width="1"/>
+  <text x="735" y="205" class="stage-title" text-anchor="middle">Stage 2: Perspective Change</text>
+
+  <rect x="520" y="230" width="180" height="70" rx="10" class="vlm-box"/>
+  <text x="610" y="260" class="box-text">Parse Question (Q)</text>
+  <text x="610" y="280" class="small-text">Identify Reference Viewer (A) (VLM)</text>
+
+  <rect x="740" y="230" width="210" height="70" rx="10" class="stage2-box"/>
+  <text x="845" y="260" class="box-text">Coordinate Transformation</text>
+  <text x="845" y="280" class="small-text">(Transform SE to A's frame)</text>
+
+  <rect x="630" y="330" width="210" height="60" rx="10" class="stage2-box"/>
+  <text x="735" y="360" class="box-text">Allocentric Scene Abstraction (SA)</text>
+  <text x="735" y="378" class="small-text">(Objects: t_i, c'_i, p'_i in A's frame)</text>
+
+  <!-- Connections for Stage 1 to 2 -->
+  <line x1="350" y1="140" x2="610" y2="230" class="arrow-line" marker-end="url(#arrow)" />
+  <path d="M 140 380 Q 140 410, 485 410 L 485 265 Q 495 265, 740 265" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <line x1="700" y1="265" x2="740" y2="265" class="arrow-line" marker-end="url(#arrow)" />
+  <line x1="845" y1="300" x2="845" y2="330" class="arrow-line" marker-start="url(#arrow)" transform="translate(0, 0)" />
+  <line x1="735" y1="300" x2="735" y2="330" class="arrow-line" marker-end="url(#arrow)" transform="translate(-100, 0)" />
+
+
+  <!-- Stage 3: Perspective Prompting -->
+  <rect x="30" y="430" width="940" height="280" rx="15" fill="#f9f9f9" stroke="#ccc" stroke-width="1"/>
+  <text x="500" y="455" class="stage-title" text-anchor="middle">Stage 3: Perspective Prompting (Allocentric -> Egocentric)</text>
+
+  <!-- Egocentric Rephrasing (Optional but mentioned) -->
+   <rect x="350" y="475" width="300" height="40" rx="10" class="vlm-box"/>
+   <text x="500" y="495" class="box-text">Rephrase Question (Q) -> Q_ego (VLM)</text>
+   <text x="500" y="510" class="small-text">(Remove explicit perspective phrases)</text>
+
+  <!-- Path Split -->
+  <line x1="735" y1="390" x2="735" y2="430" class="arrow-line" />
+  <line x1="735" y1="430" x2="500" y2="475" class="arrow-line" marker-end="url(#arrow)" />
+
+
+  <!-- Option 1: Numerical Prompt -->
+  <rect x="50" y="530" width="430" height="160" rx="10" fill="#ffffff" stroke="#ccc"/>
+  <text x="265" y="550" class="box-text" font-weight="bold">Option 1: Numerical Prompt</text>
+  <rect x="70" y="570" width="390" height="60" rx="10" class="prompt-box"/>
+  <text x="265" y="595" class="box-text">Generate Numerical Prompt (Text)</text>
+  <text x="265" y="615" class="small-text">(Use transformed coordinates c'_i from SA)</text>
+
+  <rect x="70" y="645" width="390" height="40" rx="10" class="vlm-box"/>
+  <text x="265" y="665" class="box-text">VLM Reasoning (Numerical + Q_ego)</text>
+
+  <line x1="500" y1="515" x2="265" y2="570" class="arrow-line" marker-end="url(#arrow)" />
+  <line x1="265" y1="630" x2="265" y2="645" class="arrow-line" marker-end="url(#arrow)" />
+
+  <!-- Option 2: Visual Prompt -->
+  <rect x="520" y="530" width="430" height="160" rx="10" fill="#ffffff" stroke="#ccc"/>
+  <text x="735" y="550" class="box-text" font-weight="bold">Option 2: Visual Prompt</text>
+  <rect x="540" y="570" width="190" height="60" rx="10" class="prompt-box"/>
+  <text x="635" y="595" class="box-text">Generate Visual Prompt</text>
+  <text x="635" y="615" class="small-text">(Render SA as colored cubes)</text>
+
+  <rect x="740" y="570" width="190" height="60" rx="10" class="prompt-box"/>
+  <text x="835" y="595" class="box-text">Generate Abstract Q*</text>
+  <text x="835" y="615" class="small-text">(Replace object names w/ colors)</text>
+
+  <rect x="540" y="645" width="390" height="40" rx="10" class="vlm-box"/>
+  <text x="735" y="665" class="box-text">VLM Reasoning (Visual Prompt + Q*)</text>
+
+  <line x1="500" y1="515" x2="735" y2="570" class="arrow-line" marker-end="url(#arrow)" />
+  <line x1="635" y1="630" x2="635" y2="645" class="arrow-line" marker-end="url(#arrow)" />
+  <line x1="835" y1="630" x2="835" y2="645" class="arrow-line" marker-end="url(#arrow)" />
+
+
+  <!-- Final Output -->
+  <rect x="400" y="725" width="200" height="60" rx="10" class="final-box"/>
+  <text x="500" y="755" class="box-text" font-weight="bold">Final Answer</text>
+
+  <!-- Connections to Final Output -->
+  <line x1="265" y1="685" x2="265" y2="740" class="arrow-line" />
+  <line x1="265" y1="740" x2="400" y2="740" class="arrow-line" marker-end="url(#arrow)" />
+  <line x1="735" y1="685" x2="735" y2="740" class="arrow-line" />
+  <line x1="735" y1="740" x2="600" y2="740" class="arrow-line" marker-end="url(#arrow)" />
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="VLMs struggle with reasoning from perspectives other than the camera's viewpoint">
+                        <div class="quiz-question">1. What is the main limitation that APC addresses in current Vision-Language Models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="VLMs cannot detect small objects in images">VLMs cannot detect small objects in images</div><div class="quiz-choice" data-value="VLMs struggle with reasoning from perspectives other than the camera's viewpoint">VLMs struggle with reasoning from perspectives other than the camera's viewpoint</div><div class="quiz-choice" data-value="VLMs cannot understand spatial language in prompts">VLMs cannot understand spatial language in prompts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By converting it into an egocentric task from the reference viewer's perspective">
+                        <div class="quiz-question">2. How does the Abstract Perspective Change (APC) framework transform an allocentric reasoning problem?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By generating photorealistic novel views using dense 3D reconstruction">By generating photorealistic novel views using dense 3D reconstruction</div><div class="quiz-choice" data-value="By converting it into an egocentric task from the reference viewer's perspective">By converting it into an egocentric task from the reference viewer's perspective</div><div class="quiz-choice" data-value="By fine-tuning the VLM with perspective-specific data">By fine-tuning the VLM with perspective-specific data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Visual prompt">
+                        <div class="quiz-question">3. Which representation method for perspective prompting achieved the highest accuracy on the visibility task in COMFORT++?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Numerical (textual) prompt">Numerical (textual) prompt</div><div class="quiz-choice" data-value="Visual prompt">Visual prompt</div><div class="quiz-choice" data-value="Dense mesh reconstruction">Dense mesh reconstruction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
