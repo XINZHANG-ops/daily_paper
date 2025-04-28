@@ -396,6 +396,7 @@ Follow this format of your output(reply with these 5 topics concisely and nothin
 5.  **📊 Results and Evaluation:** The results.
 """
 def summary_paper(paper_title, paper_content):
+    logger.debug(f'Creating summary for "{paper_title}"')
     prompt = PROMPT.format(
         title=paper_title,
         content=paper_content
@@ -404,8 +405,8 @@ def summary_paper(paper_title, paper_content):
 
     summary = model_response(
         prompt,
-        'claude37',
-        max_tokens=1024
+        'claude35',
+        max_tokens=8000
 
     )
     return summary
@@ -485,6 +486,7 @@ Now please give me the SVG format of the flow chart, you should only give me the
 """
 
 def create_flow_chart(paper_title, paper_content):
+    logger.debug(f'Creating flow chart for "{paper_title}"')
     prompt = FLOW_CHART_PROMPT.format(
         title=paper_title,
         article_content=paper_content
@@ -529,6 +531,7 @@ def parse_flowchart(output: str) -> str:
 
 
 def create_question(paper_title, paper_content, summary):
+    logger.debug(f'Creating question for "{paper_title}"')
     prompt = QUESTION_PROMPT.format(
         title = paper_title,
         content = paper_content,
@@ -537,10 +540,11 @@ def create_question(paper_title, paper_content, summary):
 
     questions_content = model_response(
         prompt,
-        'claude37',
-        max_tokens=1024
+        '2.5 flash',
+        max_tokens=8000
 
-    )   
+    )
+    logger.debug(questions_content)
     questions = parse_output(questions_content)
     return questions
 
@@ -604,19 +608,19 @@ def process_paper(paper, queue, max_paper_length):
         
         if len(content.split(' ')) > max_paper_length:
             queue.put(None)  # Signal to skip this paper
-            return
-            
+            return   
         summary = summary_paper(title, content)
-        flow_chart = create_flow_chart(
-            paper_title=title,
-            paper_content=content
-        )
-
         questions = create_question(
             paper_title=title,
             paper_content=content,
             summary=summary
         )
+        flow_chart = create_flow_chart(
+            paper_title=title,
+            paper_content=content
+        )
+
+        
         paper_info = {
             'title': title,
             'published_at': published_at,
