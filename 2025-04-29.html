@@ -1,0 +1,1075 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-29 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-29 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Skywork R1V2: Multimodal Hybrid Reinforcement Learning for Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.16656" target="_blank">http://arxiv.org/pdf/2504.16656</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of Skywork R1V2, a next-generation multimodal reasoning model combining visual and language capabilities through reinforcement learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous "slow-thinking" multimodal models like OpenAI-o1 and Gemini-Thinking, introducing new hybrid reinforcement learning paradigm combining Mixed Preference Optimization (MPO) and Group Relative Policy Optimization (GRPO).</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the challenge of balancing sophisticated reasoning capabilities with broad generalization in multimodal AI systems while preventing visual hallucinations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a hybrid approach using MPO and GRPO with a Selective Sample Buffer (SSB) mechanism, combining a frozen vision encoder with a reasoning-capable language model through an MLP adapter.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art results among open-source models: 62.6% on OlympiadBench, 78.9% on AIME2024, 63.6% on LiveCodeBench, and 73.6% on MMMU, approaching performance of proprietary systems.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Skywork R1V2: Multimodal Hybrid Reinforcement Learning for Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .process { fill: #e0f7fa; stroke: #00796b; stroke-width: 2; rx: 10; ry: 10; }
+      .input-output { fill: #fffde7; stroke: #fbc02d; stroke-width: 2; rx: 5; ry: 5; }
+      .rl-phase { fill: #e8eaf6; stroke: #303f9f; stroke-width: 2; rx: 15; ry: 15; }
+      .mpo-phase { fill: #e0f2f1; stroke: #00695c; stroke-width: 2; rx: 15; ry: 15; }
+      .ssb-related { fill: #fff3e0; stroke: #ef6c00; stroke-width: 2; rx: 8; ry: 8; }
+      .text-main { font-family: 'Arial', sans-serif; font-size: 16px; fill: #333; text-anchor: middle; }
+      .text-small { font-family: 'Arial', sans-serif; font-size: 12px; fill: #555; text-anchor: middle; }
+      .text-bold { font-weight: bold; }
+      .text-title { font-family: 'Arial Black', sans-serif; font-size: 24px; fill: #1a237e; text-anchor: middle; font-weight: bold;}
+      .arrow { stroke: #555; stroke-width: 2.5; marker-end: url(#arrowhead); }
+      .dashed-arrow { stroke: #ef6c00; stroke-width: 2; stroke-dasharray: 6,6; marker-end: url(#arrowhead-orange); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+     <marker id="arrowhead-orange" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ef6c00" />
+    </marker>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e0f2f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e8eaf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Gradient -->
+  <rect x="0" y="0" width="1000" height="800" fill="url(#grad1)" opacity="0.1"/>
+
+  <!-- Title -->
+  <text x="500" y="45" class="text-title">Skywork R1V2 Methodology</text>
+
+  <!-- Input -->
+  <rect x="400" y="75" width="200" height="50" class="input-output" />
+  <text x="500" y="105" class="text-main">Input: Image (xv) + Text (xt)</text>
+
+  <line x1="500" y1="125" x2="500" y2="155" class="arrow" />
+
+  <!-- Initial Model Setup -->
+  <rect x="350" y="155" width="300" height="90" class="process" style="fill:#f1f8e9; stroke:#689f38;"/>
+  <text x="500" y="180" class="text-main text-bold">Initial Model Setup</text>
+  <text x="500" y="200" class="text-small">Frozen Vision Encoder (fv: InternViT-6B)</text>
+  <text x="500" y="220" class="text-small">Frozen Language Model (fl: QwQ-32B)</text>
+  <text x="500" y="240" class="text-small">Trainable MLP Adapter (fc)</text>
+
+  <line x1="500" y1="245" x2="500" y2="275" class="arrow" />
+
+  <!-- MPO Phase -->
+  <rect x="300" y="275" width="400" height="130" class="mpo-phase" />
+  <text x="500" y="300" class="text-main text-bold">Phase 1: Mixed Preference Optimization (MPO)</text>
+  <text x="500" y="325" class="text-small">Goal: Alignment, Reduce Overthinking &amp; Hallucinations</text>
+  <text x="500" y="345" class="text-small">Guidance: Skywork-VL Reward Model + Rules</text>
+  <text x="500" y="365" class="text-small">Loss: L_MPO = w1*L_pref + w2*L_qual + w3*L_gen</text>
+  <text x="500" y="385" class="text-small">(Trains Adapter `fc` implicitly, No SFT)</text>
+
+  <line x1="500" y1="405" x2="500" y2="435" class="arrow" />
+
+  <!-- RL Fine-tuning Phase Box -->
+  <rect x="120" y="435" width="760" height="305" class="rl-phase" />
+  <text x="500" y="460" class="text-main text-bold">Phase 2: Reinforcement Fine-tuning (GRPO + SSB)</text>
+
+  <!-- GRPO Core -->
+  <rect x="150" y="485" width="330" height="145" class="process" style="fill:#ede7f6; stroke:#5e35b1;"/>
+  <text x="315" y="505" class="text-main text-bold">GRPO Core Process</text>
+  <text x="315" y="530" class="text-small">1. Sample N Responses {yi} for input x</text>
+  <text x="315" y="550" class="text-small">2. Calculate Hybrid Reward r(x, yi)</text>
+  <text x="315" y="570" class="text-small">   (Rule + Reward Model + Format)</text>
+  <text x="315" y="590" class="text-small">3. Calculate GRPO Advantages Âi,t</text>
+  <text x="315" y="610" class="text-small">   (Normalized Intra-group Comparison)</text>
+
+  <!-- SSB Mechanism -->
+  <rect x="520" y="485" width="330" height="115" class="ssb-related" />
+  <text x="685" y="505" class="text-main text-bold">Selective Sample Buffer (SSB)</text>
+  <text x="685" y="530" class="text-small">Addresses "Vanishing Advantages"</text>
+  <text x="685" y="550" class="text-small">1. Identify samples with non-zero Âi,t</text>
+  <text x="685" y="570" class="text-small">2. Cache high-advantage samples</text>
+  <text x="685" y="590" class="text-small">   (Weighted by |Âi,t|)</text>
+
+   <!-- SSB Interaction Arrows -->
+  <line x1="480" y1="590" x2="520" y2="550" class="dashed-arrow" />
+  <text x="530" y="575" class="text-small" fill="#ef6c00">Store High</text>
+  <text x="530" y="590" class="text-small" fill="#ef6c00">Advantage</text>
+
+  <line x1="520" y1="600" x2="460" y2="645" class="dashed-arrow" />
+  <text x="490" y="628" class="text-small" fill="#ef6c00">Retrieve Samples</text>
+
+
+  <!-- Policy Update -->
+  <rect x="150" y="645" width="700" height="70" class="process" style="fill:#ede7f6; stroke:#5e35b1;"/>
+  <text x="500" y="670" class="text-main text-bold">Policy Update Step</text>
+  <text x="500" y="690" class="text-small">Update Policy πθ using GRPO Loss (Clipped Surrogate + KL Penalty)</text>
+  <text x="500" y="705" class="text-small">Training Batch = Current Samples + Samples retrieved from SSB</text>
+
+   <!-- Loop back arrow (conceptual) -->
+  <path d="M 120 587.5 Q 80 587.5 80 637.5 T 120 687.5" stroke="#303f9f" stroke-width="2" fill="none" marker-start="url(#arrowhead)"/>
+  <text x="70" y="637.5" class="text-small" fill="#303f9f" transform="rotate(-90 70,637.5)">Iterative RL Training</text>
+
+  <line x1="500" y1="740" x2="500" y2="755" class="arrow" />
+
+  <!-- Output -->
+  <ellipse cx="500" cy="775" rx="150" ry="25" class="input-output" style="fill:#c8e6c9; stroke:#2e7d32; stroke-width: 2.5;" />
+  <text x="500" y="780" class="text-main text-bold">Final Model: Skywork R1V2</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Balancing sophisticated reasoning capabilities with broad generalization and mitigating visual hallucinations.">
+                        <div class="quiz-question">1. What is a primary challenge Skywork R1V2 aims to address in multimodal reasoning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Reducing the model's inference time to compete with 'fast-thinking' models.">Reducing the model's inference time to compete with 'fast-thinking' models.</div><div class="quiz-choice long-text" data-value="Balancing sophisticated reasoning capabilities with broad generalization and mitigating visual hallucinations.">Balancing sophisticated reasoning capabilities with broad generalization and mitigating visual hallucinations.</div><div class="quiz-choice" data-value="Increasing the number of parameters to achieve state-of-the-art performance.">Increasing the number of parameters to achieve state-of-the-art performance.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Mixed Preference Optimization (MPO) and Group Relative Policy Optimization (GRPO).">
+                        <div class="quiz-question">2. Skywork R1V2 introduces a hybrid reinforcement learning paradigm combining which two main techniques?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Supervised Fine-Tuning (SFT) and Reinforcement Learning from Human Feedback (RLHF).">Supervised Fine-Tuning (SFT) and Reinforcement Learning from Human Feedback (RLHF).</div><div class="quiz-choice" data-value="Direct Preference Optimization (DPO) and Proximal Policy Optimization (PPO).">Direct Preference Optimization (DPO) and Proximal Policy Optimization (PPO).</div><div class="quiz-choice" data-value="Mixed Preference Optimization (MPO) and Group Relative Policy Optimization (GRPO).">Mixed Preference Optimization (MPO) and Group Relative Policy Optimization (GRPO).</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="To prioritize and reintroduce high-value samples with non-zero advantages to counter the 'Vanishing Advantages' problem.">
+                        <div class="quiz-question">3. What is the main purpose of the Selective Sample Buffer (SSB) mechanism in Skywork R1V2's training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To increase the size of the training dataset by synthesizing new samples.">To increase the size of the training dataset by synthesizing new samples.</div><div class="quiz-choice long-text" data-value="To prioritize and reintroduce high-value samples with non-zero advantages to counter the 'Vanishing Advantages' problem.">To prioritize and reintroduce high-value samples with non-zero advantages to counter the 'Vanishing Advantages' problem.</div><div class="quiz-choice" data-value="To enhance the performance of the visual encoder component.">To enhance the performance of the visual encoder component.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Token-Shuffle: Towards High-Resolution Image Generation with
+  Autoregressive Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-24</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.17789" target="_blank">http://arxiv.org/pdf/2504.17789</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on improving high-resolution image generation using autoregressive models in the field of computer vision and machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in autoregressive transformers and multimodal large language models, it introduces Token-Shuffle, a novel method that leverages dimensional redundancy in visual vocabularies to reduce token numbers.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitation of autoregressive models in generating high-resolution images due to the prohibitive number of visual tokens required, which makes training and inference computationally expensive.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement Token-Shuffle operations that merge spatially local tokens along channel dimensions during input and untangle them after transformer blocks, reducing computational costs while maintaining image quality.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The method achieves 2048×2048 resolution image generation, scores 0.77 on GenAI-benchmark for hard prompts (outperforming other models), and demonstrates superior performance in human evaluations for text alignment and visual appearance.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Token-Shuffle: Towards High-Resolution Image Generation with
+  Autoregressive Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; text-anchor: middle; fill: #333; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; text-anchor: middle; fill: #555; }
+      .box { stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+      .process-box { fill: #e3f2fd; stroke: #64b5f6; }
+      .input-output-box { fill: #fff3e0; stroke: #ffb74d; }
+      .highlight-box { fill: #e8f5e9; stroke: #81c784; }
+      .operation-box { fill: #fce4ec; stroke: #f06292; }
+      .text-label { font-family: Arial, sans-serif; font-size: 13px; text-anchor: middle; fill: #212121; }
+      .small-text { font-family: Arial, sans-serif; font-size: 11px; text-anchor: middle; fill: #424242; }
+      .arrow-head { fill: #555; }
+      .arrow-line { stroke: #555; stroke-width: 1.5; }
+      .dashed-line { stroke: #9e9e9e; stroke-width: 1.5; stroke-dasharray: 5, 5; }
+      .frozen-text { font-family: Arial, sans-serif; font-size: 10px; font-style: italic; fill: #757575; text-anchor: middle; }
+      .highlight-text { font-weight: bold; fill: #d32f2f; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">Token-Shuffle Workflow for High-Resolution Image Generation</text>
+  <text x="500" y="65" class="subtitle">Leveraging Dimensional Redundancy in Autoregressive Models</text>
+
+  <!-- Input -->
+  <rect x="50" y="100" width="150" height="50" rx="10" ry="10" class="box input-output-box"/>
+  <text x="125" y="130" class="text-label">Text Prompt</text>
+
+  <!-- VQGAN Encoder (Conceptual for Training Context) -->
+  <rect x="50" y="200" width="150" height="80" rx="10" ry="10" class="box process-box" stroke-dasharray="5,5"/>
+  <text x="125" y="230" class="text-label">VQGAN Encoder</text>
+  <text x="125" y="250" class="small-text">(Pretrained, Frozen)</text>
+  <text x="125" y="265" class="small-text">Image -> Discrete Tokens</text>
+  <line x1="125" y1="150" x2="125" y2="200" class="dashed-line" marker-end="url(#arrow)"/>
+  <text x="140" y="180" class="frozen-text">(Used for Training Data)</text>
+
+  <!-- Core Autoregressive Loop -->
+  <rect x="250" y="100" width="500" height="550" rx="15" ry="15" class="box highlight-box"/>
+  <text x="500" y="125" class="text-label" style="font-weight:bold; font-size: 16px;">Autoregressive Generation Loop</text>
+
+  <!-- Initial Input to Transformer -->
+  <text x="500" y="155" class="small-text">Input: Text Tokens + `<BoI>` + Previously Generated Fused Visual Tokens</text>
+
+  <!-- LLaMA Transformer -->
+  <rect x="350" y="180" width="300" height="100" rx="10" ry="10" class="box process-box"/>
+  <text x="500" y="215" class="text-label">AR Model (LLaMA)</text>
+  <text x="500" y="235" class="small-text">Standard Causal Attention</text>
+  <text x="500" y="255" class="small-text highlight-text">Processes Reduced # Tokens</text>
+  <text x="500" y="270" class="small-text">(Next Fused Token Prediction)</text>
+
+  <!-- Arrow Down -->
+  <line x1="500" y1="280" x2="500" y2="310" class="arrow-line" marker-end="url(#arrow)"/>
+
+  <!-- Token-Unshuffle -->
+  <g id="unshuffle-group">
+    <rect x="375" y="310" width="250" height="100" rx="10" ry="10" class="box operation-box"/>
+    <text x="500" y="340" class="text-label" style="font-weight:bold;">Token-Unshuffle</text>
+    <text x="500" y="360" class="small-text">Fused Token Representation</text>
+    <text x="500" y="375" class="small-text">-> MLP -> Unshuffle (s x s)</text>
+    <text x="500" y="390" class="small-text">-> MLP -> MLP Blocks -> s x s Token Logits</text>
+  </g>
+
+  <!-- Arrow Down -->
+  <line x1="500" y1="410" x2="500" y2="440" class="arrow-line" marker-end="url(#arrow)"/>
+
+  <!-- Sampling & Token Collection -->
+  <rect x="400" y="440" width="200" height="50" rx="10" ry="10" class="box process-box"/>
+  <text x="500" y="460" class="text-label">Sample s x s Visual Tokens</text>
+  <text x="500" y="475" class="small-text">(Collect for final output)</text>
+
+  <!-- Arrow Down -->
+  <line x1="500" y1="490" x2="500" y2="520" class="arrow-line" marker-end="url(#arrow)"/>
+
+  <!-- Token-Shuffle -->
+   <g id="shuffle-group">
+    <rect x="375" y="520" width="250" height="100" rx="10" ry="10" class="box operation-box"/>
+    <text x="500" y="550" class="text-label" style="font-weight:bold;">Token-Shuffle</text>
+    <text x="500" y="570" class="small-text">s x s Individual Tokens</text>
+    <text x="500" y="585" class="small-text">-> MLP -> Shuffle (1 fused)</text>
+    <text x="500" y="600" class="small-text">-> MLP Blocks -> Fused Token Rep.</text>
+  </g>
+
+  <!-- Loop Back Arrow -->
+  <path d="M 375 570 Q 300 570 300 425 T 350 230" fill="none" class="arrow-line" marker-end="url(#arrow)"/>
+  <text x="310" y="500" class="small-text" transform="rotate(-90 310 500)">Feed Fused Token</text>
+  <text x="310" y="485" class="small-text" transform="rotate(-90 310 485)">to Next Step</text>
+
+  <!-- Exit Loop Condition -->
+  <text x="650" y="465" class="small-text">Loop until `<EoI>`</text>
+
+  <!-- Arrow to Decoder -->
+  <line x1="600" y1="465" x2="800" y2="465" class="arrow-line" marker-end="url(#arrow)"/>
+  <text x="700" y="455" class="small-text">Collected Visual Tokens</text>
+
+  <!-- VQGAN Decoder -->
+  <rect x="800" y="415" width="150" height="100" rx="10" ry="10" class="box process-box"/>
+  <text x="875" y="455" class="text-label">VQGAN Decoder</text>
+  <text x="875" y="475" class="small-text">(Pretrained, Frozen)</text>
+  <text x="875" y="495" class="small-text">Tokens -> Image Pixels</text>
+
+  <!-- Arrow to Output -->
+  <line x1="875" y1="515" x2="875" y2="565" class="arrow-line" marker-end="url(#arrow)"/>
+
+  <!-- Final Output -->
+  <ellipse cx="875" cy="590" rx="75" ry="25" class="box input-output-box"/>
+  <text x="875" y="595" class="text-label">Generated Image</text>
+  <text x="875" y="610" class="small-text">(High Resolution)</text>
+
+
+  <!-- CFG Scheduler Annotation -->
+  <rect x="270" y="310" width="90" height="60" rx="5" ry="5" class="box" fill="#fffde7" stroke="#fdd835"/>
+  <text x="315" y="335" class="small-text" style="font-weight:bold;">CFG Scheduler</text>
+  <text x="315" y="350" class="small-text">(Inference Only)</text>
+  <text x="315" y="365" class="small-text">Adjusts logits</text>
+  <line x1="360" y1="340" x2="400" y2="440" class="dashed-line"/>
+
+
+  <!-- Key Insight Annotation -->
+   <rect x="300" y="680" width="400" height="80" rx="10" ry="10" class="box highlight-box" fill="#ffebee" stroke="#e57373"/>
+   <text x="500" y="700" class="text-label" style="font-weight:bold;">Key Idea: Exploit Dimensional Redundancy</text>
+   <text x="500" y="720" class="small-text">Low-dim VQ codes mapped to high-dim LLM space creates redundancy.</text>
+   <text x="500" y="735" class="small-text">Token-Shuffle merges tokens along channel dim, reducing sequence length for Transformer.</text>
+   <text x="500" y="750" class="small-text">Enables efficient processing of more visual info -> Higher Resolution.</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The prohibitively large number of visual tokens required, hindering efficiency and resolution.">
+                        <div class="quiz-question">1. What is the primary challenge Token-Shuffle aims to overcome in applying autoregressive models to high-resolution image generation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Their inability to process diverse textual prompts.">Their inability to process diverse textual prompts.</div><div class="quiz-choice" data-value="The prohibitively large number of visual tokens required, hindering efficiency and resolution.">The prohibitively large number of visual tokens required, hindering efficiency and resolution.</div><div class="quiz-choice" data-value="Lack of pretrained text-encoders compatible with image generation.">Lack of pretrained text-encoders compatible with image generation.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Token-shuffle and Token-unshuffle.">
+                        <div class="quiz-question">2. Token-Shuffle introduces a pair of operations to manage visual tokens. What are these operations called?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Token-encode and Token-decode.">Token-encode and Token-decode.</div><div class="quiz-choice" data-value="Token-compress and Token-expand.">Token-compress and Token-expand.</div><div class="quiz-choice" data-value="Token-shuffle and Token-unshuffle.">Token-shuffle and Token-unshuffle.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="2048 × 2048">
+                        <div class="quiz-question">3. What is a notable resolution milestone achieved for autoregressive text-to-image generation for the first time using Token-Shuffle?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1024 × 1024">1024 × 1024</div><div class="quiz-choice" data-value="2048 × 2048">2048 × 2048</div><div class="quiz-choice" data-value="4096 × 4096">4096 × 4096</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>PHYBench: Holistic Evaluation of Physical Perception and Reasoning in
+  Large Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-22</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.16074" target="_blank">http://arxiv.org/pdf/2504.16074</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Evaluation of large language models' physical reasoning and perception capabilities through a comprehensive physics problem benchmark called PHYBench.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing reasoning benchmarks like MathArena and GSM-8K, but introduces novel physical context evaluation and proposes a new Expression Edit Distance (EED) Score metric for more nuanced assessment.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the lack of comprehensive benchmarks for evaluating LLMs' ability to understand and reason about real-world physical scenarios, moving beyond abstract mathematical reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Created a dataset of 500 curated physics problems across multiple domains, developed the EED Score metric for evaluating symbolic expressions, and tested various LLMs against human expert performance.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Even the best performing model (Gemini 2.5 Pro) achieved only 36.9% accuracy compared to human experts' 61.9%, revealing significant gaps in LLMs' physical reasoning capabilities.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>PHYBench: Holistic Evaluation of Physical Perception and Reasoning in
+  Large Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; fill: #333; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #555; }
+      .process-box { fill: #e0f7fa; stroke: #00796b; stroke-width: 1.5; rx: 10; ry: 10; }
+      .metric-box { fill: #fff3e0; stroke: #ef6c00; stroke-width: 1.5; rx: 10; ry: 10; }
+      .eval-box { fill: #e8f5e9; stroke: #2e7d32; stroke-width: 1.5; rx: 10; ry: 10; }
+      .analysis-box { fill: #fce4ec; stroke: #c2185b; stroke-width: 1.5; rx: 10; ry: 10; }
+      .text-main { font-family: Arial, sans-serif; font-size: 14px; fill: #212121; }
+      .text-small { font-family: Arial, sans-serif; font-size: 11px; fill: #424242; }
+      .text-highlight { font-family: Arial, sans-serif; font-size: 13px; fill: #004d40; font-weight: bold; }
+      .text-metric { font-family: Arial, sans-serif; font-size: 13px; fill: #bf360c; font-weight: bold; }
+      .text-eval { font-family: Arial, sans-serif; font-size: 13px; fill: #1b5e20; font-weight: bold; }
+      .text-analysis { font-family: Arial, sans-serif; font-size: 13px; fill: #880e4f; font-weight: bold; }
+      .arrow { stroke: #616161; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .line { stroke: #bdbdbd; stroke-width: 1.5; fill: none; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#616161" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">PHYBench Methodology Flowchart</text>
+
+  <!-- Stage 1: Benchmark Creation -->
+  <rect x="50" y="80" width="900" height="180" class="process-box" />
+  <text x="70" y="105" class="subtitle">1. PHYBench Dataset Creation</text>
+
+  <rect x="80" y="125" width="180" height="110" fill="#cceeff" rx="5" ry="5"/>
+  <text x="90" y="145" class="text-highlight">Input:</text>
+  <text x="90" y="165" class="text-small">- Physics Problems (HS, UG, Olympiad)</text>
+  <text x="90" y="180" class="text-small">- Non-public &amp; Public Sources</text>
+  <text x="90" y="195" class="text-small">- Contribution: 178 Physics Students</text>
+
+  <rect x="280" y="125" width="380" height="110" fill="#b3e5fc" rx="5" ry="5"/>
+  <text x="290" y="145" class="text-highlight">Multi-Stage Curation Process:</text>
+  <text x="290" y="165" class="text-small">a. Adaptation: Define target, symbolic answer</text>
+  <text x="290" y="180" class="text-small">b. Requirements Check: Text-based, Unambiguous</text>
+  <text x="290" y="195" class="text-small">c. Review &amp; Refine: Internal platform, LLM checks</text>
+  <text x="290" y="210" class="text-small">d. Model Testing: Check format compliance (GPT-4o)</text>
+  <text x="290" y="225" class="text-small">e. Human Validation: 109 Experts solve &amp; feedback</text>
+
+  <rect x="680" y="125" width="250" height="110" fill="#81d4fa" rx="5" ry="5"/>
+  <text x="690" y="145" class="text-highlight">Output:</text>
+  <text x="690" y="165" class="text-main">PHYBench Dataset</text>
+  <text x="690" y="185" class="text-small">- 500 High-Quality Problems</text>
+  <text x="690" y="200" class="text-small">- Diverse Domains &amp; Difficulty</text>
+  <text x="690" y="215" class="text-small">- Focus: Physical Perception &amp; Reasoning</text>
+
+  <!-- Connecting Lines -->
+  <line x1="260" y1="180" x2="280" y2="180" class="arrow"/>
+  <line x1="660" y1="180" x2="680" y2="180" class="arrow"/>
+
+  <!-- Stage 2: Evaluation Metric Development -->
+  <rect x="50" y="280" width="900" height="160" class="metric-box" />
+  <text x="70" y="305" class="subtitle">2. Evaluation Metric Development (EED Score)</text>
+
+  <rect x="80" y="325" width="180" height="90" fill="#ffecb3" rx="5" ry="5"/>
+  <text x="90" y="345" class="text-metric">Input:</text>
+  <text x="90" y="365" class="text-small">- Ground Truth Answer (LaTeX)</text>
+  <text x="90" y="380" class="text-small">- Model Generated Answer (LaTeX)</text>
+
+  <rect x="280" y="325" width="380" height="90" fill="#ffe082" rx="5" ry="5"/>
+  <text x="290" y="345" class="text-metric">EED Score Calculation Process:</text>
+  <text x="290" y="360" class="text-small">1. LaTeX -> SymPy Conversion</text>
+  <text x="290" y="375" class="text-small">2. Simplify Expressions</text>
+  <text x="290" y="390" class="text-small">3. Expression Tree Conversion</text>
+  <text x="290" y="405" class="text-small">4. Tree Edit Distance (Zhang-Shasha + Subtree Ops)</text>
+  <text x="290" y="420" class="text-small">5. Calculate Relative Distance &amp; Apply Score Formula</text>
+
+  <rect x="680" y="325" width="250" height="90" fill="#ffd54f" rx="5" ry="5"/>
+  <text x="690" y="345" class="text-metric">Output Metrics:</text>
+  <text x="690" y="365" class="text-main">- EED Score (Continuous)</text>
+  <text x="690" y="385" class="text-small">  (Fine-grained similarity)</text>
+  <text x="690" y="405" class="text-main">- Accuracy (Binary)</text>
+  <text x="690" y="420" class="text-small">  (Strict correctness)</text>
+
+  <!-- Connecting Lines -->
+  <line x1="260" y1="370" x2="280" y2="370" class="arrow"/>
+  <line x1="660" y1="370" x2="680" y2="370" class="arrow"/>
+
+  <!-- Stage 3: Evaluation -->
+  <rect x="50" y="460" width="900" height="140" class="eval-box" />
+  <text x="70" y="485" class="subtitle">3. Model & Human Evaluation</text>
+
+  <rect x="80" y="505" width="280" height="75" fill="#c8e6c9" rx="5" ry="5"/>
+  <text x="90" y="525" class="text-eval">Inputs:</text>
+  <text x="90" y="545" class="text-small">- PHYBench Dataset</text>
+  <text x="90" y="560" class="text-small">- Various LLMs (API & Local)</text>
+  <text x="90" y="575" class="text-small">- Human Experts (81 Physics Students)</text>
+
+  <rect x="380" y="505" width="280" height="75" fill="#a5d6a7" rx="5" ry="5"/>
+  <text x="390" y="525" class="text-eval">Process:</text>
+  <text x="390" y="545" class="text-small">- Run LLMs with standard prompt</text>
+  <text x="390" y="560" class="text-small">- Collect human solutions</text>
+  <text x="390" y="575" class="text-small">- Apply EED Score & Accuracy metrics</text>
+
+  <rect x="680" y="505" width="250" height="75" fill="#81c784" rx="5" ry="5"/>
+  <text x="690" y="525" class="text-eval">Outputs:</text>
+  <text x="690" y="545" class="text-small">- LLM Performance Scores</text>
+  <text x="690" y="560" class="text-small">- Human Baseline Scores</text>
+  <text x="690" y="575" class="text-small">- Raw Solution Data</text>
+
+  <!-- Connecting Lines -->
+  <line x1="360" y1="542.5" x2="380" y2="542.5" class="arrow"/>
+  <line x1="660" y1="542.5" x2="680" y2="542.5" class="arrow"/>
+
+  <!-- Stage 4: Analysis -->
+  <rect x="50" y="620" width="900" height="140" class="analysis-box" />
+  <text x="70" y="645" class="subtitle">4. Result Analysis</text>
+
+  <rect x="80" y="665" width="280" height="75" fill="#f8bbd0" rx="5" ry="5"/>
+  <text x="90" y="685" class="text-analysis">Comparative Analysis:</text>
+  <text x="90" y="705" class="text-small">- LLMs vs. Human Baseline</text>
+  <text x="90" y="720" class="text-small">- Across Different LLMs</text>
+  <text x="90" y="735" class="text-small">- Domain-Specific Performance (Advantage Metrics)</text>
+
+  <rect x="380" y="665" width="280" height="75" fill="#f48fb1" rx="5" ry="5"/>
+  <text x="390" y="685" class="text-analysis">Error Analysis:</text>
+  <text x="390" y="705" class="text-small">- Categorization: Physical Perception (PP)</text>
+  <text x="390" y="720" class="text-small">  & Robust Reasoning (RR)</text>
+  <text x="390" y="735" class="text-small">- Examples & Impact on EED Score</text>
+
+  <rect x="680" y="665" width="250" height="75" fill="#f06292" rx="5" ry="5"/>
+  <text x="690" y="685" class="text-analysis">Conclusions:</text>
+  <text x="690" y="705" class="text-small">- Performance Gap Identified</text>
+  <text x="690" y="720" class="text-small">- Value of PHYBench & EED Score</text>
+  <text x="690" y="735" class="text-small">- Limitations & Future Directions</text>
+
+  <!-- Connecting Lines -->
+  <line x1="360" y1="702.5" x2="380" y2="702.5" class="arrow"/>
+  <line x1="660" y1="702.5" x2="680" y2="702.5" class="arrow"/>
+
+  <!-- Vertical Connections -->
+  <line x1="500" y1="260" x2="500" y2="280" class="arrow"/>
+  <line x1="500" y1="440" x2="500" y2="460" class="arrow"/>
+  <line x1="500" y1="600" x2="500" y2="620" class="arrow"/>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="To assess LLMs' physical perception and reasoning abilities within realistic physical scenarios.">
+                        <div class="quiz-question">1. What is the primary goal of the PHYBench benchmark introduced in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To evaluate LLMs' ability to solve abstract mathematical problems at competition levels.">To evaluate LLMs' ability to solve abstract mathematical problems at competition levels.</div><div class="quiz-choice" data-value="To assess LLMs' physical perception and reasoning abilities within realistic physical scenarios.">To assess LLMs' physical perception and reasoning abilities within realistic physical scenarios.</div><div class="quiz-choice" data-value="To measure LLMs' knowledge recall of fundamental physics concepts and definitions.">To measure LLMs' knowledge recall of fundamental physics concepts and definitions.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The Expression Edit Distance (EED) Score, based on the similarity of symbolic mathematical expressions.">
+                        <div class="quiz-question">2. Which novel evaluation metric is proposed in PHYBench to provide a more nuanced assessment of model answers beyond binary correctness?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A human-based subjective score for reasoning quality.">A human-based subjective score for reasoning quality.</div><div class="quiz-choice long-text" data-value="The Expression Edit Distance (EED) Score, based on the similarity of symbolic mathematical expressions.">The Expression Edit Distance (EED) Score, based on the similarity of symbolic mathematical expressions.</div><div class="quiz-choice" data-value="A metric solely counting the number of correct physical principles mentioned.">A metric solely counting the number of correct physical principles mentioned.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="LLMs significantly lagged behind human experts, highlighting limitations in complex physical reasoning.">
+                        <div class="quiz-question">3. Based on the experimental results presented in the paper, how did the performance of state-of-the-art LLMs on PHYBench compare to human experts?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="LLMs achieved performance levels comparable to human experts, especially the best models.">LLMs achieved performance levels comparable to human experts, especially the best models.</div><div class="quiz-choice long-text" data-value="LLMs significantly lagged behind human experts, highlighting limitations in complex physical reasoning.">LLMs significantly lagged behind human experts, highlighting limitations in complex physical reasoning.</div><div class="quiz-choice" data-value="LLMs significantly outperformed human experts across most physics domains tested.">LLMs significantly outperformed human experts across most physics domains tested.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
