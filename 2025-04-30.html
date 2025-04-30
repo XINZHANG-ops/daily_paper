@@ -1,0 +1,1212 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-04-30 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-04-30 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>ISDrama: Immersive Spatial Drama Generation through Multimodal Prompting</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-29</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.20630" target="_blank">http://arxiv.org/pdf/2504.20630</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on multimodal immersive spatial drama generation, specifically creating continuous multi-speaker binaural speech with dramatic prosody based on multimodal prompts for AR/VR applications.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Prior research focused on speech synthesis with prosody modeling and binaural audio generation separately; this paper proposes the first unified framework for simultaneous modeling of spatial information and dramatic prosody.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of generating high-quality continuous multi-speaker binaural speech with dramatic prosody while maintaining spatial accuracy and prosodic expressiveness, which was previously limited by data scarcity and complex modeling requirements.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed ISDrama, which consists of a Multimodal Pose Encoder using contrastive learning to extract unified pose information, and an Immersive Drama Transformer with Drama-MOE for enhanced prosody and pose control, along with a context-consistent classifier-free guidance strategy.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> ISDrama outperformed baseline models on both objective metrics (CER, SIM, FFE) and subjective metrics (MOS scores for quality, speaker similarity, expressiveness, and pose consistency), demonstrating superior performance in generating immersive spatial drama.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ISDrama: Immersive Spatial Drama Generation through Multimodal Prompting</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles and gradients -->
+  <defs>
+    <linearGradient id="gradInput" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e0f7fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b2ebf2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradMPE" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fff3e0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffe0b2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradIDT" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8f5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c8e6c9;stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="gradMOE" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ede7f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d1c4e9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradOutput" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fce4ec;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f8bbd0;stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="gradCFG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e1f5fe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b3e5fc;stop-opacity:1" />
+    </linearGradient>
+     <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">ISDrama Method Flowchart</text>
+
+  <!-- Inputs Group -->
+  <g id="Inputs" transform="translate(50, 80)">
+    <rect x="0" y="0" width="900" height="130" rx="10" ry="10" fill="url(#gradInput)" stroke="#80deea" stroke-width="1" filter="url(#dropShadow)"/>
+    <text x="450" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#00796b">Inputs</text>
+
+    <!-- Multimodal Pose Prompts -->
+    <g transform="translate(20, 45)">
+       <rect x="0" y="0" width="280" height="70" rx="5" ry="5" fill="#ffffff" stroke="#80deea" stroke-width="1"/>
+       <text x="140" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#00796b">Multimodal Pose Prompts</text>
+       <text x="40" y="45" font-family="Arial, sans-serif" font-size="12" fill="#333">- Silent Video</text>
+       <text x="40" y="60" font-family="Arial, sans-serif" font-size="12" fill="#333">- Textual Prompt</text>
+       <text x="160" y="45" font-family="Arial, sans-serif" font-size="12" fill="#333">- Geometric Pose</text>
+       <text x="160" y="60" font-family="Arial, sans-serif" font-size="12" fill="#333">(Pos, Ori, Velocity)</text>
+    </g>
+
+     <!-- Drama Script -->
+    <g transform="translate(320, 45)">
+       <rect x="0" y="0" width="180" height="70" rx="5" ry="5" fill="#ffffff" stroke="#80deea" stroke-width="1"/>
+       <text x="90" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#00796b">Drama Script</text>
+       <text x="90" y="45" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">(Content c)</text>
+       <text x="90" y="60" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">(Phonemes)</text>
+    </g>
+
+     <!-- Prompt Audio -->
+    <g transform="translate(520, 45)">
+       <rect x="0" y="0" width="180" height="70" rx="5" ry="5" fill="#ffffff" stroke="#80deea" stroke-width="1"/>
+       <text x="90" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#00796b">Prompt Audio</text>
+       <text x="90" y="45" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">(Timbre/Style a)</text>
+       <text x="90" y="60" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">(Per Speaker)</text>
+    </g>
+
+    <!-- Scene Info -->
+    <g transform="translate(720, 45)">
+       <rect x="0" y="0" width="160" height="70" rx="5" ry="5" fill="#ffffff" stroke="#80deea" stroke-width="1"/>
+       <text x="80" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#00796b">Scene Info</text>
+       <text x="80" y="45" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">(Video Frame / Text)</text>
+       <text x="80" y="60" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#333">(Acoustics s)</text>
+    </g>
+  </g>
+
+  <!-- Connection Lines from Inputs -->
+  <path d="M 180 210 V 240" stroke="#8d6e63" stroke-width="2" fill="none"/> <!-- Pose Prompts to MPE -->
+  <path d="M 410 210 V 240" stroke="#8d6e63" stroke-width="2" fill="none"/> <!-- Script to MPE (for duration) & IDT -->
+  <path d="M 410 210 H 500 V 430" stroke="#4caf50" stroke-width="2" fill="none"/> <!-- Script to IDT (zc) -->
+  <path d="M 610 210 V 430" stroke="#4caf50" stroke-width="2" fill="none"/> <!-- Prompt Audio to IDT (za) -->
+  <path d="M 800 210 V 430" stroke="#4caf50" stroke-width="2" fill="none"/> <!-- Scene Info to IDT (s) -->
+
+
+  <!-- Multimodal Pose Encoder (MPE) -->
+  <g id="MPE" transform="translate(50, 240)">
+     <rect x="0" y="0" width="360" height="160" rx="10" ry="10" fill="url(#gradMPE)" stroke="#ffb74d" stroke-width="1" filter="url(#dropShadow)"/>
+     <text x="180" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#e65100">Multimodal Pose Encoder (MPE)</text>
+
+     <text x="180" y="55" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#bf360c">Encodes:</text>
+     <text x="180" y="70" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#bf360c">Video / Text / Geometry</text>
+
+     <text x="180" y="95" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#bf360c">Key Technique:</text>
+     <text x="180" y="110" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#bf360c">Contrastive Learning (Dynamic, Postural, Positional)</text>
+     <text x="180" y="125" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#bf360c">Considers Doppler Effect</text>
+
+     <text x="180" y="145" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold" fill="#e65100">Output: Unified Pose Embedding (zp)</text>
+  </g>
+
+   <!-- Connection from MPE to IDT -->
+   <path d="M 230 400 V 430" stroke="#e65100" stroke-width="2" fill="none"/> <!-- MPE zp to IDT -->
+
+  <!-- Immersive Drama Transformer (IDT) -->
+  <g id="IDT" transform="translate(200, 430)">
+    <rect x="0" y="0" width="600" height="280" rx="10" ry="10" fill="url(#gradIDT)" stroke="#81c784" stroke-width="1" filter="url(#dropShadow)"/>
+    <text x="300" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#2e7d32">Immersive Drama Transformer (IDT)</text>
+
+    <text x="300" y="50" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#1b5e20">Core: Flow-based Mamba-Transformer</text>
+    <text x="300" y="65" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">(Efficient long sequence modeling, Stable generation)</text>
+
+    <!-- Inputs to IDT -->
+    <text x="60" y="85" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">Inputs:</text>
+    <text x="60" y="100" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">zp (Pose)</text>
+    <text x="60" y="115" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">zc (Content)</text>
+    <text x="60" y="130" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">za (Timbre)</text>
+    <text x="60" y="145" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">s (Scene)</text>
+    <text x="60" y="160" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">t (Timestep)</text>
+    <text x="60" y="175" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1b5e20">ϵ (Noise)</text>
+
+    <!-- Drama-MOE -->
+    <g transform="translate(130, 80)">
+       <rect x="0" y="0" width="340" height="130" rx="5" ry="5" fill="url(#gradMOE)" stroke="#9575cd" stroke-width="1"/>
+       <text x="170" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#4527a0">Drama-MOE (Mixture of Experts)</text>
+       <text x="170" y="35" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#311b92">Enhances Prosody & Pose Control</text>
+       <!-- Prosodic Experts -->
+       <rect x="10" y="45" width="155" height="75" rx="3" ry="3" fill="#f3e5f5" stroke="#ce93d8" stroke-width="0.5"/>
+       <text x="87.5" y="60" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#6a1b9a">Prosodic Experts</text>
+       <text x="87.5" y="75" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6a1b9a">Input: za, zc</text>
+       <text x="87.5" y="90" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6a1b9a">Focus: Emotion, Rhythm</text>
+       <text x="87.5" y="105" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6a1b9a">(Uses FAN)</text>
+       <!-- Spatial Experts -->
+       <rect x="175" y="45" width="155" height="75" rx="3" ry="3" fill="#f3e5f5" stroke="#ce93d8" stroke-width="0.5"/>
+       <text x="252.5" y="60" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#6a1b9a">Spatial Experts</text>
+        <text x="252.5" y="75" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6a1b9a">Input: za, zp</text>
+       <text x="252.5" y="90" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6a1b9a">Focus: Pose, Binaural Cues</text>
+       <text x="252.5" y="105" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6a1b9a">(Uses FAN)</text>
+    </g>
+
+    <!-- Other IDT Components -->
+    <text x="100" y="230" font-family="Arial, sans-serif" font-size="12" fill="#1b5e20">- F0 Prediction (Supervision)</text>
+    <text x="100" y="245" font-family="Arial, sans-serif" font-size="12" fill="#1b5e20">- Global Adapters (AdaLN)</text>
+    <text x="100" y="260" font-family="Arial, sans-serif" font-size="12" fill="#1b5e20">- Scene Cross-Attention</text>
+
+     <!-- CFG Component -->
+    <g transform="translate(300, 220)">
+      <rect x="0" y="0" width="280" height="50" rx="5" ry="5" fill="url(#gradCFG)" stroke="#4fc3f7" stroke-width="1"/>
+      <text x="140" y="20" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#01579b">Context-Consistent CFG</text>
+      <text x="140" y="38" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#0277bd">(Inference: Uses prompt 'a' & last prediction 'ypr-last')</text>
+    </g>
+
+  </g>
+
+  <!-- Connection from IDT to Output -->
+   <path d="M 500 710 V 730" stroke="#388e3c" stroke-width="2" fill="none"/>
+
+  <!-- Output -->
+   <g id="Output" transform="translate(350, 730)">
+     <rect x="0" y="0" width="300" height="50" rx="10" ry="10" fill="url(#gradOutput)" stroke="#ec407a" stroke-width="1" filter="url(#dropShadow)"/>
+     <text x="150" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#880e4f">Immersive Spatial Drama</text>
+     <text x="150" y="45" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#ad1457">(Continuous Multi-Speaker Binaural Speech)</text>
+   </g>
+
+   <!-- Data Annotation (Side Note) -->
+   <g id="Dataset" transform="translate(650, 240)">
+     <rect x="0" y="0" width="300" height="160" rx="10" ry="10" fill="#e3f2fd" stroke="#90caf9" stroke-width="1" filter="url(#dropShadow)"/>
+     <text x="150" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#0d47a1">Dataset: MRSDrama</text>
+     <text x="150" y="50" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#1565c0">Foundation for Training</text>
+     <text x="30" y="75" font-family="Arial, sans-serif" font-size="12" fill="#1976d2">- Binaural Drama Audios</text>
+     <text x="30" y="90" font-family="Arial, sans-serif" font-size="12" fill="#1976d2">- Scripts & Alignments</text>
+     <text x="30" y="105" font-family="Arial, sans-serif" font-size="12" fill="#1976d2">- Videos (Silent)</text>
+     <text x="30" y="120" font-family="Arial, sans-serif" font-size="12" fill="#1976d2">- Geometric Poses</text>
+     <text x="30" y="135" font-family="Arial, sans-serif" font-size="12" fill="#1976d2">- Textual Prompts</text>
+     <text x="150" y="150" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#1e88e5">(Recorded, Multimodal, Spatial)</text>
+   </g>
+
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The scarcity of high-quality annotated *recorded* data containing complex dramatic prosody and real-world spatial effects.">
+                        <div class="quiz-question">1. According to the paper, what was a significant challenge in the field that motivated the creation of the MRSDrama dataset?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The lack of realistic digital avatars for virtual environments.">The lack of realistic digital avatars for virtual environments.</div><div class="quiz-choice long-text" data-value="The scarcity of high-quality annotated *recorded* data containing complex dramatic prosody and real-world spatial effects.">The scarcity of high-quality annotated *recorded* data containing complex dramatic prosody and real-world spatial effects.</div><div class="quiz-choice" data-value="The difficulty in converting monaural audio into binaural audio using deep learning.">The difficulty in converting monaural audio into binaural audio using deep learning.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To extract a unified spatial pose representation (position, orientation, speed) from diverse inputs like video, text, and geometric data.">
+                        <div class="quiz-question">2. What is the primary role of the Multimodal Pose Encoder in the ISDrama model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To synthesize the final binaural speech waveform from a mel-spectrogram.">To synthesize the final binaural speech waveform from a mel-spectrogram.</div><div class="quiz-choice long-text" data-value="To extract a unified spatial pose representation (position, orientation, speed) from diverse inputs like video, text, and geometric data.">To extract a unified spatial pose representation (position, orientation, speed) from diverse inputs like video, text, and geometric data.</div><div class="quiz-choice" data-value="To predict the fundamental frequency (F0) contour for dramatic prosody.">To predict the fundamental frequency (F0) contour for dramatic prosody.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The enhancement of dramatic prosodic expressiveness and the accuracy of pose control by selecting specialized subnetworks.">
+                        <div class="quiz-question">3. The Immersive Drama Transformer incorporates Drama-MOE (Mixture of Experts). What does Drama-MOE aim to improve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The efficiency of the vocoder in converting mel-spectrograms to audio.">The efficiency of the vocoder in converting mel-spectrograms to audio.</div><div class="quiz-choice" data-value="The coherence of transitions between different speakers in the drama.">The coherence of transitions between different speakers in the drama.</div><div class="quiz-choice long-text" data-value="The enhancement of dramatic prosodic expressiveness and the accuracy of pose control by selecting specialized subnetworks.">The enhancement of dramatic prosodic expressiveness and the accuracy of pose control by selecting specialized subnetworks.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>X-Fusion: Introducing New Modality to Frozen Large Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-29</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.20996" target="_blank">http://arxiv.org/pdf/2504.20996</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents X-Fusion, a framework for extending pre-trained Large Language Models (LLMs) for multimodal tasks in computer vision and natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research in unified vision-language models and LLM adaptation, it introduces a novel dual-tower architecture that keeps the LLM frozen while adding vision-specific capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses how to add new modalities (specifically vision) to pre-trained LLMs while preserving their original language capabilities and avoiding the need for full retraining.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a dual-tower architecture with frozen language weights and trainable vision-specific weights, employing both diffusion loss for images and autoregressive loss for text, while incorporating strategies for data ratio optimization and noise reduction.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> X-Fusion outperforms alternative architectures on both image-to-text and text-to-image tasks, with results showing that incorporating understanding-focused data improves generation quality, reducing image noise enhances performance, and feature alignment benefits smaller models more than larger ones.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>X-Fusion: Introducing New Modality to Frozen Large Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#03A9F4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFC107;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BA68C8;stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">X-Fusion Methodology Flowchart</text>
+  <text x="500" y="65" font-size="16" text-anchor="middle" fill="#666">Adapting Frozen LLMs for Vision Tasks</text>
+
+  <!-- Input Stage -->
+  <g id="input_stage" transform="translate(50, 100)">
+    <rect x="0" y="0" width="200" height="100" rx="10" ry="10" fill="url(#grad1)" filter="url(#shadow)"/>
+    <text x="100" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">Input Modalities</text>
+    <text x="100" y="60" font-size="14" text-anchor="middle" fill="#fff">🖼️ Image</text>
+    <text x="100" y="80" font-size="14" text-anchor="middle" fill="#fff">📝 Text</text>
+  </g>
+
+  <!-- Tokenization/Encoding -->
+  <g id="encoding_stage" transform="translate(300, 100)">
+    <rect x="0" y="0" width="400" height="100" rx="10" ry="10" fill="url(#grad2)" filter="url(#shadow)"/>
+    <text x="200" y="25" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">Input Processing</text>
+    <rect x="15" y="40" width="180" height="50" rx="5" ry="5" fill="#E3F2FD"/>
+    <text x="105" y="58" font-size="12" text-anchor="middle" fill="#1E88E5">Image Encoding</text>
+    <text x="105" y="75" font-size="10" text-anchor="middle" fill="#1E88E5">(VAE Encoder + Patchify)</text>
+    <rect x="205" y="40" width="180" height="50" rx="5" ry="5" fill="#E3F2FD"/>
+    <text x="295" y="58" font-size="12" text-anchor="middle" fill="#1E88E5">Text Tokenization</text>
+    <text x="295" y="75" font-size="10" text-anchor="middle" fill="#1E88E5">(LLM Tokenizer)</text>
+    <text x="200" y="115" font-size="12" text-anchor="middle" fill="#1976D2">Interleaved Tokens [img, txt, img, ...]</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <line x1="250" y1="150" x2="300" y2="150" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+
+  <!-- Core Model: Dual Tower -->
+  <g id="dual_tower_stage" transform="translate(200, 250)">
+    <rect x="0" y="0" width="600" height="250" rx="15" ry="15" fill="#F5F5F5" stroke="#BDBDBD" stroke-width="1" filter="url(#shadow)"/>
+    <text x="300" y="30" font-size="18" font-weight="bold" text-anchor="middle" fill="#424242">X-Fusion Core: Dual Tower Architecture (Per Layer)</text>
+
+    <text x="300" y="60" font-size="14" text-anchor="middle" fill="#616161">Input Sequence (Ein = {e1, e2, ...})</text>
+    <line x1="300" y1="70" x2="300" y2="90" stroke="#9E9E9E" stroke-width="2"/>
+    <line x1="150" y1="90" x2="450" y2="90" stroke="#9E9E9E" stroke-width="2"/>
+    <line x1="150" y1="90" x2="150" y2="110" stroke="#9E9E9E" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="450" y1="90" x2="450" y2="110" stroke="#9E9E9E" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+
+    <!-- Frozen Text Tower -->
+    <rect x="50" y="110" width="200" height="80" rx="10" ry="10" fill="#CFD8DC"/>
+    <text x="150" y="135" font-size="14" font-weight="bold" text-anchor="middle" fill="#37474F">Frozen Text Tower</text>
+    <text x="150" y="155" font-size="12" text-anchor="middle" fill="#37474F">(Ftxt - LLM Block)</text>
+    <text x="150" y="175" font-size="12" text-anchor="middle" fill="#37474F">Output: Htxt</text>
+
+    <!-- Trainable Vision Tower -->
+    <rect x="350" y="110" width="200" height="80" rx="10" ry="10" fill="url(#grad3)" />
+    <text x="450" y="135" font-size="14" font-weight="bold" text-anchor="middle" fill="#fff">Trainable Vision Tower</text>
+    <text x="450" y="155" font-size="12" text-anchor="middle" fill="#fff">(Fimg - New Weights)</text>
+    <text x="450" y="175" font-size="12" text-anchor="middle" fill="#fff">Output: Himg</text>
+
+    <!-- Output Selection -->
+    <line x1="150" y1="190" x2="150" y2="210" stroke="#9E9E9E" stroke-width="2"/>
+    <line x1="450" y1="190" x2="450" y2="210" stroke="#9E9E9E" stroke-width="2"/>
+    <line x1="150" y1="210" x2="450" y2="210" stroke="#9E9E9E" stroke-width="2"/>
+    <line x1="300" y1="210" x2="300" y2="230" stroke="#9E9E9E" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="300" y="240" font-size="14" text-anchor="middle" fill="#616161">Output Selection (Hout): if token=text use Htxt, if token=vision use Himg</text>
+
+  </g>
+
+  <!-- Arrow 2 -->
+  <line x1="500" y1="200" x2="500" y2="250" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+
+  <!-- Arrow 3 -->
+  <line x1="500" y1="500" x2="500" y2="530" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+
+
+  <!-- Output & Loss -->
+  <g id="output_loss_stage" transform="translate(200, 530)">
+     <rect x="0" y="0" width="600" height="120" rx="15" ry="15" fill="#F3E5F5" stroke="#CE93D8" stroke-width="1" filter="url(#shadow)"/>
+     <text x="300" y="25" font-size="18" font-weight="bold" text-anchor="middle" fill="#6A1B9A">Output & Training Objective</text>
+
+     <!-- Text Output -->
+     <rect x="20" y="45" width="170" height="60" rx="5" ry="5" fill="#E1BEE7"/>
+     <text x="105" y="65" font-size="12" text-anchor="middle" fill="#6A1B9A">Text Output</text>
+     <text x="105" y="85" font-size="12" text-anchor="middle" fill="#6A1B9A">-> Autoregressive Loss (LAR)</text>
+
+     <!-- Image Output -->
+     <rect x="210" y="45" width="170" height="60" rx="5" ry="5" fill="#E1BEE7"/>
+     <text x="295" y="65" font-size="12" text-anchor="middle" fill="#6A1B9A">Image Feature Output</text>
+     <text x="295" y="85" font-size="12" text-anchor="middle" fill="#6A1B9A">-> Diffusion Loss (LDM)</text>
+
+     <!-- Combined Loss -->
+     <rect x="400" y="45" width="180" height="60" rx="5" ry="5" fill="#CE93D8"/>
+     <text x="490" y="65" font-size="14" font-weight="bold" text-anchor="middle" fill="#4A148C">Total Loss</text>
+     <text x="490" y="85" font-size="12" font-weight="bold" text-anchor="middle" fill="#4A148C">L = λAR*LAR + λDM*LDM</text>
+  </g>
+
+  <!-- Key Findings / Optional Steps -->
+  <g id="findings" transform="translate(820, 100)">
+    <rect x="0" y="0" width="160" height="550" rx="10" ry="10" fill="#FFF3E0" stroke="#FFB74D" stroke-width="1" filter="url(#shadow)"/>
+    <text x="80" y="25" font-size="14" font-weight="bold" text-anchor="middle" fill="#E65100">Key Insights & Options</text>
+
+    <rect x="10" y="45" width="140" height="80" rx="5" ry="5" fill="#FFE0B2"/>
+    <text x="80" y="65" font-size="11" text-anchor="middle" fill="#E65100" font-weight="bold">Language Preservation:</text>
+    <text x="80" y="80" font-size="10" text-anchor="middle" fill="#E65100">Text Tower Frozen</text>
+    <text x="80" y="95" font-size="10" text-anchor="middle" fill="#E65100">Retains LLM abilities (MMLU)</text>
+
+    <rect x="10" y="135" width="140" height="90" rx="5" ry="5" fill="#FFE0B2"/>
+    <text x="80" y="155" font-size="11" text-anchor="middle" fill="#E65100" font-weight="bold">Training Data Insights:</text>
+    <text x="80" y="170" font-size="10" text-anchor="middle" fill="#E65100">1. Clean I2T Images:</text>
+    <text x="80" y="180" font-size="10" text-anchor="middle" fill="#E65100">   Improves BOTH tasks</text>
+    <text x="80" y="195" font-size="10" text-anchor="middle" fill="#E65100">2. Data Ratio (T2I:I2T ~2:1):</text>
+    <text x="80" y="205" font-size="10" text-anchor="middle" fill="#E65100">   I2T helps T2I (not vice-versa)</text>
+
+    <rect x="10" y="235" width="140" height="90" rx="5" ry="5" fill="#FFE0B2"/>
+    <text x="80" y="255" font-size="11" text-anchor="middle" fill="#E65100" font-weight="bold">Optional Features:</text>
+    <text x="80" y="270" font-size="10" text-anchor="middle" fill="#E65100">1. X-Fuse Layer:</text>
+    <text x="80" y="280" font-size="10" text-anchor="middle" fill="#E65100">   Fuse tower outputs (+Perf, +FLOPs)</text>
+    <text x="80" y="295" font-size="10" text-anchor="middle" fill="#E65100">2. Feature Alignment (REPA):</text>
+    <text x="80" y="305" font-size="10" text-anchor="middle" fill="#E65100">   Align w/ CLIP (helps small models)</text>
+
+     <rect x="10" y="335" width="140" height="60" rx="5" ry="5" fill="#FFE0B2"/>
+    <text x="80" y="355" font-size="11" text-anchor="middle" fill="#E65100" font-weight="bold">Vision Tower Init:</text>
+    <text x="80" y="370" font-size="10" text-anchor="middle" fill="#E65100">Can init from pretrained</text>
+     <text x="80" y="380" font-size="10" text-anchor="middle" fill="#E65100">Diffusion Model (e.g., DiT)</text>
+
+    <rect x="10" y="405" width="140" height="60" rx="5" ry="5" fill="#FFE0B2"/>
+    <text x="80" y="425" font-size="11" text-anchor="middle" fill="#E65100" font-weight="bold">Evaluation:</text>
+    <text x="80" y="440" font-size="10" text-anchor="middle" fill="#E65100">T2I (FID), I2T (BLIP)</text>
+    <text x="80" y="450" font-size="10" text-anchor="middle" fill="#E65100">Language (MMLU)</text>
+
+    <rect x="10" y="475" width="140" height="60" rx="5" ry="5" fill="#FFE0B2"/>
+    <text x="80" y="495" font-size="11" text-anchor="middle" fill="#E65100" font-weight="bold">Fine-tuning:</text>
+    <text x="80" y="510" font-size="10" text-anchor="middle" fill="#E65100">Extensible to VQA, Editing,</text>
+    <text x="80" y="520" font-size="10" text-anchor="middle" fill="#E65100">Localization, In/Out-painting</text>
+
+  </g>
+
+  <!-- Connection Lines -->
+  <path d="M 500 200 Q 650 225 820 300" stroke="#BDBDBD" stroke-width="1.5" stroke-dasharray="5,5" fill="none"/>
+  <path d="M 500 500 Q 650 525 820 450" stroke="#BDBDBD" stroke-width="1.5" stroke-dasharray="5,5" fill="none"/>
+
+  <!-- Final Output -->
+   <g id="final_output" transform="translate(350, 680)">
+     <rect x="0" y="0" width="300" height="70" rx="10" ry="10" fill="url(#grad4)" filter="url(#shadow)"/>
+     <text x="150" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">Unified Multimodal Model</text>
+     <text x="150" y="55" font-size="12" text-anchor="middle" fill="#fff">(Image Understanding & Generation + Language)</text>
+   </g>
+
+   <!-- Arrow 4 -->
+   <line x1="500" y1="650" x2="500" y2="680" stroke="#555" stroke-width="2" marker-end="url(#arrowhead)" />
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Preventing the loss of the LLM's original language abilities when adding vision.">
+                        <div class="quiz-question">1. What is the primary challenge X-Fusion aims to address when introducing vision capabilities to Large Language Models (LLMs)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Training multimodal models from scratch efficiently.">Training multimodal models from scratch efficiently.</div><div class="quiz-choice" data-value="Preventing the loss of the LLM's original language abilities when adding vision.">Preventing the loss of the LLM's original language abilities when adding vision.</div><div class="quiz-choice" data-value="Developing a new type of vision encoder entirely from scratch.">Developing a new type of vision encoder entirely from scratch.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A dual-tower design with a frozen language tower and a trainable vision tower.">
+                        <div class="quiz-question">2. Which architectural design does X-Fusion employ to integrate vision into a frozen LLM?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A single tower where the entire LLM is fine-tuned on multimodal data.">A single tower where the entire LLM is fine-tuned on multimodal data.</div><div class="quiz-choice" data-value="A dual-tower design with a frozen language tower and a trainable vision tower.">A dual-tower design with a frozen language tower and a trainable vision tower.</div><div class="quiz-choice" data-value="A gated layer added to each LLM block to handle visual information.">A gated layer added to each LLM block to handle visual information.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It enhances image generation quality.">
+                        <div class="quiz-question">3. Based on the paper's findings, how does incorporating image understanding data affect image generation performance in X-Fusion?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It significantly degrades image generation quality.">It significantly degrades image generation quality.</div><div class="quiz-choice" data-value="It enhances image generation quality.">It enhances image generation quality.</div><div class="quiz-choice" data-value="It has no noticeable impact on image generation performance.">It has no noticeable impact on image generation performance.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>SPC: Evolving Self-Play Critic via Adversarial Games for LLM Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-04-27</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2504.19162" target="_blank">http://arxiv.org/pdf/2504.19162</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing a self-play critic (SPC) system for evaluating and improving step-by-step reasoning reliability in large language models (LLMs), specifically in the domain of natural language processing and machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous research in LLM reasoning verification and self-play frameworks, proposing a novel approach where two models evolve through adversarial games without requiring manual step-level annotations.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of evaluating and improving the reliability of LLM reasoning steps without extensive human annotation, which is costly and difficult to scale.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement a self-play framework with two competing models - a "sneaky generator" that creates deliberate errors and a "critic" that detects them - using reinforcement learning based on game outcomes to improve both models iteratively.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The SPC showed progressive improvement in error detection capabilities (accuracy increased from 70.8% to 77.7% on ProcessBench) and outperformed baselines when applied to guide test-time search of various LLMs on mathematical reasoning tasks like MATH500 and AIME2024.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SPC: Evolving Self-Play Critic via Adversarial Games for LLM Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Define styles -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(150,200,255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(100,150,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,200,150);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,150,100);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(180,255,180);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(120,230,120);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(220, 220, 220);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(180, 180, 180);stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,180,220);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(230,130,190);stop-opacity:1" />
+    </linearGradient>
+    <style>
+      .title { font-family: 'Arial Black', sans-serif; font-size: 24px; fill: #333; text-anchor: middle; }
+      .phase { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #555; text-anchor: middle; }
+      .box { stroke: #333; stroke-width: 1; rx: 8; ry: 8; }
+      .box-text { font-family: 'Arial', sans-serif; font-size: 12px; fill: #000; text-anchor: middle; }
+      .data-text { font-family: 'Arial', sans-serif; font-size: 10px; fill: #444; font-style: italic; text-anchor: middle; }
+      .arrow { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .dashed-arrow { stroke: #888; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); stroke-dasharray: 5, 3; }
+       .highlight { font-weight: bold; fill: #D35400; }
+       .actor-gen { fill: url(#grad2); }
+       .actor-crit { fill: url(#grad1); }
+       .process { fill: url(#grad3); }
+       .data { fill: url(#grad4); }
+       .rl { fill: url(#grad5); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title">SPC: Self-Play Critic Workflow</text>
+
+  <!-- Phase 1: Initialization -->
+  <rect x="50" y="70" width="900" height="180" fill="#f0f0f0" rx="10" ry="10" stroke="#ccc"/>
+  <text x="500" y="95" class="phase">Phase 1: Initialization (SFT)</text>
+
+  <!-- Base Model -->
+  <rect x="450" y="110" width="100" height="40" class="box data" />
+  <text x="500" y="135" class="box-text">Base LLM</text>
+  <line x1="500" y1="150" x2="500" y2="170" class="arrow" />
+
+  <!-- SFT Split -->
+  <line x1="300" y1="170" x2="700" y2="170" class="arrow" />
+  <line x1="300" y1="170" x2="300" y2="190" class="arrow" />
+  <line x1="700" y1="170" x2="700" y2="190" class="arrow" />
+
+  <!-- Sneaky Generator Init -->
+  <rect x="150" y="190" width="300" height="50" class="box actor-gen" />
+  <text x="300" y="210" class="box-text"><tspan x="300" dy="0em">Initialize Sneaky Generator (S0)</tspan><tspan x="300" dy="1.2em" class="data-text">Data: PRM800K pairs + GPT-4 TCoT</tspan></text>
+
+  <!-- Critic Init -->
+  <rect x="550" y="190" width="300" height="50" class="box actor-crit" />
+  <text x="700" y="210" class="box-text"><tspan x="700" dy="0em">Initialize Step Critic (C0)</tspan><tspan x="700" dy="1.2em" class="data-text">Data: PRM800K steps + DeepSeek/GPT-4 Critiques</tspan></text>
+
+  <!-- Phase 2: Adversarial Game & RL Loop -->
+   <rect x="50" y="270" width="900" height="380" fill="#f5f5f5" rx="10" ry="10" stroke="#ccc"/>
+   <text x="500" y="295" class="phase">Phase 2: Adversarial Game & RL Evolution (Iterative)</text>
+
+   <!-- Game Setup -->
+   <rect x="70" y="310" width="180" height="50" class="box data" />
+   <text x="160" y="330" class="box-text"><tspan x="160" dy="0em">Generate Solutions</tspan><tspan x="160" dy="1.2em" class="data-text">(Various LLM Solvers)</tspan></text>
+   <line x1="250" y1="335" x2="300" y2="335" class="arrow" />
+   <text x="200" y="370" class="data-text">Sample Correct Step (tc_k)</text>
+   <line x1="160" y1="360" x2="160" y2="380" class="arrow" />
+
+   <!-- Sneaky Generator Action -->
+   <rect x="70" y="380" width="180" height="50" class="box actor-gen" />
+   <text x="160" y="405" class="box-text">Sneaky Generator (Sn)</text>
+   <text x="160" y="420" class="data-text">Generates ti_k</text>
+   <line x1="250" y1="405" x2="300" y2="405" class="arrow" />
+
+   <!-- Validation -->
+    <path d="M 300 385 L 320 405 L 300 425 L 280 405 Z" class="box process" fill="#e0ffe0" />
+    <text x="300" y="410" class="box-text" font-size="10px" transform="rotate(-45 300 405)">Validate ti_k</text>
+    <text x="300" y="440" class="data-text">(Success Rate Check)</text>
+    <line x1="320" y1="405" x2="370" y2="405" class="arrow" />
+    <text x="345" y="395" class="box-text highlight">Valid</text>
+    <line x1="300" y1="425" x2="300" y2="450" class="dashed-arrow" />
+    <text x="270" y="445" class="box-text highlight">Invalid</text>
+    <text x="270" y="465" class="data-text">(Neg Sample for Sn)</text>
+
+    <!-- Critic Action -->
+    <rect x="370" y="380" width="180" height="50" class="box actor-crit" />
+    <text x="460" y="405" class="box-text">Step Critic (Cn)</text>
+    <text x="460" y="420" class="data-text">Analyzes valid ti_k</text>
+    <line x1="550" y1="405" x2="600" y2="405" class="arrow" />
+
+    <!-- Outcome Determination -->
+    <path d="M 600 385 L 620 405 L 600 425 L 580 405 Z" class="box process" fill="#e0ffe0" />
+    <text x="600" y="410" class="box-text" font-size="10px" transform="rotate(-45 600 405)">Critic Correct?</text>
+
+    <!-- Win/Loss -->
+    <line x1="620" y1="405" x2="670" y2="385" class="arrow" />
+    <text x="695" y="380" class="box-text highlight">Yes: C Wins (+1)</text>
+    <text x="695" y="395" class="data-text">S Loses (-1)</text>
+
+    <line x1="620" y1="405" x2="670" y2="425" class="arrow" />
+    <text x="695" y="420" class="box-text highlight">No: C Loses (-1)</text>
+    <text x="695" y="435" class="data-text">S Wins (+1)</text>
+
+    <!-- Collect Data -->
+    <rect x="400" y="460" width="200" height="40" class="box data" />
+    <text x="500" y="485" class="box-text">Collect Game Data & Rewards</text>
+    <!-- Arrows to RL -->
+    <line x1="500" y1="500" x2="500" y2="530" class="arrow" />
+    <line x1="300" y1="450" x2="300" y2="510" class="dashed-arrow" />
+    <line x1="300" y1="510" x2="400" y2="550" class="dashed-arrow" />
+     <line x1="720" y1="395" x2="600" y2="460" class="dashed-arrow" />
+     <line x1="720" y1="435" x2="600" y2="460" class="dashed-arrow" />
+
+    <!-- RL Training -->
+    <rect x="150" y="530" width="300" height="60" class="box rl" />
+    <text x="300" y="550" class="box-text"><tspan x="300" dy="0em">Reinforcement Learning Update (Sn)</tspan><tspan x="300" dy="1.2em" class="data-text">Input: Game Data (Win/Loss/Invalid)</tspan><tspan x="300" dy="1.2em" class="data-text">Output: S(n+1)</tspan></text>
+
+    <rect x="550" y="530" width="300" height="60" class="box rl" />
+    <text x="700" y="550" class="box-text"><tspan x="700" dy="0em">Reinforcement Learning Update (Cn)</tspan><tspan x="700" dy="1.2em" class="data-text">Input: Game Data (Win/Loss)</tspan><tspan x="700" dy="1.2em" class="data-text">Output: C(n+1)</tspan></text>
+
+    <!-- Iteration Loop -->
+    <path d="M 450 560 Q 400 620 300 620 L 100 620 Q 50 620 50 570 L 50 350 Q 50 300 100 300 L 100 310" stroke="#aaa" stroke-width="2" fill="none" stroke-dasharray="8, 4"/>
+    <text x="50" y="615" class="data-text" font-size="12px">Iterate (Rounds)</text>
+     <path d="M 700 590 Q 750 620 800 620 L 900 620 Q 950 620 950 570 L 950 350 Q 950 300 900 300 L 900 310" stroke="#aaa" stroke-width="2" fill="none" stroke-dasharray="8, 4"/>
+    <polygon points="90 310, 110 310, 100 300" fill="#aaa" /> <!-- Arrow head for loop -->
+    <polygon points="890 310, 910 310, 900 300" fill="#aaa" /> <!-- Arrow head for loop -->
+
+     <!-- Asymmetric Evolution Note -->
+    <text x="500" y="610" class="data-text" font-size="11px" fill="#D35400">(Note: Asymmetric Evolution S(n) vs C(n-1) may be used)</text>
+
+
+   <!-- Phase 3: Application -->
+   <rect x="50" y="670" width="900" height="100" fill="#e8f0ff" rx="10" ry="10" stroke="#ccc"/>
+   <text x="500" y="695" class="phase">Phase 3: Application</text>
+
+   <rect x="150" y="710" width="200" height="50" class="box actor-crit" />
+   <text x="250" y="735" class="box-text">Evolved SPC (Cn)</text>
+
+   <line x1="350" y1="735" x2="450" y2="735" class="arrow" />
+
+   <rect x="450" y="710" width="400" height="50" class="box process" />
+   <text x="650" y="730" class="box-text"><tspan x="650" dy="0em">Guide LLM Test-Time Search</tspan><tspan x="650" dy="1.2em" class="data-text">(Verify each step -> Regenerate if incorrect)</tspan></text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The lack of high-quality, costly manual step-level annotations for evaluating reasoning steps.">
+                        <div class="quiz-question">1. What is the primary challenge SPC aims to address regarding LLM reasoning evaluation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The difficulty in obtaining diverse datasets for training LLMs.">The difficulty in obtaining diverse datasets for training LLMs.</div><div class="quiz-choice" data-value="The lack of high-quality, costly manual step-level annotations for evaluating reasoning steps.">The lack of high-quality, costly manual step-level annotations for evaluating reasoning steps.</div><div class="quiz-choice" data-value="The inability of LLMs to generate Chain-of-Thought reasoning processes.">The inability of LLMs to generate Chain-of-Thought reasoning processes.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A sneaky generator creating errors and a critic detecting errors.">
+                        <div class="quiz-question">2. In the SPC framework's adversarial game, what are the two main roles played by fine-tuned copies of a base model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A problem solver and a solution validator.">A problem solver and a solution validator.</div><div class="quiz-choice" data-value="A question generator and an answer generator.">A question generator and an answer generator.</div><div class="quiz-choice" data-value="A sneaky generator creating errors and a critic detecting errors.">A sneaky generator creating errors and a critic detecting errors.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By allowing the LLM to abandon and regenerate incorrect steps identified by the critic.">
+                        <div class="quiz-question">3. How does SPC primarily improve LLM reasoning performance during test-time search?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By pre-calculating the final answer before the LLM starts reasoning.">By pre-calculating the final answer before the LLM starts reasoning.</div><div class="quiz-choice" data-value="By allowing the LLM to abandon and regenerate incorrect steps identified by the critic.">By allowing the LLM to abandon and regenerate incorrect steps identified by the critic.</div><div class="quiz-choice" data-value="By providing outcome-level scores for entire solutions.">By providing outcome-level scores for entire solutions.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
