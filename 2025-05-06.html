@@ -1,0 +1,1046 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-05-06 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-05-06 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Voila: Voice-Language Foundation Models for Real-Time Autonomous
+  Interaction and Voice Role-Play</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.02707" target="_blank">http://arxiv.org/pdf/2505.02707</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Voice-language foundation models for real-time autonomous interaction and voice role-play, focusing on AI-human voice communication.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on traditional pipeline systems (like Siri, Alexa) and end-to-end audio-language models, introducing new full-duplex architecture enabling simultaneous listening and speaking with voice customization capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing limitations of current voice AI systems including high latency, loss of vocal nuances, and rigid turn-based interactions that prevent natural, autonomous conversations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implemented hierarchical Transformer architecture with streaming audio encoding, multi-scale Transformers consisting of LLM backbone and hierarchical audio generator, trained end-to-end with extensive audio-text data.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 195ms response latency (faster than human average), outperformed baselines in ASR (2.7% WER) and TTS (2.8% WER) tasks, and demonstrated superior performance on the Voila Benchmark across multiple domains.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Voila: Voice-Language Foundation Models for Real-Time Autonomous
+  Interaction and Voice Role-Play</h2>
+                        <svg width="100%" viewBox="0 0 1000 850" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 28px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .subtitle { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #34495e; }
+      .block-text { font-family: 'Arial', sans-serif; font-size: 13px; fill: #333; text-anchor: middle; dominant-baseline: middle;}
+      .small-text { font-family: 'Arial', sans-serif; font-size: 11px; fill: #555; text-anchor: middle; dominant-baseline: middle;}
+      .arrow-line { stroke: #7f8c8d; stroke-width: 2; fill: none; }
+      .data-flow { stroke: #3498db; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead); }
+      .data-flow-thin { stroke: #5dade2; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead-small); }
+      .dashed-line { stroke: #95a5a6; stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3498db"/>
+    </marker>
+    <marker id="arrowhead-small" markerWidth="8" markerHeight="5.6" refX="0" refY="2.8" orient="auto">
+      <polygon points="0 0, 8 2.8, 0 5.6" fill="#5dade2"/>
+    </marker>
+    <linearGradient id="gradInput" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#A7F3D0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6EE7B7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradProc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#BFDBFE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#93C5FD;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradModel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FEF9C3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FDE68A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradTokenizer" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#DDD6FE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C4B5FD;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradOutput" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#A7F3D0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6EE7B7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="850" fill="#F8F9FA"/>
+
+  <text x="500" y="40" class="title">Voila: Methodological Flow (Voila-e2e)</text>
+
+  <!-- Inputs Section -->
+  <g id="inputs">
+    <rect x="50" y="80" width="180" height="60" rx="10" ry="10" fill="url(#gradInput)"/>
+    <text x="140" y="110" class="block-text">User Speech</text>
+
+    <rect x="50" y="160" width="180" height="60" rx="10" ry="10" fill="url(#gradInput)"/>
+    <text x="140" y="180" class="block-text">Text Instructions</text>
+    <text x="140" y="200" class="small-text">(e.g., Persona)</text>
+
+    <rect x="50" y="240" width="180" height="60" rx="10" ry="10" fill="url(#gradInput)"/>
+    <text x="140" y="260" class="block-text">Audio Sample</text>
+    <text x="140" y="280" class="small-text">(Voice Reference)</text>
+  </g>
+
+  <!-- Initial Processing -->
+  <g id="initial-processing">
+    <rect x="280" y="80" width="180" height="60" rx="10" ry="10" fill="url(#gradProc)"/>
+    <text x="370" y="110" class="block-text">Streaming Audio Encoder</text>
+    <path d="M230,110 H270" class="data-flow"/>
+
+    <rect x="280" y="240" width="180" height="60" rx="10" ry="10" fill="url(#gradProc)"/>
+    <text x="370" y="260" class="block-text">Wespeaker</text>
+    <text x="370" y="280" class="small-text">(Speaker Encoder)</text>
+    <path d="M230,270 H270" class="data-flow"/>
+  </g>
+
+  <!-- Tokenization & Embedding -->
+  <g id="tokenization-embedding">
+    <rect x="500" y="80" width="200" height="100" rx="10" ry="10" fill="url(#gradTokenizer)"/>
+    <text x="600" y="105" class="block-text">Voila Tokenizer (Encoder)</text>
+    <text x="600" y="130" class="small-text">Audio Signal → Discrete Tokens</text>
+    <text x="600" y="150" class="small-text">L1 RVQ: Semantic</text>
+    <text x="600" y="165" class="small-text">L2-L4 RVQ: Acoustic</text>
+    <path d="M460,110 C480,110 480,130 500,130" class="data-flow"/>
+
+    <ellipse cx="600" cy="270" rx="90" ry="30" fill="#E9D5FF"/>
+    <text x="600" y="270" class="block-text">Voice Embedding</text>
+    <path d="M460,270 H500" class="data-flow"/>
+
+    <ellipse cx="370" cy="190" rx="90" ry="30" fill="#E9D5FF"/>
+    <text x="370" y="190" class="block-text">Text Tokens</text>
+    <path d="M230,190 H270" class="data-flow-thin"/>
+  </g>
+
+  <!-- Core Model Section -->
+  <rect x="250" y="330" width="500" height="280" rx="15" ry="15" fill="#FFF9Db" stroke="#FDBA74" stroke-width="2"/>
+  <text x="500" y="355" class="subtitle">Core Model: Hierarchical Multi-scale Transformer</text>
+
+  <g id="core-model">
+    <rect x="300" y="380" width="400" height="50" rx="8" ry="8" fill="url(#gradProc)"/>
+    <text x="500" y="405" class="block-text">Input Formatting & Alignment</text>
+    <text x="500" y="420" class="small-text">(Interleaved Text & Audio Tokens, Embeddings)</text>
+    <!-- Arrows to Input Formatting -->
+    <path d="M600,180 V370 H520" class="data-flow-thin"/> <!-- From Voila Tokenizer -->
+    <path d="M370,220 V370 H480" class="data-flow-thin"/> <!-- From Text Tokens -->
+    <path d="M600,300 V370 H500" class="data-flow-thin"/> <!-- From Voice Embedding -->
+
+
+    <rect x="300" y="450" width="400" height="70" rx="8" ry="8" fill="url(#gradModel)"/>
+    <text x="500" y="475" class="block-text">Voice-Language LLM Backbone</text>
+    <text x="500" y="495" class="small-text">Processes Semantic Info</text>
+    <text x="500" y="510" class="small-text">Conditioned by Persona & Voice Embedding</text>
+    <path d="M500,430 V450" class="data-flow"/>
+
+    <rect x="300" y="540" width="400" height="50" rx="8" ry="8" fill="url(#gradModel)"/>
+    <text x="500" y="565" class="block-text">Audio Transformer</text>
+    <text x="500" y="580" class="small-text">(Hierarchical Audio Generator)</text>
+    <path d="M500,520 V540" class="data-flow"/>
+  </g>
+
+  <!-- Output Generation -->
+  <g id="output-generation">
+    <ellipse cx="600" cy="650" rx="100" ry="30" fill="#E9D5FF"/>
+    <text x="600" y="650" class="block-text">Predicted Audio Tokens</text>
+    <path d="M500,590 V620 C500,620 520,635 600,635" class="data-flow"/>
+
+
+    <rect x="750" y="450" width="200" height="100" rx="10" ry="10" fill="url(#gradTokenizer)"/>
+    <text x="850" y="475" class="block-text">Voila Tokenizer (Decoder)</text>
+    <text x="850" y="500" class="small-text">Discrete Tokens → Audio Signal</text>
+    <text x="850" y="520" class="small-text">Reconstructs from</text>
+    <text x="850" y="535" class="small-text">Semantic & Acoustic Tokens</text>
+    <path d="M600,665 C650,665 700,600 750,500" class="data-flow"/>
+
+
+    <rect x="750" y="80" width="180" height="60" rx="10" ry="10" fill="url(#gradOutput)"/>
+    <text x="840" y="110" class="block-text">Voice Response</text>
+    <path d="M850,450 V140 H840" class="data-flow"/>
+  </g>
+
+  <!-- Voila-autonomous Annotation -->
+  <rect x="50" y="690" width="900" height="130" rx="15" ry="15" fill="#E0F2F7" stroke="#76D7C4" stroke-width="2"/>
+  <text x="500" y="715" class="subtitle">Voila-autonomous Extension: Full-Duplex Interaction</text>
+
+  <rect x="80" y="740" width="200" height="50" rx="8" ry="8" fill="url(#gradProc)"/>
+  <text x="180" y="765" class="block-text">User Audio Stream Processing</text>
+  <text x="180" y="780" class="small-text">(Tokenize & Embed)</text>
+
+  <rect x="330" y="740" width="200" height="50" rx="8" ry="8" fill="url(#gradProc)"/>
+  <text x="430" y="755" class="block-text">Voila's Own Audio Stream</text>
+  <text x="430" y="770" class="block-text">Processing</text>
+  <text x="430" y="785" class="small-text">(Tokenize & Embed)</text>
+
+  <rect x="580" y="740" width="150" height="50" rx="8" ry="8" fill="#FAD7A0"/>
+  <text x="655" y="765" class="block-text">Fuse Embeddings</text>
+  <text x="655" y="780" class="small-text">(e.g., Averaging)</text>
+
+  <text x="830" y="765" class="block-text">→ To LLM Backbone</text>
+  <text x="830" y="780" class="small-text">(Then similar flow as above)</text>
+
+  <path d="M280,765 H320" class="data-flow-thin"/>
+  <path d="M530,765 H570" class="data-flow-thin"/>
+  <path d="M730,765 H780" class="data-flow-thin"/>
+
+  <!-- Legend (Optional) -->
+  <!--
+  <g id="legend" transform="translate(750, 630)">
+    <text x="0" y="0" class="subtitle" style="font-size:14px;">Legend</text>
+    <rect x="0" y="15" width="15" height="15" fill="url(#gradInput)"/>
+    <text x="20" y="27" class="small-text" text-anchor="start">Input/Output</text>
+    <rect x="0
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="They suffer from high latency and lose rich vocal nuances like emotion and tone.">
+                        <div class="quiz-question">1. What is one major limitation of traditional pipeline voice AI systems (like older Siri/Alexa) that Voila attempts to overcome?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They are unable to process simple voice commands.">They are unable to process simple voice commands.</div><div class="quiz-choice" data-value="They suffer from high latency and lose rich vocal nuances like emotion and tone.">They suffer from high latency and lose rich vocal nuances like emotion and tone.</div><div class="quiz-choice" data-value="They cannot be connected to the internet for information retrieval.">They cannot be connected to the internet for information retrieval.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A structured interleaved alignment where each semantic unit of text is paired with its corresponding audio tokens.">
+                        <div class="quiz-question">2. Voila introduces a method to better align text and audio during generation. What is this method called?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A rigid, sequential text-first generation process.">A rigid, sequential text-first generation process.</div><div class="quiz-choice long-text" data-value="A structured interleaved alignment where each semantic unit of text is paired with its corresponding audio tokens.">A structured interleaved alignment where each semantic unit of text is paired with its corresponding audio tokens.</div><div class="quiz-choice" data-value="Relying solely on text prediction and converting the full text to speech afterwards.">Relying solely on text prediction and converting the full text to speech afterwards.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By allowing users to use text instructions and provide a brief audio sample to learn a voice embedding.">
+                        <div class="quiz-question">3. Voila highlights its capability for voice role-play and interaction customization. How does it allow users to define speaker characteristics and voice?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By requiring users to train a new model from scratch for each voice.">By requiring users to train a new model from scratch for each voice.</div><div class="quiz-choice long-text" data-value="By allowing users to use text instructions and provide a brief audio sample to learn a voice embedding.">By allowing users to use text instructions and provide a brief audio sample to learn a voice embedding.</div><div class="quiz-choice" data-value="By limiting users to a small, predefined set of generic voices.">By limiting users to a small, predefined set of generic voices.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>RM-R1: Reward Modeling as Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.02387" target="_blank">http://arxiv.org/pdf/2505.02387</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces RM-R1, a new approach to reward modeling for large language models that frames it as a reasoning task, focusing on improving model evaluation and preference learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing scalar-based and generative reward models, it proposes a novel approach of integrating explicit reasoning capabilities into reward modeling through Chain-of-Rubrics prompting and structured evaluation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of interpretability and reliability in current reward models, which either produce opaque scalar scores or generate superficial judgments without deep reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a two-stage training pipeline: first distilling high-quality reasoning traces from teacher models, then applying reinforcement learning with verifiable rewards (RLVR), while implementing a Chain-of-Rubrics framework for structured evaluation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> RM-R1 achieved state-of-the-art or near state-of-the-art performance across multiple benchmarks (RewardBench, RM-Bench, RMB), outperforming larger models like Llama3.1-405B and GPT-4o by up to 13.8% in accuracy while providing more interpretable judgments.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>RM-R1: Reward Modeling as Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+    <defs>
+        <style>
+            .title-text { font-size: 24px; font-weight: bold; fill: white; }
+            .stage-title-text { font-size: 18px; font-weight: bold; fill: #333; }
+            .main-text { font-size: 14px; fill: #333; }
+            .detail-text { font-size: 12px; fill: #444; }
+            .sub-detail-text { font-size: 11px; fill: #555; }
+            .box-shadow {
+                filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.2));
+            }
+        </style>
+    </defs>
+
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f4f7f9"/>
+
+    <!-- Main Title Box -->
+    <rect x="100" y="20" width="800" height="50" rx="10" ry="10" fill="#4A90E2" class="box-shadow"/>
+    <text x="500" y="45" text-anchor="middle" class="title-text">RM-R1: Reward Modeling as Reasoning - Method Flowchart</text>
+
+    <!-- Starting Models Section -->
+    <rect x="50" y="90" width="430" height="110" rx="10" ry="10" fill="#F5A623" class="box-shadow"/>
+    <text x="265" y="110" text-anchor="middle" class="stage-title-text">Start: Instruction-Tuned LLM</text>
+    <text x="265" y="135" text-anchor="middle" class="main-text">
+        <tspan x="265" dy="0em">(e.g., Qwen-2.5-Instruct)</tspan>
+        <tspan x="265" dy="1.2em">Lacks specialized reward modeling</tspan>
+        <tspan x="265" dy="1.2em">reasoning capabilities.</tspan>
+    </text>
+
+    <rect x="520" y="90" width="430" height="110" rx="10" ry="10" fill="#F5A623" class="box-shadow"/>
+    <text x="735" y="110" text-anchor="middle" class="stage-title-text">Start: Existing Reasoning Model</text>
+    <text x="735" y="135" text-anchor="middle" class="main-text">
+        <tspan x="735" dy="0em">(e.g., DeepSeek-R1-distilled)</tspan>
+        <tspan x="735" dy="1.2em">Already has strong reasoning</tspan>
+        <tspan x="735" dy="1.2em">capabilities from prior distillation.</tspan>
+    </text>
+
+    <!-- Arrow from Instruction-Tuned to Distillation -->
+    <line x1="265" y1="200" x2="265" y2="230" stroke="#333" stroke-width="2"/>
+    <polygon points="260,225 270,225 265,235" fill="#333"/>
+
+    <!-- Stage 1: Distillation (Only for Instruction-Tuned Models) -->
+    <rect x="50" y="240" width="430" height="160" rx="10" ry="10" fill="#7ED321" class="box-shadow"/>
+    <text x="265" y="260" text-anchor="middle" class="stage-title-text">Stage 1: Distillation of Reasoning Trace</text>
+    <text x="70" y="285" class="detail-text" text-anchor="start">
+        <tspan x="70" dy="0em">- Goal: Bootstrap reasoning ability for reward modeling.</tspan>
+        <tspan x="70" dy="1.3em">- Subsample preference data D_sub from D.</tspan>
+        <tspan x="70" dy="1.3em">- Synthesize high-quality structured reasoning traces (r)</tspan>
+        <tspan x="90" dy="1.2em">using Oracle Models (e.g., Claude, O3).</tspan>
+        <tspan x="70" dy="1.3em">- Construct ground truth: y_trace = r ⊕ preferred_response.</tspan>
+        <tspan x="70" dy="1.3em">- Create distillation dataset D_distill.</tspan>
+        <tspan x="70" dy="1.3em">- Fine-tune model via NLL loss on D_distill.</tspan>
+    </text>
+    <text x="265" y="385" text-anchor="middle" class="main-text" font-weight="bold">Output: Distilled REAS RM</text>
+
+    <!-- Arrow from Distillation to RL Stage -->
+    <line x1="265" y1="400" x2="265" y2="425" stroke="#333" stroke-width="2"/>
+    <line x1="265" y1="425" x2="480" y2="425" stroke="#333" stroke-width="2"/>
+    <polygon points="475,420 475,430 485,425" fill="#333"/>
+
+    <!-- Arrow from Existing Reasoning Model to RL Stage -->
+    <line x1="735" y1="200" x2="735" y2="425" stroke="#333" stroke-width="2"/>
+    <line x1="735" y1="425" x2="515" y2="425" stroke="#333" stroke-width="2"/>
+    <polygon points="520,420 520,430 510,425" fill="#333"/>
+
+    <!-- Stage 2: Reinforcement Learning (RL) Training -->
+    <rect x="100" y="440" width="800" height="240" rx="10" ry="10" fill="#BD10E0" class="box-shadow"/>
+    <text x="500" y="460" text-anchor="middle" class="stage-title-text" fill="white">Stage 2: Reinforcement Learning with Verifiable Rewards (RLVR)</text>
+    <text x="500" y="480" text-anchor="middle" class="detail-text" fill="white">Objective: max E[R(x,j)] - βDKL(r_θ || r_ref)</text>
+
+    <!-- RL Sub-components -->
+    <rect x="120" y="500" width="240" height="160" rx="8" ry="8" fill="#e9cffc"/>
+    <text x="240" y="515" text-anchor="middle" class="main-text" font-weight="bold">1. Chain-of-Rubrics (CoR) Rollout</text>
+    <text x="130" y="535" class="sub-detail-text" text-anchor="start">
+        <tspan x="130" dy="0em">- System Prompts (elicit reasoning):</tspan>
+        <tspan x="140" dy="1.2em">• Instruct Models: Fig 3 (Detailed)</tspan>
+        <tspan x="140" dy="1.2em">• Reasoning Models: Fig 4 (Simpler)</tspan>
+        <tspan x="130" dy="1.5em">- Task Classification (for Instruct Models):</tspan>
+        <tspan x="140" dy="1.2em">• Chat: Gen. Rubrics, Justify,</tspan>
+        <tspan x="140" dy="1.2em">  Eval based on Rubrics, Answer.</tspan>
+        <tspan x="140" dy="1.2em">• Reasoning: Self-Solve (gen. </tspan>
+        <tspan x="140" dy="1.2em">  &lt;solution&gt;), Eval, Answer.</tspan>
+    </text>
+
+    <rect x="380" y="500" width="240" height="160" rx="8" ry="8" fill="#e9cffc"/>
+    <text x="500" y="515" text-anchor="middle" class="main-text" font-weight="bold">2. Reward Design</text>
+    <text x="390" y="535" class="sub-detail-text" text-anchor="start">
+        <tspan x="390" dy="0em">- Focus: Correctness-based.</tspan>
+        <tspan x="390" dy="1.5em">- R(x, j | ya, yb) =</tspan>
+        <tspan x="400" dy="1.2em">  +1, if predicted label (l̂) = true label (l)</tspan>
+        <tspan x="400" dy="1.2em">  -1, otherwise.</tspan>
+        <tspan x="390" dy="1.5em">- Simplified from DeepSeek-R1,</tspan>
+        <tspan x="390" dy="1.2em">  omits format reward for efficiency.</tspan>
+    </text>
+
+    <rect x="640" y="500" width="240" height="160" rx="8" ry="8" fill="#e9cffc"/>
+    <text x="760" y="515" text-anchor="middle" class="main-text" font-weight="bold">3. Group Relative Policy Opt. (GRPO)</text>
+    <text x="650" y="535" class="sub-detail-text" text-anchor="start">
+        <tspan x="650" dy="0em">- PPO Variant.</tspan>
+        <tspan x="650" dy="1.5em">- No explicit value function needed.</tspan>
+        <tspan x="650" dy="1.5em">- Baseline: Average reward of multiple</tspan>
+        <tspan x="650" dy="1.2em">  sampled outputs for the same prompt.</tspan>
+        <tspan x="650" dy="1.5em">- Optimizes policy by maximizing</tspan>
+        <tspan x="650" dy="1.2em">  GRPO objective (Eq. 7).</tspan>
+    </text>
+
+    <!-- Arrow from RL Stage to Final Output -->
+    <line x1="500" y1="680" x2="500" y2="700" stroke="#333" stroke-width="2"/>
+    <polygon points="495,695 505,695 500,705" fill="#333"/>
+
+    <!-- Final Output Box -->
+    <rect x="100" y="710" width="800" height="70" rx="10" ry="10" fill="#4A90E2" class="box-shadow"/>
+    <text x="500" y="730" text-anchor="middle" class="stage-title-text" fill="white">Final Output: RM-R1 Model Family (7B to 32B)</text>
+    <text x="500" y="755" text-anchor="middle" class="main-text" fill_opacity="0.9" fill="white">
+        <tspan>Achieves SOTA performance, highly interpretable reasoning traces,</tspan>
+        <tspan x="500" dy="1.2em">outperforms larger open-weight and proprietary models.</tspan>
+    </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="They often produce opaque scalar scores or superficial judgments, lacking interpretability and deep reasoning.">
+                        <div class="quiz-question">1. According to the paper, what is a major limitation of existing reward models that RM-R1 aims to overcome?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They can only process text data, not multimodal inputs.">They can only process text data, not multimodal inputs.</div><div class="quiz-choice long-text" data-value="They often produce opaque scalar scores or superficial judgments, lacking interpretability and deep reasoning.">They often produce opaque scalar scores or superficial judgments, lacking interpretability and deep reasoning.</div><div class="quiz-choice" data-value="They require an excessive amount of human feedback data compared to RM-R1.">They require an excessive amount of human feedback data compared to RM-R1.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Distillation of high-quality reasoning chains followed by reinforcement learning with verifiable rewards.">
+                        <div class="quiz-question">2. The training pipeline for RM-R1 involves two key stages. What are they?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Supervised fine-tuning on human preferences followed by active learning.">Supervised fine-tuning on human preferences followed by active learning.</div><div class="quiz-choice long-text" data-value="Distillation of high-quality reasoning chains followed by reinforcement learning with verifiable rewards.">Distillation of high-quality reasoning chains followed by reinforcement learning with verifiable rewards.</div><div class="quiz-choice" data-value="Pre-training on a large text corpus followed by direct preference optimization (DPO).">Pre-training on a large text corpus followed by direct preference optimization (DPO).</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Larger model sizes and increased inference-time computation budgets lead to greater performance improvements.">
+                        <div class="quiz-question">3. Based on the paper's analysis (Section 5), how does scaling affect RM-R1's performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Scaling has minimal impact on reasoning reward models, unlike traditional LLMs.">Scaling has minimal impact on reasoning reward models, unlike traditional LLMs.</div><div class="quiz-choice long-text" data-value="Larger model sizes and increased inference-time computation budgets lead to greater performance improvements.">Larger model sizes and increased inference-time computation budgets lead to greater performance improvements.</div><div class="quiz-choice long-text" data-value="Scaling primarily benefits the model's ability to generate rubrics but not its final judgment accuracy.">Scaling primarily benefits the model's ability to generate rubrics but not its final judgment accuracy.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Practical Efficiency of Muon for Pretraining</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-04</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.02222" target="_blank">http://arxiv.org/pdf/2505.02222</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores the practical efficiency of Muon, a second-order optimizer, for pretraining large language models, in the domain of machine learning optimization.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research on AdamW optimizer and maximal update parameterization (muP), the paper proposes using Muon as a more efficient alternative and introduces a novel "telescoping" algorithm for hyperparameter tuning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve two practical challenges in language model pretraining: finding an optimizer that delivers the best tradeoff between compute and time resources, and developing an efficient way to tune that optimizer without excessive computational cost.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors conducted extensive experiments comparing Muon and AdamW across different model sizes (100M-4B parameters), analyzed compute-time tradeoffs using Pareto frontiers, and implemented a telescoping algorithm for hyperparameter optimization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results showed that Muon expands AdamW's Pareto frontier on the compute-time plane, requires 10-15% fewer tokens to reach identical loss, maintains efficiency at large batch sizes, and successfully works with muP for hyperparameter transfer up to 3.7B-parameter models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Practical Efficiency of Muon for Pretraining</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <defs>
+        <style type="text/css">
+            <![CDATA[
+                .titleText { font-family: Arial, Helvetica, sans-serif; font-size: 24px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+                .sectionHeaderText { font-family: Arial, Helvetica, sans-serif; font-size: 20px; font-weight: bold; text-anchor: middle; }
+                .blockTitleText { font-family: Arial, Helvetica, sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+                .blockBodyText { font-family: Arial, Helvetica, sans-serif; font-size: 13px; text-anchor: middle; }
+                .blockBodyTextSmall { font-family: Arial, Helvetica, sans-serif; font-size: 12px; text-anchor: middle; }
+            ]]>
+        </style>
+    </defs>
+
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa"/>
+
+    <!-- Main Title -->
+    <text x="500" y="40" class="titleText">Paper Methodology: Practical Efficiency of Muon for Pretraining</text>
+
+    <!-- Part 1: Muon vs. AdamW -->
+    <g id="part1">
+        <rect x="50" y="75" width="900" height="40" fill="#a9d6e5" rx="10" ry="10"/>
+        <text x="500" y="100" class="sectionHeaderText" fill="#013a63">Part 1: Muon vs. AdamW - Compute-Time Tradeoff</text>
+
+        <!-- Step 1.1: Define Muon -->
+        <g class="step_p1_1">
+            <rect x="70" y="130" width="860" height="70" fill="#e0f3f8" stroke="#61a5c2" stroke-width="2" rx="8" ry="8"/>
+            <text x="500" y="150" class="blockTitleText" fill="#01497c">1. Define Muon Optimizer</text>
+            <text x="500" y="170" class="blockBodyText" fill="#014f86">
+                <tspan x="500" dy="0em">Core: Matrix Steepest Descent, Spectral Norm Regularization, SVD-based Update (`Ot = UV^T`)</tspan>
+                <tspan x="500" dy="1.3em">Practice: Newton-Schulz iteration, Nesterov Momentum, LR Scaling, Weight Decay.</tspan>
+            </text>
+        </g>
+
+        <!-- Step 1.2: Experimental Setup -->
+        <g class="step_p1_2">
+            <rect x="70" y="210" width="860" height="55" fill="#e0f3f8" stroke="#61a5c2" stroke-width="2" rx="8" ry="8"/>
+            <text x="500" y="230" class="blockTitleText" fill="#01497c">2. Experimental Setup</text>
+            <text x="500" y="250" class="blockBodyText" fill="#014f86">Models (Transformers ≤4B), Data (Text/Code), Optimizers (Muon/AdamW), TPU v5p.</text>
+        </g>
+
+        <!-- Step 1.3: Compute-Time Tradeoff Study -->
+        <g class="step_p1_3">
+            <rect x="70" y="275" width="860" height="65" fill="#e0f3f8" stroke="#61a5c2" stroke-width="2" rx="8" ry="8"/>
+            <text x="500" y="295" class="blockTitleText" fill="#01497c">3. Compute-Time Tradeoff Study</text>
+            <text x="500" y="315" class="blockBodyText" fill="#014f86">
+                <tspan x="500" dy="0em">Method: Plot Iso-loss frontiers (Time vs. #Devices/Batch Size for 500M models).</tspan>
+                <tspan x="500" dy="1.3em">Finding: Muon expands Pareto frontier over AdamW.</tspan>
+            </text>
+        </g>
+
+        <!-- Step 1.4: Relative Data Efficiency -->
+        <g class="step_p1_4">
+            <rect x="70" y="350" width="860" height="65" fill="#e0f3f8" stroke="#61a5c2" stroke-width="2" rx="8" ry="8"/>
+            <text x="500" y="370" class="blockTitleText" fill="#01497c">4. Relative Data Efficiency Analysis</text>
+            <text x="500" y="390" class="blockBodyText" fill="#014f86">
+                <tspan x="500" dy="0em">Metric: Token Ratio `RL(B) = TL,A(B) / TL,M(B)` for 1B model.</tspan>
+                <tspan x="500" dy="1.3em">Finding: `RL(B) > 1` & non-decreasing (Muon more data-efficient at large batches).</tspan>
+            </text>
+        </g>
+    </g>
+
+    <!-- Part 2: Hyperparameter Tuning -->
+    <g id="part2">
+        <rect x="50" y="430" width="900" height="40" fill="#cce8cc" rx="10" ry="10"/>
+        <text x="500" y="455" class="sectionHeaderText" fill="#1b4332">Part 2: Hyperparameter Tuning for Muon</text>
+
+        <!-- Step 2.1: Leverage muP -->
+        <g class="step_p2_1">
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Muon explicitly expands the Pareto frontier over AdamW, offering more flexible resource allocation options.">
+                        <div class="quiz-question">1. According to the paper, what is the main advantage of Muon over AdamW demonstrated through the compute-time tradeoff analysis?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Muon significantly reduces the total number of FLOPs required for training compared to AdamW.">Muon significantly reduces the total number of FLOPs required for training compared to AdamW.</div><div class="quiz-choice long-text" data-value="Muon explicitly expands the Pareto frontier over AdamW, offering more flexible resource allocation options.">Muon explicitly expands the Pareto frontier over AdamW, offering more flexible resource allocation options.</div><div class="quiz-choice" data-value="Muon achieves lower training loss than AdamW but only at the cost of much longer training times.">Muon achieves lower training loss than AdamW but only at the cost of much longer training times.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Muon maintains better data efficiency than AdamW in the large batch size regime, requiring fewer tokens to reach the same loss.">
+                        <div class="quiz-question">2. What is the key mechanism identified in the paper that allows Muon to outperform AdamW, especially at large batch sizes?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Muon uses a novel method to automatically adjust the learning rate based on the gradient magnitude, unlike AdamW.">Muon uses a novel method to automatically adjust the learning rate based on the gradient magnitude, unlike AdamW.</div><div class="quiz-choice long-text" data-value="Muon maintains better data efficiency than AdamW in the large batch size regime, requiring fewer tokens to reach the same loss.">Muon maintains better data efficiency than AdamW in the large batch size regime, requiring fewer tokens to reach the same loss.</div><div class="quiz-choice long-text" data-value="Muon parallelizes gradient computation across devices more effectively than AdamW, leading to faster wall-clock time.">Muon parallelizes gradient computation across devices more effectively than AdamW, leading to faster wall-clock time.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="To efficiently manage errors and conduct hyperparameter tuning using muP across different model scales.">
+                        <div class="quiz-question">3. The paper introduces a "telescoping" algorithm primarily for what purpose in the context of pretraining with Muon?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce the memory footprint of large models during training by compressing weights.">To reduce the memory footprint of large models during training by compressing weights.</div><div class="quiz-choice long-text" data-value="To efficiently manage errors and conduct hyperparameter tuning using muP across different model scales.">To efficiently manage errors and conduct hyperparameter tuning using muP across different model scales.</div><div class="quiz-choice" data-value="To automatically determine the optimal number of training steps required for convergence.">To automatically determine the optimal number of training steps required for convergence.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
