@@ -1,0 +1,1041 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-05-08 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-05-08 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>ReplaceMe: Network Simplification via Layer Pruning and Linear
+  Transformations</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.02819" target="_blank">http://arxiv.org/pdf/2505.02819</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents ReplaceMe, a training-free network pruning method for large language models (LLMs) and transformer architectures.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous pruning techniques that require retraining/fine-tuning, this paper proposes a novel approach of replacing transformer blocks with linear transformations without needing additional training.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of making large language models more efficient and accessible by reducing their size while maintaining performance, without requiring computationally expensive retraining.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method identifies redundant transformer blocks using cosine distance metrics, replaces them with optimized linear transformations estimated from a small calibration dataset, and merges these transformations with remaining model parameters.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> ReplaceMe achieved up to 25% model compression while retaining 90% of original performance across various benchmarks, outperforming other training-free approaches and remaining competitive with methods requiring retraining, while using significantly less computational resources.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ReplaceMe: Network Simplification via Layer Pruning and Linear
+  Transformations</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFD3B6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFAAA5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#A8D8EA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A8E6CF;stop-opacity:1" />
+    </linearGradient>
+     <linearGradient id="gradTitle" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6A11CB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2575FC;stop-opacity:1" />
+    </linearGradient>
+    <filter id="dropshadow" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style type="text/css">
+      .box {
+        stroke: #555;
+        stroke-width: 1.5;
+        rx: 15;
+        ry: 15;
+        filter: url(#dropshadow);
+      }
+      .titleText {
+        font-family: 'Arial', sans-serif;
+        font-size: 28px;
+        font-weight: bold;
+        fill: white; /* Changed to white for better contrast on gradient */
+        text-anchor: middle;
+      }
+      .stepText {
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        fill: #333;
+        text-anchor: middle;
+      }
+      .detailText {
+        font-family: 'Arial', sans-serif;
+        font-size: 11px;
+        fill: #444;
+        text-anchor: middle;
+      }
+      .connector {
+        stroke: #666;
+        stroke-width: 2;
+        fill: none;
+      }
+      .arrowHead {
+        fill: #666;
+      }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f4f7f6"/>
+
+  <!-- Title -->
+  <rect x="50" y="20" width="900" height="50" fill="url(#gradTitle)" class="box" />
+  <text x="500" y="55" class="titleText">ReplaceMe: Methodology Flowchart</text>
+
+  <!-- Inputs -->
+  <g id="inputs">
+    <rect x="100" y="90" width="380" height="80" fill="#A8E6CF" class="box"/>
+    <text x="290" y="115" class="stepText">Inputs</text>
+    <text x="290" y="135" class="detailText">1. Transformer Model (LLM, ViT)</text>
+    <text x="290" y="150" class="detailText">2. Calibration Dataset (small)</text>
+    <text x="290" y="165" class="detailText">3. `n` (Number of layers to prune in a sequence)</text>
+
+    <rect x="520" y="90" width="380" height="80" fill="#A8E6CF" class="box"/>
+    <text x="710" y="115" class="stepText">Goal</text>
+    <text x="710" y="135" class="detailText">Replace `n` contiguous transformer blocks</text>
+    <text x="710" y="150" class="detailText">with a single Linear Transformation (LT)</text>
+    <text x="710" y="165" class="detailText">without retraining.</text>
+  </g>
+
+  <!-- Step 1: Layer Selection -->
+  <line x1="500" y1="170" x2="500" y2="195" class="connector"/>
+  <polygon points="495,195 505,195 500,205" class="arrowHead"/>
+  <g id="layer_selection">
+    <rect x="250" y="205" width="500" height="70" fill="#A8D8EA" class="box"/>
+    <text x="500" y="225" class="stepText">1. Layer Selection (Sec 2.1)</text>
+    <text x="500" y="245" class="detailText">Identify optimal `n` blocks to prune (from block `i*+1` to `i*+n`).</text>
+    <text x="500" y="260" class="detailText">Method: `i* = argmin_i Distance(L_i, L_{i+n})` using Cosine Distance.</text>
+  </g>
+
+  <!-- Step 2: Activation Collection -->
+  <line x1="500" y1="275" x2="500" y2="300" class="connector"/>
+  <polygon points="495,300 505,300 500,310" class="arrowHead"/>
+  <g id="activation_collection">
+    <rect x="250" y="310" width="500" height="70" fill="#A8D8EA" class="box"/>
+    <text x="500" y="330" class="stepText">2. Activation Collection (for block `i*`)</text>
+    <text x="500" y="350" class="detailText">Using calibration data, extract:</text>
+    <text x="500" y="365" class="detailText">`M_{i*}` (MLP output), `Y_{i*}` (Attention output), `L_{i*+n}` (Target block output)</text>
+  </g>
+
+  <!-- Step 3: Estimate Linear Transformation -->
+  <line x1="500" y1="380" x2="500" y2="405" class="connector"/>
+  <polygon points="495,405 505,405 500,415" class="arrowHead"/>
+  <g id="estimate_lt_container">
+    <rect x="100" y="415" width="800" height="190" fill="#E6E6FA" class="box" rx="20" ry="20"/>
+    <text x="500" y="438" class="stepText" style="font-size:16px; font-weight:bold;">3. Estimate Linear Transformation T* (Sec 2.2)</text>
+    <text x="500" y="458" class="detailText" style="font-style:italic;">Objective: `M_{i*} · T + Y_{i*} ≈ L_{i*+n}`</text>
+
+    <!-- Option A: L2 Distance -->
+    <rect x="130" y="475" width="350" height="110" fill="#FFD3B6" class="box"/>
+    <text x="305" y="492" class="stepText" style="font-size:13px;">Option A: L2-Distance (Analytical)</text>
+    <text x="305" y="512" class="detailText">`T* = (M_{i*}^T M_{i*})^{-1} M_{i*}^T (L_{i*+n} - Y_{i*})`</text>
+    <text x="305" y="532" class="detailText">(Closed-form solution)</text>
+    <text x="305" y="552" class="detailText" style="font-style:italic;">Regularization (Sec 2.3): Optional L2 on T*.</text>
+    <text x="305" y="567" class="detailText" style="font-style:italic;">Improves accuracy, may affect perplexity.</text>
+
+    <!-- Option B: Cosine Distance -->
+    <rect x="520" y="475" width="350" height="110" fill="#FFAAA5" class="box"/>
+    <text x="695" y="492" class="stepText" style="font-size:13px;">Option B: Cosine Distance (Numerical)</text>
+    <text x="695" y="512" class="detailText">`T* = argmin_T cosine_dist(M_{i*}·T, L_{i*+n}-Y_{i*})`</text>
+    <text x="695" y="532" class="detailText">(Simplified form, solved via Adam, etc.)</text>
+    <text x="695" y="552" class="detailText" style="font-style:italic;">Regularization (Sec 2.3): Optional L1/L2 on T*.</text>
+    <text x="695" y="567" class="detailText" style="font-style:italic;">Improves accuracy, may affect perplexity.</text>
+  </g>
+
+  <!-- Step 4: Merge T* & Prune -->
+  <line x1="500" y1="605" x2="500" y2="630" class="connector"/>
+  <polygon points="495,630 505,630 500,640" class="arrowHead"/>
+  <g id="merge_prune">
+    <rect x="150" y="640" width="330" height="70" fill="#A8D8EA" class="box"/>
+    <text x="315" y="660" class="stepText">4. Merge T* (Sec 2.2)</text>
+    <text x="315" y="680" class="detailText">Incorporate `T*` into MLP of block `i*`.</text>
+    <text x="315" y="695" class="detailText">(Fuse with 2nd FFN weights, no new params)</text>
+
+    <rect x="520" y="640" width="330" height="70" fill="#A8D8EA" class="box"/>
+    <text x="685" y="660" class="stepText">5. Prune Blocks</text>
+    <text x="685" y="680" class="detailText">Remove transformer blocks</text>
+    <text x="685" y="695" class="detailText">from `i*+1` to `i*+n`.</text>
+  </g>
+
+  <!-- Output -->
+  <line x1="500" y1="710" x2="500" y2="735" class="connector"/>
+  <polygon points="495,735 505,735 500,745" class="arrowHead"/>
+  <g id="output">
+    <rect x="350" y="745" width="300" height="45" fill="#A8E6CF" class="box"/>
+    <text x="500" y="770" class="stepText">Output: Pruned Model</text>
+  </g>
+
+  <!-- Optional: Multiple LTs -->
+  <rect x="70" y="700" width="260" height="70" fill="#FFFACD" class="box" style="stroke-dasharray: 5,5;"/>
+  <text x="200" y="720" class="stepText" style="font-size:12px;">Multiple LTs (Sec 2.4)</text>
+  <text x="200" y="738" class="detailText" style="font-size:10px;">Repeat steps 1-5 for multiple</text>
+  <text x="200" y="750" class="detailText" style="font-size:10px;">non-overlapping block sequences.</text>
+  <path d="M 200 695 Q 150 600 200 505" stroke="#AAA" stroke-width="1.5" fill="none" stroke-dasharray="4 2"/>
+  <polygon points="197,505 203,505 200,498" fill="#AAA"/>
+
+
+</svg>
+
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It replaces transformer blocks with linear transformations using a small calibration dataset without requiring additional training.">
+                        <div class="quiz-question">1. What is the primary distinguishing feature of the ReplaceMe method compared to many existing pruning techniques for LLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It relies heavily on large-scale post-pruning retraining or fine-tuning.">It relies heavily on large-scale post-pruning retraining or fine-tuning.</div><div class="quiz-choice long-text" data-value="It replaces transformer blocks with linear transformations using a small calibration dataset without requiring additional training.">It replaces transformer blocks with linear transformations using a small calibration dataset without requiring additional training.</div><div class="quiz-choice" data-value="It focuses exclusively on unstructured pruning of individual weights rather than entire layers.">It focuses exclusively on unstructured pruning of individual weights rather than entire layers.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Cosine distance">
+                        <div class="quiz-question">2. According to the paper, which distance metric was found to be particularly effective for identifying nearly optimal layers to prune in ReplaceMe's layer selection strategy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="L2 distance">L2 distance</div><div class="quiz-choice" data-value="Manhattan distance">Manhattan distance</div><div class="quiz-choice" data-value="Cosine distance">Cosine distance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="ReplaceMe achieves shorter compression time and lower energy consumption.">
+                        <div class="quiz-question">3. Based on the experimental results presented in the paper (e.g., Figure 1, Table 1), how does ReplaceMe's efficiency compare to the UIDL method?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="ReplaceMe consistently requires significantly more compression time and consumes more energy.">ReplaceMe consistently requires significantly more compression time and consumes more energy.</div><div class="quiz-choice" data-value="ReplaceMe achieves shorter compression time and lower energy consumption.">ReplaceMe achieves shorter compression time and lower energy consumption.</div><div class="quiz-choice" data-value="The computational efficiency of ReplaceMe and UIDL is roughly equivalent.">The computational efficiency of ReplaceMe and UIDL is roughly equivalent.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>RetroInfer: A Vector-Storage Approach for Scalable Long-Context LLM
+  Inference</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.02922" target="_blank">http://arxiv.org/pdf/2505.02922</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A vector-storage system called RetroInfer for efficient inference of large language models (LLMs) with long context windows, in the domain of machine learning systems and LLM optimization.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing work in sparse attention and vector indexing, proposes a novel approach of treating KV cache as a vector storage system with attention-aware vector indexing and buffer management.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The challenge of efficiently handling long-context LLM inference due to GPU memory and bandwidth constraints, particularly in managing the growing key-value (KV) cache.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces wave index (an attention-aware vector index) and wave buffer (a memory management system) that coordinate KV cache placement across GPU and CPU memory, using techniques like tripartite attention approximation and segmented clustering.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves up to 4.5× speedup over full attention within GPU memory limits and up to 10.5× over sparse attention baselines when extending KV cache to CPU memory, while maintaining full-attention-level accuracy across various context lengths and benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>RetroInfer: A Vector-Storage Approach for Scalable Long-Context LLM
+  Inference</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <style>
+      .title { font-size: 24px; font-weight: bold; text-anchor: middle; fill: #1A237E; }
+      .section-title { font-size: 18px; font-weight: bold; text-anchor: middle; fill: #303F9F; }
+      .box-text { font-size: 12px; fill: #212121; }
+      .box-text-small { font-size: 10px; fill: #424242; }
+      .gpu-box { fill: #FFECB3; stroke: #FFA000; stroke-width: 1.5px; }
+
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The increasing memory and bandwidth demands of the Key-Value (KV) cache.">
+                        <div class="quiz-question">1. What is the primary challenge RetroInfer aims to address in long-context LLM inference?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The high computational cost of the Feed-Forward Networks (FFN).">The high computational cost of the Feed-Forward Networks (FFN).</div><div class="quiz-choice" data-value="The increasing memory and bandwidth demands of the Key-Value (KV) cache.">The increasing memory and bandwidth demands of the Key-Value (KV) cache.</div><div class="quiz-choice" data-value="Difficulties in training LLMs with very long sequences.">Difficulties in training LLMs with very long sequences.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A vector storage system.">
+                        <div class="quiz-question">2. RetroInfer reconceptualizes the Key-Value (KV) cache as what type of system to exploit inherent attention sparsity?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A distributed file system.">A distributed file system.</div><div class="quiz-choice" data-value="A vector storage system.">A vector storage system.</div><div class="quiz-choice" data-value="A relational database.">A relational database.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It achieves much higher inference throughput while preserving full-attention-level accuracy.">
+                        <div class="quiz-question">3. According to the evaluation results, what is a key benefit of RetroInfer compared to sparse attention baselines?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It significantly reduces the training time for long-context models.">It significantly reduces the training time for long-context models.</div><div class="quiz-choice" data-value="It achieves much higher inference throughput while preserving full-attention-level accuracy.">It achieves much higher inference throughput while preserving full-attention-level accuracy.</div><div class="quiz-choice" data-value="It requires less CPU memory compared to other offloading methods.">It requires less CPU memory compared to other offloading methods.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>LLaMA-Omni2: LLM-based Real-time Spoken Chatbot with Autoregressive
+  Streaming Speech Synthesis</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.02625" target="_blank">http://arxiv.org/pdf/2505.02625</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents LLaMA-Omni 2, a series of speech language models for real-time spoken chatbots in the domain of human-computer speech interaction.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds upon previous work in native and modular SpeechLMs, proposing a new approach that combines Qwen2.5 models with autoregressive streaming speech synthesis for more natural and efficient speech generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the limitations of traditional cascaded speech interaction systems (high latency, error accumulation, poor paralinguistic information capture) while improving upon existing end-to-end solutions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed a modular architecture combining Qwen2.5 series models with Whisper's encoder and an autoregressive streaming speech decoder, trained on 200K multi-turn speech dialogue samples.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> LLaMA-Omni 2 outperformed previous state-of-the-art models on spoken question answering and speech instruction tasks, achieving better accuracy, lower ASR-WER scores, and maintaining low latency (~600ms) for real-time interaction.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LLaMA-Omni2: LLM-based Real-time Spoken Chatbot with Autoregressive
+  Streaming Speech Synthesis</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+        </marker>
+        <linearGradient id="gradTitle" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#4A148C;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#8E24AA;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="gradData" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#C8E6C9;" />
+            <stop offset="100%" style="stop-color:#A5D6A7;" />
+        </linearGradient>
+        <linearGradient id="gradTraining" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFF9C4;" />
+            <stop offset="100%" style="stop-color:#FFF59D;" />
+        </linearGradient>
+        <linearGradient id="gradModel" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#D1C4E9;" />
+            <stop offset="100%" style="stop-color:#B39DDB;" />
+        </linearGradient>
+        <linearGradient id="gradPretrained" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#CFD8DC;" />
+            <stop offset="100%" style="stop-color:#B0BEC5;" />
+        </linearGradient>
+        <linearGradient id="gradLLM" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFCCBC;" />
+            <stop offset="100%" style="stop-color:#FFAB91;" />
+        </linearGradient>
+         <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+            <feOffset dx="2" dy="2" result="offsetblur"/>
+            <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <style>
+        .titleText { font-family: 'Segoe UI', Arial, sans-serif; font-size: 28px; font-weight: bold; fill: url(#gradTitle); text-anchor: middle; }
+        .sectionTitle { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #333; text-anchor: middle; }
+        .box { rx: 8; ry: 8; stroke-width: 1.5; filter: url(#shadow); }
+        .dataBox { fill: url(#gradData); stroke: #66BB6A; }
+        .trainingBox { fill: url(#gradTraining); stroke: #FFEE58; }
+        .modelBox { fill: url(#gradModel); stroke: #7E57C2; }
+        .llmBox { fill: url(#gradLLM); stroke: #FF8A65; }
+        .pretrainedBox { fill: url(#gradPretrained); stroke: #78909C; }
+        .ioBox { fill: #E0F7FA; stroke: #4DD0E1; } /* Light Cyan for I/O */
+
+        .label { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; fill: #212121; text-anchor: middle; dominant-baseline: middle; }
+        .smallLabel { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9px; fill: #424242; text-anchor: middle; dominant-baseline: middle; }
+        .arrow { stroke: #616161; stroke-width: 2; marker-end: url(#arrowhead); }
+        .dashedArrow { stroke: #616161; stroke-width: 1.5; stroke-dasharray: 4,4; marker-end: url(#arrowhead); }
+    </style>
+
+    <text x="500" y="40" class="titleText">LLaMA-Omni 2: Method Flowchart</text>
+
+    <!-- Column 1: Data Construction -->
+    <g id="data-construction">
+        <text x="175" y="80" class="sectionTitle">Data Construction (200K Multi-turn S2S Dialogues)</text>
+
+        <rect x="50" y="100" width="250" height="50" class="box dataBox"/>
+        <text x="175" y="118" class="label">InstructS2S-200K (Alpaca, UltraChat)</text>
+        <text x="175" y="135" class="smallLabel">(Single-turn instruction samples)</text>
+
+        <line x1="175" y1="150" x2="175" y2="170" class="arrow"/>
+
+        <rect x="50" y="170" width="250" height="60" class="box dataBox"/>
+        <text x="175" y="190" class="label">Multi-turn Text Dialogue Generation</text>
+        <text x="175" y="205" class="smallLabel">Llama-3.3-70B-Instruct</text>
+        <text x="175" y="218" class="smallLabel">(N turns ~ Poisson(λ=2))</text>
+
+        <line x1="175" y1="230" x2="175" y2="250" class="arrow"/>
+
+        <rect x="50" y="250" width="250" height="100" class="box dataBox"/>
+        <text x="175" y="270" class="label">Speech Synthesis for Dialogue</text>
+        <text x="175" y="285" class="smallLabel">Instructions (Varied Voices):</text>
+        <text x="175" y="298" class="smallLabel">Fish-speech-1.5 (prompt) + CosyVoice2-0.5B (clone)</text>
+        <text x="175" y="315" class="smallLabel">Responses (Uniform Voice):</text>
+        <text x="175" y="328" class="smallLabel">CosyVoice2-0.5B</text>
+
+        <line x1="175" y1="350" x2="175" y2="370" class="arrow"/>
+        <rect x="50" y="370" width="250" height="50" class="box ioBox"/>
+        <text x="175" y="395" class="label">200K Multi-turn Speech-to-Speech</text>
+        <text x="175" y="408" class="smallLabel">Dialogue Data</text>
+    </g>
+
+    <!-- Connecting Data to Training -->
+    <line x1="300" y1="395" x2="360" y2="395" class="arrow"/>
+
+
+    <!-- Column 2: Training -->
+    <g id="training">
+        <text x="505" y="80" class="sectionTitle">Two-Stage Training</text>
+
+        <!-- Stage I(a) -->
+        <rect x="370" y="100" width="270" height="110" class="box trainingBox"/>
+        <text x="505" y="115" class="label" style="font-weight:bold;">Stage I(a): Speech-to-Text</text>
+        <text x="505" y="135" class="smallLabel">Data: &lt;Speech Instruction, Text Response&gt;</text>
+        <text x="505" y="150" class="smallLabel" style="fill: #2E7D32; font-weight:bold;">Train: Speech Adapter, LLM (Qwen2.5)</text>
+        <text x="505" y="165" class="smallLabel" style="fill: #C62828; font-weight:bold;">Freeze: Speech Encoder</text>
+        <text x="505" y="180" class="smallLabel">Loss: Cross-entropy</text>
+        <text x="505" y="195" class="smallLabel">(Speech Encoder: Whisper-large-v3)</text>
+
+        <!-- Stage I(b) -->
+        <rect x="370" y="225" width="270" height="130" class="box trainingBox"/>
+        <text x="505" y="240" class="label" style="font-weight:bold;">Stage I(b): Text-to-Speech</text>
+        <text x="505" y="260" class="smallLabel">Data: &lt;Text Response, Speech Response&gt;</text>
+        <text x="505" y="275" class="smallLabel">(Speech Resp. -> Speech Tokens via Pretrained Speech Tokenizer)</text>
+        <text x="505" y="290" class="smallLabel" style="fill: #2E7D32; font-weight:bold;">Train: TTS Language Model (MTTS)</text>
+        <text x="505" y="305" class="smallLabel">MTTS Input: Text Embeddings only</text>
+        <text x="505" y="320" class="smallLabel">Loss: Cross-entropy (on Speech Tokens)</text>
+        <text x="505" y="335" class="smallLabel">(MTTS init: Qwen2.5-0.5B)</text>
+
+
+        <!-- Stage II -->
+        <rect x="370" y="370" width="270" height="120" class="box trainingBox"/>
+        <text x="505" y="385" class="label" style="font-weight:bold;">Stage II: Speech-to-Speech</text>
+        <text x="505" y="405" class="smallLabel">Data: Full S2S Dialogues</text>
+        <text x="505" y="420" class="smallLabel" style="fill: #2E7D32; font-weight:bold;">Train: Gate Fusion Module, MTTS</text>
+        <text x="505" y="435" class="smallLabel">MTTS Input: Fused Reps (LLM Hidden States + Text Embeds)</text>
+        <text x="505" y="450" class="smallLabel" style="fill: #C62828; font-weight:bold;">Freeze: Speech Enc, Adapter, LLM</text>
+        <text x="505" y="465" class="smallLabel">Loss: Cross-entropy (on Speech Tokens)</text>
+
+        <rect x="370" y="510" width="270" height="40" class="box pretrainedBox"/>
+        <text x="505" y="530" class="label">Pretrained Speech Tokenizer</text>
+        <text x="505" y="540" class="smallLabel">(CosyVoice 2: SenseVoice-Large ASR + FSQ)</text>
+        <line x1="505" y1="355" x2="505" y2="370" class="arrow"/> <!-- from I(b) to Speech Tokenizer (conceptually) -->
+        <line x1="505" y1="500" x2="505" y2="510" class="arrow"/> <!-- from stage II to Speech Tokenizer (conceptually) -->
+
+
+    </g>
+
+    <!-- Connecting Training to Model/Inference -->
+    <path d="M 640 250 Q 660 250, 660 350 L 660 450 Q 660 550, 680 550" stroke="#616161" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="660" y="300" class="smallLabel" transform="rotate(90, 660, 300)" style="text-anchor:middle">Trained</text>
+    <text x="660" y="315" class="smallLabel" transform="rotate(90, 660, 315)" style="text-anchor:middle">Model</text>
+    <text x="660" y="330" class="smallLabel" transform="rotate(90, 660, 330)" style="text-anchor:middle">Components</text>
+
+
+    <!-- Column 3: LLaMA-Omni 2 Model & Inference -->
+    <g id="model-inference">
+        <text x="830" y="80" class="sectionTitle">LLaMA-Omni 2: Model & Inference</text>
+
+        <rect x="700" y="100" width="150" height="40" class="box ioBox"/>
+        <text x="775" y="120" class="label">User Speech Input (X)</text>
+
+        <line x1="775" y1="140" x2="775" y2="160" class="arrow"/>
+
+        <rect x="700" y="160" width="150" height="50" class="box pretrainedBox"/>
+        <text x="775" y="178" class="label">Speech Encoder</text>
+        <text x="775" y="193" class="smallLabel">(Whisper-large-v3) [PRETRAINED]</text>
+
+        <line x1="775" y1="210" x2="775" y2="230" class="arrow"/>
+
+        <rect x="700" y="230" width="150" height="50" class="box modelBox"/>
+        <text x="775" y="248" class="label">Speech Adapter</text>
+        <text x="775" y="263" class="smallLabel">(Downsampling + FFN)</text>
+
+        <line x1="775" y1="280" x2="775" y2="300" class="arrow"/>
+
+        <rect x="700" y="300" width="260" height="60" class="box llmBox"/>
+        <text x="830" y="323" class="label">Large Language Model (MLLM)</text>
+        <text x="830" y="340" class="smallLabel">(Qwen2.5 Series)</text>
+
+        <!-- LLM outputs -->
+        <line x1="830" y1="360" x2="830" y2="380" class="arrow"/> <!-- To Gate Fusion -->
+        <line x1="960" y1="330" x2="990" y2="330" class="arrow"/>
+        <rect x="990" y="310" width="100" height="40" class="box ioBox" style="filter:none;"/> <!-- No shadow for small output box -->
+        <text x="1040" y="330" class="label">Text Output (Y^T)</text>
+
+
+        <rect x="700" y="380"
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It requires significantly less speech data for training while achieving competitive or superior performance.">
+                        <div class="quiz-question">1. What is a key advantage of LLaMA-Omni 2's modular SpeechLM approach compared to native SpeechLMs like GLM-4-Voice?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="It requires significantly less speech data for training while achieving competitive or superior performance.">It requires significantly less speech data for training while achieving competitive or superior performance.</div><div class="quiz-choice" data-value="It completely eliminates the need for a large language model, simplifying the architecture.">It completely eliminates the need for a large language model, simplifying the architecture.</div><div class="quiz-choice" data-value="It can only handle single-turn speech interactions, making it simpler to train.">It can only handle single-turn speech interactions, making it simpler to train.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Discrete speech tokens from the fused LLM representations.">
+                        <div class="quiz-question">2. The streaming speech generation in LLaMA-Omni 2 uses a "Read-R-Write-W" strategy. What does the Autoregressive Text-to-Speech Language Model primarily generate in this process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Text tokens from the LLM output.">Text tokens from the LLM output.</div><div class="quiz-choice" data-value="Mel spectrogram chunks for synthesis.">Mel spectrogram chunks for synthesis.</div><div class="quiz-choice" data-value="Discrete speech tokens from the fused LLM representations.">Discrete speech tokens from the fused LLM representations.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The Gate Fusion module.">
+                        <div class="quiz-question">3. According to the paper's ablation studies, which component is crucial for adaptively combining LLM hidden states and text embeddings to improve performance in the text-to-speech language model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The Speech Adapter.">The Speech Adapter.</div><div class="quiz-choice" data-value="The Gate Fusion module.">The Gate Fusion module.</div><div class="quiz-choice" data-value="The Causal Flow Matching model.">The Causal Flow Matching model.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
