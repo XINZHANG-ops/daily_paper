@@ -1,0 +1,831 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-05-20 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-05-20 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>AdaptThink: Reasoning Models Can Learn When to Think</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.13417" target="_blank">http://arxiv.org/pdf/2505.13417</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on improving the efficiency of large reasoning language models by developing an adaptive thinking mode selection system.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research on reasoning models that use chain-of-thought thinking, this paper introduces "NoThinking" mode and proposes a novel approach called AdaptThink that allows models to adaptively choose between thinking and no-thinking modes.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the inefficiency of current reasoning models that use lengthy thinking processes for all problems, even simple ones that don't require extensive reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper implements AdaptThink, a reinforcement learning algorithm with two key components: a constrained optimization objective to encourage NoThinking while maintaining performance, and an importance sampling strategy to balance thinking modes during training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> AdaptThink reduced average response length by 53% while improving accuracy by 2.4% across three math datasets when tested on DeepSeek-R1-Distill-Qwen-1.5B model, demonstrating both improved efficiency and performance.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>AdaptThink: Reasoning Models Can Learn When to Think</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">AdaptThink: Adaptive Thinking Mode Selection</text>
+    
+    <!-- Input Problem Box -->
+    <rect x="400" y="100" width="200" height="60" rx="10" fill="#E3F2FD" stroke="#1976D2"/>
+    <text x="500" y="135" text-anchor="middle" font-size="16">Input Problem</text>
+    
+    <!-- Decision Diamond -->
+    <path d="M500 200 L600 300 L500 400 L400 300 Z" fill="#FFF3E0" stroke="#FF9800"/>
+    <text x="500" y="310" text-anchor="middle" font-size="14">Problem
+        <tspan x="500" y="330">Difficulty?</tspan>
+    </text>
+    
+    <!-- NoThinking Path (Left) -->
+    <rect x="200" y="450" width="200" height="60" rx="10" fill="#E8F5E9" stroke="#4CAF50"/>
+    <text x="300" y="485" text-anchor="middle" font-size="16">NoThinking Mode</text>
+    <text x="300" y="520" text-anchor="middle" font-size="12" fill="#666">Direct Solution</text>
+    
+    <!-- Thinking Path (Right) -->
+    <rect x="600" y="450" width="200" height="60" rx="10" fill="#FFEBEE" stroke="#F44336"/>
+    <text x="700" y="485" text-anchor="middle" font-size="16">Thinking Mode</text>
+    <text x="700" y="520" text-anchor="middle" font-size="12" fill="#666">Long Chain of Thought</text>
+    
+    <!-- Final Solution Box -->
+    <rect x="400" y="600" width="200" height="60" rx="10" fill="#F3E5F5" stroke="#9C27B0"/>
+    <text x="500" y="635" text-anchor="middle" font-size="16">Final Solution</text>
+    
+    <!-- Connecting Lines -->
+    <path d="M500 160 L500 200" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M400 300 L300 450" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M600 300 L700 450" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M300 510 L500 600" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M700 510 L500 600" stroke="#666" stroke-width="2" fill="none"/>
+    
+    <!-- Labels -->
+    <text x="350" y="350" font-size="14" fill="#4CAF50">Simple</text>
+    <text x="650" y="350" font-size="14" fill="#F44336">Complex</text>
+    
+    <!-- Legend -->
+    <rect x="50" y="700" width="900" height="60" rx="10" fill="#FAFAFA" stroke="#999"/>
+    <text x="500" y="735" text-anchor="middle" font-size="14">AdaptThink: A Novel RL Algorithm for Teaching Models When to Think</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It adaptively chooses between thinking and no-thinking modes based on problem difficulty">
+                        <div class="quiz-question">1. What is the main innovation of AdaptThink compared to traditional reasoning models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It completely eliminates the thinking process">It completely eliminates the thinking process</div><div class="quiz-choice" data-value="It adaptively chooses between thinking and no-thinking modes based on problem difficulty">It adaptively chooses between thinking and no-thinking modes based on problem difficulty</div><div class="quiz-choice" data-value="It always uses shorter thinking processes">It always uses shorter thinking processes</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It reduced response length by 53% while improving accuracy by 2.4%">
+                        <div class="quiz-question">2. What was the most significant experimental result of implementing AdaptThink?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It improved accuracy by 53% while maintaining the same response length">It improved accuracy by 53% while maintaining the same response length</div><div class="quiz-choice" data-value="It reduced response length by 2.4% while maintaining accuracy">It reduced response length by 2.4% while maintaining accuracy</div><div class="quiz-choice" data-value="It reduced response length by 53% while improving accuracy by 2.4%">It reduced response length by 53% while improving accuracy by 2.4%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="A constrained optimization objective and an importance sampling strategy">
+                        <div class="quiz-question">3. What are the two key components of the AdaptThink algorithm?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A reward system and a punishment system">A reward system and a punishment system</div><div class="quiz-choice" data-value="A training module and a testing module">A training module and a testing module</div><div class="quiz-choice" data-value="A constrained optimization objective and an importance sampling strategy">A constrained optimization objective and an importance sampling strategy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Thinkless: LLM Learns When to Think</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.13379" target="_blank">http://arxiv.org/pdf/2505.13379</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing adaptive reasoning capabilities in Large Language Models (LLMs) to efficiently switch between short-form and long-form reasoning responses.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research in chain-of-thought reasoning and hybrid reasoning approaches, the paper introduces a novel Decoupled Group Relative Policy Optimization (DeGRPO) algorithm that learns when to use elaborate reasoning versus concise responses.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the inefficiency of LLMs using elaborate reasoning for all queries when many problems can be solved with straightforward solutions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method employs a two-stage approach: first using distillation for warm-up training, then applying reinforcement learning with DeGRPO to optimize the model's decision-making between short and long-form responses using control tokens.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The approach reduced long-form reasoning usage by 50-90% across various mathematical benchmarks (Minerva Algebra, MATH-500, GSM8K) while maintaining performance, with the model appropriately selecting more complex reasoning for challenging tasks like AIME.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Thinkless: LLM Learns When to Think</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa" />
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Thinkless: LLM Learns When to Think</text>
+
+    <!-- Stage 1: Distillation Warm-up -->
+    <rect x="100" y="100" width="800" height="200" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+    <text x="500" y="130" text-anchor="middle" font-size="20" font-weight="bold" fill="#1976d2">Stage 1: Distillation Warm-up</text>
+    
+    <!-- Distillation Components -->
+    <rect x="150" y="160" width="200" height="60" rx="5" fill="#bbdefb" stroke="#1976d2"/>
+    <text x="250" y="195" text-anchor="middle">Reasoning Model</text>
+    
+    <rect x="400" y="160" width="200" height="60" rx="5" fill="#bbdefb" stroke="#1976d2"/>
+    <text x="500" y="195" text-anchor="middle">Instruction Model</text>
+    
+    <rect x="650" y="160" width="200" height="60" rx="5" fill="#bbdefb" stroke="#1976d2"/>
+    <text x="750" y="195" text-anchor="middle">Paired Dataset</text>
+
+    <!-- Stage 2: Reinforcement Learning -->
+    <rect x="100" y="350" width="800" height="400" rx="10" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
+    <text x="500" y="380" text-anchor="middle" font-size="20" font-weight="bold" fill="#388e3c">Stage 2: Decoupled GRPO</text>
+
+    <!-- RL Components -->
+    <rect x="150" y="420" width="300" height="80" rx="5" fill="#c8e6c9" stroke="#388e3c"/>
+    <text x="300" y="465" text-anchor="middle">Control Token Loss</text>
+    
+    <rect x="550" y="420" width="300" height="80" rx="5" fill="#c8e6c9" stroke="#388e3c"/>
+    <text x="700" y="465" text-anchor="middle">Response Loss</text>
+
+    <!-- Output Modes -->
+    <rect x="150" y="550" width="300" height="60" rx="5" fill="#a5d6a7" stroke="#388e3c"/>
+    <text x="300" y="585" text-anchor="middle">&lt;short&gt; Mode</text>
+    
+    <rect x="550" y="550" width="300" height="60" rx="5" fill="#a5d6a7" stroke="#388e3c"/>
+    <text x="700" y="585" text-anchor="middle">&lt;think&gt; Mode</text>
+
+    <!-- Output Results -->
+    <rect x="150" y="650" width="700" height="60" rx="5" fill="#81c784" stroke="#388e3c"/>
+    <text x="500" y="685" text-anchor="middle">Adaptive Reasoning Model</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="To prevent mode collapse due to imbalanced token updates">
+                        <div class="quiz-question">1. What is the main reason the paper introduces Decoupled GRPO instead of using vanilla GRPO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce computational costs during training">To reduce computational costs during training</div><div class="quiz-choice" data-value="To prevent mode collapse due to imbalanced token updates">To prevent mode collapse due to imbalanced token updates</div><div class="quiz-choice" data-value="To improve the accuracy of mathematical reasoning">To improve the accuracy of mathematical reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A U-shaped curve where long-form responses first increased then decreased">
+                        <div class="quiz-question">2. During the reinforcement learning phase, what interesting pattern was observed in the learning curve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A linear increase in short-form responses">A linear increase in short-form responses</div><div class="quiz-choice" data-value="A constant ratio between long and short responses">A constant ratio between long and short responses</div><div class="quiz-choice" data-value="A U-shaped curve where long-form responses first increased then decreased">A U-shaped curve where long-form responses first increased then decreased</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It maintained a higher proportion of long-form reasoning due to problem complexity">
+                        <div class="quiz-question">3. Which of the following best describes the system's behavior on the AIME dataset compared to simpler problems?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It used exclusively short-form responses">It used exclusively short-form responses</div><div class="quiz-choice" data-value="It showed similar reasoning patterns across all problems">It showed similar reasoning patterns across all problems</div><div class="quiz-choice" data-value="It maintained a higher proportion of long-form reasoning due to problem complexity">It maintained a higher proportion of long-form reasoning due to problem complexity</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>MM-PRM: Enhancing Multimodal Mathematical Reasoning with Scalable
+  Step-Level Supervision</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.13427" target="_blank">http://arxiv.org/pdf/2505.13427</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on enhancing multimodal mathematical reasoning in Large Language Models through process reward modeling.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in reward modeling and mathematical reasoning in pure text, the paper proposes a novel framework for generating step-level supervision in multimodal mathematical reasoning without human annotation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of complex multi-step reasoning in multimodal math problems, where models often produce logically inconsistent or partially correct solutions due to lack of fine-grained supervision.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop MM-PRM using a three-stage approach: training a policy model (MM-Policy), generating process supervision data through Monte Carlo Tree Search, and training a process reward model using soft labels on step-level annotations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The framework achieved significant improvements across multiple benchmarks, including increasing accuracy on MM-K12 test set from 33.92% to 42.80%, MathVista from 62.93% to 67.60%, and OlympiadBench from 15.41% to 24.00%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MM-PRM: Enhancing Multimodal Mathematical Reasoning with Scalable
+  Step-Level Supervision</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">MM-PRM Framework</text>
+
+    <!-- Stage 1: Policy Model Construction -->
+    <rect x="100" y="100" width="200" height="150" rx="10" fill="#3498db" opacity="0.8"/>
+    <text x="200" y="140" text-anchor="middle" fill="white" font-size="16">Stage 1:</text>
+    <text x="200" y="170" text-anchor="middle" fill="white" font-size="14">Policy Model</text>
+    <text x="200" y="190" text-anchor="middle" fill="white" font-size="14">Construction</text>
+    <text x="200" y="220" text-anchor="middle" fill="white" font-size="12">(InternVL2.5-8B)</text>
+
+    <!-- Stage 2: Process Supervision -->
+    <rect x="400" y="100" width="200" height="150" rx="10" fill="#e74c3c" opacity="0.8"/>
+    <text x="500" y="140" text-anchor="middle" fill="white" font-size="16">Stage 2:</text>
+    <text x="500" y="170" text-anchor="middle" fill="white" font-size="14">Process Supervision</text>
+    <text x="500" y="190" text-anchor="middle" fill="white" font-size="14">Data Generation</text>
+    <text x="500" y="220" text-anchor="middle" fill="white" font-size="12">(MCTS-based)</text>
+
+    <!-- Stage 3: PRM Training -->
+    <rect x="700" y="100" width="200" height="150" rx="10" fill="#2ecc71" opacity="0.8"/>
+    <text x="800" y="140" text-anchor="middle" fill="white" font-size="16">Stage 3:</text>
+    <text x="800" y="170" text-anchor="middle" fill="white" font-size="14">Process Reward</text>
+    <text x="800" y="190" text-anchor="middle" fill="white" font-size="14">Model Training</text>
+
+    <!-- Data Flow -->
+    <path d="M 300 175 L 400 175" stroke="#34495e" stroke-width="2"/>
+    <path d="M 600 175 L 700 175" stroke="#34495e" stroke-width="2"/>
+
+    <!-- Details Boxes -->
+    <rect x="100" y="300" width="200" height="400" rx="10" fill="#f1f1f1" stroke="#bdc3c7"/>
+    <text x="200" y="330" text-anchor="middle" font-size="14" fill="#2c3e50">Input Data:</text>
+    <text x="200" y="360" text-anchor="middle" font-size="12" fill="#2c3e50">- Mathematical Datasets</text>
+    <text x="200" y="390" text-anchor="middle" font-size="12" fill="#2c3e50">- Vision-Language Data</text>
+    <text x="200" y="420" text-anchor="middle" font-size="12" fill="#2c3e50">- Structured Solutions</text>
+
+    <rect x="400" y="300" width="200" height="400" rx="10" fill="#f1f1f1" stroke="#bdc3c7"/>
+    <text x="500" y="330" text-anchor="middle" font-size="14" fill="#2c3e50">Process:</text>
+    <text x="500" y="360" text-anchor="middle" font-size="12" fill="#2c3e50">- MM-K12 Dataset</text>
+    <text x="500" y="390" text-anchor="middle" font-size="12" fill="#2c3e50">- Monte Carlo Search</text>
+    <text x="500" y="420" text-anchor="middle" font-size="12" fill="#2c3e50">- Step-level Labels</text>
+
+    <rect x="700" y="300" width="200" height="400" rx="10" fill="#f1f1f1" stroke="#bdc3c7"/>
+    <text x="800" y="330" text-anchor="middle" font-size="14" fill="#2c3e50">Output:</text>
+    <text x="800" y="360" text-anchor="middle" font-size="12" fill="#2c3e50">- MM-PRM Model</text>
+    <text x="800" y="390" text-anchor="middle" font-size="12" fill="#2c3e50">- Step-wise Evaluation</text>
+    <text x="800" y="420" text-anchor="middle" font-size="12" fill="#2c3e50">- Best-of-N Selection</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It generates over 700k step-level annotations automatically from just 10k seed problems">
+                        <div class="quiz-question">1. What is the key innovation in MM-PRM's supervision approach compared to traditional methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It relies entirely on human experts to annotate each reasoning step">It relies entirely on human experts to annotate each reasoning step</div><div class="quiz-choice" data-value="It generates over 700k step-level annotations automatically from just 10k seed problems">It generates over 700k step-level annotations automatically from just 10k seed problems</div><div class="quiz-choice" data-value="It only evaluates the final answer without considering intermediate steps">It only evaluates the final answer without considering intermediate steps</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To preserve nuanced information about step quality, problem difficulty and uncertainty">
+                        <div class="quiz-question">2. Why does MM-PRM use soft labels instead of hard binary labels for training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To make the implementation simpler">To make the implementation simpler</div><div class="quiz-choice" data-value="To reduce computational costs during training">To reduce computational costs during training</div><div class="quiz-choice" data-value="To preserve nuanced information about step quality, problem difficulty and uncertainty">To preserve nuanced information about step quality, problem difficulty and uncertainty</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Improving OlympiadBench accuracy from 15.41% to 24.00%">
+                        <div class="quiz-question">3. What was the most impressive improvement achieved by MM-PRM on benchmark tests?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Improving MathVista accuracy from 62.93% to 67.60%">Improving MathVista accuracy from 62.93% to 67.60%</div><div class="quiz-choice" data-value="Improving OlympiadBench accuracy from 15.41% to 24.00%">Improving OlympiadBench accuracy from 15.41% to 24.00%</div><div class="quiz-choice" data-value="Improving MathVision accuracy from 21.74% to 27.11%">Improving MathVision accuracy from 21.74% to 27.11%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
