@@ -493,7 +493,7 @@ def create_flow_chart(paper_title, paper_content):
     )
     flow_chart = model_response(
         prompt,
-        'gemini_25_pro',
+        'claude35',
         max_tokens=8192
 
     )    
@@ -540,7 +540,7 @@ def create_question(paper_title, paper_content, summary):
 
     questions_content = model_response(
         prompt,
-        '2.5 flash',
+        'claude35',
         max_tokens=8000
 
     )
