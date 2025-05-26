@@ -1,0 +1,835 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-05-26 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-05-26 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>One RL to See Them All: Visual Triple Unified Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.18129" target="_blank">http://arxiv.org/pdf/2505.18129</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents V-Triune, a unified reinforcement learning system for vision-language models that combines both visual reasoning and perception tasks.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Prior research focused separately on either reasoning tasks (math, science) or perception tasks (detection, grounding), while this paper proposes a novel unified approach combining both through a triple-component system and dynamic IoU reward mechanism.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of training vision-language models to perform both reasoning and perception tasks effectively within a single unified framework, as previous approaches treated these tasks in isolation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper implements a three-tier system: Sample-Level Data Formatting (for unified task inputs), Verifier-Level Reward Computation (for custom rewards), and Source-Level Metric Monitoring (for diagnostics), along with a Dynamic IoU reward for perception tasks.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The resulting Orsta models achieved significant improvements on MEGA-Bench Core benchmark, with gains ranging from +2.1% to +14.1% across different model variants (7B and 32B), while also showing strong performance on downstream tasks like MMMU, MathVista, and COCO.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>One RL to See Them All: Visual Triple Unified Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" font-size="24" text-anchor="middle" font-weight="bold" fill="#2c3e50">V-Triune: Visual Triple Unified Reinforcement Learning System</text>
+
+    <!-- Main Components -->
+    <g transform="translate(0, 100)">
+        <!-- Input Data -->
+        <rect x="50" y="50" width="200" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+        <text x="150" y="95" font-size="16" text-anchor="middle" fill="white">Input Data</text>
+        <text x="150" y="115" font-size="12" text-anchor="middle" fill="white">Visual Reasoning + Perception Tasks</text>
+
+        <!-- Three Main Components -->
+        <g transform="translate(300, 0)">
+            <!-- Sample Level -->
+            <rect x="0" y="0" width="180" height="100" rx="10" fill="#e74c3c" opacity="0.8"/>
+            <text x="90" y="35" font-size="14" text-anchor="middle" fill="white">Sample-Level</text>
+            <text x="90" y="55" font-size="14" text-anchor="middle" fill="white">Data Formatting</text>
+            <text x="90" y="85" font-size="12" text-anchor="middle" fill="white">Unify diverse task inputs</text>
+
+            <!-- Verifier Level -->
+            <rect x="0" y="150" width="180" height="100" rx="10" fill="#2ecc71" opacity="0.8"/>
+            <text x="90" y="185" font-size="14" text-anchor="middle" fill="white">Verifier-Level</text>
+            <text x="90" y="205" font-size="14" text-anchor="middle" fill="white">Reward Computation</text>
+            <text x="90" y="235" font-size="12" text-anchor="middle" fill="white">Custom rewards via verifiers</text>
+
+            <!-- Source Level -->
+            <rect x="0" y="300" width="180" height="100" rx="10" fill="#9b59b6" opacity="0.8"/>
+            <text x="90" y="335" font-size="14" text-anchor="middle" fill="white">Source-Level</text>
+            <text x="90" y="355" font-size="14" text-anchor="middle" fill="white">Metric Monitoring</text>
+            <text x="90" y="385" font-size="12" text-anchor="middle" fill="white">Data source diagnostics</text>
+        </g>
+
+        <!-- Dynamic IoU -->
+        <rect x="600" y="150" width="200" height="100" rx="10" fill="#f1c40f" opacity="0.8"/>
+        <text x="700" y="185" font-size="16" text-anchor="middle" fill="white">Dynamic IoU</text>
+        <text x="700" y="205" font-size="14" text-anchor="middle" fill="white">Reward Mechanism</text>
+        <text x="700" y="235" font-size="12" text-anchor="middle" fill="white">Adaptive perception feedback</text>
+
+        <!-- Output -->
+        <rect x="850" y="50" width="200" height="80" rx="10" fill="#27ae60" opacity="0.8"/>
+        <text x="950" y="95" font-size="16" text-anchor="middle" fill="white">Orsta Model</text>
+        <text x="950" y="115" font-size="12" text-anchor="middle" fill="white">Improved Performance</text>
+    </g>
+
+    <!-- Connecting Lines -->
+    <g stroke="#34495e" stroke-width="2" fill="none">
+        <path d="M 250 180 L 290 180"/>
+        <path d="M 480 180 L 590 180"/>
+        <path d="M 800 180 L 850 180"/>
+        <path d="M 250 180 C 270 180 280 50 300 50"/>
+        <path d="M 250 180 C 270 180 280 350 300 350"/>
+    </g>
+
+    <!-- Legend -->
+    <g transform="translate(50, 600)">
+        <text x="0" y="0" font-size="14" font-weight="bold" fill="#2c3e50">Key Features:</text>
+        <text x="0" y="30" font-size="12" fill="#2c3e50">• Unified training for visual reasoning and perception</text>
+        <text x="0" y="50" font-size="12" fill="#2c3e50">• Modular reward computation system</text>
+        <text x="0" y="70" font-size="12" fill="#2c3e50">• Progressive perception feedback</text>
+        <text x="0" y="90" font-size="12" fill="#2c3e50">• Comprehensive metric monitoring</text>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It unifies both reasoning and perception tasks in a single training framework">
+                        <div class="quiz-question">1. What is the main innovation of V-Triune compared to previous vision-language reinforcement learning approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger model architecture with more parameters">It uses a larger model architecture with more parameters</div><div class="quiz-choice" data-value="It unifies both reasoning and perception tasks in a single training framework">It unifies both reasoning and perception tasks in a single training framework</div><div class="quiz-choice" data-value="It focuses exclusively on improving visual perception tasks">It focuses exclusively on improving visual perception tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Because joint training led to gradient explosion and performance collapse">
+                        <div class="quiz-question">2. Why did the researchers decide to freeze the ViT (Vision Transformer) parameters during training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To save computational resources and training time">To save computational resources and training time</div><div class="quiz-choice" data-value="Because ViT was already perfectly trained for all tasks">Because ViT was already perfectly trained for all tasks</div><div class="quiz-choice" data-value="Because joint training led to gradient explosion and performance collapse">Because joint training led to gradient explosion and performance collapse</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It progressively adjusts the threshold from relaxed to stricter criteria during training">
+                        <div class="quiz-question">3. What unique feature does the Dynamic IoU reward mechanism introduce?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It progressively adjusts the threshold from relaxed to stricter criteria during training">It progressively adjusts the threshold from relaxed to stricter criteria during training</div><div class="quiz-choice" data-value="It randomly varies the reward threshold to prevent overfitting">It randomly varies the reward threshold to prevent overfitting</div><div class="quiz-choice" data-value="It maintains a fixed high threshold throughout training">It maintains a fixed high threshold throughout training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>QwenLong-L1: Towards Long-Context Large Reasoning Models with
+  Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.17667" target="_blank">http://arxiv.org/pdf/2505.17667</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing long-context large reasoning models through reinforcement learning, specifically in the domain of natural language processing and artificial intelligence.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on recent large reasoning models (LRMs) that demonstrate strong reasoning capabilities through RL in short-context tasks, and proposes a novel framework called QWEN LONG-L1 to extend these capabilities to long-context scenarios.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of extending large reasoning models to effectively process and reason on long-context inputs (e.g., 120K tokens) via reinforcement learning, tackling issues of suboptimal training efficiency and unstable optimization.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper implements a progressive context scaling framework combining warm-up supervised fine-tuning, curriculum-guided phased reinforcement learning, and difficulty-aware retrospective sampling strategy.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> QWEN LONG-L1-32B outperformed flagship LRMs like OpenAI-o3-mini and Qwen3-235B-A22B across seven long-context document question-answering benchmarks, achieving performance comparable to Claude-3.7-Sonnet-Thinking.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>QwenLong-L1: Towards Long-Context Large Reasoning Models with
+  Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f5f5f5"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">QwenLong-L1 Training Workflow</text>
+    
+    <!-- Initial Model Box -->
+    <rect x="400" y="100" width="200" height="60" rx="10" fill="#4CAF50" opacity="0.8"/>
+    <text x="500" y="135" text-anchor="middle" font-size="16" fill="white">Base Model</text>
+    
+    <!-- Phase 1: Warm-up SFT -->
+    <rect x="200" y="220" width="200" height="80" rx="10" fill="#2196F3" opacity="0.8"/>
+    <text x="300" y="255" text-anchor="middle" font-size="16" fill="white">Warm-up SFT</text>
+    <text x="300" y="275" text-anchor="middle" font-size="12" fill="white">Initial Policy Training</text>
+    
+    <!-- Phase 2: Curriculum RL -->
+    <rect x="400" y="350" width="200" height="80" rx="10" fill="#FF9800" opacity="0.8"/>
+    <text x="500" y="385" text-anchor="middle" font-size="16" fill="white">Curriculum RL</text>
+    <text x="500" y="405" text-anchor="middle" font-size="12" fill="white">Progressive Context Scaling</text>
+    
+    <!-- Phase 3: Retrospective Sampling -->
+    <rect x="600" y="220" width="200" height="80" rx="10" fill="#E91E63" opacity="0.8"/>
+    <text x="700" y="255" text-anchor="middle" font-size="16" fill="white">Retrospective Sampling</text>
+    <text x="700" y="275" text-anchor="middle" font-size="12" fill="white">Difficulty-Aware Selection</text>
+    
+    <!-- Final Model Box -->
+    <rect x="400" y="480" width="200" height="60" rx="10" fill="#673AB7" opacity="0.8"/>
+    <text x="500" y="515" text-anchor="middle" font-size="16" fill="white">QwenLong-L1 Model</text>
+    
+    <!-- Connecting Lines -->
+    <path d="M500 160 L500 220" stroke="#666" stroke-width="2"/>
+    <path d="M500 220 L300 220" stroke="#666" stroke-width="2"/>
+    <path d="M500 220 L700 220" stroke="#666" stroke-width="2"/>
+    <path d="M300 300 L500 350" stroke="#666" stroke-width="2"/>
+    <path d="M700 300 L500 350" stroke="#666" stroke-width="2"/>
+    <path d="M500 430 L500 480" stroke="#666" stroke-width="2"/>
+    
+    <!-- Additional Details -->
+    <rect x="150" y="600" width="700" height="100" rx="10" fill="#white" stroke="#666"/>
+    <text x="500" y="630" text-anchor="middle" font-size="14" fill="#333">Training Components:</text>
+    <text x="500" y="660" text-anchor="middle" font-size="12" fill="#666">• Group Relative Policy Optimization (GRPO)</text>
+    <text x="500" y="680" text-anchor="middle" font-size="12" fill="#666">• Hybrid Reward Mechanisms (Rule-based + LLM-as-judge)</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Suboptimal training efficiency and unstable optimization process">
+                        <div class="quiz-question">1. What is the main challenge that QWEN LONG-L1 aims to address in long-context reasoning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Slow training speed and high computational costs">Slow training speed and high computational costs</div><div class="quiz-choice" data-value="Suboptimal training efficiency and unstable optimization process">Suboptimal training efficiency and unstable optimization process</div><div class="quiz-choice" data-value="Limited memory capacity and model size constraints">Limited memory capacity and model size constraints</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Automated parameter pruning">
+                        <div class="quiz-question">2. Which component is NOT part of QWEN LONG-L1's progressive context scaling framework?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Warm-up supervised fine-tuning">Warm-up supervised fine-tuning</div><div class="quiz-choice" data-value="Difficulty-aware retrospective sampling">Difficulty-aware retrospective sampling</div><div class="quiz-choice" data-value="Automated parameter pruning">Automated parameter pruning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It surpassed DeepSeek-R1 even with a small sampling number">
+                        <div class="quiz-question">3. When testing QWEN LONG-L1-14B with increased sampling scales, what interesting finding was observed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It performed worse than smaller models">It performed worse than smaller models</div><div class="quiz-choice" data-value="It surpassed DeepSeek-R1 even with a small sampling number">It surpassed DeepSeek-R1 even with a small sampling number</div><div class="quiz-choice" data-value="It required massive computational resources">It required massive computational resources</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-orchid.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>QwenLong-CPRS: Towards infty-LLMs with Dynamic Context Optimization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.18092" target="_blank">http://arxiv.org/pdf/2505.18092</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents QwenLong-CPRS, a context compression framework for large language models (LLMs) in the domain of natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The work builds upon previous research in RAG frameworks and sparse attention mechanisms, proposing a novel dynamic context optimization paradigm that uses natural language instructions to guide multi-granularity context compression.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses two key challenges: the prohibitive computational overhead during long sequence processing and the "lost in the middle" performance degradation where LLMs struggle to effectively handle lengthy inputs.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement four key innovations: natural language-guided dynamic optimization, bidirectional reasoning layers for boundary awareness, token critic mechanisms with language modeling heads, and window-parallel inference architecture.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Across five benchmarks (4K-2M word contexts), QwenLong-CPRS achieved 21.59× context compression with 19.15-point average performance gains, surpassing leading proprietary LLMs by 4.85 and 10.88 points on Ruler-128K and InfiniteBench benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>QwenLong-CPRS: Towards infty-LLMs with Dynamic Context Optimization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2C3E50">QwenLong-CPRS Framework</text>
+
+    <!-- Input Section -->
+    <rect x="100" y="100" width="800" height="80" rx="10" fill="#3498DB" opacity="0.2"/>
+    <text x="500" y="145" text-anchor="middle" font-size="18" fill="#2C3E50">Input: System Prompt + User Query + Long Context</text>
+
+    <!-- Processing Layers -->
+    <rect x="150" y="250" width="300" height="80" rx="10" fill="#E74C3C" opacity="0.2"/>
+    <text x="300" y="295" text-anchor="middle" font-size="16" fill="#2C3E50">Causal Language Modeling Layers</text>
+
+    <rect x="550" y="250" width="300" height="80" rx="10" fill="#2ECC71" opacity="0.2"/>
+    <text x="700" y="295" text-anchor="middle" font-size="16" fill="#2C3E50">Bi-directional Reasoning Layers</text>
+
+    <!-- Token Critic Section -->
+    <rect x="250" y="400" width="500" height="80" rx="10" fill="#F1C40F" opacity="0.2"/>
+    <text x="500" y="445" text-anchor="middle" font-size="16" fill="#2C3E50">Language Modeling as Token Critic</text>
+
+    <!-- Output Section -->
+    <rect x="100" y="550" width="800" height="80" rx="10" fill="#9B59B6" opacity="0.2"/>
+    <text x="500" y="595" text-anchor="middle" font-size="18" fill="#2C3E50">Optimized Context</text>
+
+    <!-- Connecting Lines -->
+    <path d="M500 180 L500 250" stroke="#2C3E50" stroke-width="2"/>
+    <path d="M300 330 L500 400" stroke="#2C3E50" stroke-width="2"/>
+    <path d="M700 330 L500 400" stroke="#2C3E50" stroke-width="2"/>
+    <path d="M500 480 L500 550" stroke="#2C3E50" stroke-width="2"/>
+
+    <!-- Labels -->
+    <text x="500" y="700" text-anchor="middle" font-size="16" fill="#7F8C8D">Window-Parallel Inference</text>
+    <text x="500" y="730" text-anchor="middle" font-size="14" fill="#7F8C8D">Dynamic Context Optimization</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables natural language-guided dynamic context optimization">
+                        <div class="quiz-question">1. What is the main innovation of QwenLong-CPRS compared to previous approaches like RAG and sparse attention?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses pre-trained language models for compression">It uses pre-trained language models for compression</div><div class="quiz-choice" data-value="It enables natural language-guided dynamic context optimization">It enables natural language-guided dynamic context optimization</div><div class="quiz-choice" data-value="It increases the context window size to 2M tokens">It increases the context window size to 2M tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="21.59× compression with 19.15-point performance gain">
+                        <div class="quiz-question">2. What level of context compression did QwenLong-CPRS achieve while maintaining performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="5.5× compression with 10-point performance gain">5.5× compression with 10-point performance gain</div><div class="quiz-choice" data-value="15.3× compression with 15-point performance gain">15.3× compression with 15-point performance gain</div><div class="quiz-choice" data-value="21.59× compression with 19.15-point performance gain">21.59× compression with 19.15-point performance gain</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Multi-modal context processing for image and text">
+                        <div class="quiz-question">3. Which of these is NOT one of the four key technical innovations mentioned in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Bidirectional reasoning layers for boundary awareness">Bidirectional reasoning layers for boundary awareness</div><div class="quiz-choice" data-value="Multi-modal context processing for image and text">Multi-modal context processing for image and text</div><div class="quiz-choice" data-value="Window-parallel inference architecture">Window-parallel inference architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
