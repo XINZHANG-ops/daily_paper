@@ -1,0 +1,891 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-05-30 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-05-30 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Table-R1: Inference-Time Scaling for Table Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-29</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.23621" target="_blank">http://arxiv.org/pdf/2505.23621</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores inference-time scaling for table reasoning tasks, focusing on enhancing language models' ability to reason with tabular data.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on recent work in inference-time scaling for language models (like OpenAI's o-series) and proposes two novel post-training strategies specifically for table reasoning tasks.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of applying inference-time scaling to structure-dependent tasks, particularly table reasoning, which requires interpreting diverse cell contents, aligning data, and performing multi-step reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop two approaches: (1) distillation from frontier model reasoning traces (Table-R1-SFT) and (2) reinforcement learning with verifiable rewards (Table-R1-Zero), both applied to 7B-parameter language models.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The Table-R1-Zero model matches or exceeds the performance of larger models like GPT-4.1 and DeepSeek-R1 across diverse table reasoning tasks while using only a 7B-parameter model, with strong generalization to out-of-domain datasets.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Table-R1: Inference-Time Scaling for Table Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Training Data Collection Box -->
+    <rect x="50" y="50" width="200" height="100" rx="10" fill="#e6f3ff" stroke="#2196f3" stroke-width="2"/>
+    <text x="150" y="85" text-anchor="middle" font-size="14" fill="#333">Training Data Collection</text>
+    <text x="150" y="105" text-anchor="middle" font-size="12" fill="#666">TQA: WTQ, HiTab</text>
+    <text x="150" y="125" text-anchor="middle" font-size="12" fill="#666">TFV: TabFact</text>
+    <text x="150" y="145" text-anchor="middle" font-size="12" fill="#666">FF-TQA: FeTaQA</text>
+
+    <!-- Two Training Approaches -->
+    <rect x="350" y="50" width="200" height="80" rx="10" fill="#fff0f4" stroke="#e91e63" stroke-width="2"/>
+    <text x="450" y="85" text-anchor="middle" font-size="14" fill="#333">Distillation from</text>
+    <text x="450" y="105" text-anchor="middle" font-size="14" fill="#333">DeepSeek-R1</text>
+
+    <rect x="350" y="150" width="200" height="80" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+    <text x="450" y="185" text-anchor="middle" font-size="14" fill="#333">RLVR with</text>
+    <text x="450" y="205" text-anchor="middle" font-size="14" fill="#333">Verifiable Rewards</text>
+
+    <!-- Resulting Models -->
+    <rect x="650" y="50" width="200" height="80" rx="10" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+    <text x="750" y="95" text-anchor="middle" font-size="14" fill="#333">Table-R1-SFT</text>
+
+    <rect x="650" y="150" width="200" height="80" rx="10" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+    <text x="750" y="195" text-anchor="middle" font-size="14" fill="#333">Table-R1-Zero</text>
+
+    <!-- Evaluation Box -->
+    <rect x="350" y="300" width="500" height="150" rx="10" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+    <text x="600" y="330" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Evaluation</text>
+    <text x="600" y="360" text-anchor="middle" font-size="14" fill="#666">• In-domain Performance</text>
+    <text x="600" y="390" text-anchor="middle" font-size="14" fill="#666">• Out-of-domain Generalization</text>
+    <text x="600" y="420" text-anchor="middle" font-size="14" fill="#666">• Ablation Studies</text>
+
+    <!-- Analysis Box -->
+    <rect x="350" y="500" width="500" height="150" rx="10" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+    <text x="600" y="530" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Analysis</text>
+    <text x="600" y="560" text-anchor="middle" font-size="14" fill="#666">• Training Dynamics</text>
+    <text x="600" y="590" text-anchor="middle" font-size="14" fill="#666">• Qualitative Assessment</text>
+    <text x="600" y="620" text-anchor="middle" font-size="14" fill="#666">• Reasoning Capacity Boundaries</text>
+
+    <!-- Connecting Lines -->
+    <path d="M 250 100 L 350 90" stroke="#666" stroke-width="2"/>
+    <path d="M 250 100 L 350 190" stroke="#666" stroke-width="2"/>
+    <path d="M 550 90 L 650 90" stroke="#666" stroke-width="2"/>
+    <path d="M 550 190 L 650 190" stroke="#666" stroke-width="2"/>
+    <path d="M 750 130 L 750 300" stroke="#666" stroke-width="2"/>
+    <path d="M 600 450 L 600 500" stroke="#666" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Combining distillation and reinforcement learning with verifiable rewards">
+                        <div class="quiz-question">1. What is the key innovation that allows Table-R1-Zero to achieve performance comparable to much larger models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a massive training dataset of tables">Using a massive training dataset of tables</div><div class="quiz-choice" data-value="Combining distillation and reinforcement learning with verifiable rewards">Combining distillation and reinforcement learning with verifiable rewards</div><div class="quiz-choice" data-value="Increasing the model parameter count to match larger models">Increasing the model parameter count to match larger models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Tables require interpreting diverse cell contents and aligning data across structured formats">
+                        <div class="quiz-question">2. What unique challenge does table reasoning present compared to standard text-based tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Tables are too simple for language models to process">Tables are too simple for language models to process</div><div class="quiz-choice" data-value="Tables require more computational resources">Tables require more computational resources</div><div class="quiz-choice" data-value="Tables require interpreting diverse cell contents and aligning data across structured formats">Tables require interpreting diverse cell contents and aligning data across structured formats</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="They matched GPT-4.1's performance while using only 7B parameters">
+                        <div class="quiz-question">3. What was a surprising finding about the Table-R1 models' performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They only worked well on simple tables">They only worked well on simple tables</div><div class="quiz-choice" data-value="They matched GPT-4.1's performance while using only 7B parameters">They matched GPT-4.1's performance while using only 7B parameters</div><div class="quiz-choice" data-value="They performed worse than existing table reasoning models">They performed worse than existing table reasoning models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>VF-Eval: Evaluating Multimodal LLMs for Generating Feedback on AIGC
+  Videos</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-29</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.23693" target="_blank">http://arxiv.org/pdf/2505.23693</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Evaluating multimodal large language models' (MLLMs) ability to generate feedback on AI-generated content (AIGC) videos through a new benchmark called VF-EVAL.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing video understanding benchmarks that focus mainly on natural videos, this paper proposes a novel benchmark specifically for synthetic/AI-generated videos and introduces four comprehensive evaluation tasks.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of systematic evaluation methods for assessing MLLMs' capabilities in interpreting and providing feedback on AIGC videos, which have different characteristics from natural videos.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Created VF-EVAL benchmark with four tasks (coherence validation, error awareness, error type detection, and reasoning evaluation) and evaluated 13 frontier MLLMs using chain-of-thought prompting.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Even the best-performing model (GPT-4.1) struggled to achieve consistent performance across all tasks, highlighting the benchmark's challenging nature and the current limitations of MLLMs in understanding AIGC videos.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VF-Eval: Evaluating Multimodal LLMs for Generating Feedback on AIGC
+  Videos</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f5f5f5"/>
+    
+    <!-- Title -->
+    <text x="500" y="60" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">
+        VF-EVAL: Evaluating MLLMs for AIGC Video Feedback
+    </text>
+
+    <!-- Main Flow Sections -->
+    <!-- Data Collection -->
+    <rect x="100" y="100" width="200" height="100" rx="10" fill="#e3f2fd"/>
+    <text x="200" y="150" text-anchor="middle" font-size="16" fill="#1565c0">
+        Data Collection
+    </text>
+    <text x="200" y="175" text-anchor="middle" font-size="12" fill="#1565c0">
+        AIGC Videos from Multiple Sources
+    </text>
+
+    <!-- Task Categories -->
+    <rect x="400" y="100" width="500" height="100" rx="10" fill="#e8f5e9"/>
+    <text x="650" y="130" text-anchor="middle" font-size="16" fill="#2e7d32">
+        Four Main Tasks
+    </text>
+    <text x="650" y="155" text-anchor="middle" font-size="12" fill="#2e7d32">
+        Coherence Validation | Error Awareness
+    </text>
+    <text x="650" y="175" text-anchor="middle" font-size="12" fill="#2e7d32">
+        Error Type Detection | Reasoning Evaluation
+    </text>
+
+    <!-- Evaluation Methods -->
+    <rect x="150" y="250" width="200" height="120" rx="10" fill="#fff3e0"/>
+    <text x="250" y="280" text-anchor="middle" font-size="16" fill="#e65100">
+        Question Types
+    </text>
+    <text x="250" y="305" text-anchor="middle" font-size="12" fill="#e65100">
+        Yes-Or-No Questions
+    </text>
+    <text x="250" y="325" text-anchor="middle" font-size="12" fill="#e65100">
+        Multiple-choice Questions
+    </text>
+    <text x="250" y="345" text-anchor="middle" font-size="12" fill="#e65100">
+        Open-Ended Questions
+    </text>
+
+    <!-- Models -->
+    <rect x="400" y="250" width="200" height="120" rx="10" fill="#f3e5f5"/>
+    <text x="500" y="280" text-anchor="middle" font-size="16" fill="#7b1fa2">
+        Evaluated Models
+    </text>
+    <text x="500" y="305" text-anchor="middle" font-size="12" fill="#7b1fa2">
+        13 Frontier MLLMs
+    </text>
+    <text x="500" y="325" text-anchor="middle" font-size="12" fill="#7b1fa2">
+        Proprietary & Open-source
+    </text>
+
+    <!-- Results -->
+    <rect x="650" y="250" width="200" height="120" rx="10" fill="#ffebee"/>
+    <text x="750" y="280" text-anchor="middle" font-size="16" fill="#c62828">
+        Key Findings
+    </text>
+    <text x="750" y="305" text-anchor="middle" font-size="12" fill="#c62828">
+        Performance Gaps
+    </text>
+    <text x="750" y="325" text-anchor="middle" font-size="12" fill="#c62828">
+        Model Limitations
+    </text>
+    <text x="750" y="345" text-anchor="middle" font-size="12" fill="#c62828">
+        Future Improvements
+    </text>
+
+    <!-- Experiment Details -->
+    <rect x="200" y="420" width="600" height="100" rx="10" fill="#e0f7fa"/>
+    <text x="500" y="460" text-anchor="middle" font-size="16" fill="#006064">
+        REPROMPT Experiment
+    </text>
+    <text x="500" y="485" text-anchor="middle" font-size="12" fill="#006064">
+        Comparing MLLM with Human Feedback
+    </text>
+
+    <!-- Final Outcome -->
+    <rect x="300" y="570" width="400" height="80" rx="10" fill="#f9fbe7"/>
+    <text x="500" y="605" text-anchor="middle" font-size="16" fill="#827717">
+        Benchmark Contribution
+    </text>
+    <text x="500" y="625" text-anchor="middle" font-size="12" fill="#827717">
+        Comprehensive Evaluation Framework for AIGC Videos
+    </text>
+
+    <!-- Connecting Lines -->
+    <path d="M 300 150 L 400 150" stroke="#999" stroke-width="2"/>
+    <path d="M 250 220 L 250 250" stroke="#999" stroke-width="2"/>
+    <path d="M 500 220 L 500 250" stroke="#999" stroke-width="2"/>
+    <path d="M 750 220 L 750 250" stroke="#999" stroke-width="2"/>
+    <path d="M 500 370 L 500 420" stroke="#999" stroke-width="2"/>
+    <path d="M 500 520 L 500 570" stroke="#999" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It specifically focuses on synthetic/AI-generated videos rather than natural videos">
+                        <div class="quiz-question">1. What is the main innovative aspect of VF-EVAL compared to existing video understanding benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more advanced AI models for evaluation">It uses more advanced AI models for evaluation</div><div class="quiz-choice" data-value="It specifically focuses on synthetic/AI-generated videos rather than natural videos">It specifically focuses on synthetic/AI-generated videos rather than natural videos</div><div class="quiz-choice" data-value="It has a larger dataset of video samples">It has a larger dataset of video samples</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Coherence Validation">
+                        <div class="quiz-question">2. Which task in VF-EVAL evaluates MLLMs' ability to detect misalignment between the video and its generation prompt?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Error Awareness">Error Awareness</div><div class="quiz-choice" data-value="Reasoning Evaluation">Reasoning Evaluation</div><div class="quiz-choice" data-value="Coherence Validation">Coherence Validation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Even the best model (GPT-4.1) struggled to achieve consistent performance">
+                        <div class="quiz-question">3. What was a key finding from the evaluation of MLLMs using VF-EVAL?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="All models performed consistently well across all tasks">All models performed consistently well across all tasks</div><div class="quiz-choice" data-value="Even the best model (GPT-4.1) struggled to achieve consistent performance">Even the best model (GPT-4.1) struggled to achieve consistent performance</div><div class="quiz-choice" data-value="Open-source models outperformed proprietary models in all tasks">Open-source models outperformed proprietary models in all tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Spatial-MLLM: Boosting MLLM Capabilities in Visual-based Spatial
+  Intelligence</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-29</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.23747" target="_blank">http://arxiv.org/pdf/2505.23747</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on enhancing Multimodal Large Language Models' (MLLMs) spatial intelligence capabilities for understanding and reasoning about 3D scenes from 2D video inputs.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research relied on additional 3D/2.5D data for spatial understanding; this paper proposes using only 2D video inputs by combining semantic and structural features through a dual-encoder architecture initialized with visual geometry foundation models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses MLLMs' limited ability to understand and reason about 3D spatial relationships when only given 2D video inputs, without access to additional 3D data like point clouds or depth maps.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper implements a dual-encoder architecture (2D semantic encoder + spatial encoder), a connector module for feature fusion, and a space-aware frame sampling strategy, trained on their Spatial-MLLM-120k dataset using supervised fine-tuning and GRPO.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieves state-of-the-art performance on multiple benchmarks including VSI-Bench, ScanQA, and SQA3D, outperforming both proprietary and open-source models despite having fewer parameters (4B vs 72B).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Spatial-MLLM: Boosting MLLM Capabilities in Visual-based Spatial
+  Intelligence</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f5f5f5"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">Spatial-MLLM Workflow</text>
+    
+    <!-- Input Section -->
+    <rect x="100" y="100" width="200" height="80" rx="15" fill="#4285f4" opacity="0.8"/>
+    <text x="200" y="145" text-anchor="middle" font-size="16" fill="white">Input Video</text>
+    <text x="200" y="165" text-anchor="middle" font-size="12" fill="white">Scene Recording</text>
+
+    <!-- Dual Encoder Section -->
+    <rect x="100" y="250" width="200" height="100" rx="15" fill="#ea4335" opacity="0.8"/>
+    <text x="200" y="285" text-anchor="middle" font-size="16" fill="white">2D Encoder</text>
+    <text x="200" y="305" text-anchor="middle" font-size="12" fill="white">Semantic Features</text>
+    
+    <rect x="400" y="250" width="200" height="100" rx="15" fill="#fbbc05" opacity="0.8"/>
+    <text x="500" y="285" text-anchor="middle" font-size="16" fill="white">Spatial Encoder</text>
+    <text x="500" y="305" text-anchor="middle" font-size="12" fill="white">3D Structure Features</text>
+
+    <!-- Connector Section -->
+    <rect x="250" y="400" width="200" height="80" rx="15" fill="#34a853" opacity="0.8"/>
+    <text x="350" y="445" text-anchor="middle" font-size="16" fill="white">Connector</text>
+    <text x="350" y="465" text-anchor="middle" font-size="12" fill="white">Feature Integration</text>
+
+    <!-- LLM Section -->
+    <rect x="250" y="550" width="200" height="80" rx="15" fill="#4285f4" opacity="0.8"/>
+    <text x="350" y="595" text-anchor="middle" font-size="16" fill="white">Large Language Model</text>
+    <text x="350" y="615" text-anchor="middle" font-size="12" fill="white">Spatial Reasoning</text>
+
+    <!-- Frame Sampling Section -->
+    <rect x="700" y="250" width="200" height="100" rx="15" fill="#ea4335" opacity="0.8"/>
+    <text x="800" y="285" text-anchor="middle" font-size="16" fill="white">Space-aware</text>
+    <text x="800" y="305" text-anchor="middle" font-size="12" fill="white">Frame Sampling</text>
+
+    <!-- Training Section -->
+    <rect x="700" y="400" width="200" height="150" rx="15" fill="#34a853" opacity="0.8"/>
+    <text x="800" y="435" text-anchor="middle" font-size="16" fill="white">Training Pipeline</text>
+    <text x="800" y="465" text-anchor="middle" font-size="12" fill="white">1. SFT Training</text>
+    <text x="800" y="485" text-anchor="middle" font-size="12" fill="white">2. Cold Start</text>
+    <text x="800" y="505" text-anchor="middle" font-size="12" fill="white">3. GRPO Training</text>
+
+    <!-- Connecting Lines -->
+    <path d="M 200 180 L 200 250" stroke="#666" stroke-width="2"/>
+    <path d="M 300 300 L 400 300" stroke="#666" stroke-width="2"/>
+    <path d="M 200 350 L 200 400 L 250 400" stroke="#666" stroke-width="2"/>
+    <path d="M 500 350 L 500 400 L 450 400" stroke="#666" stroke-width="2"/>
+    <path d="M 350 480 L 350 550" stroke="#666" stroke-width="2"/>
+    <path d="M 600 300 L 700 300" stroke="#666" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Combining a semantic 2D encoder with a structure-aware spatial encoder">
+                        <div class="quiz-question">1. What is the key innovation in Spatial-MLLM's architecture that differentiates it from previous MLLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a single powerful encoder with higher parameters">Using a single powerful encoder with higher parameters</div><div class="quiz-choice" data-value="Combining a semantic 2D encoder with a structure-aware spatial encoder">Combining a semantic 2D encoder with a structure-aware spatial encoder</div><div class="quiz-choice" data-value="Implementing a new type of attention mechanism">Implementing a new type of attention mechanism</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The need for additional 3D or 2.5D data like point clouds">
+                        <div class="quiz-question">2. What is the main limitation that Spatial-MLLM overcomes compared to existing 3D-aware models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The need for additional 3D or 2.5D data like point clouds">The need for additional 3D or 2.5D data like point clouds</div><div class="quiz-choice" data-value="The requirement for high-end GPU hardware">The requirement for high-end GPU hardware</div><div class="quiz-choice" data-value="The necessity for human annotations">The necessity for human annotations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="72B parameters">
+                        <div class="quiz-question">3. Despite having only 4B parameters, Spatial-MLLM outperforms larger models. What is the closest competitor in terms of parameter size mentioned in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="34B parameters">34B parameters</div><div class="quiz-choice" data-value="52B parameters">52B parameters</div><div class="quiz-choice" data-value="72B parameters">72B parameters</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
