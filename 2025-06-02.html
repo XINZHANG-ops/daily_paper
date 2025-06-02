@@ -1,0 +1,857 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-02 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-02 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in
+  Large Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.24864" target="_blank">http://arxiv.org/pdf/2505.24864</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Prolonged reinforcement learning (ProRL) for improving reasoning capabilities in large language models, in the domain of artificial intelligence and natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research questioning whether RL truly expands model capabilities or just amplifies existing abilities. Proposes new ProRL methodology with extended training periods, KL divergence control, and reference policy resetting.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses whether reinforcement learning can genuinely enhance a language model's reasoning capabilities beyond its base model's abilities, particularly in diverse reasoning tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implemented ProRL training on a 1.5B parameter model using Group Relative Policy Optimization (GRPO), with KL regularization and periodic reference policy resets, trained on 136K problems across math, code, STEM, logic puzzles, and instruction following tasks.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieved significant improvements over base model: +14.7% on math, +13.9% on coding, +54.8% on logic puzzles, +25.1% on STEM reasoning, and +18.1% on instruction following tasks, demonstrating that prolonged RL training can expand reasoning capabilities beyond the base model's abilities.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in
+  Large Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">ProRL: Prolonged Reinforcement Learning Workflow</text>
+
+    <!-- Main Components -->
+    <g transform="translate(100,100)">
+        <!-- Base Model -->
+        <rect x="0" y="0" width="200" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+        <text x="100" y="45" text-anchor="middle" fill="white" font-weight="bold">Base Model</text>
+
+        <!-- ProRL Components -->
+        <rect x="300" y="0" width="500" height="200" rx="10" fill="#2ecc71" opacity="0.2"/>
+        <text x="550" y="30" text-anchor="middle" font-weight="bold" fill="#2c3e50">ProRL Components</text>
+        
+        <!-- Sub-components -->
+        <rect x="320" y="50" width="140" height="60" rx="5" fill="#e74c3c" opacity="0.8"/>
+        <text x="390" y="85" text-anchor="middle" fill="white" font-size="14">KL Divergence Control</text>
+
+        <rect x="480" y="50" width="140" height="60" rx="5" fill="#f1c40f" opacity="0.8"/>
+        <text x="550" y="85" text-anchor="middle" fill="white" font-size="14">Reference Policy Reset</text>
+
+        <rect x="640" y="50" width="140" height="60" rx="5" fill="#9b59b6" opacity="0.8"/>
+        <text x="710" y="85" text-anchor="middle" fill="white" font-size="14">Diverse Task Suite</text>
+
+        <!-- Training Process -->
+        <rect x="0" y="250" width="800" height="100" rx="10" fill="#34495e" opacity="0.2"/>
+        <text x="400" y="280" text-anchor="middle" font-weight="bold" fill="#2c3e50">Training Process</text>
+        
+        <circle cx="100" y="320" r="20" fill="#3498db" opacity="0.8"/>
+        <text x="100" y="325" text-anchor="middle" fill="white" font-size="12">Math</text>
+
+        <circle cx="200" y="320" r="20" fill="#e74c3c" opacity="0.8"/>
+        <text x="200" y="325" text-anchor="middle" fill="white" font-size="12">Code</text>
+
+        <circle cx="300" y="320" r="20" fill="#f1c40f" opacity="0.8"/>
+        <text x="300" y="325" text-anchor="middle" fill="white" font-size="12">STEM</text>
+
+        <circle cx="400" y="320" r="20" fill="#2ecc71" opacity="0.8"/>
+        <text x="400" y="325" text-anchor="middle" fill="white" font-size="12">Logic</text>
+
+        <circle cx="500" y="320" r="20" fill="#9b59b6" opacity="0.8"/>
+        <text x="500" y="325" text-anchor="middle" fill="white" font-size="12">Tasks</text>
+
+        <!-- Output -->
+        <rect x="0" y="400" width="800" height="150" rx="10" fill="#3498db" opacity="0.2"/>
+        <text x="400" y="430" text-anchor="middle" font-weight="bold" fill="#2c3e50">Results</text>
+
+        <rect x="50" y="450" width="200" height="60" rx="5" fill="#2ecc71" opacity="0.8"/>
+        <text x="150" y="485" text-anchor="middle" fill="white" font-size="14">Improved Reasoning</text>
+
+        <rect x="300" y="450" width="200" height="60" rx="5" fill="#e74c3c" opacity="0.8"/>
+        <text x="400" y="485" text-anchor="middle" fill="white" font-size="14">Enhanced Performance</text>
+
+        <rect x="550" y="450" width="200" height="60" rx="5" fill="#f1c40f" opacity="0.8"/>
+        <text x="650" y="485" text-anchor="middle" fill="white" font-size="14">OOD Generalization</text>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="KL divergence penalty with periodic reference policy resets">
+                        <div class="quiz-question">1. What unique challenge did ProRL address in preventing entropy collapse during extended training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Increased sampling temperature during rollouts">Increased sampling temperature during rollouts</div><div class="quiz-choice" data-value="KL divergence penalty with periodic reference policy resets">KL divergence penalty with periodic reference policy resets</div><div class="quiz-choice" data-value="Reduced context window size">Reduced context window size</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Logic puzzles (+54.8%)">
+                        <div class="quiz-question">2. Which domain showed the most dramatic improvement in performance after ProRL training compared to the base model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Mathematical reasoning (+14.7%)">Mathematical reasoning (+14.7%)</div><div class="quiz-choice" data-value="STEM reasoning (+25.1%)">STEM reasoning (+25.1%)</div><div class="quiz-choice" data-value="Logic puzzles (+54.8%)">Logic puzzles (+54.8%)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="When the base model initially struggles with the task">
+                        <div class="quiz-question">3. According to the paper's findings, when does ProRL training tend to be most effective?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="When the base model already performs well on the task">When the base model already performs well on the task</div><div class="quiz-choice" data-value="When the base model initially struggles with the task">When the base model initially struggles with the task</div><div class="quiz-choice" data-value="Only on mathematical reasoning tasks">Only on mathematical reasoning tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>AlphaOne: Reasoning Models Thinking Slow and Fast at Test Time</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.24863" target="_blank">http://arxiv.org/pdf/2505.24863</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces ALPHA ONE (α1), a framework for modulating reasoning progress in large language models at test time, in the domain of AI language model reasoning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research on test-time scaling methods like parallel scaling and sequential scaling, it proposes a novel universal framework that enables flexible slow-to-fast reasoning modulation through a parameter α.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the issue of large reasoning models' inability to find optimal human-like system-1-to-2 reasoning transitions, which leads to overthinking or underthinking problems.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method introduces αmoment for scaling thinking phase budget, uses Bernoulli stochastic process to schedule slow thinking transitions before αmoment, and deterministically terminates slow thinking after αmoment to foster fast reasoning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results show significant improvements across mathematical, coding, and scientific reasoning benchmarks, with up to +6.15% accuracy improvement on a 1.5B parameter model while reducing token length by 14%, demonstrating both effectiveness and efficiency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>AlphaOne: Reasoning Models Thinking Slow and Fast at Test Time</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa" />
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">AlphaOne Framework Flow</text>
+    
+    <!-- Start -->
+    <rect x="400" y="100" width="200" height="60" rx="10" fill="#3498db" />
+    <text x="500" y="135" text-anchor="middle" fill="white" font-size="16">Input Question</text>
+    
+    <!-- Pre-Alpha Moment Phase -->
+    <rect x="200" y="200" width="250" height="150" rx="10" fill="#e74c3c" opacity="0.9" />
+    <text x="325" y="230" text-anchor="middle" fill="white" font-size="18">Pre-α Moment</text>
+    <text x="325" y="260" text-anchor="middle" fill="white" font-size="14">• Scale thinking phase by α</text>
+    <text x="325" y="290" text-anchor="middle" fill="white" font-size="14">• Sample wait tokens from</text>
+    <text x="325" y="310" text-anchor="middle" fill="white" font-size="14">Bernoulli(pwait)</text>
+    <text x="325" y="330" text-anchor="middle" fill="white" font-size="14">• Slow thinking first</text>
+
+    <!-- Alpha Moment -->
+    <circle cx="500" cy="400" r="40" fill="#f1c40f" />
+    <text x="500" y="405" text-anchor="middle" fill="white" font-size="16">α Moment</text>
+    
+    <!-- Post-Alpha Moment Phase -->
+    <rect x="550" y="200" width="250" height="150" rx="10" fill="#2ecc71" opacity="0.9" />
+    <text x="675" y="230" text-anchor="middle" fill="white" font-size="18">Post-α Moment</text>
+    <text x="675" y="260" text-anchor="middle" fill="white" font-size="14">• Replace wait tokens with</text>
+    <text x="675" y="280" text-anchor="middle" fill="white" font-size="14">end-of-thinking token</text>
+    <text x="675" y="310" text-anchor="middle" fill="white" font-size="14">• Transition to fast thinking</text>
+    <text x="675" y="330" text-anchor="middle" fill="white" font-size="14">• Generate final answer</text>
+
+    <!-- Output -->
+    <rect x="400" y="500" width="200" height="60" rx="10" fill="#9b59b6" />
+    <text x="500" y="535" text-anchor="middle" fill="white" font-size="16">Final Answer</text>
+
+    <!-- Connecting Lines -->
+    <path d="M 500 160 L 500 200" stroke="#34495e" stroke-width="2" />
+    <path d="M 325 350 L 500 400" stroke="#34495e" stroke-width="2" />
+    <path d="M 675 350 L 500 400" stroke="#34495e" stroke-width="2" />
+    <path d="M 500 440 L 500 500" stroke="#34495e" stroke-width="2" />
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="LLMs perform better with slow-then-fast thinking, unlike humans">
+                        <div class="quiz-question">1. What surprising finding about LLM reasoning patterns compared to human reasoning does the paper reveal?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="LLMs perform better with fast-then-slow thinking like humans">LLMs perform better with fast-then-slow thinking like humans</div><div class="quiz-choice" data-value="LLMs perform better with slow-then-fast thinking, unlike humans">LLMs perform better with slow-then-fast thinking, unlike humans</div><div class="quiz-choice" data-value="LLMs perform equally well with any thinking pattern">LLMs perform equally well with any thinking pattern</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By replacing 'wait' tokens with '</think>' tokens">
+                        <div class="quiz-question">2. How does ALPHA ONE handle the 'slow thinking inertia' problem after αmoment?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By gradually reducing the frequency of 'wait' tokens">By gradually reducing the frequency of 'wait' tokens</div><div class="quiz-choice" data-value="By completely removing all thinking tokens">By completely removing all thinking tokens</div><div class="quiz-choice" data-value="By replacing 'wait' tokens with '</think>' tokens">By replacing 'wait' tokens with '</think>' tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="+6.15% accuracy with 14% token reduction">
+                        <div class="quiz-question">3. What was the most significant performance improvement achieved by ALPHA ONE on the 1.5B model while also reducing token length?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="+3.15% accuracy with 5% token reduction">+3.15% accuracy with 5% token reduction</div><div class="quiz-choice" data-value="+6.15% accuracy with 14% token reduction">+6.15% accuracy with 14% token reduction</div><div class="quiz-choice" data-value="+9.15% accuracy with 10% token reduction">+9.15% accuracy with 10% token reduction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>The Climb Carves Wisdom Deeper Than the Summit: On the Noisy Rewards in
+  Learning to Reason</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-05-28</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2505.22653" target="_blank">http://arxiv.org/pdf/2505.22653</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores the impact of noisy rewards in training large language models (LLMs) to reason through reinforcement learning (RL), focusing on both mathematical and open-ended tasks.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research focused on RL with accurate rewards in math tasks; this paper introduces the novel study of how LLMs handle noisy rewards and proposes using reasoning pattern rewards to calibrate noisy reward models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses how LLMs handle and learn from noisy rewards during RL training, which is a practical concern since real-world applications often involve imperfect reward signals.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors conducted experiments by deliberately introducing noise into reward signals for math tasks and using reward models of varying accuracy for open-ended tasks, while also testing a new Reasoning Pattern Reward (RPR) approach.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results showed LLMs are surprisingly robust to substantial reward noise (up to 40% incorrect rewards), and using RPR alone achieved comparable performance to models trained with strict verification, demonstrating that reasoning patterns are more important than answer correctness in training.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>The Climb Carves Wisdom Deeper Than the Summit: On the Noisy Rewards in
+  Learning to Reason</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Learning to Reason with Noisy Rewards</text>
+
+    <!-- Math Tasks Section -->
+    <g transform="translate(200,120)">
+        <rect x="0" y="0" width="250" height="280" rx="10" fill="#e3f2fd" stroke="#1976d2"/>
+        <text x="125" y="30" text-anchor="middle" font-weight="bold" fill="#1976d2">Math Tasks</text>
+        
+        <rect x="20" y="50" width="210" height="60" rx="5" fill="#bbdefb"/>
+        <text x="125" y="85" text-anchor="middle" font-size="14">Random Flip Rewards
+(0% to 50%)</text>
+        
+        <rect x="20" y="130" width="210" height="60" rx="5" fill="#bbdefb"/>
+        <text x="125" y="165" text-anchor="middle" font-size="14">Reasoning Pattern
+Reward (RPR)</text>
+        
+        <rect x="20" y="210" width="210" height="40" rx="5" fill="#90caf9"/>
+        <text x="125" y="235" text-anchor="middle" font-size="14">Model Performance</text>
+    </g>
+
+    <!-- Open NLP Tasks Section -->
+    <g transform="translate(550,120)">
+        <rect x="0" y="0" width="250" height="280" rx="10" fill="#f3e5f5" stroke="#7b1fa2"/>
+        <text x="125" y="30" text-anchor="middle" font-weight="bold" fill="#7b1fa2">Open NLP Tasks</text>
+        
+        <rect x="20" y="50" width="210" height="60" rx="5" fill="#e1bee7"/>
+        <text x="125" y="85" text-anchor="middle" font-size="14">Reward Models with
+Varying Accuracy</text>
+        
+        <rect x="20" y="130" width="210" height="60" rx="5" fill="#e1bee7"/>
+        <text x="125" y="165" text-anchor="middle" font-size="14">RPR Calibration for
+Noisy Rewards</text>
+        
+        <rect x="20" y="210" width="210" height="40" rx="5" fill="#ce93d8"/>
+        <text x="125" y="235" text-anchor="middle" font-size="14">Model Performance</text>
+    </g>
+
+    <!-- Findings Section -->
+    <g transform="translate(200,450)">
+        <rect x="0" y="0" width="600" height="280" rx="10" fill="#e8f5e9" stroke="#388e3c"/>
+        <text x="300" y="30" text-anchor="middle" font-weight="bold" fill="#388e3c">Key Findings</text>
+        
+        <rect x="20" y="50" width="560" height="50" rx="5" fill="#c8e6c9"/>
+        <text x="300" y="80" text-anchor="middle" font-size="14">LLMs demonstrate strong robustness to reward noise</text>
+        
+        <rect x="20" y="110" width="560" height="50" rx="5" fill="#c8e6c9"/>
+        <text x="300" y="140" text-anchor="middle" font-size="14">RPR alone achieves performance comparable to strict verification</text>
+        
+        <rect x="20" y="170" width="560" height="50" rx="5" fill="#c8e6c9"/>
+        <text x="300" y="200" text-anchor="middle" font-size="14">RPR effectively calibrates noisy reward models</text>
+        
+        <rect x="20" y="230" width="560" height="40" rx="5" fill="#a5d6a7"/>
+        <text x="300" y="255" text-anchor="middle" font-size="14">Emphasis on reasoning process over final results</text>
+    </g>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="LLMs showed strong robustness and could learn effectively even with 40% incorrect rewards">
+                        <div class="quiz-question">1. What surprising discovery did the researchers make about LLMs' response to noisy rewards?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="LLMs completely failed to learn when any noise was introduced">LLMs completely failed to learn when any noise was introduced</div><div class="quiz-choice" data-value="LLMs showed strong robustness and could learn effectively even with 40% incorrect rewards">LLMs showed strong robustness and could learn effectively even with 40% incorrect rewards</div><div class="quiz-choice" data-value="LLMs only worked with perfectly accurate rewards">LLMs only worked with perfectly accurate rewards</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It demonstrated that rewarding good reasoning patterns alone can achieve similar performance to strict verification">
+                        <div class="quiz-question">2. What is the main significance of the Reasoning Pattern Reward (RPR) findings in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It showed that checking answer correctness is the most important factor in training">It showed that checking answer correctness is the most important factor in training</div><div class="quiz-choice" data-value="It proved that LLMs cannot learn without strict verification">It proved that LLMs cannot learn without strict verification</div><div class="quiz-choice long-text" data-value="It demonstrated that rewarding good reasoning patterns alone can achieve similar performance to strict verification">It demonstrated that rewarding good reasoning patterns alone can achieve similar performance to strict verification</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Qwen-2.5-7B">
+                        <div class="quiz-question">3. Which model showed the strongest robustness to noisy rewards in the experiments?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Llama-3.1-8B">Llama-3.1-8B</div><div class="quiz-choice" data-value="Qwen-2.5-7B">Qwen-2.5-7B</div><div class="quiz-choice" data-value="GPT-3">GPT-3</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
