@@ -1,0 +1,864 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-04 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-04 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>UniWorld: High-Resolution Semantic Encoders for Unified Visual
+  Understanding and Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.03147" target="_blank">http://arxiv.org/pdf/2506.03147</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of a unified visual AI model (UniWorld) for image understanding, generation, and manipulation tasks in computer vision and deep learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on observations of GPT-4o-Image's architecture, the paper proposes using semantic encoders instead of traditional VAEs for visual feature extraction, challenging the common belief that VAEs are essential for image manipulation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the challenge of creating a unified model capable of handling multiple image tasks (perception, manipulation, generation) while maintaining high performance with minimal training data.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a unified architecture combining high-resolution semantic encoders (SigLIP), visual language models (Qwen2.5-VL-7B), and flow matching, trained in two stages with an adaptive editing region weighting strategy.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art performance using only 2.7M training samples (1% of BAGEL's data), outperforming BAGEL on image editing benchmarks and showing competitive results on image understanding and generation tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>UniWorld: High-Resolution Semantic Encoders for Unified Visual
+  Understanding and Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f5f5f5"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">
+        UniWorld Architecture Flow
+    </text>
+
+    <!-- Main Components -->
+    <g transform="translate(0,20)">
+        <!-- Input Stage -->
+        <rect x="100" y="100" width="200" height="80" rx="10" fill="#4CAF50" opacity="0.8"/>
+        <text x="200" y="145" text-anchor="middle" fill="white" font-size="16">Input Image</text>
+        
+        <!-- Processing Paths -->
+        <!-- Left Path - High Level -->
+        <rect x="100" y="250" width="200" height="80" rx="10" fill="#2196F3" opacity="0.8"/>
+        <text x="200" y="295" text-anchor="middle" fill="white" font-size="16">VLM (Qwen2.5-VL)</text>
+        
+        <!-- Middle Path - Low Level -->
+        <rect x="400" y="250" width="200" height="80" rx="10" fill="#FF9800" opacity="0.8"/>
+        <text x="500" y="295" text-anchor="middle" fill="white" font-size="16">SigLIP Encoder</text>
+        
+        <!-- Feature Integration -->
+        <rect x="250" y="400" width="200" height="80" rx="10" fill="#9C27B0" opacity="0.8"/>
+        <text x="350" y="445" text-anchor="middle" fill="white" font-size="16">MLP Connector</text>
+        
+        <!-- Generation Module -->
+        <rect x="250" y="550" width="200" height="80" rx="10" fill="#E91E63" opacity="0.8"/>
+        <text x="350" y="595" text-anchor="middle" fill="white" font-size="16">DiT Generation</text>
+
+        <!-- Output -->
+        <rect x="700" y="400" width="200" height="80" rx="10" fill="#795548" opacity="0.8"/>
+        <text x="800" y="445" text-anchor="middle" fill="white" font-size="16">Output Image</text>
+
+        <!-- Connecting Lines -->
+        <path d="M200 180 L200 250" stroke="#666" stroke-width="2" fill="none"/>
+        <path d="M500 180 L500 250" stroke="#666" stroke-width="2" fill="none"/>
+        <path d="M200 330 L350 400" stroke="#666" stroke-width="2" fill="none"/>
+        <path d="M500 330 L350 400" stroke="#666" stroke-width="2" fill="none"/>
+        <path d="M350 480 L350 550" stroke="#666" stroke-width="2" fill="none"/>
+        <path d="M450 590 L800 480" stroke="#666" stroke-width="2" fill="none"/>
+    </g>
+
+    <!-- Legend -->
+    <g transform="translate(700,100)">
+        <rect x="0" y="0" width="200" height="120" rx="5" fill="white" stroke="#ccc"/>
+        <text x="10" y="25" font-size="14" font-weight="bold">Training Stages:</text>
+        <circle cx="20" cy="45" r="6" fill="#4CAF50"/>
+        <text x="35" y="50" font-size="12">Stage 1: Pretraining</text>
+        <circle cx="20" cy="70" r="6" fill="#2196F3"/>
+        <text x="35" y="75" font-size="12">Stage 2: Fine-tuning</text>
+        <circle cx="20" cy="95" r="6" fill="#FF9800"/>
+        <text x="35" y="100" font-size="12">Inference</text>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Using semantic encoders instead of VAEs">
+                        <div class="quiz-question">1. What key innovation did UniWorld introduce compared to traditional image manipulation models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using VAEs for feature extraction">Using VAEs for feature extraction</div><div class="quiz-choice" data-value="Using semantic encoders instead of VAEs">Using semantic encoders instead of VAEs</div><div class="quiz-choice" data-value="Using larger training datasets">Using larger training datasets</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="1% of BAGEL's data">
+                        <div class="quiz-question">2. How much training data did UniWorld use compared to BAGEL while achieving better performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="50% of BAGEL's data">50% of BAGEL's data</div><div class="quiz-choice" data-value="10% of BAGEL's data">10% of BAGEL's data</div><div class="quiz-choice" data-value="1% of BAGEL's data">1% of BAGEL's data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Logarithmic weighting function based on edit area ratio">
+                        <div class="quiz-question">3. What strategy did UniWorld use to handle the imbalance between edited and unedited regions during training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Simple uniform weighting across all pixels">Simple uniform weighting across all pixels</div><div class="quiz-choice" data-value="Logarithmic weighting function based on edit area ratio">Logarithmic weighting function based on edit area ratio</div><div class="quiz-choice" data-value="Random sampling of edited regions">Random sampling of edited regions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>GUI-Actor: Coordinate-Free Visual Grounding for GUI Agents</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.03143" target="_blank">http://arxiv.org/pdf/2506.03143</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces GUI-Actor, a coordinate-free visual grounding method for GUI agents to interact with graphical user interfaces through vision-language models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research relied on coordinate-based methods for GUI interaction; this paper proposes a novel coordinate-free approach using attention mechanisms and a dedicated <ACTOR> token to directly ground actions to visual regions.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses limitations of coordinate-based GUI interaction methods, including weak spatial-semantic alignment, ambiguous supervision targets, and mismatches between screen coordinates and visual features.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method uses an attention-based action head with a special <ACTOR> token to attend to relevant visual patches, multi-patch supervision for training, and a grounding verifier to select optimal action regions.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> GUI-Actor outperformed state-of-the-art methods on multiple benchmarks, with GUI-Actor-7B achieving scores of 40.7 with Qwen2-VL and 44.6 with Qwen2.5-VL as backbones, surpassing UI-TARS-72B (38.1) on ScreenSpot-Pro while using fewer parameters.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>GUI-Actor: Coordinate-Free Visual Grounding for GUI Agents</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" font-size="24" fill="#333" text-anchor="middle" font-weight="bold">GUI-Actor: Coordinate-Free Visual Grounding Workflow</text>
+
+    <!-- Main Flow Components -->
+    <!-- Input Stage -->
+    <rect x="100" y="100" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2"/>
+    <text x="200" y="145" font-size="16" fill="#1976d2" text-anchor="middle">Input Processing</text>
+    <text x="200" y="165" font-size="12" fill="#1976d2" text-anchor="middle">Screenshot + Instruction</text>
+
+    <!-- VLM Processing -->
+    <rect x="400" y="100" width="200" height="80" rx="10" fill="#e8f5e9" stroke="#388e3c"/>
+    <text x="500" y="145" font-size="16" fill="#388e3c" text-anchor="middle">VLM Backbone</text>
+    <text x="500" y="165" font-size="12" fill="#388e3c" text-anchor="middle">Qwen2-VL Processing</text>
+
+    <!-- ACTOR Token -->
+    <rect x="700" y="100" width="200" height="80" rx="10" fill="#fff3e0" stroke="#f57c00"/>
+    <text x="800" y="145" font-size="16" fill="#f57c00" text-anchor="middle">ACTOR Token</text>
+    <text x="800" y="165" font-size="12" fill="#f57c00" text-anchor="middle">Contextual Anchor</text>
+
+    <!-- Action Head -->
+    <rect x="250" y="250" width="200" height="80" rx="10" fill="#fce4ec" stroke="#c2185b"/>
+    <text x="350" y="295" font-size="16" fill="#c2185b" text-anchor="middle">Action Head</text>
+    <text x="350" y="315" font-size="12" fill="#c2185b" text-anchor="middle">Attention Mechanism</text>
+
+    <!-- Multi-Patch Processing -->
+    <rect x="550" y="250" width="200" height="80" rx="10" fill="#e1bee7" stroke="#7b1fa2"/>
+    <text x="650" y="295" font-size="16" fill="#7b1fa2" text-anchor="middle">Multi-Patch Processing</text>
+    <text x="650" y="315" font-size="12" fill="#7b1fa2" text-anchor="middle">Spatial-Aware Supervision</text>
+
+    <!-- Grounding Verifier -->
+    <rect x="400" y="400" width="200" height="80" rx="10" fill="#ffebee" stroke="#c62828"/>
+    <text x="500" y="445" font-size="16" fill="#c62828" text-anchor="middle">Grounding Verifier</text>
+    <text x="500" y="465" font-size="12" fill="#c62828" text-anchor="middle">Candidate Selection</text>
+
+    <!-- Output -->
+    <rect x="400" y="550" width="200" height="80" rx="10" fill="#e0f7fa" stroke="#0097a7"/>
+    <text x="500" y="595" font-size="16" fill="#0097a7" text-anchor="middle">Final Output</text>
+    <text x="500" y="615" font-size="12" fill="#0097a7" text-anchor="middle">Grounded Region</text>
+
+    <!-- Connecting Lines -->
+    <path d="M300 140 L400 140" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M600 140 L700 140" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M800 180 L800 220 L350 220 L350 250" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M800 180 L800 220 L650 220 L650 250" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M350 330 L350 440 L400 440" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M650 330 L650 440 L600 440" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M500 480 L500 550" stroke="#666" stroke-width="2" fill="none"/>
+
+    <!-- Legend -->
+    <text x="100" y="750" font-size="14" fill="#666">Key Components:</text>
+    <rect x="100" y="760" width="15" height="15" fill="#e3f2fd"/>
+    <text x="125" y="772" font-size="12" fill="#666">Input Processing</text>
+    <rect x="250" y="760" width="15" height="15" fill="#e8f5e9"/>
+    <text x="275" y="772" font-size="12" fill="#666">VLM Processing</text>
+    <rect x="400" y="760" width="15" height="15" fill="#fce4ec"/>
+    <text x="425" y="772" font-size="12" fill="#666">Action Components</text>
+    <rect x="550" y="760" width="15" height="15" fill="#ffebee"/>
+    <text x="575" y="772" font-size="12" fill="#666">Verification</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Implementing coordinate-free visual grounding with an attention mechanism">
+                        <div class="quiz-question">1. What is the key innovation in GUI-Actor's approach compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using larger language models for better accuracy">Using larger language models for better accuracy</div><div class="quiz-choice" data-value="Implementing coordinate-free visual grounding with an attention mechanism">Implementing coordinate-free visual grounding with an attention mechanism</div><div class="quiz-choice" data-value="Generating more precise screen coordinates">Generating more precise screen coordinates</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By treating all patches overlapping with ground-truth bounding boxes as positive examples">
+                        <div class="quiz-question">2. How does GUI-Actor handle the ambiguity of valid click regions on a GUI element?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By generating multiple coordinate pairs">By generating multiple coordinate pairs</div><div class="quiz-choice" data-value="By using only the center point of elements">By using only the center point of elements</div><div class="quiz-choice" data-value="By treating all patches overlapping with ground-truth bounding boxes as positive examples">By treating all patches overlapping with ground-truth bounding boxes as positive examples</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It can generate multiple candidate regions in a single forward pass">
+                        <div class="quiz-question">3. What unique efficiency advantage does GUI-Actor have during inference?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires less training data">It requires less training data</div><div class="quiz-choice" data-value="It can generate multiple candidate regions in a single forward pass">It can generate multiple candidate regions in a single forward pass</div><div class="quiz-choice" data-value="It processes images faster than other models">It processes images faster than other models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Sparse-vDiT: Unleashing the Power of Sparse Attention to Accelerate
+  Video Diffusion Transformers</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.03065" target="_blank">http://arxiv.org/pdf/2506.03065</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Video generation using diffusion transformers, focusing on optimizing and accelerating the attention mechanism in video diffusion models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing Video Diffusion Transformer (vDiT) architectures, proposing new sparse attention patterns and optimization techniques to reduce computational overhead while maintaining generation quality.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The quadratic computational complexity of attention mechanisms in video diffusion transformers leads to significant inference latency, making video generation slow and computationally expensive.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces Sparse-vDiT framework that combines pattern-optimized sparse kernels, offline sparse diffusion search algorithm, and head fusion techniques to optimize attention computation based on identified sparsity patterns.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 2.09×, 2.38×, and 1.67× theoretical FLOP reduction on CogVideoX1.5, HunyuanVideo, and Wan2.1 respectively, with actual speedups of 1.76×, 1.85×, and 1.58× while maintaining high visual quality (PSNR scores of 24.13, 27.09, and 22.59).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Sparse-vDiT: Unleashing the Power of Sparse Attention to Accelerate
+  Video Diffusion Transformers</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f5f5f5"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">Sparse-vDiT Framework</text>
+
+    <!-- Input Stage -->
+    <rect x="50" y="100" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2"/>
+    <text x="150" y="145" text-anchor="middle" font-size="16" fill="#1976d2">Input Video Tokens</text>
+
+    <!-- Analysis Stage -->
+    <g transform="translate(350, 100)">
+        <rect width="300" height="200" rx="10" fill="#fff3e0" stroke="#f57c00"/>
+        <text x="150" y="40" text-anchor="middle" font-size="16" fill="#f57c00">Attention Pattern Analysis</text>
+        <text x="150" y="80" text-anchor="middle" font-size="14">1. Diagonal Pattern</text>
+        <text x="150" y="110" text-anchor="middle" font-size="14">2. Multi-diagonal Pattern</text>
+        <text x="150" y="140" text-anchor="middle" font-size="14">3. Vertical-stripe Pattern</text>
+        <text x="150" y="170" text-anchor="middle" font-size="14">4. Head Redundancy Check</text>
+    </g>
+
+    <!-- Optimization Stage -->
+    <g transform="translate(350, 350)">
+        <rect width="300" height="200" rx="10" fill="#e8f5e9" stroke="#388e3c"/>
+        <text x="150" y="40" text-anchor="middle" font-size="16" fill="#388e3c">Optimization Process</text>
+        <text x="150" y="80" text-anchor="middle" font-size="14">1. Pattern-optimized Kernels</text>
+        <text x="150" y="110" text-anchor="middle" font-size="14">2. Offline Sparse Search</text>
+        <text x="150" y="140" text-anchor="middle" font-size="14">3. Head Fusion</text>
+        <text x="150" y="170" text-anchor="middle" font-size="14">4. Strategy Selection</text>
+    </g>
+
+    <!-- Output Stage -->
+    <rect x="750" y="250" width="200" height="80" rx="10" fill="#fce4ec" stroke="#c2185b"/>
+    <text x="850" y="295" text-anchor="middle" font-size="16" fill="#c2185b">Accelerated vDiT</text>
+
+    <!-- Connecting Lines -->
+    <path d="M 250 140 L 350 200" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M 650 200 L 750 290" stroke="#666" stroke-width="2" fill="none"/>
+    <path d="M 650 450 L 750 290" stroke="#666" stroke-width="2" fill="none"/>
+
+    <!-- Performance Metrics -->
+    <g transform="translate(700, 500)">
+        <rect width="250" height="150" rx="10" fill="#f3e5f5" stroke="#7b1fa2"/>
+        <text x="125" y="40" text-anchor="middle" font-size="16" fill="#7b1fa2">Performance Gains</text>
+        <text x="125" y="80" text-anchor="middle" font-size="14">• 1.76× Speedup</text>
+        <text x="125" y="110" text-anchor="middle" font-size="14">• 2.09× FLOP Reduction</text>
+        <text x="125" y="140" text-anchor="middle" font-size="14">• PSNR: 24.13</text>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Horizontal-stripe pattern">
+                        <div class="quiz-question">1. What is the main sparsity pattern NOT identified by the authors in video diffusion transformer attention maps?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Horizontal-stripe pattern">Horizontal-stripe pattern</div><div class="quiz-choice" data-value="Diagonal pattern">Diagonal pattern</div><div class="quiz-choice" data-value="Vertical-stripe pattern">Vertical-stripe pattern</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="3-6%">
+                        <div class="quiz-question">2. According to the paper, what percentage of attention heads can be skipped in CogVideoX1.5 while still maintaining reasonable generation quality?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1-2%">1-2%</div><div class="quiz-choice" data-value="3-6%">3-6%</div><div class="quiz-choice" data-value="8-10%">8-10%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="2.38× theoretical FLOP reduction">
+                        <div class="quiz-question">3. What is the most significant achievement of Sparse-vDiT on the HunyuanVideo model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="2.38× theoretical FLOP reduction">2.38× theoretical FLOP reduction</div><div class="quiz-choice" data-value="Perfect PSNR score of 30.0">Perfect PSNR score of 30.0</div><div class="quiz-choice" data-value="3× faster inference speed">3× faster inference speed</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
