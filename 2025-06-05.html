@@ -1,0 +1,859 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-05 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-05 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Advancing Multimodal Reasoning: From Optimized Cold Start to Staged
+  Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-04</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.04207" target="_blank">http://arxiv.org/pdf/2506.04207</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on advancing multimodal reasoning capabilities in large language models through optimized training methods and reinforcement learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on DeepSeek-R1's success in textual reasoning, this paper proposes a novel three-stage curriculum combining text-centric cold start, multimodal RL, and text RL refinement.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of cultivating sophisticated multimodal reasoning abilities in MLLMs, as current methods often fail to fully unlock complex reasoning capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop a staged reinforcement optimization framework incorporating Prioritized Advantage Distillation (PAD), efficient-length reward function, and a carefully curated GRAMMAR dataset.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Their ReVisual-R1 model achieves state-of-the-art performance among open-source 7B MLLMs across multiple reasoning benchmarks, outperforming previous models by an average of 16.8 percentage points.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Advancing Multimodal Reasoning: From Optimized Cold Start to Staged
+  Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4e54c8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8f94fb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#11998e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#38ef7d;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ee0979;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff6a00;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">
+    ReVisual-R1 Training Pipeline
+  </text>
+
+  <!-- Stage 1: Data Preparation -->
+  <rect x="100" y="100" width="200" height="120" rx="10" fill="url(#grad1)" opacity="0.9"/>
+  <text x="200" y="140" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Stage 1</text>
+  <text x="200" y="170" text-anchor="middle" fill="white" font-size="14">Data Preparation</text>
+  <text x="200" y="190" text-anchor="middle" fill="white" font-size="12">GRAMMAR Dataset</text>
+  <text x="200" y="210" text-anchor="middle" fill="white" font-size="12">Data Curation</text>
+
+  <!-- Stage 2: Cold Start -->
+  <rect x="400" y="100" width="200" height="120" rx="10" fill="url(#grad2)" opacity="0.9"/>
+  <text x="500" y="140" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Stage 2</text>
+  <text x="500" y="170" text-anchor="middle" fill="white" font-size="14">Text-Centric Cold Start</text>
+  <text x="500" y="190" text-anchor="middle" fill="white" font-size="12">Foundational Language</text>
+  <text x="500" y="210" text-anchor="middle" fill="white" font-size="12">Understanding</text>
+
+  <!-- Stage 3: Multimodal RL -->
+  <rect x="700" y="100" width="200" height="120" rx="10" fill="url(#grad3)" opacity="0.9"/>
+  <text x="800" y="140" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Stage 3</text>
+  <text x="800" y="170" text-anchor="middle" fill="white" font-size="14">Multimodal RL</text>
+  <text x="800" y="190" text-anchor="middle" fill="white" font-size="12">PAD Enhancement</text>
+  <text x="800" y="210" text-anchor="middle" fill="white" font-size="12">Efficient-Length Reward</text>
+
+  <!-- Components -->
+  <rect x="200" y="300" width="600" height="400" rx="15" fill="#f5f5f5" stroke="#ddd"/>
+  
+  <!-- PAD -->
+  <rect x="250" y="350" width="200" height="100" rx="10" fill="#fff" stroke="#4e54c8"/>
+  <text x="350" y="380" text-anchor="middle" font-size="14" font-weight="bold">PAD</text>
+  <text x="350" y="400" text-anchor="middle" font-size="12">Advantage Filtering</text>
+  <text x="350" y="420" text-anchor="middle" font-size="12">Prioritized Sampling</text>
+
+  <!-- GRPO -->
+  <rect x="550" y="350" width="200" height="100" rx="10" fill="#fff" stroke="#11998e"/>
+  <text x="650" y="380" text-anchor="middle" font-size="14" font-weight="bold">GRPO</text>
+  <text x="650" y="400" text-anchor="middle" font-size="12">Policy Optimization</text>
+  <text x="650" y="420" text-anchor="middle" font-size="12">Group-based Training</text>
+
+  <!-- Reward System -->
+  <rect x="250" y="500" width="200" height="100" rx="10" fill="#fff" stroke="#ee0979"/>
+  <text x="350" y="530" text-anchor="middle" font-size="14" font-weight="bold">Reward System</text>
+  <text x="350" y="550" text-anchor="middle" font-size="12">Efficient-Length</text>
+  <text x="350" y="570" text-anchor="middle" font-size="12">Rule-based Rewards</text>
+
+  <!-- Text RL -->
+  <rect x="550" y="500" width="200" height="100" rx="10" fill="#fff" stroke="#8f94fb"/>
+  <text x="650" y="530" text-anchor="middle" font-size="14" font-weight="bold">Text RL</text>
+  <text x="650" y="550" text-anchor="middle" font-size="12">Linguistic Refinement</text>
+  <text x="650" y="570" text-anchor="middle" font-size="12">Abstract Reasoning</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Text-only datasets led to better reasoning capabilities than multimodal datasets">
+                        <div class="quiz-question">1. What key insight about cold start initialization did the researchers discover?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Multimodal datasets were most effective for cold start training">Multimodal datasets were most effective for cold start training</div><div class="quiz-choice" data-value="Text-only datasets led to better reasoning capabilities than multimodal datasets">Text-only datasets led to better reasoning capabilities than multimodal datasets</div><div class="quiz-choice" data-value="Cold start initialization had no significant impact on model performance">Cold start initialization had no significant impact on model performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Prioritized Advantage Distillation (PAD)">
+                        <div class="quiz-question">2. What novel technique did the authors introduce to improve GRPO training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Prioritized Advantage Distillation (PAD)">Prioritized Advantage Distillation (PAD)</div><div class="quiz-choice" data-value="Gradient Accumulation Descent">Gradient Accumulation Descent</div><div class="quiz-choice" data-value="Adaptive Learning Rate Scheduling">Adaptive Learning Rate Scheduling</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It combined text-only cold start, multimodal RL, and text-only RL refinement">
+                        <div class="quiz-question">3. What was unique about the three-stage training approach used in ReVisual-R1?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It focused exclusively on multimodal training throughout all stages">It focused exclusively on multimodal training throughout all stages</div><div class="quiz-choice" data-value="It combined text-only cold start, multimodal RL, and text-only RL refinement">It combined text-only cold start, multimodal RL, and text-only RL refinement</div><div class="quiz-choice" data-value="It used only reinforcement learning without any pre-training">It used only reinforcement learning without any pre-training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>MiMo-VL Technical Report</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-04</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.03569" target="_blank">http://arxiv.org/pdf/2506.03569</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents MiMo-VL, a vision-language model for multimodal AI systems, focusing on visual understanding, reasoning, and GUI interaction.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous vision-language models and RLHF research, it introduces Mixed On-policy Reinforcement Learning (MORL) and incorporates high-quality reasoning data in pre-training stages.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to build a compact yet powerful vision-language model that can handle complex visual understanding, multimodal reasoning, and GUI interaction tasks while maintaining strong performance across diverse capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a four-stage pre-training process (2.4 trillion tokens) combined with Mixed On-policy Reinforcement Learning (MORL), incorporating diverse reward signals and a native-resolution Vision Transformer architecture.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> MiMo-VL-7B-RL outperforms Qwen2.5-VL-7B on 35/40 tasks, scores 59.4 on OlympiadBench, achieves 56.1 on OSWorld-G, and shows strong performance across 50+ evaluation benchmarks, setting new standards for open-source vision-language models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MiMo-VL Technical Report</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f8f9fa"/>
+    
+    <!-- Main Flow Sections -->
+    <g transform="translate(50,50)">
+        <!-- Pre-Training Phase -->
+        <rect x="50" y="50" width="300" height="200" rx="10" fill="#e3f2fd"/>
+        <text x="200" y="80" text-anchor="middle" font-weight="bold">Pre-Training (2.4T Tokens)</text>
+        
+        <rect x="70" y="100" width="260" height="130" rx="5" fill="#ffffff"/>
+        <text x="90" y="125" font-size="14">Stage 1: Projector Warmup</text>
+        <text x="90" y="150" font-size="14">Stage 2: Vision-Language Alignment</text>
+        <text x="90" y="175" font-size="14">Stage 3: Multimodal Pre-training</text>
+        <text x="90" y="200" font-size="14">Stage 4: Long-context SFT</text>
+
+        <!-- Post-Training Phase -->
+        <rect x="450" y="50" width="400" height="200" rx="10" fill="#e8f5e9"/>
+        <text x="650" y="80" text-anchor="middle" font-weight="bold">Mixed On-policy RL (MORL)</text>
+        
+        <rect x="470" y="100" width="360" height="130" rx="5" fill="#ffffff"/>
+        <text x="490" y="125" font-size="14">RLVR: Visual/Text Reasoning</text>
+        <text x="490" y="150" font-size="14">RLHF: Human Preference Alignment</text>
+        <text x="490" y="175" font-size="14">On-Policy Updates</text>
+        <text x="490" y="200" font-size="14">Reward Integration Service</text>
+
+        <!-- Data Types -->
+        <rect x="50" y="300" width="800" height="150" rx="10" fill="#fff3e0"/>
+        <text x="450" y="330" text-anchor="middle" font-weight="bold">Training Data</text>
+        
+        <rect x="70" y="350" width="760" height="80" rx="5" fill="#ffffff"/>
+        <text x="90" y="375" font-size="14">Image Caption, Interleaved Data, OCR, Grounding</text>
+        <text x="90" y="400" font-size="14">Video Data, GUI Data, Synthetic Reasoning Data</text>
+        
+        <!-- Results -->
+        <rect x="50" y="500" width="800" height="150" rx="10" fill="#f3e5f5"/>
+        <text x="450" y="530" text-anchor="middle" font-weight="bold">Model Outputs</text>
+        
+        <rect x="70" y="550" width="760" height="80" rx="5" fill="#ffffff"/>
+        <text x="90" y="575" font-size="14">MiMo-VL-7B-SFT: Strong Visual-Language Model</text>
+        <text x="90" y="600" font-size="14">MiMo-VL-7B-RL: Enhanced with MORL Framework</text>
+    </g>
+    
+    <!-- Connecting Lines -->
+    <path d="M 400 150 L 450 150" stroke="#666" stroke-width="2"/>
+    <path d="M 450 375 L 450 300" stroke="#666" stroke-width="2"/>
+    <path d="M 450 500 L 450 450" stroke="#666" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Incorporating high-quality reasoning data during pre-training stages">
+                        <div class="quiz-question">1. What is the key innovation in MiMo-VL's training approach that sets it apart from previous vision-language models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using exclusively supervised learning with human feedback">Using exclusively supervised learning with human feedback</div><div class="quiz-choice" data-value="Incorporating high-quality reasoning data during pre-training stages">Incorporating high-quality reasoning data during pre-training stages</div><div class="quiz-choice" data-value="Training only on GUI interaction tasks">Training only on GUI interaction tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="2.4 trillion tokens">
+                        <div class="quiz-question">2. How many total tokens were used in MiMo-VL's pre-training process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.2 trillion tokens">1.2 trillion tokens</div><div class="quiz-choice" data-value="1.8 trillion tokens">1.8 trillion tokens</div><div class="quiz-choice" data-value="2.4 trillion tokens">2.4 trillion tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Interference between different task domains made simultaneous improvement difficult">
+                        <div class="quiz-question">3. What unique challenge did the researchers encounter when implementing Mixed On-policy Reinforcement Learning (MORL)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The model was too slow to train">The model was too slow to train</div><div class="quiz-choice" data-value="Interference between different task domains made simultaneous improvement difficult">Interference between different task domains made simultaneous improvement difficult</div><div class="quiz-choice" data-value="The model required too much memory">The model required too much memory</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-orchid.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>SuperWriter: Reflection-Driven Long-Form Generation with Large Language
+  Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-04</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.04180" target="_blank">http://arxiv.org/pdf/2506.04180</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Long-form text generation using large language models, focusing on improving coherence and quality through structured thinking and reflection.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on research showing LLMs struggle with long-form coherence; proposes a novel three-stage framework (planning-writing-refining) that mimics human writing processes.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing limitations in LLMs' ability to maintain coherence, logical consistency, and text quality when generating long-form content.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Developed SuperWriter-Agent framework with structured thinking stages, created supervised fine-tuning dataset, and implemented hierarchical Direct Preference Optimization using Monte Carlo Tree Search.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art performance on WritingBench benchmark, surpassing larger baseline models in both automatic and human evaluations, with strong results in fluency, coherence, and logical consistency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SuperWriter: Reflection-Driven Long-Form Generation with Large Language
+  Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">SuperWriter: Long-Form Generation Workflow</text>
+    
+    <!-- Stage 1: Plan -->
+    <rect x="100" y="100" width="200" height="180" rx="10" fill="#3498db" opacity="0.8"/>
+    <text x="200" y="130" text-anchor="middle" fill="white" font-size="18" font-weight="bold">Stage 1: Plan</text>
+    <text x="200" y="160" text-anchor="middle" fill="white" font-size="14">• BrainStorm</text>
+    <text x="200" y="190" text-anchor="middle" fill="white" font-size="14">• BrainStorm Review</text>
+    <text x="200" y="220" text-anchor="middle" fill="white" font-size="14">• BrainStorm Refine</text>
+    <text x="200" y="250" text-anchor="middle" fill="white" font-size="14">• Outline Management</text>
+
+    <!-- Stage 2: Write -->
+    <rect x="400" y="100" width="200" height="180" rx="10" fill="#2ecc71" opacity="0.8"/>
+    <text x="500" y="130" text-anchor="middle" fill="white" font-size="18" font-weight="bold">Stage 2: Write</text>
+    <text x="500" y="180" text-anchor="middle" fill="white" font-size="14">• Write-thinker</text>
+    <text x="500" y="220" text-anchor="middle" fill="white" font-size="14">• Writer</text>
+
+    <!-- Stage 3: Refine -->
+    <rect x="700" y="100" width="200" height="180" rx="10" fill="#e74c3c" opacity="0.8"/>
+    <text x="800" y="130" text-anchor="middle" fill="white" font-size="18" font-weight="bold">Stage 3: Refine</text>
+    <text x="800" y="180" text-anchor="middle" fill="white" font-size="14">• Paragraph Review</text>
+    <text x="800" y="220" text-anchor="middle" fill="white" font-size="14">• Paragraph Modification</text>
+
+    <!-- Training Process -->
+    <rect x="150" y="400" width="700" height="150" rx="10" fill="#9b59b6" opacity="0.8"/>
+    <text x="500" y="430" text-anchor="middle" fill="white" font-size="18" font-weight="bold">Training Process</text>
+    <text x="500" y="470" text-anchor="middle" fill="white" font-size="14">• SFT Training with Stage-wise Data</text>
+    <text x="500" y="500" text-anchor="middle" fill="white" font-size="14">• Hierarchical DPO with MCTS</text>
+    <text x="500" y="530" text-anchor="middle" fill="white" font-size="14">• Preference Optimization</text>
+
+    <!-- Evaluation -->
+    <rect x="150" y="600" width="700" height="120" rx="10" fill="#f1c40f" opacity="0.8"/>
+    <text x="500" y="630" text-anchor="middle" fill="white" font-size="18" font-weight="bold">Evaluation</text>
+    <text x="500" y="670" text-anchor="middle" fill="white" font-size="14">• WritingBench Benchmark</text>
+    <text x="500" y="700" text-anchor="middle" fill="white" font-size="14">• Human Evaluation</text>
+
+    <!-- Connecting Lines -->
+    <path d="M300 190 L400 190" stroke="#34495e" stroke-width="2"/>
+    <path d="M600 190 L700 190" stroke="#34495e" stroke-width="2"/>
+    <path d="M500 280 L500 400" stroke="#34495e" stroke-width="2"/>
+    <path d="M500 550 L500 600" stroke="#34495e" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It incorporates a three-stage framework mimicking human writing processes">
+                        <div class="quiz-question">1. What is the primary innovation of SuperWriter compared to traditional LLM text generation approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger language model with more parameters">It uses a larger language model with more parameters</div><div class="quiz-choice" data-value="It incorporates a three-stage framework mimicking human writing processes">It incorporates a three-stage framework mimicking human writing processes</div><div class="quiz-choice" data-value="It focuses only on short-form content generation">It focuses only on short-form content generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By using Monte Carlo Tree Search to propagate feedback across generation stages">
+                        <div class="quiz-question">2. How does SuperWriter improve the quality of generated text through Direct Preference Optimization (DPO)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using Monte Carlo Tree Search to propagate feedback across generation stages">By using Monte Carlo Tree Search to propagate feedback across generation stages</div><div class="quiz-choice" data-value="By simply increasing the model's training data size">By simply increasing the model's training data size</div><div class="quiz-choice" data-value="By restricting the text length to maintain quality">By restricting the text length to maintain quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It implements explicit structured thinking through planning and refinement stages">
+                        <div class="quiz-question">3. What unique aspect of the SuperWriter framework helps maintain coherence in long-form text?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only generates texts under 1000 words">It only generates texts under 1000 words</div><div class="quiz-choice" data-value="It uses external fact-checking databases">It uses external fact-checking databases</div><div class="quiz-choice" data-value="It implements explicit structured thinking through planning and refinement stages">It implements explicit structured thinking through planning and refinement stages</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
