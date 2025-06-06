@@ -1,0 +1,838 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-06 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-06 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>SeedVR2: One-Step Video Restoration via Diffusion Adversarial
+  Post-Training</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.05301" target="_blank">http://arxiv.org/pdf/2506.05301</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> One-step video restoration using diffusion models to improve low-quality videos with high computational efficiency.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on diffusion models and adversarial post-training, proposing new adaptive window attention and feature matching loss for efficient high-resolution video restoration.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The high computational cost and inference time of existing diffusion-based video restoration methods that require multiple sampling steps.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses adversarial post-training with progressive distillation, adaptive window attention mechanism, and enhanced loss functions including RpGAN loss and feature matching loss.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved comparable or better performance than multi-step methods while being 4x faster, evaluated on synthetic benchmarks (SPMCS, UDM10, REDS30, YouHQ40) and real-world datasets using both reference and no-reference metrics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SeedVR2: One-Step Video Restoration via Diffusion Adversarial
+  Post-Training</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background Styling -->
+    <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#grad1)" />
+
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#1f2937">SeedVR2: One-Step Video Restoration Workflow</text>
+
+    <!-- Main Process Flow -->
+    <!-- Input -->
+    <rect x="100" y="100" width="200" height="80" rx="10" fill="#60a5fa" />
+    <text x="200" y="145" text-anchor="middle" fill="white" font-size="16">Input LQ Video</text>
+
+    <!-- Pre-processing -->
+    <rect x="400" y="100" width="200" height="80" rx="10" fill="#34d399" />
+    <text x="500" y="145" text-anchor="middle" fill="white" font-size="16">Adaptive Window Attention</text>
+
+    <!-- Model Architecture -->
+    <rect x="200" y="250" width="600" height="120" rx="10" fill="#f472b6" />
+    <text x="500" y="290" text-anchor="middle" fill="white" font-size="16">SeedVR2 Model Architecture</text>
+    <text x="500" y="320" text-anchor="middle" fill="white" font-size="14">- Generator (Diffusion Transformer)</text>
+    <text x="500" y="345" text-anchor="middle" fill="white" font-size="14">- Discriminator with Feature Matching</text>
+
+    <!-- Training Process -->
+    <rect x="200" y="450" width="600" height="150" rx="10" fill="#a78bfa" />
+    <text x="500" y="480" text-anchor="middle" fill="white" font-size="16">Training Process</text>
+    <text x="500" y="510" text-anchor="middle" fill="white" font-size="14">1. Progressive Distillation</text>
+    <text x="500" y="535" text-anchor="middle" fill="white" font-size="14">2. Adversarial Post-Training</text>
+    <text x="500" y="560" text-anchor="middle" fill="white" font-size="14">3. RpGAN Loss + Feature Matching Loss</text>
+
+    <!-- Output -->
+    <rect x="700" y="100" width="200" height="80" rx="10" fill="#f59e0b" />
+    <text x="800" y="145" text-anchor="middle" fill="white" font-size="16">High-Quality Output</text>
+
+    <!-- Connection Lines -->
+    <path d="M 300 140 L 400 140" stroke="#6b7280" stroke-width="2" />
+    <path d="M 600 140 L 700 140" stroke="#6b7280" stroke-width="2" />
+    <path d="M 500 180 L 500 250" stroke="#6b7280" stroke-width="2" />
+    <path d="M 500 370 L 500 450" stroke="#6b7280" stroke-width="2" />
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Adaptive window attention mechanism">
+                        <div class="quiz-question">1. What is the main innovation that helps SeedVR2 handle high-resolution video restoration efficiently?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Progressive distillation technique">Progressive distillation technique</div><div class="quiz-choice" data-value="Adaptive window attention mechanism">Adaptive window attention mechanism</div><div class="quiz-choice" data-value="Feature matching loss function">Feature matching loss function</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The causal video VAE encoding/decoding">
+                        <div class="quiz-question">2. According to the paper, what is the main bottleneck in processing time when restoring a 720p video with 100 frames?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The diffusion model sampling process">The diffusion model sampling process</div><div class="quiz-choice" data-value="The causal video VAE encoding/decoding">The causal video VAE encoding/decoding</div><div class="quiz-choice" data-value="The feature matching computation">The feature matching computation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It doesn't depend on a teacher model or frozen prior">
+                        <div class="quiz-question">3. What unique advantage does SeedVR2's approach have compared to previous one-step image restoration methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a smaller model size">It uses a smaller model size</div><div class="quiz-choice" data-value="It achieves better compression rates">It achieves better compression rates</div><div class="quiz-choice" data-value="It doesn't depend on a teacher model or frozen prior">It doesn't depend on a teacher model or frozen prior</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/robots.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Video World Models with Long-term Spatial Memory</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.05284" target="_blank">http://arxiv.org/pdf/2506.05284</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Video world models with memory mechanisms for long-term consistent video generation, in the domain of computer vision and generative AI.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on diffusion-based video generation models, proposes a novel three-part memory system (spatial, working, and episodic memory) inspired by human memory mechanisms.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the limited temporal context window and forgetting problem in existing video world models that causes inconsistency when revisiting previously generated scenes.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a geometry-grounded point cloud for spatial memory, recent context frames for working memory, and sparse historical keyframes for episodic memory, all integrated into a diffusion transformer architecture.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves significantly improved view recall consistency (PSNR: 19.10 vs baselines ~12.0) and higher user study ratings across camera accuracy, static consistency, and dynamic plausibility metrics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Video World Models with Long-term Spatial Memory</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Video World Models with Long-term Spatial Memory</text>
+    
+    <!-- Main Components -->
+    <g transform="translate(0,100)">
+        <!-- Input Section -->
+        <rect x="100" y="50" width="200" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+        <text x="200" y="95" text-anchor="middle" fill="white" font-size="16">Input Video Frames</text>
+        
+        <!-- Memory Types -->
+        <g transform="translate(400,0)">
+            <!-- Working Memory -->
+            <rect x="0" y="0" width="180" height="70" rx="10" fill="#e74c3c" opacity="0.8"/>
+            <text x="90" y="40" text-anchor="middle" fill="white" font-size="14">Short-term Working Memory</text>
+            
+            <!-- Spatial Memory -->
+            <rect x="0" y="100" width="180" height="70" rx="10" fill="#2ecc71" opacity="0.8"/>
+            <text x="90" y="140" text-anchor="middle" fill="white" font-size="14">Long-term Spatial Memory</text>
+            
+            <!-- Episodic Memory -->
+            <rect x="0" y="200" width="180" height="70" rx="10" fill="#f1c40f" opacity="0.8"/>
+            <text x="90" y="240" text-anchor="middle" fill="white" font-size="14">Episodic Memory</text>
+        </g>
+        
+        <!-- Processing Steps -->
+        <g transform="translate(700,50)">
+            <rect x="0" y="0" width="200" height="180" rx="10" fill="#9b59b6" opacity="0.8"/>
+            <text x="100" y="40" text-anchor="middle" fill="white" font-size="14">Processing Pipeline</text>
+            <text x="100" y="80" text-anchor="middle" fill="white" font-size="12">1. TSDF Fusion</text>
+            <text x="100" y="110" text-anchor="middle" fill="white" font-size="12">2. Point Cloud Update</text>
+            <text x="100" y="140" text-anchor="middle" fill="white" font-size="12">3. Historical Reference</text>
+        </g>
+        
+        <!-- Output -->
+        <rect x="350" y="400" width="300" height="80" rx="10" fill="#1abc9c" opacity="0.8"/>
+        <text x="500" y="445" text-anchor="middle" fill="white" font-size="16">Generated Consistent Video Frames</text>
+    </g>
+    
+    <!-- Connecting Lines -->
+    <g stroke="#34495e" stroke-width="2" fill="none">
+        <path d="M300,180 L400,35"/>
+        <path d="M300,180 L400,135"/>
+        <path d="M300,180 L400,235"/>
+        <path d="M580,35 L700,140"/>
+        <path d="M580,135 L700,140"/>
+        <path d="M580,235 L700,140"/>
+        <path d="M800,140 L500,400"/>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Scene inconsistency when revisiting previously generated areas">
+                        <div class="quiz-question">1. What is the main problem this paper aims to solve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Slow video generation speed">Slow video generation speed</div><div class="quiz-choice" data-value="Scene inconsistency when revisiting previously generated areas">Scene inconsistency when revisiting previously generated areas</div><div class="quiz-choice" data-value="Poor video quality in low-light conditions">Poor video quality in low-light conditions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Spatial memory using geometry-grounded point cloud">
+                        <div class="quiz-question">2. Which component of the proposed memory system is responsible for remembering the static parts of the scene?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Working memory using recent context frames">Working memory using recent context frames</div><div class="quiz-choice" data-value="Episodic memory using sparse historical keyframes">Episodic memory using sparse historical keyframes</div><div class="quiz-choice" data-value="Spatial memory using geometry-grounded point cloud">Spatial memory using geometry-grounded point cloud</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="About 7-8 points higher">
+                        <div class="quiz-question">3. In the paper's evaluation, what was the PSNR (Peak Signal-to-Noise Ratio) improvement achieved by their method compared to baselines?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="About 2-3 points higher">About 2-3 points higher</div><div class="quiz-choice" data-value="About 7-8 points higher">About 7-8 points higher</div><div class="quiz-choice" data-value="No significant improvement">No significant improvement</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Diagonal Batching Unlocks Parallelism in Recurrent Memory Transformers
+  for Long Contexts</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.05229" target="_blank">http://arxiv.org/pdf/2506.05229</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Optimization of Recurrent Memory Transformers (RMTs) for efficient long-context processing in language models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing RMT and Parallel RMT architectures, introducing a novel "Diagonal Batching" technique that reorganizes computation to enable parallel processing.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Sequential execution bottleneck in RMTs that limits performance when processing long sequences of text.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements Diagonal Batching by reorganizing the layer-segment computation grid into concurrent diagonals, allowing up to N_Layers operations per kernel launch while maintaining exact recurrence.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 3.3x speedup over standard LLaMA-1B and 1.8x speedup over sequential RMT implementation on 131,072-token sequences, while maintaining accuracy with only 1% relative error.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Diagonal Batching Unlocks Parallelism in Recurrent Memory Transformers
+  for Long Contexts</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">Diagonal Batching Workflow</text>
+    
+    <!-- Background Rectangles -->
+    <rect x="50" y="100" width="900" height="600" fill="#f8f9fa" rx="10"/>
+    
+    <!-- Input Section -->
+    <rect x="100" y="150" width="200" height="80" fill="#e3f2fd" stroke="#1976d2" rx="5"/>
+    <text x="200" y="195" text-anchor="middle" font-size="14">Input Long Sequence</text>
+    
+    <!-- Processing Steps -->
+    <!-- Step 1 -->
+    <rect x="400" y="150" width="200" height="80" fill="#fff3e0" stroke="#f57c00" rx="5"/>
+    <text x="500" y="180" text-anchor="middle" font-size="14">Segment Division</text>
+    <text x="500" y="200" text-anchor="middle" font-size="12">Split into fixed-size segments</text>
+    
+    <!-- Step 2 -->
+    <rect x="700" y="150" width="200" height="80" fill="#e8f5e9" stroke="#388e3c" rx="5"/>
+    <text x="800" y="180" text-anchor="middle" font-size="14">Memory Initialization</text>
+    <text x="800" y="200" text-anchor="middle" font-size="12">Zero grouped memory</text>
+    
+    <!-- Step 3 -->
+    <rect x="400" y="300" width="200" height="100" fill="#e1f5fe" stroke="#0288d1" rx="5"/>
+    <text x="500" y="330" text-anchor="middle" font-size="14">Diagonal Processing</text>
+    <text x="500" y="350" text-anchor="middle" font-size="12">Group segments by layers</text>
+    <text x="500" y="370" text-anchor="middle" font-size="12">Process in diagonal pattern</text>
+    
+    <!-- Step 4 -->
+    <rect x="400" y="450" width="200" height="80" fill="#f3e5f5" stroke="#7b1fa2" rx="5"/>
+    <text x="500" y="480" text-anchor="middle" font-size="14">Memory Update</text>
+    <text x="500" y="500" text-anchor="middle" font-size="12">Update for next segment</text>
+    
+    <!-- Output Section -->
+    <rect x="400" y="580" width="200" height="80" fill="#e8eaf6" stroke="#3f51b5" rx="5"/>
+    <text x="500" y="620" text-anchor="middle" font-size="14">Concatenated Output</text>
+    
+    <!-- Connecting Lines -->
+    <path d="M 300 190 L 400 190" stroke="#666" stroke-width="2"/>
+    <path d="M 600 190 L 700 190" stroke="#666" stroke-width="2"/>
+    <path d="M 500 230 L 500 300" stroke="#666" stroke-width="2"/>
+    <path d="M 500 400 L 500 450" stroke="#666" stroke-width="2"/>
+    <path d="M 500 530 L 500 580" stroke="#666" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Sequential execution bottleneck">
+                        <div class="quiz-question">1. What is the main limitation that Diagonal Batching aims to overcome in Recurrent Memory Transformers?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High memory usage">High memory usage</div><div class="quiz-choice" data-value="Sequential execution bottleneck">Sequential execution bottleneck</div><div class="quiz-choice" data-value="Model accuracy degradation">Model accuracy degradation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="3.3x speedup">
+                        <div class="quiz-question">2. What performance improvement did Diagonal Batching achieve on 131,072-token sequences compared to standard LLaMA-1B?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.8x speedup">1.8x speedup</div><div class="quiz-choice" data-value="2.5x speedup">2.5x speedup</div><div class="quiz-choice" data-value="3.3x speedup">3.3x speedup</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It allows up to N_Layers operations per GPU kernel launch">
+                        <div class="quiz-question">3. What unique aspect of Diagonal Batching makes it particularly efficient?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires model retraining">It requires model retraining</div><div class="quiz-choice" data-value="It allows up to N_Layers operations per GPU kernel launch">It allows up to N_Layers operations per GPU kernel launch</div><div class="quiz-choice" data-value="It reduces the model's parameter count">It reduces the model's parameter count</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
