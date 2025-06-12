@@ -1,0 +1,851 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-12 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-12 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-orchid.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>PlayerOne: Egocentric World Simulator</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-11</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.09995" target="_blank">http://arxiv.org/pdf/2506.09995</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> An egocentric world simulator for generating first-person perspective videos that align with real human motions, in the domain of computer vision and video generation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous world simulation and video diffusion models that were limited to game environments or predetermined actions, this paper introduces the first simulator for realistic egocentric videos with unrestricted human motion control.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The lack of a system that can generate realistic first-person perspective videos that accurately align with free human movements while maintaining scene consistency.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Employs a part-disentangled motion injection scheme to handle different body parts separately, combines scene-frame reconstruction for world consistency, and uses a coarse-to-fine training strategy with both large-scale egocentric datasets and curated motion-video pairs.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperformed existing methods across multiple metrics including DINO-Score (67.8), CLIP-Score (88.2), and user studies, demonstrating superior motion alignment, video quality, and scene consistency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>PlayerOne: Egocentric World Simulator</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa"/>
+    
+    <!-- Main Flow Components -->
+    <g transform="translate(50, 50)">
+        <!-- Input Section -->
+        <rect x="50" y="50" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+        <text x="150" y="95" text-anchor="middle" fill="#1976d2" font-weight="bold">Input</text>
+        <text x="150" y="115" text-anchor="middle" font-size="12">First Frame + Human Motion</text>
+
+        <!-- Processing Stages -->
+        <g transform="translate(0, 200)">
+            <!-- Stage 1: Part-disentangled Motion Injection -->
+            <rect x="50" y="0" width="200" height="100" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+            <text x="150" y="35" text-anchor="middle" fill="#f57c00" font-weight="bold">Motion Processing</text>
+            <text x="150" y="55" text-anchor="middle" font-size="12">Part-disentangled</text>
+            <text x="150" y="75" text-anchor="middle" font-size="12">Motion Injection</text>
+
+            <!-- Stage 2: Scene-frame Reconstruction -->
+            <rect x="350" y="0" width="200" height="100" rx="10" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
+            <text x="450" y="35" text-anchor="middle" fill="#388e3c" font-weight="bold">Scene Processing</text>
+            <text x="450" y="55" text-anchor="middle" font-size="12">Scene-frame</text>
+            <text x="450" y="75" text-anchor="middle" font-size="12">Reconstruction</text>
+
+            <!-- Stage 3: Diffusion Transformer -->
+            <rect x="650" y="0" width="200" height="100" rx="10" fill="#e1f5fe" stroke="#0288d1" stroke-width="2"/>
+            <text x="750" y="35" text-anchor="middle" fill="#0288d1" font-weight="bold">Generation</text>
+            <text x="750" y="55" text-anchor="middle" font-size="12">Diffusion</text>
+            <text x="750" y="75" text-anchor="middle" font-size="12">Transformer</text>
+        </g>
+
+        <!-- Output Section -->
+        <rect x="650" y="400" width="200" height="80" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+        <text x="750" y="445" text-anchor="middle" fill="#7b1fa2" font-weight="bold">Output</text>
+        <text x="750" y="465" text-anchor="middle" font-size="12">Simulated Videos</text>
+
+        <!-- Connecting Lines -->
+        <line x1="150" y1="130" x2="150" y2="200" stroke="#666" stroke-width="2"/>
+        <line x1="250" y1="250" x2="350" y2="250" stroke="#666" stroke-width="2"/>
+        <line x1="550" y1="250" x2="650" y2="250" stroke="#666" stroke-width="2"/>
+        <line x1="750" y1="300" x2="750" y2="400" stroke="#666" stroke-width="2"/>
+
+        <!-- Training Flow -->
+        <g transform="translate(50, 550)">
+            <rect x="0" y="0" width="800" height="60" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+            <text x="400" y="25" text-anchor="middle" fill="#c2185b" font-weight="bold">Training Pipeline</text>
+            <text x="400" y="45" text-anchor="middle" font-size="12">Coarse-to-fine Training + Dataset Construction + Model Distillation</text>
+        </g>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It splits motion into part-wise components (head, hands, body) for better control">
+                        <div class="quiz-question">1. What is the key innovation in PlayerOne's motion handling compared to previous world simulators?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses pre-recorded game animations">It uses pre-recorded game animations</div><div class="quiz-choice" data-value="It splits motion into part-wise components (head, hands, body) for better control">It splits motion into part-wise components (head, hands, body) for better control</div><div class="quiz-choice" data-value="It only tracks camera movements">It only tracks camera movements</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By using a coarse-to-fine approach with large egocentric datasets followed by fine-tuning on motion-video pairs">
+                        <div class="quiz-question">2. How does PlayerOne address the problem of limited training data?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using synthetic data only">By using synthetic data only</div><div class="quiz-choice" data-value="By training only on small curated datasets">By training only on small curated datasets</div><div class="quiz-choice long-text" data-value="By using a coarse-to-fine approach with large egocentric datasets followed by fine-tuning on motion-video pairs">By using a coarse-to-fine approach with large egocentric datasets followed by fine-tuning on motion-video pairs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It jointly reconstructs both video frames and 4D scenes during training but only needs first frame during inference">
+                        <div class="quiz-question">3. What is a unique aspect of PlayerOne's scene consistency approach?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="It jointly reconstructs both video frames and 4D scenes during training but only needs first frame during inference">It jointly reconstructs both video frames and 4D scenes during training but only needs first frame during inference</div><div class="quiz-choice" data-value="It relies entirely on pre-mapped environments">It relies entirely on pre-mapped environments</div><div class="quiz-choice" data-value="It requires constant point map generation during inference">It requires constant point map generation during inference</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>ComfyUI-R1: Exploring Reasoning Models for Workflow Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-11</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.09790" target="_blank">http://arxiv.org/pdf/2506.09790</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores automated workflow generation for ComfyUI, an AI art creation platform, focusing on developing a large reasoning model for generating complex image generation workflows.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research relied on GPT-4 and multi-agent systems for workflow generation, while this paper introduces a novel approach using chain-of-thought reasoning and code-based workflow representation rather than JSON format.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of automatically generating valid and executable ComfyUI workflows, as manual workflow creation requires extensive expertise to orchestrate numerous specialized components.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors employ a two-stage training approach: supervised fine-tuning for cold start using curated workflow data, followed by reinforcement learning with a rule-metric hybrid reward system to enhance reasoning capabilities.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The 7B-parameter model achieved 97% format validity rate and outperformed previous state-of-the-art methods based on GPT-4 and Claude series, with superior node-level and graph-level F1 scores and an 11% higher pass rate on ComfyBench.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ComfyUI-R1: Exploring Reasoning Models for Workflow Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <defs>
+        <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#357abd;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+
+    <!-- Title -->
+    <rect x="300" y="50" width="400" height="60" rx="10" fill="url(#headerGrad)"/>
+    <text x="500" y="90" text-anchor="middle" fill="white" font-size="24">ComfyUI-R1 Workflow</text>
+
+    <!-- Data Collection & Preprocessing -->
+    <rect x="100" y="150" width="200" height="100" rx="10" fill="#67b7dc" opacity="0.9"/>
+    <text x="200" y="185" text-anchor="middle" fill="white" font-size="16">Data Collection</text>
+    <text x="200" y="210" text-anchor="middle" fill="white" font-size="14">4K Workflows</text>
+    <text x="200" y="230" text-anchor="middle" fill="white" font-size="14">Node Documentation</text>
+
+    <!-- Two-Stage Training -->
+    <rect x="400" y="150" width="500" height="180" rx="10" fill="#6794dc" opacity="0.8"/>
+    <text x="650" y="180" text-anchor="middle" fill="white" font-size="20">Two-Stage Training</text>
+    
+    <!-- Stage 1 -->
+    <rect x="420" y="200" width="220" height="100" rx="8" fill="#84b9ef"/>
+    <text x="530" y="230" text-anchor="middle" fill="white" font-size="16">Stage 1: SFT</text>
+    <text x="530" y="255" text-anchor="middle" fill="white" font-size="14">Cold Start</text>
+    <text x="530" y="280" text-anchor="middle" fill="white" font-size="14">CoT Fine-tuning</text>
+
+    <!-- Stage 2 -->
+    <rect x="660" y="200" width="220" height="100" rx="8" fill="#84b9ef"/>
+    <text x="770" y="230" text-anchor="middle" fill="white" font-size="16">Stage 2: RL</text>
+    <text x="770" y="255" text-anchor="middle" fill="white" font-size="14">Reasoning Capability</text>
+    <text x="770" y="280" text-anchor="middle" fill="white" font-size="14">Hybrid Reward</text>
+
+    <!-- Generation Process -->
+    <rect x="200" y="400" width="600" height="120" rx="10" fill="#67b7dc" opacity="0.9"/>
+    <text x="500" y="430" text-anchor="middle" fill="white" font-size="20">Generation Process</text>
+    <text x="300" y="470" text-anchor="middle" fill="white" font-size="16">Node Selection</text>
+    <text x="500" y="470" text-anchor="middle" fill="white" font-size="16">Workflow Planning</text>
+    <text x="700" y="470" text-anchor="middle" fill="white" font-size="16">Code Generation</text>
+
+    <!-- Output -->
+    <rect x="300" y="580" width="400" height="80" rx="10" fill="#4a90e2" opacity="0.9"/>
+    <text x="500" y="620" text-anchor="middle" fill="white" font-size="18">Executable ComfyUI Workflow</text>
+
+    <!-- Connecting Lines -->
+    <path d="M200 250 L400 240" stroke="#ffffff" stroke-width="2"/>
+    <path d="M650 330 L500 400" stroke="#ffffff" stroke-width="2"/>
+    <path d="M500 520 L500 580" stroke="#ffffff" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Employing chain-of-thought reasoning with code-based workflow representation">
+                        <div class="quiz-question">1. What is the main innovation in ComfyUI-R1's approach compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using multiple AI agents working together">Using multiple AI agents working together</div><div class="quiz-choice" data-value="Employing chain-of-thought reasoning with code-based workflow representation">Employing chain-of-thought reasoning with code-based workflow representation</div><div class="quiz-choice" data-value="Relying on GPT-4 for workflow generation">Relying on GPT-4 for workflow generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="3,917 workflows">
+                        <div class="quiz-question">2. What was the size of the final workflow knowledge base after cleaning and filtering?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="27,000 workflows">27,000 workflows</div><div class="quiz-choice" data-value="7,238 workflows">7,238 workflows</div><div class="quiz-choice" data-value="3,917 workflows">3,917 workflows</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It employs a hybrid system combining format validity, structural integrity, and node-level fidelity">
+                        <div class="quiz-question">3. What unique feature does ComfyUI-R1's reward system have during reinforcement learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only rewards successful workflow execution">It only rewards successful workflow execution</div><div class="quiz-choice" data-value="It uses a simple pass/fail binary reward">It uses a simple pass/fail binary reward</div><div class="quiz-choice" data-value="It employs a hybrid system combining format validity, structural integrity, and node-level fidelity">It employs a hybrid system combining format validity, structural integrity, and node-level fidelity</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Seedance 1.0: Exploring the Boundaries of Video Generation Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.09113" target="_blank">http://arxiv.org/pdf/2506.09113</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents Seedance 1.0, a high-performance video generation foundation model focused on text-to-video and image-to-video synthesis.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on recent advances in diffusion models like Wan, Huanyuan Video, and CogVideoX, the paper introduces new technical improvements in data curation, architecture design, post-training optimization, and inference acceleration.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses critical challenges in video generation models related to simultaneously balancing prompt following, motion plausibility, and visual quality while maintaining efficient inference.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement multi-source data curation with precision video captioning, efficient architecture design with decoupled spatial-temporal layers, supervised fine-tuning with RLHF, and multi-stage distillation for model acceleration.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Seedance 1.0 achieved top performance on both text-to-video and image-to-video leaderboards, generating high-quality 1080p 5-second videos in 41.4 seconds while demonstrating superior spatiotemporal fluidity and precise instruction adherence.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Seedance 1.0: Exploring the Boundaries of Video Generation Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa" rx="10"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Seedance 1.0 Workflow</text>
+
+    <!-- Data Processing Section -->
+    <rect x="100" y="100" width="200" height="150" fill="#3498db" rx="10" opacity="0.8"/>
+    <text x="200" y="130" text-anchor="middle" fill="white" font-weight="bold">Data Processing</text>
+    <text x="200" y="160" text-anchor="middle" fill="white" font-size="12">- Multi-source Data</text>
+    <text x="200" y="180" text-anchor="middle" fill="white" font-size="12">- Video Captioning</text>
+    <text x="200" y="200" text-anchor="middle" fill="white" font-size="12">- Data Pre-processing</text>
+    <text x="200" y="220" text-anchor="middle" fill="white" font-size="12">- Quality Filtering</text>
+
+    <!-- Model Architecture Section -->
+    <rect x="400" y="100" width="200" height="150" fill="#e74c3c" rx="10" opacity="0.8"/>
+    <text x="500" y="130" text-anchor="middle" fill="white" font-weight="bold">Model Architecture</text>
+    <text x="500" y="160" text-anchor="middle" fill="white" font-size="12">- VAE</text>
+    <text x="500" y="180" text-anchor="middle" fill="white" font-size="12">- Diffusion Transformer</text>
+    <text x="500" y="200" text-anchor="middle" fill="white" font-size="12">- Diffusion Refiner</text>
+    <text x="500" y="220" text-anchor="middle" fill="white" font-size="12">- Prompt Engineering</text>
+
+    <!-- Training Pipeline Section -->
+    <rect x="700" y="100" width="200" height="150" fill="#2ecc71" rx="10" opacity="0.8"/>
+    <text x="800" y="130" text-anchor="middle" fill="white" font-weight="bold">Training Pipeline</text>
+    <text x="800" y="160" text-anchor="middle" fill="white" font-size="12">- Pre-training</text>
+    <text x="800" y="180" text-anchor="middle" fill="white" font-size="12">- Continue Training</text>
+    <text x="800" y="200" text-anchor="middle" fill="white" font-size="12">- Fine-tuning (SFT)</text>
+    <text x="800" y="220" text-anchor="middle" fill="white" font-size="12">- RLHF</text>
+
+    <!-- Optimization Section -->
+    <rect x="250" y="350" width="200" height="150" fill="#9b59b6" rx="10" opacity="0.8"/>
+    <text x="350" y="380" text-anchor="middle" fill="white" font-weight="bold">Training Optimization</text>
+    <text x="350" y="410" text-anchor="middle" fill="white" font-size="12">- High-Performance Kernel</text>
+    <text x="350" y="430" text-anchor="middle" fill="white" font-size="12">- Parallelism Strategy</text>
+    <text x="350" y="450" text-anchor="middle" fill="white" font-size="12">- Workload Balance</text>
+    <text x="350" y="470" text-anchor="middle" fill="white" font-size="12">- Fault Tolerance</text>
+
+    <!-- Inference Section -->
+    <rect x="550" y="350" width="200" height="150" fill="#f1c40f" rx="10" opacity="0.8"/>
+    <text x="650" y="380" text-anchor="middle" fill="white" font-weight="bold">Inference Optimization</text>
+    <text x="650" y="410" text-anchor="middle" fill="white" font-size="12">- Model Acceleration</text>
+    <text x="650" y="430" text-anchor="middle" fill="white" font-size="12">- Quantization</text>
+    <text x="650" y="450" text-anchor="middle" fill="white" font-size="12">- Inference Infrastructure</text>
+    <text x="650" y="470" text-anchor="middle" fill="white" font-size="12">- Pipeline Optimization</text>
+
+    <!-- Output Section -->
+    <rect x="400" y="600" width="200" height="100" fill="#1abc9c" rx="10" opacity="0.8"/>
+    <text x="500" y="650" text-anchor="middle" fill="white" font-weight="bold">Final Output</text>
+    <text x="500" y="670" text-anchor="middle" fill="white" font-size="12">High-Quality Video Generation</text>
+
+    <!-- Connecting Lines -->
+    <path d="M200 250 L350 350" stroke="#95a5a6" stroke-width="2" fill="none"/>
+    <path d="M500 250 L500 350" stroke="#95a5a6" stroke-width="2" fill="none"/>
+    <path d="M800 250 L650 350" stroke="#95a5a6" stroke-width="2" fill="none"/>
+    <path d="M350 500 L500 600" stroke="#95a5a6" stroke-width="2" fill="none"/>
+    <path d="M650 500 L500 600" stroke="#95a5a6" stroke-width="2" fill="none"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Decoupled spatial and temporal layers with interleaved multimodal positional encoding">
+                        <div class="quiz-question">1. What is the key innovation in Seedance 1.0's architecture design that allows it to handle both text-to-video and image-to-video tasks efficiently?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The use of parallel processing units">The use of parallel processing units</div><div class="quiz-choice" data-value="Decoupled spatial and temporal layers with interleaved multimodal positional encoding">Decoupled spatial and temporal layers with interleaved multimodal positional encoding</div><div class="quiz-choice" data-value="Advanced compression algorithms for video processing">Advanced compression algorithms for video processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="41.4 seconds">
+                        <div class="quiz-question">2. How long does it take Seedance 1.0 to generate a 5-second video at 1080p resolution using NVIDIA-L20?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="20.7 seconds">20.7 seconds</div><div class="quiz-choice" data-value="41.4 seconds">41.4 seconds</div><div class="quiz-choice" data-value="82.8 seconds">82.8 seconds</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Video-tailored RLHF (Reinforcement Learning from Human Feedback) with multiple reward models">
+                        <div class="quiz-question">3. Which post-training optimization technique does Seedance 1.0 use to improve its performance on both T2V and I2V tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Transfer learning from pre-trained models">Transfer learning from pre-trained models</div><div class="quiz-choice" data-value="Simple gradient descent optimization">Simple gradient descent optimization</div><div class="quiz-choice" data-value="Video-tailored RLHF (Reinforcement Learning from Human Feedback) with multiple reward models">Video-tailored RLHF (Reinforcement Learning from Human Feedback) with multiple reward models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
