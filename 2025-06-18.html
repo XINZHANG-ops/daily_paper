@@ -1,0 +1,846 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-18 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-18 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>LongLLaDA: Unlocking Long Context Capabilities in Diffusion LLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.14429" target="_blank">http://arxiv.org/pdf/2506.14429</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Analysis of long-context capabilities in diffusion-based Large Language Models (LLMs) in the field of Natural Language Processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on research in auto-regressive LLMs and RoPE scaling theory, proposes novel insights into diffusion LLMs' unique behavior with long contexts.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the unexplored area of how diffusion LLMs handle long context windows and whether they can be extended beyond their pretrained context lengths.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Conducts systematic comparison between diffusion and auto-regressive LLMs using Needle-In-A-Haystack tests, analyzes through RoPE theory, and proposes LongLLaDA method with NTK-based RoPE extrapolation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 6x context expansion (24k tokens) without further training, demonstrated diffusion LLMs maintain stable perplexity during extrapolation, match auto-regressive models in retrieval tasks but lag in aggregation while excelling at QA tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LongLLaDA: Unlocking Long Context Capabilities in Diffusion LLMs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Title -->
+  <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">LongLLaDA: Unlocking Long Context in Diffusion LLMs</text>
+
+  <!-- Main Flow Sections -->
+  <rect x="50" y="100" width="900" height="600" rx="10" fill="#f8f9fa" stroke="#dee2e6"/>
+  
+  <!-- Analysis Section -->
+  <rect x="100" y="150" width="250" height="200" rx="8" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="225" y="180" text-anchor="middle" font-size="16" font-weight="bold" fill="#1976d2">Initial Analysis</text>
+  <text x="225" y="210" text-anchor="middle" font-size="14" fill="#1976d2">Perplexity Evaluation</text>
+  <text x="225" y="240" text-anchor="middle" font-size="14" fill="#1976d2">NIAH Tests</text>
+  <text x="225" y="270" text-anchor="middle" font-size="14" fill="#1976d2">Local Perception Study</text>
+  
+  <!-- Mechanism Section -->
+  <rect x="375" y="150" width="250" height="200" rx="8" fill="#fff3e0" stroke="#ffcc80"/>
+  <text x="500" y="180" text-anchor="middle" font-size="16" font-weight="bold" fill="#f57c00">Mechanistic Analysis</text>
+  <text x="500" y="210" text-anchor="middle" font-size="14" fill="#f57c00">RoPE Theory</text>
+  <text x="500" y="240" text-anchor="middle" font-size="14" fill="#f57c00">Position Embedding</text>
+  <text x="500" y="270" text-anchor="middle" font-size="14" fill="#f57c00">t-SNE Visualization</text>
+
+  <!-- Method Section -->
+  <rect x="650" y="150" width="250" height="200" rx="8" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="775" y="180" text-anchor="middle" font-size="16" font-weight="bold" fill="#388e3c">LongLLaDA Method</text>
+  <text x="775" y="210" text-anchor="middle" font-size="14" fill="#388e3c">NTK-based RoPE</text>
+  <text x="775" y="240" text-anchor="middle" font-size="14" fill="#388e3c">Scaling Laws</text>
+  <text x="775" y="270" text-anchor="middle" font-size="14" fill="#388e3c">Context Extension</text>
+
+  <!-- Results Section -->
+  <rect x="100" y="400" width="800" height="250" rx="8" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="500" y="430" text-anchor="middle" font-size="16" font-weight="bold" fill="#d81b60">Evaluation Results</text>
+  
+  <rect x="150" y="460" width="220" height="160" rx="5" fill="#fff" stroke="#f48fb1"/>
+  <text x="260" y="490" text-anchor="middle" font-size="14" fill="#d81b60">Retrieval Tasks</text>
+  <text x="260" y="520" text-anchor="middle" font-size="12" fill="#d81b60">Matches Auto-regressive</text>
+  
+  <rect x="390" y="460" width="220" height="160" rx="5" fill="#fff" stroke="#f48fb1"/>
+  <text x="500" y="490" text-anchor="middle" font-size="14" fill="#d81b60">Aggregation Tasks</text>
+  <text x="500" y="520" text-anchor="middle" font-size="12" fill="#d81b60">Lags Behind</text>
+  
+  <rect x="630" y="460" width="220" height="160" rx="5" fill="#fff" stroke="#f48fb1"/>
+  <text x="740" y="490" text-anchor="middle" font-size="14" fill="#d81b60">QA Tasks</text>
+  <text x="740" y="520" text-anchor="middle" font-size="12" fill="#d81b60">Excels</text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Stable perplexity and local perception capabilities">
+                        <div class="quiz-question">1. What unique characteristic did diffusion LLMs demonstrate during context length extrapolation compared to auto-regressive LLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Complete failure in all tasks">Complete failure in all tasks</div><div class="quiz-choice" data-value="Stable perplexity and local perception capabilities">Stable perplexity and local perception capabilities</div><div class="quiz-choice" data-value="Exponential improvement in performance">Exponential improvement in performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="6x expansion (24k tokens)">
+                        <div class="quiz-question">2. How much context expansion did LongLLaDA achieve without additional training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="2x expansion (8k tokens)">2x expansion (8k tokens)</div><div class="quiz-choice" data-value="4x expansion (16k tokens)">4x expansion (16k tokens)</div><div class="quiz-choice" data-value="6x expansion (24k tokens)">6x expansion (24k tokens)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Aggregation tasks">
+                        <div class="quiz-question">3. In which type of task did diffusion LLMs consistently underperform compared to auto-regressive LLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Question Answering tasks">Question Answering tasks</div><div class="quiz-choice" data-value="Retrieval tasks">Retrieval tasks</div><div class="quiz-choice" data-value="Aggregation tasks">Aggregation tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Reasoning with Exploration: An Entropy Perspective</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.14758" target="_blank">http://arxiv.org/pdf/2506.14758</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on improving language model reasoning capabilities through entropy-based reinforcement learning in the domain of natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on traditional reinforcement learning exploration methods, the paper proposes a novel approach of using entropy as a signal to encourage exploratory reasoning behaviors in language models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the issue of language models becoming overly exploitative during reinforcement learning training, leading to performance plateaus and limited reasoning capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors introduce a minimal modification to standard reinforcement learning by augmenting the advantage function with a clipped, gradient-detached entropy term that promotes longer reasoning chains while preserving original optimization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The method achieved significant improvements on Pass@K metrics across multiple mathematical reasoning benchmarks, even with large K values, demonstrating enhanced reasoning capabilities compared to baseline models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Reasoning with Exploration: An Entropy Perspective</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="60" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Reasoning with Exploration: An Entropy Perspective</text>
+    
+    <!-- Main Flow Sections -->
+    <g transform="translate(0,100)">
+        <!-- Analysis Section -->
+        <rect x="100" y="0" width="200" height="150" rx="10" fill="#e3f2fd"/>
+        <text x="200" y="40" text-anchor="middle" font-size="16" font-weight="bold" fill="#1976d2">Preliminary Analysis</text>
+        <text x="200" y="80" text-anchor="middle" font-size="14" fill="#1976d2">Pivotal Tokens</text>
+        <text x="200" y="110" text-anchor="middle" font-size="14" fill="#1976d2">Reflective Actions</text>
+        <text x="200" y="140" text-anchor="middle" font-size="14" fill="#1976d2">Rare Behaviors</text>
+
+        <!-- Method Section -->
+        <rect x="400" y="0" width="200" height="150" rx="10" fill="#e8f5e9"/>
+        <text x="500" y="40" text-anchor="middle" font-size="16" font-weight="bold" fill="#388e3c">Method</text>
+        <text x="500" y="80" text-anchor="middle" font-size="14" fill="#388e3c">Entropy-Based</text>
+        <text x="500" y="110" text-anchor="middle" font-size="14" fill="#388e3c">Advantage Shaping</text>
+        <text x="500" y="140" text-anchor="middle" font-size="14" fill="#388e3c">Gradient Detachment</text>
+
+        <!-- Implementation Section -->
+        <rect x="700" y="0" width="200" height="150" rx="10" fill="#fff3e0"/>
+        <text x="800" y="40" text-anchor="middle" font-size="16" font-weight="bold" fill="#f57c00">Implementation</text>
+        <text x="800" y="80" text-anchor="middle" font-size="14" fill="#f57c00">PPO Integration</text>
+        <text x="800" y="110" text-anchor="middle" font-size="14" fill="#f57c00">GRPO Integration</text>
+        <text x="800" y="140" text-anchor="middle" font-size="14" fill="#f57c00">One-line Code Change</text>
+    </g>
+
+    <!-- Results Section -->
+    <g transform="translate(0,400)">
+        <rect x="250" y="0" width="500" height="200" rx="10" fill="#fce4ec"/>
+        <text x="500" y="40" text-anchor="middle" font-size="16" font-weight="bold" fill="#c2185b">Results</text>
+        <text x="500" y="80" text-anchor="middle" font-size="14" fill="#c2185b">Improved Pass@K Performance</text>
+        <text x="500" y="110" text-anchor="middle" font-size="14" fill="#c2185b">Enhanced Exploratory Reasoning</text>
+        <text x="500" y="140" text-anchor="middle" font-size="14" fill="#c2185b">Longer Reasoning Chains</text>
+        <text x="500" y="170" text-anchor="middle" font-size="14" fill="#c2185b">Better Reasoning Boundaries</text>
+    </g>
+
+    <!-- Connecting Lines -->
+    <path d="M300 175 L400 175" stroke="#90a4ae" stroke-width="2"/>
+    <path d="M600 175 L700 175" stroke="#90a4ae" stroke-width="2"/>
+    <path d="M500 250 L500 400" stroke="#90a4ae" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="High entropy regions correlated with exploratory reasoning behaviors">
+                        <div class="quiz-question">1. What key observation about entropy led to the paper's main innovation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High entropy regions correlated with debugging statements">High entropy regions correlated with debugging statements</div><div class="quiz-choice" data-value="High entropy regions correlated with exploratory reasoning behaviors">High entropy regions correlated with exploratory reasoning behaviors</div><div class="quiz-choice" data-value="High entropy regions indicated model errors">High entropy regions indicated model errors</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It uses entropy to shape advantages while preserving original gradient flow">
+                        <div class="quiz-question">2. How does the paper's method differ from traditional entropy-based reinforcement learning approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It removes entropy calculations completely">It removes entropy calculations completely</div><div class="quiz-choice" data-value="It uses entropy to predict model accuracy">It uses entropy to predict model accuracy</div><div class="quiz-choice" data-value="It uses entropy to shape advantages while preserving original gradient flow">It uses entropy to shape advantages while preserving original gradient flow</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Natural tension between entropy and model confidence">
+                        <div class="quiz-question">3. What unique feature helps prevent the paper's method from over-encouraging exploration?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Manual tuning of exploration parameters">Manual tuning of exploration parameters</div><div class="quiz-choice" data-value="A fixed decay schedule for entropy">A fixed decay schedule for entropy</div><div class="quiz-choice" data-value="Natural tension between entropy and model confidence">Natural tension between entropy and model confidence</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Reinforcement Learning with Verifiable Rewards Implicitly Incentivizes
+  Correct Reasoning in Base LLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.14245" target="_blank">http://arxiv.org/pdf/2506.14245</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores Reinforcement Learning with Verifiable Rewards (RLVR) in Large Language Models (LLMs), focusing on improving reasoning capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research showing RLVR-tuned models underperforming base models on Pass@K metrics, the paper proposes a new perspective that RLVR actually incentivizes correct reasoning rather than just finding correct answers.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to resolve the contradiction of why RLVR-tuned models show worse Pass@K performance than base models despite supposedly improving reasoning capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors introduce a new metric called CoT-Pass@K that evaluates both reasoning path and final answer correctness, develop theoretical frameworks explaining RLVR's optimization process, and conduct empirical validation using LLM verifiers.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results show that RLVR consistently improves CoT-Pass@K across all K values, indicating genuine enhancement of reasoning capabilities, and analysis of training dynamics reveals this improvement emerges early in training and generalizes well.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Reinforcement Learning with Verifiable Rewards Implicitly Incentivizes
+  Correct Reasoning in Base LLMs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect x="0" y="0" width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="60" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    RLVR Workflow for Incentivizing Correct Reasoning
+  </text>
+
+  <!-- Start Box -->
+  <rect x="400" y="100" width="200" height="60" rx="10" fill="#3498db"/>
+  <text x="500" y="135" text-anchor="middle" font-size="16" fill="white">Base LLM</text>
+
+  <!-- Flow Down -->
+  <path d="M500 160 L500 200" stroke="#2c3e50" stroke-width="3"/>
+
+  <!-- Process Box 1 -->
+  <rect x="350" y="200" width="300" height="80" rx="10" fill="#e74c3c"/>
+  <text x="500" y="235" text-anchor="middle" font-size="16" fill="white">
+    Reinforcement Learning with
+  </text>
+  <text x="500" y="260" text-anchor="middle" font-size="16" fill="white">
+    Verifiable Rewards (RLVR)
+  </text>
+
+  <!-- Split Flow -->
+  <path d="M500 280 L500 320" stroke="#2c3e50" stroke-width="3"/>
+  <path d="M500 320 L300 360" stroke="#2c3e50" stroke-width="3"/>
+  <path d="M500 320 L700 360" stroke="#2c3e50" stroke-width="3"/>
+
+  <!-- Left Process Box -->
+  <rect x="200" y="360" width="200" height="60" rx="10" fill="#2ecc71"/>
+  <text x="300" y="395" text-anchor="middle" font-size="16" fill="white">Correct CoTs</text>
+
+  <!-- Right Process Box -->
+  <rect x="600" y="360" width="200" height="60" rx="10" fill="#e67e22"/>
+  <text x="700" y="395" text-anchor="middle" font-size="16" fill="white">Correct Answers</text>
+
+  <!-- Flow Down -->
+  <path d="M300 420 L300 460" stroke="#2c3e50" stroke-width="3"/>
+  <path d="M700 420 L700 460" stroke="#2c3e50" stroke-width="3"/>
+
+  <!-- Evaluation Boxes -->
+  <rect x="200" y="460" width="200" height="60" rx="10" fill="#9b59b6"/>
+  <text x="300" y="495" text-anchor="middle" font-size="16" fill="white">CoT-Pass@K</text>
+
+  <rect x="600" y="460" width="200" height="60" rx="10" fill="#9b59b6"/>
+  <text x="700" y="495" text-anchor="middle" font-size="16" fill="white">Pass@K</text>
+
+  <!-- Results Box -->
+  <rect x="300" y="600" width="400" height="100" rx="10" fill="#34495e"/>
+  <text x="500" y="640" text-anchor="middle" font-size="16" fill="white">
+    Improved Reasoning Capabilities
+  </text>
+  <text x="500" y="670" text-anchor="middle" font-size="14" fill="white">
+    Verified through CoT-Pass@K Metric
+  </text>
+
+  <!-- Flow to Results -->
+  <path d="M300 520 L500 600" stroke="#2c3e50" stroke-width="3"/>
+  <path d="M700 520 L500 600" stroke="#2c3e50" stroke-width="3"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It credits correct answers even when they come from flawed reasoning paths">
+                        <div class="quiz-question">1. What is the key limitation of the traditional Pass@K metric according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only measures the speed of model responses">It only measures the speed of model responses</div><div class="quiz-choice" data-value="It credits correct answers even when they come from flawed reasoning paths">It credits correct answers even when they come from flawed reasoning paths</div><div class="quiz-choice" data-value="It can only evaluate simple mathematical problems">It can only evaluate simple mathematical problems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="RLVR emphasizes logical integrity of the entire reasoning path rather than just correct actions">
+                        <div class="quiz-question">2. How does the paper's theoretical framework distinguish RLVR from traditional reinforcement learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="RLVR focuses on maximizing reward values only">RLVR focuses on maximizing reward values only</div><div class="quiz-choice" data-value="RLVR requires more computational resources">RLVR requires more computational resources</div><div class="quiz-choice" data-value="RLVR emphasizes logical integrity of the entire reasoning path rather than just correct actions">RLVR emphasizes logical integrity of the entire reasoning path rather than just correct actions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="They used DeepSeek-R1-0528-Qwen3-8B as an automated verifier with multiple verification attempts">
+                        <div class="quiz-question">3. What novel approach did the researchers use to verify the correctness of reasoning chains at scale?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They relied solely on human experts">They relied solely on human experts</div><div class="quiz-choice" data-value="They used DeepSeek-R1-0528-Qwen3-8B as an automated verifier with multiple verification attempts">They used DeepSeek-R1-0528-Qwen3-8B as an automated verifier with multiple verification attempts</div><div class="quiz-choice" data-value="They only checked the final answers">They only checked the final answers</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
