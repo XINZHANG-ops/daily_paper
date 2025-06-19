@@ -1,0 +1,849 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-19 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-19 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Sekai: A Video Dataset towards World Exploration</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.15675" target="_blank">http://arxiv.org/pdf/2506.15675</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A large-scale video dataset called Sekai for world exploration, focusing on computer vision and video generation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing video generation datasets that have limitations in location diversity and duration; proposes a new dataset with worldwide coverage, longer durations, and rich annotations.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing video generation datasets are not well-suited for world exploration training due to limited locations, short duration, static scenes, and lack of exploration-related annotations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Developed a curation pipeline to collect, pre-process, and annotate videos from YouTube and video games, including shot detection, quality filtering, and comprehensive annotation of location, scene type, weather, crowd density, captions, and camera trajectories.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Created a dataset of over 5,000 hours of videos from 100+ countries across 750 cities, with demonstrated quality through statistical analysis and successful training of an interactive world exploration model called YUME.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Sekai: A Video Dataset towards World Exploration</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="1000" height="800" fill="#f8f9fa" />
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Sekai Dataset Creation Pipeline</text>
+    
+    <!-- Video Collection -->
+    <rect x="100" y="100" width="200" height="80" rx="10" fill="#3498db" />
+    <text x="200" y="145" text-anchor="middle" fill="white" font-size="16">Video Collection</text>
+    <text x="200" y="165" text-anchor="middle" fill="white" font-size="12">YouTube + Game Videos</text>
+
+    <!-- Pre-processing -->
+    <rect x="400" y="100" width="200" height="180" rx="10" fill="#e74c3c" />
+    <text x="500" y="130" text-anchor="middle" fill="white" font-size="16">Pre-processing</text>
+    <text x="500" y="160" text-anchor="middle" fill="white" font-size="12">Shot Boundary Detection</text>
+    <text x="500" y="185" text-anchor="middle" fill="white" font-size="12">Clip Extraction</text>
+    <text x="500" y="210" text-anchor="middle" fill="white" font-size="12">Quality Filtering</text>
+    <text x="500" y="235" text-anchor="middle" fill="white" font-size="12">Subtitle Filtering</text>
+    <text x="500" y="260" text-anchor="middle" fill="white" font-size="12">Camera Trajectory Filtering</text>
+
+    <!-- Annotation -->
+    <rect x="700" y="100" width="200" height="180" rx="10" fill="#2ecc71" />
+    <text x="800" y="130" text-anchor="middle" fill="white" font-size="16">Annotation</text>
+    <text x="800" y="160" text-anchor="middle" fill="white" font-size="12">Location</text>
+    <text x="800" y="185" text-anchor="middle" fill="white" font-size="12">Category and Caption</text>
+    <text x="800" y="210" text-anchor="middle" fill="white" font-size="12">Camera Trajectories</text>
+    <text x="800" y="235" text-anchor="middle" fill="white" font-size="12">Weather and Scene</text>
+    <text x="800" y="260" text-anchor="middle" fill="white" font-size="12">Time and Crowd Density</text>
+
+    <!-- Video Sampling -->
+    <rect x="400" y="400" width="200" height="180" rx="10" fill="#9b59b6" />
+    <text x="500" y="430" text-anchor="middle" fill="white" font-size="16">Video Sampling</text>
+    <text x="500" y="460" text-anchor="middle" fill="white" font-size="12">Quality Sampling</text>
+    <text x="500" y="485" text-anchor="middle" fill="white" font-size="12">Content Diversity</text>
+    <text x="500" y="510" text-anchor="middle" fill="white" font-size="12">Location Diversity</text>
+    <text x="500" y="535" text-anchor="middle" fill="white" font-size="12">Category Diversity</text>
+    <text x="500" y="560" text-anchor="middle" fill="white" font-size="12">Camera Trajectory Diversity</text>
+
+    <!-- Final Dataset -->
+    <rect x="400" y="650" width="200" height="80" rx="10" fill="#f1c40f" />
+    <text x="500" y="695" text-anchor="middle" fill="#34495e" font-size="16">Sekai Dataset</text>
+    <text x="500" y="715" text-anchor="middle" fill="#34495e" font-size="12">5000+ Hours of Videos</text>
+
+    <!-- Connecting Lines -->
+    <path d="M300 140 H400" stroke="#95a5a6" stroke-width="2" />
+    <path d="M600 140 H700" stroke="#95a5a6" stroke-width="2" />
+    <path d="M500 280 V400" stroke="#95a5a6" stroke-width="2" />
+    <path d="M500 580 V650" stroke="#95a5a6" stroke-width="2" />
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It has longer video durations and worldwide coverage with rich annotations">
+                        <div class="quiz-question">1. What makes Sekai dataset unique compared to existing video datasets?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only contains video game footage">It only contains video game footage</div><div class="quiz-choice" data-value="It has longer video durations and worldwide coverage with rich annotations">It has longer video durations and worldwide coverage with rich annotations</div><div class="quiz-choice" data-value="It focuses exclusively on drone footage">It focuses exclusively on drone footage</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="They refactored TransNetV2 with GPU acceleration making it 5x faster">
+                        <div class="quiz-question">2. In the video pre-processing pipeline, what innovative approach did the researchers take for shot boundary detection?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They manually reviewed each video">They manually reviewed each video</div><div class="quiz-choice" data-value="They used AI to detect scene changes">They used AI to detect scene changes</div><div class="quiz-choice" data-value="They refactored TransNetV2 with GPU acceleration making it 5x faster">They refactored TransNetV2 with GPU acceleration making it 5x faster</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="They are Japanese words - Sekai means 'world' and YUME means 'dream'">
+                        <div class="quiz-question">3. What is the meaning behind the dataset and model names chosen by the researchers?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They are random combinations of letters">They are random combinations of letters</div><div class="quiz-choice" data-value="They are acronyms of technical terms">They are acronyms of technical terms</div><div class="quiz-choice" data-value="They are Japanese words - Sekai means 'world' and YUME means 'dream'">They are Japanese words - Sekai means 'world' and YUME means 'dream'</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>GenRecal: Generation after Recalibration from Large to Small
+  Vision-Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.15681" target="_blank">http://arxiv.org/pdf/2506.15681</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Vision-language model distillation for transferring knowledge from large models to smaller ones in multimodal AI systems.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on traditional knowledge distillation techniques but proposes a novel "Recalibrator" component to overcome token type incompatibility between different models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The challenge of distilling knowledge between vision-language models with different token types (vocabulary sizes, token splits, and ordering schemes), which current methods cannot handle.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces GenRecal framework with a Recalibrator that aligns and adapts feature representations between heterogeneous VLMs through a three-stage training process.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The framework outperformed baseline performances on multiple benchmarks, achieving better results than both open and closed-source VLMs while enabling distillation between previously incompatible model architectures.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>GenRecal: Generation after Recalibration from Large to Small
+  Vision-Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f8f9fa"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">GenRecal: Generation after Recalibration</text>
+    
+    <!-- Input Section -->
+    <rect x="100" y="100" width="200" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+    <text x="200" y="145" text-anchor="middle" fill="white" font-size="16">Input</text>
+    <text x="200" y="165" text-anchor="middle" fill="white" font-size="14">Image + Text Prompt</text>
+
+    <!-- Teacher-Student Models -->
+    <g transform="translate(0, 250)">
+        <!-- Teacher Model -->
+        <rect x="50" y="0" width="180" height="100" rx="10" fill="#e74c3c" opacity="0.8"/>
+        <text x="140" y="35" text-anchor="middle" fill="white" font-size="16">Teacher VLM</text>
+        <text x="140" y="60" text-anchor="middle" fill="white" font-size="14">(Large Model)</text>
+        <text x="140" y="85" text-anchor="middle" fill="white" font-size="14">72B-78B</text>
+
+        <!-- Student Model -->
+        <rect x="270" y="0" width="180" height="100" rx="10" fill="#2ecc71" opacity="0.8"/>
+        <text x="360" y="35" text-anchor="middle" fill="white" font-size="16">Student VLM</text>
+        <text x="360" y="60" text-anchor="middle" fill="white" font-size="14">(Small Model)</text>
+        <text x="360" y="85" text-anchor="middle" fill="white" font-size="14">1B-8B</text>
+    </g>
+
+    <!-- Recalibrator -->
+    <g transform="translate(0, 400)">
+        <rect x="150" y="0" width="200" height="120" rx="10" fill="#9b59b6" opacity="0.8"/>
+        <text x="250" y="40" text-anchor="middle" fill="white" font-size="18">Recalibrator</text>
+        <text x="250" y="70" text-anchor="middle" fill="white" font-size="14">Feature Alignment</text>
+        <text x="250" y="90" text-anchor="middle" fill="white" font-size="14">Token Type Adaptation</text>
+    </g>
+
+    <!-- Knowledge Transfer -->
+    <g transform="translate(500, 250)">
+        <rect x="0" y="0" width="400" height="150" rx="10" fill="#f1c40f" opacity="0.8"/>
+        <text x="200" y="40" text-anchor="middle" fill="white" font-size="18">Knowledge Transfer Process</text>
+        <text x="200" y="70" text-anchor="middle" fill="white" font-size="14">1. Feature Representation Alignment</text>
+        <text x="200" y="100" text-anchor="middle" fill="white" font-size="14">2. Token Type Compatible Distillation</text>
+        <text x="200" y="130" text-anchor="middle" fill="white" font-size="14">3. Multi-stage Training</text>
+    </g>
+
+    <!-- Output -->
+    <g transform="translate(0, 600)">
+        <rect x="200" y="0" width="600" height="100" rx="10" fill="#1abc9c" opacity="0.8"/>
+        <text x="500" y="35" text-anchor="middle" fill="white" font-size="18">Enhanced Small VLM</text>
+        <text x="500" y="65" text-anchor="middle" fill="white" font-size="14">Improved Performance with Reduced Model Size</text>
+        <text x="500" y="85" text-anchor="middle" fill="white" font-size="14">General-Purpose Distillation Capability</text>
+    </g>
+
+    <!-- Connecting Lines -->
+    <path d="M 200 180 L 200 250" stroke="#34495e" stroke-width="2" fill="none"/>
+    <path d="M 140 350 L 140 400" stroke="#34495e" stroke-width="2" fill="none"/>
+    <path d="M 360 350 L 360 400" stroke="#34495e" stroke-width="2" fill="none"/>
+    <path d="M 250 520 L 250 600" stroke="#34495e" stroke-width="2" fill="none"/>
+    <path d="M 500 400 L 500 600" stroke="#34495e" stroke-width="2" fill="none"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The Recalibrator component that aligns feature representations">
+                        <div class="quiz-question">1. What is the main innovation of GenRecal that allows it to overcome limitations of traditional distillation methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A larger training dataset">A larger training dataset</div><div class="quiz-choice" data-value="The Recalibrator component that aligns feature representations">The Recalibrator component that aligns feature representations</div><div class="quiz-choice" data-value="Using multiple teacher models simultaneously">Using multiple teacher models simultaneously</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The model fails to explicitly align features between large and small VLMs">
+                        <div class="quiz-question">2. According to the paper, what happens if the regularization term is removed from GenRecal's training process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Training becomes faster but less accurate">Training becomes faster but less accurate</div><div class="quiz-choice" data-value="The model fails to explicitly align features between large and small VLMs">The model fails to explicitly align features between large and small VLMs</div><div class="quiz-choice" data-value="Memory usage increases significantly">Memory usage increases significantly</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It enables deployment of efficient VLMs on resource-constrained devices">
+                        <div class="quiz-question">3. What is a key real-world application benefit of GenRecal?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It enables deployment of efficient VLMs on resource-constrained devices">It enables deployment of efficient VLMs on resource-constrained devices</div><div class="quiz-choice" data-value="It improves image recognition accuracy">It improves image recognition accuracy</div><div class="quiz-choice" data-value="It reduces training time for large models">It reduces training time for large models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>ProtoReasoning: Prototypes as the Foundation for Generalizable Reasoning
+  in LLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.15211" target="_blank">http://arxiv.org/pdf/2506.15211</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores how abstract reasoning prototypes enable cross-domain generalization in Large Language Models (LLMs), focusing on logical reasoning and planning capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work on Long Chain-of-Thought reasoning and LRM training, the paper introduces the novel concept of "reasoning prototypes" as fundamental patterns that enable cross-domain transfer.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to understand and enhance the underlying mechanisms that allow LLMs trained on specific reasoning tasks to transfer their abilities to different types of problems.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed ProtoReasoning framework using Prolog for logical reasoning and PDDL for planning tasks, with automated prototype construction and verification systems.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The approach achieved significant improvements across multiple benchmarks: 4.7% on logical reasoning (Enigmata-Eval), 6.3% on planning tasks, 4.0% on general reasoning (MMLU), and 1.0% on mathematics (AIME24).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ProtoReasoning: Prototypes as the Foundation for Generalizable Reasoning
+  in LLMs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f0f0f0"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">ProtoReasoning Framework</text>
+
+    <!-- Main Flow Components -->
+    <g transform="translate(0,20)">
+        <!-- Input Section -->
+        <rect x="100" y="100" width="200" height="80" rx="10" fill="#4CAF50" opacity="0.8"/>
+        <text x="200" y="145" text-anchor="middle" fill="white" font-size="16">Input Problems</text>
+
+        <!-- Prototype Constructor -->
+        <rect x="400" y="100" width="200" height="150" rx="10" fill="#2196F3" opacity="0.8"/>
+        <text x="500" y="145" text-anchor="middle" fill="white" font-size="16">Prototype Constructor</text>
+        <text x="500" y="175" text-anchor="middle" fill="white" font-size="14">- Prolog (Logic)</text>
+        <text x="500" y="205" text-anchor="middle" fill="white" font-size="14">- PDDL (Planning)</text>
+
+        <!-- Verification System -->
+        <rect x="700" y="100" width="200" height="150" rx="10" fill="#9C27B0" opacity="0.8"/>
+        <text x="800" y="145" text-anchor="middle" fill="white" font-size="16">Verification System</text>
+        <text x="800" y="175" text-anchor="middle" fill="white" font-size="14">- SWI-Prolog</text>
+        <text x="800" y="205" text-anchor="middle" fill="white" font-size="14">- VAL Validator</text>
+
+        <!-- Training Process -->
+        <rect x="250" y="350" width="500" height="200" rx="10" fill="#FF5722" opacity="0.8"/>
+        <text x="500" y="385" text-anchor="middle" fill="white" font-size="18">Training Process</text>
+        <text x="500" y="425" text-anchor="middle" fill="white" font-size="14">1. Teacher Model Distillation</text>
+        <text x="500" y="465" text-anchor="middle" fill="white" font-size="14">2. Difficulty Stratification</text>
+        <text x="500" y="505" text-anchor="middle" fill="white" font-size="14">3. Quality Filtration</text>
+
+        <!-- Output -->
+        <rect x="250" y="650" width="500" height="80" rx="10" fill="#607D8B" opacity="0.8"/>
+        <text x="500" y="695" text-anchor="middle" fill="white" font-size="16">Enhanced Reasoning Capabilities</text>
+    </g>
+
+    <!-- Connecting Lines -->
+    <g stroke="#666" stroke-width="2" fill="none">
+        <path d="M300 140 L400 140"/>
+        <path d="M600 175 L700 175"/>
+        <path d="M500 250 L500 350"/>
+        <path d="M500 550 L500 650"/>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It introduces abstract reasoning prototypes as the foundation for cross-domain generalization">
+                        <div class="quiz-question">1. What is the main innovation of ProtoReasoning compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses reinforcement learning with verifiable rewards">It uses reinforcement learning with verifiable rewards</div><div class="quiz-choice" data-value="It introduces abstract reasoning prototypes as the foundation for cross-domain generalization">It introduces abstract reasoning prototypes as the foundation for cross-domain generalization</div><div class="quiz-choice" data-value="It implements a new type of transformer architecture">It implements a new type of transformer architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It achieved comparable performance to natural language training, validating the prototype hypothesis">
+                        <div class="quiz-question">2. In the ablation study, what was the key finding about prototype-based training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It performed significantly worse than natural language training">It performed significantly worse than natural language training</div><div class="quiz-choice" data-value="It only worked well for mathematical problems">It only worked well for mathematical problems</div><div class="quiz-choice" data-value="It achieved comparable performance to natural language training, validating the prototype hypothesis">It achieved comparable performance to natural language training, validating the prototype hypothesis</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="PDDL (Planning Domain Definition Language)">
+                        <div class="quiz-question">3. Which prototype representation system did the paper use for planning tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="PDDL (Planning Domain Definition Language)">PDDL (Planning Domain Definition Language)</div><div class="quiz-choice" data-value="Python scripting">Python scripting</div><div class="quiz-choice" data-value="SQL queries">SQL queries</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
