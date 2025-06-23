@@ -1,0 +1,919 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-23 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-23 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Drag-and-Drop LLMs: Zero-Shot Prompt-to-Weights</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.16406" target="_blank">http://arxiv.org/pdf/2506.16406</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents "Drag-and-Drop LLMs," a novel approach in the domain of Large Language Model adaptation and parameter-efficient fine-tuning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous Parameter-Efficient Fine-Tuning (PEFT) methods like LoRA and parameter generation research, the paper proposes a new prompt-conditioned parameter generator that directly maps task prompts to model weight updates without per-task training.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the computational bottleneck of traditional PEFT methods which require separate optimization runs for each downstream dataset, making adaptation expensive and time-consuming.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a lightweight text encoder to convert task prompts into conditional embeddings, which are then transformed by a cascaded hyper-convolutional decoder into LoRA weight matrices.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The method achieved up to 12,000× lower overhead than full fine-tuning, up to 30% performance gains over training LoRAs on unseen tasks, and demonstrated robust cross-domain generalization across common-sense reasoning, math, coding, and multimodal benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Drag-and-Drop LLMs: Zero-Shot Prompt-to-Weights</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect x="0" y="0" width="1000" height="800" fill="#f5f5f5"/>
+    
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#333">
+        Drag-and-Drop LLMs Workflow
+    </text>
+
+    <!-- Phase 1: Data Preparation -->
+    <rect x="100" y="100" width="200" height="150" rx="10" fill="#e6f3ff" stroke="#2196f3"/>
+    <text x="200" y="130" text-anchor="middle" font-weight="bold" fill="#2196f3">
+        Data Preparation
+    </text>
+    <text x="200" y="160" text-anchor="middle" font-size="14">
+        - Collect LLM Checkpoints
+    </text>
+    <text x="200" y="190" text-anchor="middle" font-size="14">
+        - Prepare Prompts
+    </text>
+    <text x="200" y="220" text-anchor="middle" font-size="14">
+        - Create Prompt-Checkpoint Pairs
+    </text>
+
+    <!-- Phase 2: Training -->
+    <rect x="400" y="100" width="200" height="150" rx="10" fill="#fff0f4" stroke="#e91e63"/>
+    <text x="500" y="130" text-anchor="middle" font-weight="bold" fill="#e91e63">
+        Training Process
+    </text>
+    <text x="500" y="160" text-anchor="middle" font-size="14">
+        - Text Encoder
+    </text>
+    <text x="500" y="190" text-anchor="middle" font-size="14">
+        - Parameter Generator
+    </text>
+    <text x="500" y="220" text-anchor="middle" font-size="14">
+        - MSE Loss Training
+    </text>
+
+    <!-- Phase 3: Inference -->
+    <rect x="700" y="100" width="200" height="150" rx="10" fill="#f3e5f5" stroke="#9c27b0"/>
+    <text x="800" y="130" text-anchor="middle" font-weight="bold" fill="#9c27b0">
+        Inference
+    </text>
+    <text x="800" y="160" text-anchor="middle" font-size="14">
+        - In-domain Testing
+    </text>
+    <text x="800" y="190" text-anchor="middle" font-size="14">
+        - Cross-domain Testing
+    </text>
+    <text x="800" y="220" text-anchor="middle" font-size="14">
+        - Performance Evaluation
+    </text>
+
+    <!-- Architecture Details -->
+    <rect x="150" y="350" width="700" height="200" rx="10" fill="#e8f5e9" stroke="#4caf50"/>
+    <text x="500" y="380" text-anchor="middle" font-weight="bold" fill="#4caf50">
+        Parameter Generator Architecture
+    </text>
+    <text x="500" y="420" text-anchor="middle" font-size="14">
+        Input Prompt Embeddings [B, N, L, C]
+    </text>
+    <text x="500" y="460" text-anchor="middle" font-size="14">
+        Hyper-convolutional Decoder Blocks
+    </text>
+    <text x="500" y="500" text-anchor="middle" font-size="14">
+        Output LoRA Parameters [B, Nw, Lw, Cw]
+    </text>
+
+    <!-- Results Summary -->
+    <rect x="150" y="600" width="700" height="150" rx="10" fill="#fff3e0" stroke="#ff9800"/>
+    <text x="500" y="630" text-anchor="middle" font-weight="bold" fill="#ff9800">
+        Key Results
+    </text>
+    <text x="500" y="670" text-anchor="middle" font-size="14">
+        - Up to 12,000× Lower Overhead
+    </text>
+    <text x="500" y="700" text-anchor="middle" font-size="14">
+        - Up to 30% Performance Gains
+    </text>
+    <text x="500" y="730" text-anchor="middle" font-size="14">
+        - Strong Cross-domain Generalization
+    </text>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It directly generates weight updates from task prompts without per-task training">
+                        <div class="quiz-question">1. What is the main innovation of the Drag-and-Drop LLMs compared to traditional PEFT methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It completely eliminates the need for any model training">It completely eliminates the need for any model training</div><div class="quiz-choice" data-value="It directly generates weight updates from task prompts without per-task training">It directly generates weight updates from task prompts without per-task training</div><div class="quiz-choice" data-value="It reduces the size of the language model being fine-tuned">It reduces the size of the language model being fine-tuned</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Up to 12,000× faster">
+                        <div class="quiz-question">2. According to the paper, what is the speed improvement of DnD compared to full fine-tuning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Up to 1,000× faster">Up to 1,000× faster</div><div class="quiz-choice" data-value="Up to 8,000× faster">Up to 8,000× faster</div><div class="quiz-choice" data-value="Up to 12,000× faster">Up to 12,000× faster</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="A lightweight text encoder and a hyper-convolutional decoder">
+                        <div class="quiz-question">3. What are the two main components of the DnD architecture?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A text classifier and a weight predictor">A text classifier and a weight predictor</div><div class="quiz-choice" data-value="A lightweight text encoder and a hyper-convolutional decoder">A lightweight text encoder and a hyper-convolutional decoder</div><div class="quiz-choice" data-value="A prompt generator and a parameter optimizer">A prompt generator and a parameter optimizer</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Vision-Guided Chunking Is All You Need: Enhancing RAG with Multimodal
+  Document Understanding</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.16035" target="_blank">http://arxiv.org/pdf/2506.16035</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper focuses on enhancing Retrieval-Augmented Generation (RAG) systems through improved document chunking using multimodal document understanding in the domain of natural language processing and computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on traditional RAG systems and text-based chunking methods, proposing a novel approach that leverages Large Multimodal Models (LMMs) to process documents while maintaining semantic coherence and structural integrity.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitations of traditional text-based chunking methods that struggle with complex document structures, multi-page tables, embedded figures, and contextual dependencies across page boundaries.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed a multimodal batch processing framework using Gemini-2.5-Pro to process PDF documents in batches of 4 pages, implementing context preservation mechanisms and a 3-level heading hierarchy for better document understanding.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The vision-guided RAG approach achieved 89% accuracy compared to 78% for vanilla RAG, demonstrating significant improvements in chunk quality and downstream RAG performance across diverse document types.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Vision-Guided Chunking Is All You Need: Enhancing RAG with Multimodal
+  Document Understanding</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#f8f9fa"/>
+    
+    <!-- Main Flow Components -->
+    <g transform="translate(50,50)">
+        <!-- Input PDF -->
+        <rect x="50" y="50" width="150" height="60" rx="10" fill="#4a90e2" opacity="0.9"/>
+        <text x="125" y="85" text-anchor="middle" fill="white" font-weight="bold">Complex PDF</text>
+        
+        <!-- Processing Steps -->
+        <g transform="translate(0,150)">
+            <!-- PDF Splitter -->
+            <rect x="50" y="0" width="150" height="60" rx="10" fill="#50c878"/>
+            <text x="125" y="35" text-anchor="middle" fill="white" font-weight="bold">PDF Splitter</text>
+            
+            <!-- Context Manager -->
+            <rect x="250" y="0" width="150" height="60" rx="10" fill="#f39c12"/>
+            <text x="325" y="35" text-anchor="middle" fill="white" font-weight="bold">Context Manager</text>
+            
+            <!-- LLM Processing -->
+            <rect x="450" y="0" width="150" height="60" rx="10" fill="#e74c3c"/>
+            <text x="525" y="35" text-anchor="middle" fill="white" font-weight="bold">LLM Processing</text>
+            
+            <!-- Chunk Processor -->
+            <rect x="650" y="0" width="150" height="60" rx="10" fill="#9b59b6"/>
+            <text x="725" y="35" text-anchor="middle" fill="white" font-weight="bold">Chunk Processor</text>
+        </g>
+
+        <!-- Context Elements -->
+        <g transform="translate(250,250)">
+            <rect x="0" y="0" width="150" height="40" rx="5" fill="#bdc3c7"/>
+            <text x="75" y="25" text-anchor="middle" fill="white">Previous Context</text>
+            
+            <rect x="0" y="50" width="150" height="40" rx="5" fill="#bdc3c7"/>
+            <text x="75" y="75" text-anchor="middle" fill="white">Context + Batch</text>
+        </g>
+
+        <!-- LLM Elements -->
+        <g transform="translate(450,250)">
+            <rect x="0" y="0" width="150" height="40" rx="5" fill="#e67e22"/>
+            <text x="75" y="25" text-anchor="middle" fill="white">Gemini-2.5-Pro</text>
+            
+            <rect x="0" y="50" width="150" height="40" rx="5" fill="#e67e22"/>
+            <text x="75" y="75" text-anchor="middle" fill="white">Embedded Figures</text>
+        </g>
+
+        <!-- Chunk Elements -->
+        <g transform="translate(650,250)">
+            <rect x="0" y="0" width="150" height="40" rx="5" fill="#8e44ad"/>
+            <text x="75" y="25" text-anchor="middle" fill="white">Last Chunks</text>
+            
+            <rect x="0" y="50" width="150" height="40" rx="5" fill="#8e44ad"/>
+            <text x="75" y="75" text-anchor="middle" fill="white">Step Procedures</text>
+            
+            <rect x="0" y="100" width="150" height="40" rx="5" fill="#8e44ad"/>
+            <text x="75" y="125" text-anchor="middle" fill="white">Hierarchical Content</text>
+        </g>
+
+        <!-- Output -->
+        <g transform="translate(400,400)">
+            <rect x="0" y="0" width="200" height="60" rx="10" fill="#2ecc71"/>
+            <text x="100" y="35" text-anchor="middle" fill="white" font-weight="bold">Context Enriched Chunks</text>
+        </g>
+
+        <!-- Vector DB -->
+        <g transform="translate(400,500)">
+            <rect x="0" y="0" width="200" height="60" rx="10" fill="#3498db"/>
+            <text x="100" y="35" text-anchor="middle" fill="white" font-weight="bold">Vector DB</text>
+        </g>
+
+        <!-- Connecting Lines -->
+        <path d="M125 110 L125 150" stroke="#666" stroke-width="2"/>
+        <path d="M200 180 L250 180" stroke="#666" stroke-width="2"/>
+        <path d="M400 180 L450 180" stroke="#666" stroke-width="2"/>
+        <path d="M600 180 L650 180" stroke="#666" stroke-width="2"/>
+        <path d="M725 210 L725 250" stroke="#666" stroke-width="2"/>
+        <path d="M500 400 L500 500" stroke="#666" stroke-width="2"/>
+    </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Processing documents in multimodal batches with context preservation">
+                        <div class="quiz-question">1. What is the main innovation in the paper's approach to document chunking?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a fixed-size window to split documents">Using a fixed-size window to split documents</div><div class="quiz-choice" data-value="Processing documents in multimodal batches with context preservation">Processing documents in multimodal batches with context preservation</div><div class="quiz-choice" data-value="Converting all documents to plain text before processing">Converting all documents to plain text before processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Processing tables spanning 8-9 pages or more">
+                        <div class="quiz-question">2. What was the most significant challenge identified when processing complex documents?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Processing tables spanning 8-9 pages or more">Processing tables spanning 8-9 pages or more</div><div class="quiz-choice" data-value="Converting PDF files to text">Converting PDF files to text</div><div class="quiz-choice" data-value="Handling different languages">Handling different languages</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="4 pages per batch">
+                        <div class="quiz-question">3. What was the batch size used in the paper's implementation for processing PDF pages?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="2 pages per batch">2 pages per batch</div><div class="quiz-choice" data-value="4 pages per batch">4 pages per batch</div><div class="quiz-choice" data-value="8 pages per batch">8 pages per batch</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>PAROAttention: Pattern-Aware ReOrdering for Efficient Sparse and
+  Quantized Attention in Visual Generation Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.16054" target="_blank">http://arxiv.org/pdf/2506.16054</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Pattern-aware token reordering for optimizing sparse and quantized attention mechanisms in visual generation models like text-to-video and text-to-image systems.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on prior sparse attention and quantization techniques for language models, proposes a novel approach of reorganizing attention patterns through token reordering instead of designing specialized sparse masks.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the high computational cost and memory requirements of attention mechanisms in visual generation models, particularly for long token sequences in high-resolution image or multi-frame video generation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces Pattern-Aware token ReOrdering (PARO) to transform diverse attention patterns into unified block-wise patterns, combined with specialized sparsification and quantization techniques optimized for the unified pattern.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves nearly identical generation results compared to full-precision baselines while operating at lower density (20-30%) and bitwidth (INT8/INT4), delivering 1.9-2.7× end-to-end latency speedup with lossless metrics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>PAROAttention: Pattern-Aware ReOrdering for Efficient Sparse and
+  Quantized Attention in Visual Generation Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+    <!-- Background Gradient -->
+    <defs>
+        <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#f0f9ff;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bg-gradient)" />
+
+    <!-- Title -->
+    <text x="500" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">PAROAttention Workflow</text>
+
+    <!-- Main Flow Sections -->
+    <!-- Input Section -->
+    <rect x="100" y="100" width="200" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+    <text x="200" y="145" text-anchor="middle" fill="white" font-size="16">Input Tokens</text>
+    <text x="200" y="165" text-anchor="middle" fill="white" font-size="12">[F,H,W] Format</text>
+
+    <!-- Pattern-Aware Reordering -->
+    <rect x="400" y="100" width="200" height="120" rx="10" fill="#e74c3c" opacity="0.8"/>
+    <text x="500" y="135" text-anchor="middle" fill="white" font-size="16">Pattern-Aware</text>
+    <text x="500" y="155" text-anchor="middle" fill="white" font-size="16">Token Reordering</text>
+    <text x="500" y="175" text-anchor="middle" fill="white" font-size="12">Permutation Selection</text>
+    <text x="500" y="195" text-anchor="middle" fill="white" font-size="12">from 6 possible orders</text>
+
+    <!-- Block-wise Processing -->
+    <rect x="700" y="100" width="200" height="80" rx="10" fill="#2ecc71" opacity="0.8"/>
+    <text x="800" y="145" text-anchor="middle" fill="white" font-size="16">Unified Block-wise</text>
+    <text x="800" y="165" text-anchor="middle" fill="white" font-size="12">Pattern Formation</text>
+
+    <!-- Sparse Attention -->
+    <rect x="250" y="300" width="200" height="120" rx="10" fill="#9b59b6" opacity="0.8"/>
+    <text x="350" y="335" text-anchor="middle" fill="white" font-size="16">Block-wise</text>
+    <text x="350" y="355" text-anchor="middle" fill="white" font-size="16">Sparse Attention</text>
+    <text x="350" y="375" text-anchor="middle" fill="white" font-size="12">Density: 20%-30%</text>
+    <text x="350" y="395" text-anchor="middle" fill="white" font-size="12">Static Mask Design</text>
+
+    <!-- Quantization -->
+    <rect x="550" y="300" width="200" height="120" rx="10" fill="#f1c40f" opacity="0.8"/>
+    <text x="650" y="335" text-anchor="middle" fill="white" font-size="16">Block-wise</text>
+    <text x="650" y="355" text-anchor="middle" fill="white" font-size="16">Quantization</text>
+    <text x="650" y="375" text-anchor="middle" fill="white" font-size="12">INT8/INT4</text>
+    <text x="650" y="395" text-anchor="middle" fill="white" font-size="12">Reduced Incoherence</text>
+
+    <!-- Output -->
+    <rect x="400" y="500" width="200" height="80" rx="10" fill="#1abc9c" opacity="0.8"/>
+    <text x="500" y="545" text-anchor="middle" fill="white" font-size="16">Optimized Output</text>
+    <text x="500" y="565" text-anchor="middle" fill="white" font-size="12">1.9~2.7× Speedup</text>
+
+    <!-- Connecting Lines -->
+    <path d="M300 140 L400 140" stroke="#34495e" stroke-width="2"/>
+    <path d="M600 140 L700 140" stroke="#34495e" stroke-width="2"/>
+    <path d="M800 180 L800 250 L350 250 L350 300" stroke="#34495e" stroke-width="2"/>
+    <path d="M800 180 L800 250 L650 250 L650 300" stroke="#34495e" stroke-width="2"/>
+    <path d="M350 420 L350 460 L500 460 L500 500" stroke="#34495e" stroke-width="2"/>
+    <path d="M650 420 L650 460 L500 460" stroke="#34495e" stroke-width="2"/>
+
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Reorganizing attention patterns through token reordering">
+                        <div class="quiz-question">1. What is the key innovation of PAROAttention compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Designing more complex sparse attention masks">Designing more complex sparse attention masks</div><div class="quiz-choice" data-value="Reorganizing attention patterns through token reordering">Reorganizing attention patterns through token reordering</div><div class="quiz-choice" data-value="Increasing the model size for better performance">Increasing the model size for better performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="1.9-2.7× end-to-end latency speedup">
+                        <div class="quiz-question">2. What performance improvement did PAROAttention achieve while maintaining generation quality?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.2-1.5× end-to-end latency speedup">1.2-1.5× end-to-end latency speedup</div><div class="quiz-choice" data-value="1.9-2.7× end-to-end latency speedup">1.9-2.7× end-to-end latency speedup</div><div class="quiz-choice" data-value="3.5-4.0× end-to-end latency speedup">3.5-4.0× end-to-end latency speedup</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It transforms diverse attention patterns into unified block-wise patterns">
+                        <div class="quiz-question">3. Why does token reordering help improve performance in visual generation models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It increases the model's parameter count">It increases the model's parameter count</div><div class="quiz-choice" data-value="It reduces the need for GPU memory">It reduces the need for GPU memory</div><div class="quiz-choice" data-value="It transforms diverse attention patterns into unified block-wise patterns">It transforms diverse attention patterns into unified block-wise patterns</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
