@@ -1,0 +1,1125 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-24 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-24 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Light of Normals: Unified Feature Representation for Universal
+  Photometric Stereo</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.18882" target="_blank">http://arxiv.org/pdf/2506.18882</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Universal photometric stereo - a computer vision technique for reconstructing 3D surface normals from multiple images captured under varying lighting conditions.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous encoder-decoder approaches like UniPS and SDM-UniPS; introduces new light register tokens and wavelet transforms to better decouple lighting from surface features.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses two key challenges: 1) Decoupling illumination variations from surface normal features, and 2) Preserving high-frequency geometric details in complex surfaces.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Employs LINO-UniPS architecture with: light register tokens and global cross-image attention for lighting-normal decoupling, wavelet transform for detail preservation, and normal-gradient confidence loss; also introduces PS-Verse dataset with graded geometric complexity.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance on public benchmarks (DiLiGenT, LUCES), with improved feature consistency (higher CSIM/SSIM scores) and better normal reconstruction accuracy compared to existing methods, especially for complex geometries.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Light of Normals: Unified Feature Representation for Universal
+  Photometric Stereo</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    LINO-UniPS: Light of Normals Workflow
+  </text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="60" width="120" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="110" y="85" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Multi-light</text>
+  <text x="110" y="100" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Images</text>
+  <text x="110" y="115" text-anchor="middle" font-size="10" fill="white">(B×F×H×W×3)</text>
+  
+  <!-- Light Registered Wavelet-aware DownSampler -->
+  <rect x="220" y="50" width="140" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="290" y="75" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Light Registered</text>
+  <text x="290" y="90" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Wavelet-aware</text>
+  <text x="290" y="105" text-anchor="middle" font-size="11" fill="white" font-weight="bold">DownSampler</text>
+  <text x="290" y="120" text-anchor="middle" font-size="9" fill="white">(DWT + BiLinear)</text>
+  
+  <!-- DINOv2 Backbone -->
+  <rect x="400" y="60" width="100" height="60" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="450" y="85" text-anchor="middle" font-size="12" fill="white" font-weight="bold">DINOv2</text>
+  <text x="450" y="100" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Backbone</text>
+  <text x="450" y="115" text-anchor="middle" font-size="10" fill="white">(Feature Extract)</text>
+  
+  <!-- Light Registers -->
+  <ellipse cx="290" cy="180" rx="50" ry="25" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="290" y="175" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Light Registers</text>
+  <text x="290" y="190" text-anchor="middle" font-size="9" fill="white">(HDRI, Point, Area)</text>
+  
+  <!-- Enhanced Light-Normal Contextual Attention -->
+  <rect x="540" y="40" width="160" height="100" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="620" y="65" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Enhanced Light-Normal</text>
+  <text x="620" y="80" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Contextual Attention</text>
+  <text x="620" y="95" text-anchor="middle" font-size="10" fill="white">Frame → Light-axis →</text>
+  <text x="620" y="110" text-anchor="middle" font-size="10" fill="white">Global → Light-axis</text>
+  <text x="620" y="125" text-anchor="middle" font-size="9" fill="white">(4 Interleaved Blocks)</text>
+  
+  <!-- Light Aligner -->
+  <rect x="540" y="170" width="160" height="50" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="620" y="190" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Light Aligner</text>
+  <text x="620" y="205" text-anchor="middle" font-size="10" fill="white">(Cosine Similarity Loss)</text>
+  
+  <!-- DPT-Based Fusion Module -->
+  <rect x="740" y="60" width="120" height="60" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="800" y="80" text-anchor="middle" font-size="11" fill="white" font-weight="bold">DPT-Based</text>
+  <text x="800" y="95" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Fusion Module</text>
+  <text x="800" y="110" text-anchor="middle" font-size="9" fill="white">(Multi-level Aggregate)</text>
+  
+  <!-- WaveUpSampler -->
+  <rect x="740" y="150" width="120" height="60" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="800" y="175" text-anchor="middle" font-size="12" fill="white" font-weight="bold">WaveUpSampler</text>
+  <text x="800" y="190" text-anchor="middle" font-size="10" fill="white">(IDWT + Fusion)</text>
+  <text x="800" y="205" text-anchor="middle" font-size="9" fill="white">(H×W×C)</text>
+  
+  <!-- Decoder -->
+  <rect x="400" y="280" width="140" height="80" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="470" y="305" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Decoder</text>
+  <text x="470" y="320" text-anchor="middle" font-size="11" fill="white">(Pixel-sampling</text>
+  <text x="470" y="335" text-anchor="middle" font-size="11" fill="white">Transformer)</text>
+  <text x="470" y="350" text-anchor="middle" font-size="9" fill="white">Similar to SDM-UniPS</text>
+  
+  <!-- Normal Gradient Perception Loss -->
+  <rect x="600" y="280" width="140" height="80" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="670" y="305" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Normal Gradient</text>
+  <text x="670" y="320" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Perception Loss</text>
+  <text x="670" y="335" text-anchor="middle" font-size="10" fill="white">C = e^G̃</text>
+  <text x="670" y="350" text-anchor="middle" font-size="9" fill="white">(Confidence Map)</text>
+  
+  <!-- Output -->
+  <rect x="420" y="400" width="100" height="60" rx="10" fill="#d35400" stroke="#ba4a00" stroke-width="2"/>
+  <text x="470" y="425" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Surface</text>
+  <text x="470" y="440" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Normals</text>
+  <text x="470" y="455" text-anchor="middle" font-size="10" fill="white">(H×W×3)</text>
+  
+  <!-- PS-Verse Dataset -->
+  <rect x="50" y="520" width="200" height="100" rx="10" fill="#7d3c98" stroke="#6c3483" stroke-width="2"/>
+  <text x="150" y="545" text-anchor="middle" font-size="14" fill="white" font-weight="bold">PS-Verse Dataset</text>
+  <text x="150" y="565" text-anchor="middle" font-size="10" fill="white">• 100K scenes with graduated complexity</text>
+  <text x="150" y="580" text-anchor="middle" font-size="10" fill="white">• 17,805 textured 3D models</text>
+  <text x="150" y="595" text-anchor="middle" font-size="10" fill="white">• Normal maps for fine details</text>
+  <text x="150" y="610" text-anchor="middle" font-size="10" fill="white">• Diverse lighting conditions</text>
+  
+  <!-- Key Innovations -->
+  <rect x="300" y="520" width="250" height="100" rx="10" fill="#138d75" stroke="#117a65" stroke-width="2"/>
+  <text x="425" y="545" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Key Innovations</text>
+  <text x="425" y="565" text-anchor="middle" font-size="10" fill="white">1. Light register tokens for decoupling</text>
+  <text x="425" y="580" text-anchor="middle" font-size="10" fill="white">2. Wavelet transform preservation</text>
+  <text x="425" y="595" text-anchor="middle" font-size="10" fill="white">3. Global cross-image attention</text>
+  <text x="425" y="610" text-anchor="middle" font-size="10" fill="white">4. Normal-gradient confidence loss</text>
+  
+  <!-- Performance -->
+  <rect x="600" y="520" width="200" height="100" rx="10" fill="#229954" stroke="#1e8449" stroke-width="2"/>
+  <text x="700" y="545" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Performance</text>
+  <text x="700" y="565" text-anchor="middle" font-size="10" fill="white">• SOTA on DiLiGenT, LUCES</text>
+  <text x="700" y="580" text-anchor="middle" font-size="10" fill="white">• Higher CSIM/SSIM scores</text>
+  <text x="700" y="595" text-anchor="middle" font-size="10" fill="white">• Better feature consistency</text>
+  <text x="700" y="610" text-anchor="middle" font-size="10" fill="white">• Superior generalization</text>
+  
+  <!-- Flow connections -->
+  <line x1="170" y1="90" x2="220" y2="90" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="360" y1="90" x2="400" y2="90" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="90" x2="540" y2="90" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="700" y1="90" x2="740" y2="90" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="800" y1="120" x2="800" y2="150" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="740" y1="180" x2="540" y2="320" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="470" y1="360" x2="470" y2="400" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Light register connection -->
+  <line x1="290" y1="155" x2="620" y2="140" stroke="#f39c12" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Loss connection -->
+  <line x1="620" y1="220" x2="670" y2="280" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Legend -->
+  <rect x="820" y="520" width="150" height="120" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="895" y="540" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Legend</text>
+  <rect x="830" y="550" width="15" height="10" fill="#3498db"/>
+  <text x="850" y="560" font-size="9" fill="#2c3e50">Input/Output</text>
+  <rect x="830" y="570" width="15" height="10" fill="#e74c3c"/>
+  <text x="850" y="580" font-size="9" fill="#2c3e50">Processing</text>
+  <rect x="830" y="590" width="15" height="10" fill="#27ae60"/>
+  <text x="850" y="600" font-size="9" fill="#2c3e50">Attention</text>
+  <rect x="830" y="610" width="15" height="10" fill="#7d3c98"/>
+  <text x="850" y="620" font-size="9" fill="#2c3e50">Dataset/Loss</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Deep coupling between illumination and surface normal features, and preservation of high-frequency geometric details">
+                        <div class="quiz-question">1. What are the two fundamental challenges that LINO-UniPS aims to address in universal photometric stereo?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Low computational efficiency and limited dataset size">Low computational efficiency and limited dataset size</div><div class="quiz-choice long-text" data-value="Deep coupling between illumination and surface normal features, and preservation of high-frequency geometric details">Deep coupling between illumination and surface normal features, and preservation of high-frequency geometric details</div><div class="quiz-choice" data-value="Camera calibration errors and insufficient lighting conditions">Camera calibration errors and insufficient lighting conditions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Wavelet transform-based sampling instead of traditional bilinear interpolation">
+                        <div class="quiz-question">2. What innovative technique does LINO-UniPS use to preserve high-frequency surface details during feature processing?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Wavelet transform-based sampling instead of traditional bilinear interpolation">Wavelet transform-based sampling instead of traditional bilinear interpolation</div><div class="quiz-choice" data-value="Multiple convolutional layers with residual connections">Multiple convolutional layers with residual connections</div><div class="quiz-choice" data-value="Gaussian blur filters applied to input images">Gaussian blur filters applied to input images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="5 levels total, with Level 5 being the first to use normal maps for enhanced surface details">
+                        <div class="quiz-question">3. How many complexity levels does the PS-Verse dataset contain, and what makes Level 5 unique?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="4 levels total, with Level 4 featuring the most complex lighting conditions">4 levels total, with Level 4 featuring the most complex lighting conditions</div><div class="quiz-choice" data-value="6 levels total, with Level 5 containing only metallic materials">6 levels total, with Level 5 containing only metallic materials</div><div class="quiz-choice" data-value="5 levels total, with Level 5 being the first to use normal maps for enhanced surface details">5 levels total, with Level 5 being the first to use normal maps for enhanced surface details</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>LongWriter-Zero: Mastering Ultra-Long Text Generation via Reinforcement
+  Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.18841" target="_blank">http://arxiv.org/pdf/2506.18841</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on ultra-long text generation using large language models through reinforcement learning in the domain of natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous approaches like LongWriter that used supervised fine-tuning on synthetic data, this paper proposes a novel incentivization-based approach using reinforcement learning without relying on annotated or synthetic data.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenges of ultra-long text generation, including maximum length limits and quality degradation as sequence length increases in large language models.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use Group Relative Policy Optimization (GRPO) for RL training, with specialized reward models targeting length control, writing quality, and structural formatting, combined with continual pretraining and a "think" prompting strategy.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> LongWriter-Zero, trained from Qwen2.5-32B, outperformed traditional SFT methods and achieved state-of-the-art results on WritingBench and Arena-Write benchmarks, surpassing even 100B+ models like DeepSeek R1 and Qwen3-235B.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LongWriter-Zero: Mastering Ultra-Long Text Generation via Reinforcement
+  Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357abd;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7ed321;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5ba517;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5a623;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d1891a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9013fe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7209b7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    LongWriter-Zero: RL-based Ultra-Long Text Generation
+  </text>
+  
+  <!-- Phase 1: Base Model -->
+  <rect x="50" y="70" width="180" height="80" rx="10" fill="url(#blueGrad)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="140" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Base Model</text>
+  <text x="140" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Qwen2.5-32B</text>
+  <text x="140" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Starting Point</text>
+  
+  <!-- Phase 2: Continual Pretraining -->
+  <rect x="270" y="70" width="180" height="80" rx="10" fill="url(#greenGrad)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="360" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Continual Pretraining</text>
+  <text x="360" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">30B tokens</text>
+  <text x="360" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Long books + articles</text>
+  <text x="360" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">1% CoT data</text>
+  
+  <!-- Phase 3: RL Training Setup -->
+  <rect x="490" y="70" width="180" height="80" rx="10" fill="url(#orangeGrad)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="580" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">RL Training Setup</text>
+  <text x="580" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">GRPO Algorithm</text>
+  <text x="580" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Think Prompt</text>
+  <text x="580" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">150 RL steps</text>
+  
+  <!-- Phase 4: Final Model -->
+  <rect x="710" y="70" width="180" height="80" rx="10" fill="url(#purpleGrad)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="800" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">LongWriter-Zero</text>
+  <text x="800" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Final Model</text>
+  <text x="800" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">SOTA Performance</text>
+  
+  <!-- RQ1: Reward Design -->
+  <rect x="80" y="200" width="250" height="140" rx="10" fill="#fff" stroke="#e74c3c" stroke-width="3"/>
+  <text x="205" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#e74c3c">RQ1: Reward Design</text>
+  
+  <!-- Length RM -->
+  <circle cx="130" cy="250" r="25" fill="#ff6b6b" stroke="#fff" stroke-width="2"/>
+  <text x="130" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Length</text>
+  <text x="130" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Target range</text>
+  <text x="130" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">matching</text>
+  
+  <!-- Writing RM -->
+  <circle cx="205" cy="250" r="25" fill="#ff8e53" stroke="#fff" stroke-width="2"/>
+  <text x="205" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Writing</text>
+  <text x="205" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Quality &</text>
+  <text x="205" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">coherence</text>
+  
+  <!-- Format RM -->
+  <circle cx="280" cy="250" r="25" fill="#ffa726" stroke="#fff" stroke-width="2"/>
+  <text x="280" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Format</text>
+  <text x="280" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Structure &</text>
+  <text x="280" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">consistency</text>
+  
+  <!-- Reward balancing -->
+  <text x="205" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Advantage-based balancing</text>
+  
+  <!-- RQ2: Test-time Scaling -->
+  <rect x="370" y="200" width="250" height="140" rx="10" fill="#fff" stroke="#3498db" stroke-width="3"/>
+  <text x="495" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#3498db">RQ2: Test-time Scaling</text>
+  
+  <!-- Think vs Direct comparison -->
+  <rect x="390" y="240" width="90" height="60" rx="5" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="435" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#1976d2">Think Prompt</text>
+  <text x="435" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#1976d2">&lt;think&gt;</text>
+  <text x="435" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#1976d2">Planning</text>
+  <text x="435" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#1976d2">&lt;answer&gt;</text>
+  
+  <rect x="510" y="240" width="90" height="60" rx="5" fill="#ffebee" stroke="#f44336" stroke-width="2"/>
+  <text x="555" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#d32f2f">Direct Answer</text>
+  <text x="555" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#d32f2f">No thinking</text>
+  <text x="555" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#d32f2f">Direct output</text>
+  
+  <text x="495" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Think achieves higher performance</text>
+  
+  <!-- RQ3: Impact Analysis -->
+  <rect x="660" y="200" width="250" height="140" rx="10" fill="#fff" stroke="#9c27b0" stroke-width="3"/>
+  <text x="785" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#9c27b0">RQ3: Impact Analysis</text>
+  
+  <!-- Performance comparison -->
+  <rect x="680" y="240" width="70" height="35" rx="3" fill="#e1bee7" stroke="#9c27b0" stroke-width="1"/>
+  <text x="715" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#7b1fa2">Base-nothink</text>
+  <text x="715" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7b1fa2">700 Elo</text>
+  
+  <rect x="760" y="240" width="70" height="35" rx="3" fill="#ce93d8" stroke="#9c27b0" stroke-width="1"/>
+  <text x="795" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#7b1fa2">Base-think</text>
+  <text x="795" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7b1fa2">1200 Elo</text>
+  
+  <rect x="840" y="240" width="70" height="35" rx="3" fill="#ba68c8" stroke="#9c27b0" stroke-width="1"/>
+  <text x="875" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7b1fa2">Continual-</text>
+  <text x="875" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7b1fa2">Pretrain-think</text>
+  <text x="875" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7b1fa2">1400 Elo</text>
+  
+  <text x="785" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Continual pretraining raises</text>
+  <text x="785" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">performance ceiling</text>
+  
+  <!-- Training Components -->
+  <rect x="150" y="380" width="700" height="120" rx="10" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="500" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#495057">Training Components</text>
+  
+  <!-- Query Source -->
+  <rect x="170" y="420" width="120" height="60" rx="5" fill="#17a2b8" stroke="#fff" stroke-width="2"/>
+  <text x="230" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Query Source</text>
+  <text x="230" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">WildChat-1M</text>
+  <text x="230" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">LMSYS-Chat-1M</text>
+  
+  <!-- GRPO Algorithm -->
+  <rect x="310" y="420" width="120" height="60" rx="5" fill="#28a745" stroke="#fff" stroke-width="2"/>
+  <text x="370" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">GRPO Algorithm</text>
+  <text x="370" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Group advantages</text>
+  <text x="370" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Normalized rewards</text>
+  
+  <!-- Training Config -->
+  <rect x="450" y="420" width="120" height="60" rx="5" fill="#fd7e14" stroke="#fff" stroke-width="2"/>
+  <text x="510" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Training Config</text>
+  <text x="510" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Max 14K tokens</text>
+  <text x="510" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">T=0.8, top-p=1.0</text>
+  <text x="510" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">8 nodes, 8×H800</text>
+  
+  <!-- Evaluation -->
+  <rect x="590" y="420" width="120" height="60" rx="5" fill="#6f42c1" stroke="#fff" stroke-width="2"/>
+  <text x="650" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Evaluation</text>
+  <text x="650" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Arena-Write</text>
+  <text x="650" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">WritingBench</text>
+  
+  <!-- Results Section -->
+  <rect x="100" y="530" width="800" height="100" rx="10" fill="#fff3cd" stroke="#ffc107" stroke-width="3"/>
+  <text x="500" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#856404">Key Results</text>
+  
+  <!-- Result boxes -->
+  <rect x="130" y="570" width="150" height="40" rx="5" fill="#28a745" stroke="#fff" stroke-width="2"/>
+  <text x="205" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">WritingBench: 8.69</text>
+  <text x="205" y="600" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Best overall score</text>
+  
+  <rect x="300" y="570" width="150" height="40" rx="5" fill="#007bff" stroke="#fff" stroke-width="2"/>
+  <text x="375" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Arena-Write: 1447</text>
+  <text x="375" y="600" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Highest Elo rating</text>
+  
+  <rect x="470" y="570" width="150" height="40" rx="5" fill="#dc3545" stroke="#fff" stroke-width="2"/>
+  <text x="545" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">RL > SFT</text>
+  <text x="545" y="600" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Outperforms SFT</text>
+  
+  <rect x="640" y="570" width="150" height="40" rx="5" fill="#6610f2" stroke="#fff" stroke-width="2"/>
+  <text x="715" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">vs 100B+ models</text>
+  <text x="715" y="600" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Beats larger models</text>
+  
+  <!-- Key Innovation -->
+  <rect x="200" y="660" width="600" height="60" rx="10" fill="#e7f3ff" stroke="#0066cc" stroke-width="2"/>
+  <text x="500" y="680" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0066cc">Key Innovation</text>
+  <text x="500" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#0066cc">First RL-only approach for ultra-long text generation</text>
+  <text x="500" y="715" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#0066cc">No synthetic data dependency • Multi-reward balancing • Test-time scaling</text>
+  
+  <!-- Connection lines with subtle styling -->
+  <line x1="230" y1="110" x2="270" y2="110" stroke="#34495e" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="450" y1="110" x2="490" y2="110" stroke="#34495e" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="670" y1="110" x2="710" y2="110" stroke="#34495e" stroke-width="2" stroke-dasharray="5,5"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses reinforcement learning from scratch without relying on synthetic or annotated data">
+                        <div class="quiz-question">1. What is the key innovation of LongWriter-Zero compared to previous approaches like LongWriter?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses reinforcement learning from scratch without relying on synthetic or annotated data">It uses reinforcement learning from scratch without relying on synthetic or annotated data</div><div class="quiz-choice" data-value="It increases the maximum token length from 10K to 50K tokens">It increases the maximum token length from 10K to 50K tokens</div><div class="quiz-choice" data-value="It combines multiple language models to generate longer texts">It combines multiple language models to generate longer texts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Reward design, test-time scaling, and continual pretraining">
+                        <div class="quiz-question">2. Which three components does the paper identify as critical for maximizing RL effectiveness in long-form generation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Data augmentation, model scaling, and hardware optimization">Data augmentation, model scaling, and hardware optimization</div><div class="quiz-choice" data-value="Reward design, test-time scaling, and continual pretraining">Reward design, test-time scaling, and continual pretraining</div><div class="quiz-choice" data-value="Prompt engineering, fine-tuning, and ensemble methods">Prompt engineering, fine-tuning, and ensemble methods</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It outperformed 100B+ models like DeepSeek R1 and Qwen3-235B on long-form writing benchmarks">
+                        <div class="quiz-question">3. What surprising result did LongWriter-Zero achieve despite having only 32B parameters?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It matched the performance of GPT-4 on mathematical reasoning tasks">It matched the performance of GPT-4 on mathematical reasoning tasks</div><div class="quiz-choice" data-value="It outperformed 100B+ models like DeepSeek R1 and Qwen3-235B on long-form writing benchmarks">It outperformed 100B+ models like DeepSeek R1 and Qwen3-235B on long-form writing benchmarks</div><div class="quiz-choice" data-value="It reduced training time by 90% compared to traditional supervised fine-tuning">It reduced training time by 90% compared to traditional supervised fine-tuning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>RLPR: Extrapolating RLVR to General Domains without Verifiers</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-22</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.18254" target="_blank">http://arxiv.org/pdf/2506.18254</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Reinforcement learning for language models, specifically extending RLVR (Reinforcement Learning with Verifiable Rewards) to general domains beyond mathematics and code.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on RLVR which uses domain-specific verifiers for reward signals, proposes using LLM's intrinsic probability of generating correct answers as reward signals instead of external verifiers.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> RLVR's reliance on domain-specific verifiers limits its scalability and application to general domains, as creating verifiers for diverse natural language tasks is prohibitively complex.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces RLPR framework that uses token probabilities of reference answers as rewards, implements reward debiasing to remove question/answer biases, and applies standard deviation filtering to stabilize training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved consistent improvements across both mathematical and general reasoning tasks, surpassing verifier-based methods by 1.6 points on average across seven benchmarks and outperforming concurrent verifier-free approaches by 7.6 points on TheoremQA.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>RLPR: Extrapolating RLVR to General Domains without Verifiers</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">RLPR Methodology Flow Chart</text>
+  
+  <!-- Problem Identification Box -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">RLVR limited to</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">verifiable domains</text>
+  
+  <!-- Key Insight Box -->
+  <rect x="300" y="60" width="200" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Key Insight</text>
+  <text x="400" y="105" text-anchor="middle" font-size="10" fill="white">LLM intrinsic probability</text>
+  <text x="400" y="120" text-anchor="middle" font-size="10" fill="white">indicates reasoning quality</text>
+  
+  <!-- RLPR Framework Box -->
+  <rect x="550" y="60" width="200" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="650" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">RLPR Framework</text>
+  <text x="650" y="105" text-anchor="middle" font-size="10" fill="white">Verifier-free approach</text>
+  <text x="650" y="120" text-anchor="middle" font-size="10" fill="white">for general domains</text>
+  
+  <!-- Probability Reward Calculation -->
+  <rect x="100" y="180" width="250" height="100" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="225" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Probability Reward (PR)</text>
+  <text x="225" y="225" text-anchor="middle" font-size="11" fill="white">r = (1/|y*|) Σ p_i for o'_i ∈ y*</text>
+  <text x="225" y="245" text-anchor="middle" font-size="10" fill="white">Mean token probabilities</text>
+  <text x="225" y="265" text-anchor="middle" font-size="10" fill="white">of reference answer</text>
+  
+  <!-- Reward Debiasing -->
+  <rect x="400" y="180" width="200" height="100" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="500" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Reward Debiasing</text>
+  <text x="500" y="225" text-anchor="middle" font-size="11" fill="white">r̂ = clip(0,1, r - r')</text>
+  <text x="500" y="245" text-anchor="middle" font-size="10" fill="white">Remove bias from</text>
+  <text x="500" y="265" text-anchor="middle" font-size="10" fill="white">question and answer</text>
+  
+  <!-- Standard Deviation Filtering -->
+  <rect x="650" y="180" width="200" height="100" rx="10" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="750" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Std Dev Filtering</text>
+  <text x="750" y="225" text-anchor="middle" font-size="10" fill="white">Adaptive curriculum</text>
+  <text x="750" y="245" text-anchor="middle" font-size="10" fill="white">Remove low variance</text>
+  <text x="750" y="265" text-anchor="middle" font-size="10" fill="white">prompts dynamically</text>
+  
+  <!-- Training Process -->
+  <rect x="200" y="320" width="300" height="80" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="350" y="345" text-anchor="middle" font-size="14" font-weight="bold" fill="white">RL Training with GRPO</text>
+  <text x="350" y="365" text-anchor="middle" font-size="11" fill="white">∇J_RLPR(θ) = E[r̂ ∇log π_θ(o|x)]</text>
+  <text x="350" y="385" text-anchor="middle" font-size="10" fill="white">Optimize expected probability reward</text>
+  
+  <!-- Evaluation Results -->
+  <rect x="100" y="440" width="180" height="80" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="190" y="465" text-anchor="middle" font-size="12" font-weight="bold" fill="white">General Domain</text>
+  <text x="190" y="485" text-anchor="middle" font-size="10" fill="white">MMLU-Pro: 56.0</text>
+  <text x="190" y="505" text-anchor="middle" font-size="10" fill="white">TheoremQA: 55.4</text>
+  
+  <rect x="320" y="440" width="180" height="80" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="410" y="465" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Math Domain</text>
+  <text x="410" y="485" text-anchor="middle" font-size="10" fill="white">MATH-500: 78.0</text>
+  <text x="410" y="505" text-anchor="middle" font-size="10" fill="white">Minerva: 56.5</text>
+  
+  <rect x="540" y="440" width="180" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="630" y="465" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Comparison</text>
+  <text x="630" y="485" text-anchor="middle" font-size="10" fill="white">Outperforms</text>
+  <text x="630" y="505" text-anchor="middle" font-size="10" fill="white">General Reasoner</text>
+  
+  <!-- Key Components Legend -->
+  <rect x="50" y="560" width="900" height="180" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="585" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Components & Innovations</text>
+  
+  <!-- Component 1 -->
+  <circle cx="120" cy="620" r="15" fill="#9b59b6"/>
+  <text x="120" y="625" text-anchor="middle" font-size="10" font-weight="bold" fill="white">1</text>
+  <text x="150" y="625" font-size="12" font-weight="bold" fill="#2c3e50">Probability-based Reward:</text>
+  <text x="150" y="640" font-size="10" fill="#34495e">Uses mean token probabilities instead of sequence likelihood</text>
+  <text x="150" y="655" font-size="10" fill="#34495e">More robust to length variations and synonyms</text>
+  
+  <!-- Component 2 -->
+  <circle cx="120" cy="680" r="15" fill="#f39c12"/>
+  <text x="120" y="685" text-anchor="middle" font-size="10" font-weight="bold" fill="white">2</text>
+  <text x="150" y="685" font-size="12" font-weight="bold" fill="#2c3e50">Debiasing Method:</text>
+  <text x="150" y="700" font-size="10" fill="#34495e">Removes bias from question and reference answer characteristics</text>
+  <text x="150" y="715" font-size="10" fill="#34495e">Computes advantage over direct answer without reasoning</text>
+  
+  <!-- Component 3 -->
+  <circle cx="520" cy="620" r="15" fill="#1abc9c"/>
+  <text x="520" y="625" text-anchor="middle" font-size="10" font-weight="bold" fill="white">3</text>
+  <text x="550" y="625" font-size="12" font-weight="bold" fill="#2c3e50">Adaptive Filtering:</text>
+  <text x="550" y="640" font-size="10" fill="#34495e">Dynamic threshold based on exponential moving average</text>
+  <text x="550" y="655" font-size="10" fill="#34495e">Removes prompts with low reward standard deviation</text>
+  
+  <!-- Component 4 -->
+  <circle cx="520" cy="680" r="15" fill="#e74c3c"/>
+  <text x="520" y="685" text-anchor="middle" font-size="10" font-weight="bold" fill="white">4</text>
+  <text x="550" y="685" font-size="12" font-weight="bold" fill="#2c3e50">Domain Agnostic:</text>
+  <text x="550" y="700" font-size="10" fill="#34495e">No external verifiers needed for any domain</text>
+  <text x="550" y="715" font-size="10" fill="#34495e">Leverages intrinsic LLM capabilities</text>
+  
+  <!-- Connection lines with subtle styling -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="500" y1="100" x2="550" y2="100" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="225" y1="280" x2="350" y2="320" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="500" y1="280" x2="350" y2="320" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="750" y1="280" x2="350" y2="320" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="350" y1="400" x2="190" y2="440" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="350" y1="400" x2="410" y2="440" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="350" y1="400" x2="630" y2="440" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Heavy reliance on domain-specific verifiers that are complex to create for natural language tasks">
+                        <div class="quiz-question">1. What is the primary limitation that prevents existing RLVR methods from being applied to general domains?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Heavy reliance on domain-specific verifiers that are complex to create for natural language tasks">Heavy reliance on domain-specific verifiers that are complex to create for natural language tasks</div><div class="quiz-choice" data-value="Insufficient computational resources for training on diverse datasets">Insufficient computational resources for training on diverse datasets</div><div class="quiz-choice" data-value="Lack of high-quality training data in general domains">Lack of high-quality training data in general domains</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Sequence likelihood is overly sensitive to minor variations and introduces high variance">
+                        <div class="quiz-question">2. In RLPR's probability-based reward calculation, why does the paper use mean probabilities (fseq = 1/|y*| ∑P) instead of sequence likelihood (normalized product)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Mean probabilities require less computational overhead during training">Mean probabilities require less computational overhead during training</div><div class="quiz-choice" data-value="Sequence likelihood is overly sensitive to minor variations and introduces high variance">Sequence likelihood is overly sensitive to minor variations and introduces high variance</div><div class="quiz-choice" data-value="Mean probabilities work better with the GRPO algorithm's group normalization">Mean probabilities work better with the GRPO algorithm's group normalization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="7.6 points improvement">
+                        <div class="quiz-question">3. How much improvement did RLPR achieve compared to the concurrent verifier-free method VeriFree on TheoremQA?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.6 points improvement">1.6 points improvement</div><div class="quiz-choice" data-value="4.2 points improvement">4.2 points improvement</div><div class="quiz-choice" data-value="7.6 points improvement">7.6 points improvement</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
