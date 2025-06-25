@@ -438,21 +438,21 @@ QUESTION_FORMAT = """
     "question": "question statemant",
     "option1": "option1 statement",
     "option2": "option2 statement",
-    "option3": "option3 statement"
+    "option3": "option3 statement",
     "answer": "option1 or option2 or option3"
   },
   "question2": {
     "question": "question statemant",
     "option1": "option1 statement",
     "option2": "option2 statement",
-    "option3": "option3 statement"
+    "option3": "option3 statement",
     "answer": "option1 or option2 or option3"
   },
   "question3": {
     "question": "question statemant",
     "option1": "option1 statement",
     "option2": "option2 statement",
-    "option3": "option3 statement"
+    "option3": "option3 statement",
     "answer": "option1 or option2 or option3"
   }
 }
@@ -493,7 +493,7 @@ def create_flow_chart(paper_title, paper_content):
     )
     flow_chart = model_response(
         prompt,
-        'claude35',
+        'claude4',
         max_tokens=8192
 
     )    
@@ -540,7 +540,7 @@ def create_question(paper_title, paper_content, summary):
 
     questions_content = model_response(
         prompt,
-        'claude35',
+        'claude4',
         max_tokens=8000
 
     )

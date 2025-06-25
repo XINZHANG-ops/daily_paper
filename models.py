@@ -14,6 +14,18 @@ claude35_sonnet_v2 = GenaiGatewayClient(
 )
 
 
+claude4_sonnet = GenaiGatewayClient(
+    api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
+    env="staging",
+    jurisdiction="us",
+    temperature=0.8,
+    provider='anthropics',
+    chat_model='claude-sonnet-4',
+    max_tokens=8192,
+    safety_filtering='off'
+)
+
+
 claude37_sonnet = GenaiGatewayClient(
     api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
     env="staging",
@@ -60,6 +72,7 @@ gemini_25_flash = GenaiGatewayClient(
 
 
 model_map = {
+    'claude4': claude4_sonnet,
     'claude35': claude35_sonnet_v2,
     'claude37': claude37_sonnet,
     'gemini_20_pro': gemini_20_pro,

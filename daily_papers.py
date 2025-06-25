@@ -276,7 +276,7 @@ if __name__ == "__main__":
         else:
             additional_content = model_response(
                 quotes_prompt,
-                'claude35',
+                'claude4',
                 max_tokens=1024
             ).strip()
         additional_content = f"{additional_content}"
