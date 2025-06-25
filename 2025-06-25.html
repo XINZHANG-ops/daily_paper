@@ -1,0 +1,1149 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-25 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-25 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Skywork-SWE: Unveiling Data Scaling Laws for Software Engineering in
+  LLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.19290" target="_blank">http://arxiv.org/pdf/2506.19290</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing data scaling laws and datasets for software engineering tasks using Large Language Models (LLMs), specifically in the domain of automated code fixing and software development.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in code generation and software engineering benchmarks like SWE-bench, the paper proposes a new automated data curation pipeline that systematically scales both volume and diversity of software engineering datasets.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of high-quality, large-scale training data for software engineering tasks, which has led to open-source LLMs consistently underperforming compared to proprietary models.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed a three-stage pipeline consisting of: (1) data collection and pre-filtering from GitHub repositories, (2) execution-based validation and runtime environment setup, and (3) agent trajectory generation, resulting in the Skywork-SWE dataset with 10,169 validated instances from 2,531 repositories.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Their Skywork-SWE model achieved 38.0% pass@1 accuracy on SWE-bench Verified benchmark without verifiers, and 47.0% with test-time scaling, establishing a new state-of-the-art among Qwen2.5-Coder-32B-based LLMs while demonstrating clear data scaling laws in software engineering tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Skywork-SWE: Unveiling Data Scaling Laws for Software Engineering in
+  LLMs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980b9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e74c3c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c0392b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f39c12;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e67e22;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#27ae60;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2ecc71;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c3e50">
+    Skywork-SWE: Data Scaling Laws for Software Engineering in LLMs
+  </text>
+  
+  <!-- Stage A: Data Collection & Pre-filtering -->
+  <rect x="50" y="60" width="280" height="180" rx="10" fill="url(#grad1)" stroke="#2980b9" stroke-width="2"/>
+  <text x="190" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Stage A: Data Collection &amp; Pre-filtering
+  </text>
+  
+  <!-- Step A.1 -->
+  <rect x="70" y="100" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="190" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    A.1: Repository Metadata Collection (151,472 repos)
+  </text>
+  
+  <!-- Step A.2 -->
+  <rect x="70" y="140" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="190" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    A.2: PR Collection &amp; Filtering (146,568 instances)
+  </text>
+  
+  <!-- Step A.3 -->
+  <rect x="70" y="180" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="190" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    A.3: Installation-based Validation (23,389 valid)
+  </text>
+  
+  <!-- Stage B: Environment Setup & Execution-based Validation -->
+  <rect x="360" y="60" width="280" height="180" rx="10" fill="url(#grad2)" stroke="#c0392b" stroke-width="2"/>
+  <text x="500" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Stage B: Environment Setup &amp; Validation
+  </text>
+  
+  <!-- Step B.1 -->
+  <rect x="380" y="100" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="500" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    B.1: Command Configuration (Python 3.9, pytest)
+  </text>
+  
+  <!-- Step B.2 -->
+  <rect x="380" y="140" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="500" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    B.2: Docker Runtime Environment Setup
+  </text>
+  
+  <!-- Step B.3 -->
+  <rect x="380" y="180" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="500" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    B.3: Execution-based Validation (10,169 final)
+  </text>
+  
+  <!-- Stage C: Agent Trajectory Generation -->
+  <rect x="670" y="60" width="280" height="180" rx="10" fill="url(#grad3)" stroke="#e67e22" stroke-width="2"/>
+  <text x="810" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Stage C: Agent Trajectory Generation
+  </text>
+  
+  <!-- Step C.1 -->
+  <rect x="690" y="100" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="810" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    C.1: Trajectory Rollout (Multiple LLMs)
+  </text>
+  
+  <!-- Step C.2 -->
+  <rect x="690" y="140" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="810" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    C.2: Trajectory Validation (Patch Testing)
+  </text>
+  
+  <!-- Step C.3 -->
+  <rect x="690" y="180" width="240" height="30" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="810" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+    C.3: Collection (8,209 successful trajectories)
+  </text>
+  
+  <!-- Model Training -->
+  <rect x="200" y="280" width="600" height="80" rx="10" fill="url(#grad4)" stroke="#27ae60" stroke-width="2"/>
+  <text x="500" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Skywork-SWE-32B Model Training
+  </text>
+  <text x="500" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    Base Model: Qwen2.5-Coder-32B-Instruct
+  </text>
+  <text x="500" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    Supervised Fine-tuning on 8,209 trajectories
+  </text>
+  
+  <!-- Results -->
+  <rect x="100" y="400" width="800" height="120" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="500" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Key Findings &amp; Results
+  </text>
+  
+  <!-- Result boxes -->
+  <rect x="120" y="450" width="180" height="50" rx="5" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
+  <text x="210" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Data Scaling Law
+  </text>
+  <text x="210" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Log-linear improvement
+  </text>
+  
+  <rect x="320" y="450" width="180" height="50" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+  <text x="410" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    SWE-bench Verified
+  </text>
+  <text x="410" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    38.0% pass@1 accuracy
+  </text>
+  
+  <rect x="520" y="450" width="180" height="50" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+  <text x="610" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Test-Time Scaling
+  </text>
+  <text x="610" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    47.0% with TTS
+  </text>
+  
+  <rect x="720" y="450" width="160" height="50" rx="5" fill="#27ae60" stroke="#2ecc71" stroke-width="1"/>
+  <text x="800" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    SOTA Performance
+  </text>
+  <text x="800" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Sub-32B models
+  </text>
+  
+  <!-- Dataset Statistics -->
+  <rect x="150" y="560" width="700" height="100" rx="10" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="500" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Skywork-SWE Dataset Statistics
+  </text>
+  
+  <text x="250" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    10,169 instances
+  </text>
+  <text x="250" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#ecf0f1">
+    Task instances
+  </text>
+  
+  <text x="400" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    2,531 repositories
+  </text>
+  <text x="400" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#ecf0f1">
+    GitHub repos
+  </text>
+  
+  <text x="550" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    Runtime validated
+  </text>
+  <text x="550" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#ecf0f1">
+    Docker environments
+  </text>
+  
+  <text x="700" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    Multi-turn trajectories
+  </text>
+  <text x="700" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#ecf0f1">
+    Long-context agents
+  </text>
+  
+  <!-- Framework -->
+  <rect x="300" y="700" width="400" height="60" rx="10" fill="#16a085" stroke="#1abc9c" stroke-width="2"/>
+  <text x="500" y="725" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Agent Framework: OpenHands v0.32.0
+  </text>
+  <text x="500" y="745" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Up to 100 interaction rounds per instance
+  </text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 330 150 Q 345 150 360 150" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 640 150 Q 655 150 670 150" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 240 L 500 280" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 360 L 500 400" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 520 L 500 560" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 660 L 500 700" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It has automated execution validation and runtime environments for each instance">
+                        <div class="quiz-question">1. What is the main innovation in the Skywork-SWE dataset compared to previous software engineering datasets?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It includes more programming languages than previous datasets">It includes more programming languages than previous datasets</div><div class="quiz-choice" data-value="It has automated execution validation and runtime environments for each instance">It has automated execution validation and runtime environments for each instance</div><div class="quiz-choice" data-value="It focuses only on small code fixes and simple bug patches">It focuses only on small code fixes and simple bug patches</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Performance continued to improve log-linearly with more training data showing no saturation">
+                        <div class="quiz-question">2. What interesting phenomenon did the researchers discover about data scaling in software engineering tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Performance decreased with more training data">Performance decreased with more training data</div><div class="quiz-choice" data-value="Performance plateaued after a certain amount of data">Performance plateaued after a certain amount of data</div><div class="quiz-choice" data-value="Performance continued to improve log-linearly with more training data showing no saturation">Performance continued to improve log-linearly with more training data showing no saturation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Low success rate of data collection with even advanced proprietary LLMs achieving only 20.23% resolve rate">
+                        <div class="quiz-question">3. What was the biggest challenge in collecting the dataset according to the experimental analysis?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The high cost of GPU resources for training">The high cost of GPU resources for training</div><div class="quiz-choice long-text" data-value="Low success rate of data collection with even advanced proprietary LLMs achieving only 20.23% resolve rate">Low success rate of data collection with even advanced proprietary LLMs achieving only 20.23% resolve rate</div><div class="quiz-choice" data-value="Lack of access to GitHub repositories">Lack of access to GitHub repositories</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>ViDAR: Video Diffusion-Aware 4D Reconstruction From Monocular Inputs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.18792" target="_blank">http://arxiv.org/pdf/2506.18792</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Dynamic novel view synthesis and 4D reconstruction from monocular video inputs in computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in neural radiance fields, Gaussian splatting, and diffusion models, introducing a novel diffusion-aware reconstruction framework that leverages personalized diffusion models for enhanced view synthesis.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Solving the challenge of generating high-quality, photorealistic views of moving subjects from arbitrary viewpoints using only monocular video input, where disentangling structure from motion is ill-posed.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a three-stage approach: initial monocular reconstruction, personalized diffusion model enhancement of novel views, and diffusion-aware reconstruction with dynamic region focusing and camera pose optimization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperformed state-of-the-art baselines on the DyCheck benchmark in visual quality and geometric consistency, showing substantial improvements in PSNR, SSIM, and LPIPS metrics, particularly in dynamic regions.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ViDAR: Video Diffusion-Aware 4D Reconstruction From Monocular Inputs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">ViDAR: Video Diffusion-Aware 4D Reconstruction Workflow</text>
+  
+  <!-- Input Video -->
+  <rect x="50" y="80" width="120" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="110" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Monocular</text>
+  <text x="110" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Video Input</text>
+  
+  <!-- Stage 1: Monocular 4D Reconstruction -->
+  <rect x="220" y="60" width="160" height="100" rx="15" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="300" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Monocular 4D</text>
+  <text x="300" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Reconstruction</text>
+  <text x="300" y="125" text-anchor="middle" font-size="11" fill="white">(MoSca baseline)</text>
+  <text x="300" y="140" text-anchor="middle" font-size="11" fill="white">+ Track Anything</text>
+  
+  <!-- Stage 2: Novel View Sampling -->
+  <rect x="220" y="200" width="160" height="80" rx="15" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="300" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Novel Camera</text>
+  <text x="300" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Sampling</text>
+  <text x="300" y="265" text-anchor="middle" font-size="11" fill="white">18 cameras per frame</text>
+  
+  <!-- Stage 3: Personalized Diffusion -->
+  <rect x="420" y="60" width="160" height="100" rx="15" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="500" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Personalised</text>
+  <text x="500" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Diffusion Model</text>
+  <text x="500" y="125" text-anchor="middle" font-size="11" fill="white">(DreamBooth + SDXL)</text>
+  <text x="500" y="140" text-anchor="middle" font-size="11" fill="white">Scene-specific</text>
+  
+  <!-- Stage 4: Novel View Enhancement -->
+  <rect x="420" y="200" width="160" height="80" rx="15" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="500" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Novel View</text>
+  <text x="500" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Enhancement</text>
+  <text x="500" y="265" text-anchor="middle" font-size="11" fill="white">Multi-step denoising</text>
+  
+  <!-- Stage 5: Diffusion-Aware Reconstruction -->
+  <rect x="250" y="350" width="200" height="120" rx="15" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="350" y="375" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Diffusion-Aware</text>
+  <text x="350" y="395" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Reconstruction</text>
+  <text x="350" y="420" text-anchor="middle" font-size="11" fill="white">Dynamic Region Focus</text>
+  <text x="350" y="435" text-anchor="middle" font-size="11" fill="white">Camera Pose Optimization</text>
+  <text x="350" y="450" text-anchor="middle" font-size="11" fill="white">Perceptual Loss</text>
+  
+  <!-- Sub-components of Diffusion-Aware Reconstruction -->
+  <rect x="520" y="330" width="140" height="60" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="590" y="350" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Dynamic</text>
+  <text x="590" y="365" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reconstruction</text>
+  <text x="590" y="380" text-anchor="middle" font-size="10" fill="white">L_dyn loss</text>
+  
+  <rect x="520" y="410" width="140" height="60" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="590" y="430" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Camera Pose</text>
+  <text x="590" y="445" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Optimization</text>
+  <text x="590" y="460" text-anchor="middle" font-size="10" fill="white">L_cam loss</text>
+  
+  <!-- Final Output -->
+  <rect x="250" y="520" width="200" height="80" rx="15" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="350" y="545" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Enhanced 4D</text>
+  <text x="350" y="565" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Reconstruction</text>
+  <text x="350" y="585" text-anchor="middle" font-size="11" fill="white">High-quality novel views</text>
+  
+  <!-- Key Features Box -->
+  <rect x="700" y="100" width="250" height="200" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="825" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Innovations</text>
+  
+  <circle cx="720" cy="150" r="4" fill="#e74c3c"/>
+  <text x="735" y="155" font-size="11" fill="#2c3e50">Personalized diffusion enhancement</text>
+  
+  <circle cx="720" cy="175" r="4" fill="#e74c3c"/>
+  <text x="735" y="180" font-size="11" fill="#2c3e50">Dynamic-region focused guidance</text>
+  
+  <circle cx="720" cy="200" r="4" fill="#e74c3c"/>
+  <text x="735" y="205" font-size="11" fill="#2c3e50">Joint camera pose optimization</text>
+  
+  <circle cx="720" cy="225" r="4" fill="#e74c3c"/>
+  <text x="735" y="230" font-size="11" fill="#2c3e50">Spatio-temporal consistency</text>
+  
+  <circle cx="720" cy="250" r="4" fill="#e74c3c"/>
+  <text x="735" y="255" font-size="11" fill="#2c3e50">Geometric awareness</text>
+  
+  <circle cx="720" cy="275" r="4" fill="#e74c3c"/>
+  <text x="735" y="280" font-size="11" fill="#2c3e50">Multi-view supervision</text>
+  
+  <!-- Flow connections with subtle lines -->
+  <path d="M 170 110 Q 190 110 220 110" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 300 160 L 300 200" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 170 110 Q 200 60 420 110" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 380 240 L 420 240" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 160 L 500 200" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 350 280 L 350 350" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 450 360 L 520 360" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 450 440 L 520 440" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 350 470 L 350 520" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- Workflow stages indicator -->
+  <text x="50" y="750" font-size="12" font-weight="bold" fill="#2c3e50">Workflow Stages:</text>
+  <rect x="180" y="735" width="15" height="15" fill="#3498db"/>
+  <text x="205" y="747" font-size="11" fill="#2c3e50">Input</text>
+  <rect x="250" y="735" width="15" height="15" fill="#e74c3c"/>
+  <text x="275" y="747" font-size="11" fill="#2c3e50">Initial Reconstruction</text>
+  <rect x="400" y="735" width="15" height="15" fill="#f39c12"/>
+  <text x="425" y="747" font-size="11" fill="#2c3e50">Diffusion Enhancement</text>
+  <rect x="560" y="735" width="15" height="15" fill="#e67e22"/>
+  <text x="585" y="747" font-size="11" fill="#2c3e50">Final Optimization</text>
+  <rect x="700" y="735" width="15" height="15" fill="#16a085"/>
+  <text x="725" y="747" font-size="11" fill="#2c3e50">Output</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Disentangling structure from motion in the scene">
+                        <div class="quiz-question">1. What is the main challenge addressed by ViDAR when working with monocular video input?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Processing large video files efficiently">Processing large video files efficiently</div><div class="quiz-choice" data-value="Disentangling structure from motion in the scene">Disentangling structure from motion in the scene</div><div class="quiz-choice" data-value="Generating high-resolution outputs">Generating high-resolution outputs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Personalized diffusion model">
+                        <div class="quiz-question">2. Which component of ViDAR's architecture is responsible for improving the visual quality of rendered novel views?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Track Anything Gaussian Classification">Track Anything Gaussian Classification</div><div class="quiz-choice" data-value="Camera pose optimization">Camera pose optimization</div><div class="quiz-choice" data-value="Personalized diffusion model">Personalized diffusion model</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Because static regions already have effective multi-view supervision across time">
+                        <div class="quiz-question">3. Why does ViDAR apply diffusion-based guidance only to dynamic regions of the scene?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce computational costs">To reduce computational costs</div><div class="quiz-choice" data-value="Because static regions already have effective multi-view supervision across time">Because static regions already have effective multi-view supervision across time</div><div class="quiz-choice" data-value="To maintain consistent lighting conditions">To maintain consistent lighting conditions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Matrix-Game: Interactive World Foundation Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.18701" target="_blank">http://arxiv.org/pdf/2506.18701</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Interactive world foundation model for controllable game world generation, specifically focused on Minecraft environments.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on video diffusion models and world modeling research, proposes a new two-stage training pipeline combining unlabeled pretraining for environment understanding with action-labeled training for interactive generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenges of acquiring high-quality training data, achieving fine-grained controllability, and establishing standardized evaluation benchmarks for interactive world generation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a 17B-parameter model trained on Matrix-Game-MC dataset (2,700+ hours unlabeled and 1,000+ hours labeled gameplay), employing diffusion transformers and autoregressive generation with keyboard/mouse control signals.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperforms existing open-source Minecraft world models across all GameWorld Score metrics, particularly in controllability and physical consistency, validated through both quantitative benchmarks and double-blind human evaluations.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Matrix-Game: Interactive World Foundation Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Matrix-Game: Interactive World Foundation Model - Methodology Flow</text>
+  
+  <!-- Stage 1: Data Construction -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4f8" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Construction</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#34495e">Matrix-Game-MC Dataset</text>
+  <text x="150" y="120" text-anchor="middle" font-size="11" fill="#7f8c8d">• 2,700h unlabeled video</text>
+  <text x="150" y="135" text-anchor="middle" font-size="11" fill="#7f8c8d">• 1,000h+ labeled clips</text>
+  <text x="150" y="150" text-anchor="middle" font-size="11" fill="#7f8c8d">• Keyboard + Mouse actions</text>
+  
+  <!-- Data Processing Pipeline -->
+  <rect x="300" y="60" width="180" height="120" rx="10" fill="#fff2e6" stroke="#f39c12" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Processing</text>
+  <text x="390" y="105" text-anchor="middle" font-size="11" fill="#7f8c8d">Video Quality Filter</text>
+  <text x="390" y="120" text-anchor="middle" font-size="11" fill="#7f8c8d">Menu-State Filter</text>
+  <text x="390" y="135" text-anchor="middle" font-size="11" fill="#7f8c8d">Motion Filter</text>
+  <text x="390" y="150" text-anchor="middle" font-size="11" fill="#7f8c8d">Camera Movement Filter</text>
+  
+  <!-- Stage 1 Training -->
+  <rect x="50" y="220" width="200" height="100" rx="10" fill="#e8f6f3" stroke="#27ae60" stroke-width="2"/>
+  <text x="150" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stage 1: Unlabeled Training</text>
+  <text x="150" y="265" text-anchor="middle" font-size="12" fill="#34495e">Game World Understanding</text>
+  <text x="150" y="280" text-anchor="middle" font-size="11" fill="#7f8c8d">• 2,700h Minecraft videos</text>
+  <text x="150" y="295" text-anchor="middle" font-size="11" fill="#7f8c8d">• Visual & Physical learning</text>
+  
+  <!-- Stage 2 Training -->
+  <rect x="300" y="220" width="200" height="100" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stage 2: Action-Labeled</text>
+  <text x="400" y="265" text-anchor="middle" font-size="12" fill="#34495e">Interactive Generation</text>
+  <text x="400" y="280" text-anchor="middle" font-size="11" fill="#7f8c8d">• 1,200h labeled clips</text>
+  <text x="400" y="295" text-anchor="middle" font-size="11" fill="#7f8c8d">• Control module integration</text>
+  
+  <!-- Model Architecture -->
+  <rect x="550" y="60" width="180" height="260" rx="10" fill="#f4e6ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="640" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Model Architecture</text>
+  
+  <!-- 3D Causal VAE -->
+  <rect x="570" y="100" width="140" height="30" rx="5" fill="#e8e6ff" stroke="#6c5ce7"/>
+  <text x="640" y="120" text-anchor="middle" font-size="11" fill="#2c3e50">3D Causal VAE</text>
+  
+  <!-- Visual Encoder -->
+  <rect x="570" y="140" width="140" height="30" rx="5" fill="#e8e6ff" stroke="#6c5ce7"/>
+  <text x="640" y="160" text-anchor="middle" font-size="11" fill="#2c3e50">Visual Encoder</text>
+  
+  <!-- Diffusion Transformer -->
+  <rect x="570" y="180" width="140" height="30" rx="5" fill="#e8e6ff" stroke="#6c5ce7"/>
+  <text x="640" y="200" text-anchor="middle" font-size="11" fill="#2c3e50">Diffusion Transformer</text>
+  
+  <!-- Control Module -->
+  <rect x="570" y="220" width="140" height="30" rx="5" fill="#e8e6ff" stroke="#6c5ce7"/>
+  <text x="640" y="240" text-anchor="middle" font-size="11" fill="#2c3e50">Control Module</text>
+  
+  <!-- Autoregressive Gen -->
+  <rect x="570" y="260" width="140" height="30" rx="5" fill="#e8e6ff" stroke="#6c5ce7"/>
+  <text x="640" y="280" text-anchor="middle" font-size="11" fill="#2c3e50">Autoregressive Gen</text>
+  
+  <!-- Features Box -->
+  <rect x="770" y="60" width="180" height="120" rx="10" fill="#fff5f5" stroke="#e74c3c" stroke-width="2"/>
+  <text x="860" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Features</text>
+  <text x="860" y="105" text-anchor="middle" font-size="11" fill="#7f8c8d">• Image-to-World paradigm</text>
+  <text x="860" y="120" text-anchor="middle" font-size="11" fill="#7f8c8d">• 17B parameters</text>
+  <text x="860" y="135" text-anchor="middle" font-size="11" fill="#7f8c8d">• Flow matching training</text>
+  <text x="860" y="150" text-anchor="middle" font-size="11" fill="#7f8c8d">• Real-time control</text>
+  
+  <!-- Evaluation -->
+  <rect x="50" y="360" width="400" height="120" rx="10" fill="#f0f8ff" stroke="#3498db" stroke-width="2"/>
+  <text x="250" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">GameWorld Score Benchmark</text>
+  
+  <!-- Evaluation metrics in 2x2 grid -->
+  <rect x="70" y="400" width="170" height="30" rx="5" fill="#e6f7ff" stroke="#1890ff"/>
+  <text x="155" y="420" text-anchor="middle" font-size="11" fill="#2c3e50">Visual Quality</text>
+  
+  <rect x="260" y="400" width="170" height="30" rx="5" fill="#e6f7ff" stroke="#1890ff"/>
+  <text x="345" y="420" text-anchor="middle" font-size="11" fill="#2c3e50">Temporal Quality</text>
+  
+  <rect x="70" y="440" width="170" height="30" rx="5" fill="#e6f7ff" stroke="#1890ff"/>
+  <text x="155" y="460" text-anchor="middle" font-size="11" fill="#2c3e50">Action Controllability</text>
+  
+  <rect x="260" y="440" width="170" height="30" rx="5" fill="#e6f7ff" stroke="#1890ff"/>
+  <text x="345" y="460" text-anchor="middle" font-size="11" fill="#2c3e50">Physical Understanding</text>
+  
+  <!-- Results -->
+  <rect x="500" y="360" width="450" height="120" rx="10" fill="#f6ffed" stroke="#52c41a" stroke-width="2"/>
+  <text x="725" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Experimental Results</text>
+  <text x="725" y="405" text-anchor="middle" font-size="12" fill="#34495e">Outperforms OASIS & MineWorld</text>
+  <text x="620" y="425" text-anchor="middle" font-size="11" fill="#7f8c8d">✓ 95% Keyboard Accuracy</text>
+  <text x="830" y="425" text-anchor="middle" font-size="11" fill="#7f8c8d">✓ 95% Mouse Accuracy</text>
+  <text x="620" y="445" text-anchor="middle" font-size="11" fill="#7f8c8d">✓ Superior Visual Quality</text>
+  <text x="830" y="445" text-anchor="middle" font-size="11" fill="#7f8c8d">✓ Physical Consistency</text>
+  <text x="725" y="465" text-anchor="middle" font-size="11" fill="#7f8c8d">✓ 96.3% Human Preference (Overall Quality)</text>
+  
+  <!-- Applications -->
+  <rect x="50" y="520" width="900" height="80" rx="10" fill="#fafafa" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Applications & Capabilities</text>
+  
+  <rect x="80" y="560" width="160" height="25" rx="3" fill="#e8f5e8" stroke="#4caf50"/>
+  <text x="160" y="577" text-anchor="middle" font-size="10" fill="#2c3e50">Controllable Generation</text>
+  
+  <rect x="260" y="560" width="160" height="25" rx="3" fill="#e8f5e8" stroke="#4caf50"/>
+  <text x="340" y="577" text-anchor="middle" font-size="10" fill="#2c3e50">Multi-scenario Support</text>
+  
+  <rect x="440" y="560" width="160" height="25" rx="3" fill="#e8f5e8" stroke="#4caf50"/>
+  <text x="520" y="577" text-anchor="middle" font-size="10" fill="#2c3e50">Long-term Consistency</text>
+  
+  <rect x="620" y="560" width="160" height="25" rx="3" fill="#e8f5e8" stroke="#4caf50"/>
+  <text x="700" y="577" text-anchor="middle" font-size="10" fill="#2c3e50">Real-time Interaction</text>
+  
+  <rect x="800" y="560" width="120" height="25" rx="3" fill="#e8f5e8" stroke="#4caf50"/>
+  <text x="860" y="577" text-anchor="middle" font-size="10" fill="#2c3e50">World Simulation</text>
+  
+  <!-- Flow connections with colored lines -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#3498db" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="150" y1="180" x2="150" y2="220" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="250" y1="270" x2="300" y2="270" stroke="#e67e22" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="270" x2="550" y2="270" stroke="#9b59b6" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="640" y1="320" x2="640" y2="360" stroke="#3498db" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="420" x2="500" y2="420" stroke="#52c41a" stroke-width="2"/>
+  <line x1="500" y1="480" x2="500" y2="520" stroke="#95a5a6" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Bottom note -->
+  <text x="500" y="780" text-anchor="middle" font-size="12" fill="#7f8c8d">Two-stage training pipeline with comprehensive evaluation framework</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="A two-stage pipeline combining unlabeled pretraining with action-labeled training">
+                        <div class="quiz-question">1. What is the main innovation in Matrix-Game's training approach compared to previous models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using only labeled data from professional gamers">Using only labeled data from professional gamers</div><div class="quiz-choice" data-value="A two-stage pipeline combining unlabeled pretraining with action-labeled training">A two-stage pipeline combining unlabeled pretraining with action-labeled training</div><div class="quiz-choice" data-value="Training exclusively on procedurally generated synthetic data">Training exclusively on procedurally generated synthetic data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Action controllability and physical consistency">
+                        <div class="quiz-question">2. In the GameWorld Score benchmark, what was Matrix-Game's most significant improvement over existing models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Visual quality and aesthetics">Visual quality and aesthetics</div><div class="quiz-choice" data-value="Temporal consistency and motion smoothness">Temporal consistency and motion smoothness</div><div class="quiz-choice" data-value="Action controllability and physical consistency">Action controllability and physical consistency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Struggles with physics understanding in complex interactions">
+                        <div class="quiz-question">3. What is one of the main limitations or failure cases identified for Matrix-Game?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Inability to handle keyboard inputs accurately">Inability to handle keyboard inputs accurately</div><div class="quiz-choice" data-value="Poor performance in common Minecraft biomes">Poor performance in common Minecraft biomes</div><div class="quiz-choice" data-value="Struggles with physics understanding in complex interactions">Struggles with physics understanding in complex interactions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
