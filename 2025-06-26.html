@@ -1,0 +1,1087 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-26 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-26 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>OctoThinker: Mid-training Incentivizes Reinforcement Learning Scaling</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-25</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.20512" target="_blank">http://arxiv.org/pdf/2506.20512</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores mid-training strategies for improving reinforcement learning (RL) performance in language models, specifically focusing on mathematical reasoning capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research showing divergent RL performance between Llama and Qwen models, the paper proposes a novel two-stage mid-training strategy called "stable-then-decay" to enhance Llama's RL compatibility.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses why different base language models (like Llama and Qwen) show varying behaviors during RL training, particularly for reasoning tasks, and how to make Llama more suitable for RL scaling.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implemented a two-stage mid-training approach: first training models on 200B tokens with constant learning rate, then training on 20B tokens across three Chain-of-Thought focused branches with learning rate decay, followed by RL training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The resulting OctoThinker models showed 10-20% improvement over original base models and matched Qwen2.5's performance across 13 mathematical benchmarks, effectively closing the performance gap between Llama and more RL-friendly model families.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>OctoThinker: Mid-training Incentivizes Reinforcement Learning Scaling</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">OctoThinker: Mid-training Incentivizes RL Scaling</text>
+  
+  <!-- Phase 1: Observation -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">OBSERVATION</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">Llama vs Qwen</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">RL Behavior Gap</text>
+  
+  <!-- Phase 2: Controlled Mid-training Factors -->
+  <rect x="300" y="60" width="400" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="500" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">CONTROLLED MID-TRAINING FACTORS</text>
+  
+  <!-- Factor boxes -->
+  <rect x="320" y="100" width="70" height="30" rx="5" fill="#2980b9"/>
+  <text x="355" y="118" text-anchor="middle" font-size="8" fill="white">Math Web</text>
+  <text x="355" y="128" text-anchor="middle" font-size="8" fill="white">Corpora</text>
+  
+  <rect x="400" y="100" width="70" height="30" rx="5" fill="#2980b9"/>
+  <text x="435" y="118" text-anchor="middle" font-size="8" fill="white">QA Format</text>
+  <text x="435" y="128" text-anchor="middle" font-size="8" fill="white">Data</text>
+  
+  <rect x="480" y="100" width="70" height="30" rx="5" fill="#2980b9"/>
+  <text x="515" y="118" text-anchor="middle" font-size="8" fill="white">Instruction</text>
+  <text x="515" y="128" text-anchor="middle" font-size="8" fill="white">Following</text>
+  
+  <rect x="560" y="100" width="70" height="30" rx="5" fill="#2980b9"/>
+  <text x="595" y="118" text-anchor="middle" font-size="8" fill="white">Training</text>
+  <text x="595" y="128" text-anchor="middle" font-size="8" fill="white">Budget</text>
+  
+  <!-- Phase 3: Two-Stage Mid-training Strategy -->
+  <rect x="750" y="60" width="200" height="80" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="850" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">TWO-STAGE STRATEGY</text>
+  <text x="850" y="105" text-anchor="middle" font-size="10" fill="white">Stable-then-Decay</text>
+  <text x="850" y="120" text-anchor="middle" font-size="10" fill="white">200B + 20B tokens</text>
+  
+  <!-- Stage 1: Stable Stage -->
+  <rect x="100" y="180" width="350" height="120" rx="10" fill="#27ae60" opacity="0.8"/>
+  <text x="275" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">STAGE 1: STABLE STAGE (200B tokens)</text>
+  
+  <!-- Data mixture for stable stage -->
+  <rect x="120" y="220" width="100" height="60" rx="5" fill="#229954"/>
+  <text x="170" y="235" text-anchor="middle" font-size="9" fill="white">MegaMath-Web</text>
+  <text x="170" y="248" text-anchor="middle" font-size="9" fill="white">Pro-Max</text>
+  <text x="170" y="261" text-anchor="middle" font-size="9" fill="white">(72.5%)</text>
+  
+  <rect x="230" y="220" width="80" height="60" rx="5" fill="#229954"/>
+  <text x="270" y="235" text-anchor="middle" font-size="9" fill="white">DCLM</text>
+  <text x="270" y="248" text-anchor="middle" font-size="9" fill="white">Baseline</text>
+  <text x="270" y="261" text-anchor="middle" font-size="9" fill="white">(10%)</text>
+  
+  <rect x="320" y="220" width="80" height="60" rx="5" fill="#229954"/>
+  <text x="360" y="235" text-anchor="middle" font-size="9" fill="white">Synthetic</text>
+  <text x="360" y="248" text-anchor="middle" font-size="9" fill="white">Data</text>
+  <text x="360" y="261" text-anchor="middle" font-size="9" fill="white">(17.5%)</text>
+  
+  <!-- Result -->
+  <text x="275" y="295" text-anchor="middle" font-size="10" fill="white">→ OctoThinker-Base-Stable</text>
+  
+  <!-- Stage 2: Decay Stage with Branching -->
+  <rect x="550" y="180" width="400" height="200" rx="10" fill="#f39c12" opacity="0.8"/>
+  <text x="750" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">STAGE 2: DECAY STAGE (20B tokens)</text>
+  <text x="750" y="225" text-anchor="middle" font-size="11" fill="white">Cosine LR Decay + 3 Branches</text>
+  
+  <!-- Three branches -->
+  <rect x="570" y="245" width="100" height="80" rx="5" fill="#e67e22"/>
+  <text x="620" y="265" text-anchor="middle" font-size="10" font-weight="bold" fill="white">SHORT BRANCH</text>
+  <text x="620" y="280" text-anchor="middle" font-size="8" fill="white">MegaMath-QA</text>
+  <text x="620" y="292" text-anchor="middle" font-size="8" fill="white">OpenMathInstruct2</text>
+  <text x="620" y="304" text-anchor="middle" font-size="8" fill="white">NuminaMath1.5</text>
+  <text x="620" y="316" text-anchor="middle" font-size="8" fill="white">(30% QA)</text>
+  
+  <rect x="690" y="245" width="100" height="80" rx="5" fill="#e67e22"/>
+  <text x="740" y="265" text-anchor="middle" font-size="10" font-weight="bold" fill="white">LONG BRANCH</text>
+  <text x="740" y="280" text-anchor="middle" font-size="8" fill="white">OpenR1-Math</text>
+  <text x="740" y="292" text-anchor="middle" font-size="8" fill="white">AM-DeepSeek</text>
+  <text x="740" y="304" text-anchor="middle" font-size="8" fill="white">Distilled-40M</text>
+  <text x="740" y="316" text-anchor="middle" font-size="8" fill="white">(30% QA)</text>
+  
+  <rect x="810" y="245" width="100" height="80" rx="5" fill="#e67e22"/>
+  <text x="860" y="265" text-anchor="middle" font-size="10" font-weight="bold" fill="white">HYBRID BRANCH</text>
+  <text x="860" y="280" text-anchor="middle" font-size="8" fill="white">Mixed Short</text>
+  <text x="860" y="292" text-anchor="middle" font-size="8" fill="white">& Long CoT</text>
+  <text x="860" y="304" text-anchor="middle" font-size="8" fill="white">Data</text>
+  <text x="860" y="316" text-anchor="middle" font-size="8" fill="white">(30% QA)</text>
+  
+  <!-- Results -->
+  <text x="620" y="345" text-anchor="middle" font-size="9" fill="white">OctoThinker-Short</text>
+  <text x="740" y="345" text-anchor="middle" font-size="9" fill="white">OctoThinker-Long</text>
+  <text x="860" y="345" text-anchor="middle" font-size="9" fill="white">OctoThinker-Hybrid</text>
+  
+  <!-- RL Training Phase -->
+  <rect x="200" y="420" width="600" height="100" rx="10" fill="#8e44ad" opacity="0.8"/>
+  <text x="500" y="445" text-anchor="middle" font-size="14" font-weight="bold" fill="white">REINFORCEMENT LEARNING TRAINING</text>
+  <text x="500" y="465" text-anchor="middle" font-size="11" fill="white">GRPO Algorithm + Progressive Length Scheduler</text>
+  <text x="500" y="485" text-anchor="middle" font-size="11" fill="white">Complex Template + Stabilization Techniques</text>
+  <text x="500" y="505" text-anchor="middle" font-size="11" fill="white">MATH8K Dataset</text>
+  
+  <!-- Final Results -->
+  <rect x="150" y="560" width="700" height="120" rx="10" fill="#34495e" opacity="0.8"/>
+  <text x="500" y="585" text-anchor="middle" font-size="14" font-weight="bold" fill="white">OCTOTHINKER-ZERO FAMILY</text>
+  
+  <!-- Three final models -->
+  <rect x="180" y="605" width="160" height="50" rx="5" fill="#2c3e50"/>
+  <text x="260" y="625" text-anchor="middle" font-size="10" fill="white">OctoThinker-Short-Zero</text>
+  <text x="260" y="640" text-anchor="middle" font-size="9" fill="white">Fast, Concise Reasoning</text>
+  
+  <rect x="360" y="605" width="160" height="50" rx="5" fill="#2c3e50"/>
+  <text x="440" y="625" text-anchor="middle" font-size="10" fill="white">OctoThinker-Long-Zero</text>
+  <text x="440" y="640" text-anchor="middle" font-size="9" fill="white">Deep, Detailed Reasoning</text>
+  
+  <rect x="540" y="605" width="160" height="50" rx="5" fill="#2c3e50"/>
+  <text x="620" y="625" text-anchor="middle" font-size="10" fill="white">OctoThinker-Hybrid-Zero</text>
+  <text x="620" y="640" text-anchor="middle" font-size="9" fill="white">Balanced Reasoning</text>
+  
+  <!-- Performance note -->
+  <text x="500" y="675" text-anchor="middle" font-size="11" fill="#2c3e50" font-weight="bold">Performance matches Qwen2.5 at same scale</text>
+  
+  <!-- Key Findings Box -->
+  <rect x="20" y="720" width="960" height="60" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="30" y="740" font-size="12" font-weight="bold" fill="#2c3e50">Key Findings:</text>
+  <text x="30" y="755" font-size="10" fill="#2c3e50">• High-quality math corpora (MegaMath-Web-Pro) crucial for RL success</text>
+  <text x="30" y="770" font-size="10" fill="#2c3e50">• QA format data improves RL, but distribution alignment matters • Instruction data unlocks QA potential • Scaling mid-training budget consistently improves RL performance</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="700" y1="100" x2="750" y2="100" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="275" y1="300" x2="275" y2="360" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="275" y1="360" x2="550" y2="240" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="620" y1="325" x2="620" y2="420" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="740" y1="325" x2="740" y2="420" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="860" y1="325" x2="860" y2="420" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="500" y1="520" x2="500" y2="560" stroke="#7f8c8d" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">1. What was the key observation that motivated the authors to investigate mid-training strategies for different language model families?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Qwen models showed stable RL training with reasonable response length increases, while Llama models exhibited abnormal behavior with responses reaching 4,096 tokens and repetitive outputs">Qwen models showed stable RL training with reasonable response length increases, while Llama models exhibited abnormal behavior with responses reaching 4,096 tokens and repetitive outputs</div><div class="quiz-choice long-text" data-value="Llama models consistently outperformed Qwen models in mathematical reasoning but failed in other domains">Llama models consistently outperformed Qwen models in mathematical reasoning but failed in other domains</div><div class="quiz-choice long-text" data-value="Both Qwen and Llama models showed identical RL training dynamics but differed in their pre-training data quality">Both Qwen and Llama models showed identical RL training dynamics but differed in their pre-training data quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">2. In the OctoThinker two-stage mid-training strategy, what happens during the 'decay stage'?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The model is trained on general web data with increasing learning rates to improve stability">The model is trained on general web data with increasing learning rates to improve stability</div><div class="quiz-choice long-text" data-value="The training is branched into three variants (Long, Short, Hybrid) with different CoT data mixtures and decayed learning rates over 20B tokens">The training is branched into three variants (Long, Short, Hybrid) with different CoT data mixtures and decayed learning rates over 20B tokens</div><div class="quiz-choice long-text" data-value="The model undergoes reinforcement learning training directly without any additional pre-training data">The model undergoes reinforcement learning training directly without any additional pre-training data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">3. Why did the authors name their model family 'OctoThinker'?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Because the model was trained on exactly 8 different datasets representing the 8 arms of an octopus">Because the model was trained on exactly 8 different datasets representing the 8 arms of an octopus</div><div class="quiz-choice long-text" data-value="The 'Octo' represents the multi-armed octopus structure reflecting multiple branches, while 'Thinker' reflects the final RL stage where models learn to think and reason with self-reflection">The 'Octo' represents the multi-armed octopus structure reflecting multiple branches, while 'Thinker' reflects the final RL stage where models learn to think and reason with self-reflection</div><div class="quiz-choice" data-value="It was named after the 8th version of their experimental framework that finally achieved success">It was named after the 8th version of their experimental framework that finally achieved success</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-orchid.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Unified Vision-Language-Action Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-24</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.19850" target="_blank">http://arxiv.org/pdf/2506.19850</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A unified vision-language-action (VLA) model for robotic manipulation that integrates vision, language, and action modalities into a single framework.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous VLA models that used separate encoders for vision and relied on language-centric paradigms; proposes a novel unified approach that represents all modalities as discrete tokens within a shared vocabulary.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing VLA models have limited cross-modal integration and struggle to capture temporal/causal dependencies in robot actions due to treating modalities separately.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Transforms vision, language and action signals into discrete tokens, uses an autoregressive transformer to model them as an interleaved sequence, and incorporates world model training on video data.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art results across multiple benchmarks including CALVIN (4.61 avg length), LIBERO (95.5% success rate), and SimplerEnv-Bridge (69.8% success rate), significantly outperforming previous methods.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Unified Vision-Language-Action Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">UniVLA: Unified Vision-Language-Action Model Workflow</text>
+  
+  <!-- Pre-training Stage -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Pre-training</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#2c3e50">Vision-Language</text>
+  <text x="150" y="120" text-anchor="middle" font-size="12" fill="#2c3e50">Alignment (Emu3)</text>
+  
+  <!-- Unified Multimodal Model -->
+  <rect x="350" y="60" width="300" height="120" rx="10" fill="#fff2e6" stroke="#f39c12" stroke-width="2"/>
+  <text x="500" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Unified Multimodal Model</text>
+  
+  <!-- Tokenization components -->
+  <rect x="370" y="100" width="80" height="30" rx="5" fill="#e8f6f3" stroke="#27ae60"/>
+  <text x="410" y="118" text-anchor="middle" font-size="10" fill="#2c3e50">Text Tokens</text>
+  
+  <rect x="460" y="100" width="80" height="30" rx="5" fill="#fdeaea" stroke="#e74c3c"/>
+  <text x="500" y="118" text-anchor="middle" font-size="10" fill="#2c3e50">Vision Tokens</text>
+  <text x="500" y="125" text-anchor="middle" font-size="8" fill="#2c3e50">(VQ Encoder)</text>
+  
+  <rect x="550" y="100" width="80" height="30" rx="5" fill="#f4ecf7" stroke="#9b59b6"/>
+  <text x="590" y="118" text-anchor="middle" font-size="10" fill="#2c3e50">Action Tokens</text>
+  <text x="590" y="125" text-anchor="middle" font-size="8" fill="#2c3e50">(DCT/FAST)</text>
+  
+  <text x="500" y="155" text-anchor="middle" font-size="12" fill="#2c3e50">Autoregressive Transformer (8.5B params)</text>
+  
+  <!-- Post-training Stage -->
+  <rect x="100" y="220" width="300" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="250" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Post-training: World Model</text>
+  
+  <rect x="120" y="260" width="260" height="25" rx="5" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="250" y="275" text-anchor="middle" font-size="11" fill="#2c3e50">622K Robot Videos (Large-scale)</text>
+  
+  <text x="250" y="295" text-anchor="middle" font-size="11" fill="#2c3e50">Sequence: {L¹ₜ, L¹ᵥ, L²ᵥ, ..., Lᵗᵥ}</text>
+  <text x="250" y="310" text-anchor="middle" font-size="11" fill="#2c3e50">Loss: Vision tokens only</text>
+  <text x="250" y="325" text-anchor="middle" font-size="10" fill="#7f8c8d">Learns temporal dynamics & causality</text>
+  
+  <!-- Fine-tuning Stage -->
+  <rect x="500" y="220" width="300" height="120" rx="10" fill="#fff2e6" stroke="#f39c12" stroke-width="2"/>
+  <text x="650" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Fine-tuning: Policy Learning</text>
+  
+  <rect x="520" y="260" width="260" height="25" rx="5" fill="#fdeaea" stroke="#e74c3c"/>
+  <text x="650" y="275" text-anchor="middle" font-size="11" fill="#2c3e50">Task-specific Datasets</text>
+  
+  <text x="650" y="295" text-anchor="middle" font-size="11" fill="#2c3e50">Sequence: {L¹ₜ, L¹ᵥ, L¹ₐ, L²ᵥ, L²ₐ, ...}</text>
+  <text x="650" y="310" text-anchor="middle" font-size="11" fill="#2c3e50">Loss: Action tokens only</text>
+  <text x="650" y="325" text-anchor="middle" font-size="10" fill="#7f8c8d">Interleaved vision-action sequence</text>
+  
+  <!-- Evaluation Benchmarks -->
+  <rect x="50" y="380" width="900" height="80" rx="10" fill="#f8f9fa" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="405" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Evaluation Benchmarks</text>
+  
+  <rect x="80" y="420" width="150" height="30" rx="5" fill="#e8f6f3" stroke="#27ae60"/>
+  <text x="155" y="438" text-anchor="middle" font-size="12" fill="#2c3e50">CALVIN (4.63 avg)</text>
+  
+  <rect x="250" y="420" width="150" height="30" rx="5" fill="#e8f6f3" stroke="#27ae60"/>
+  <text x="325" y="438" text-anchor="middle" font-size="12" fill="#2c3e50">LIBERO (95.5%)</text>
+  
+  <rect x="420" y="420" width="160" height="30" rx="5" fill="#e8f6f3" stroke="#27ae60"/>
+  <text x="500" y="438" text-anchor="middle" font-size="12" fill="#2c3e50">SimplerEnv (69.8%)</text>
+  
+  <rect x="600" y="420" width="120" height="30" rx="5" fill="#fef9e7" stroke="#f1c40f"/>
+  <text x="660" y="438" text-anchor="middle" font-size="12" fill="#2c3e50">Real Robot</text>
+  
+  <rect x="740" y="420" width="180" height="30" rx="5" fill="#fef9e7" stroke="#f1c40f"/>
+  <text x="830" y="438" text-anchor="middle" font-size="12" fill="#2c3e50">Autonomous Driving</text>
+  
+  <!-- Key Features -->
+  <rect x="50" y="500" width="900" height="120" rx="10" fill="#f4f6f7" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="500" y="525" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Features & Capabilities</text>
+  
+  <circle cx="150" cy="550" r="5" fill="#3498db"/>
+  <text x="170" y="555" font-size="12" fill="#2c3e50">Unified token representation for all modalities</text>
+  
+  <circle cx="150" cy="575" r="5" fill="#e74c3c"/>
+  <text x="170" y="580" font-size="12" fill="#2c3e50">Autoregressive sequence modeling</text>
+  
+  <circle cx="500" cy="550" r="5" fill="#27ae60"/>
+  <text x="520" y="555" font-size="12" fill="#2c3e50">World model learning from large-scale videos</text>
+  
+  <circle cx="500" cy="575" r="5" fill="#f39c12"/>
+  <text x="520" y="580" font-size="12" fill="#2c3e50">Multimodal outputs (vision, language, action)</text>
+  
+  <circle cx="150" cy="600" r="5" fill="#9b59b6"/>
+  <text x="170" y="605" font-size="12" fill="#2c3e50">Causal temporal dynamics modeling</text>
+  
+  <circle cx="500" cy="600" r="5" fill="#e67e22"/>
+  <text x="520" y="605" font-size="12" fill="#2c3e50">State-of-the-art performance across benchmarks</text>
+  
+  <!-- Data Flow Lines -->
+  <line x1="250" y1="100" x2="350" y2="100" stroke="#3498db" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="180" x2="250" y2="220" stroke="#3498db" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="180" x2="650" y2="220" stroke="#f39c12" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="340" x2="500" y2="380" stroke="#27ae60" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Method highlights -->
+  <rect x="50" y="660" width="900" height="80" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="685" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Technical Innovations</text>
+  
+  <text x="150" y="710" text-anchor="middle" font-size="12" fill="#2c3e50">DCT Action Encoding</text>
+  <text x="350" y="710" text-anchor="middle" font-size="12" fill="#2c3e50">VQ Vision Tokenization</text>
+  <text x="550" y="710" text-anchor="middle" font-size="12" fill="#2c3e50">Interleaved Sequence Design</text>
+  <text x="750" y="710" text-anchor="middle" font-size="12" fill="#2c3e50">Two-stage Training</text>
+  
+  <text x="500" y="730" text-anchor="middle" font-size="11" fill="#7f8c8d">Special tokens: &lt;boi&gt;, &lt;eoi&gt;, &lt;boa&gt;, &lt;eoa&gt; for modality boundaries</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">1. What is the key innovation that distinguishes UniVLA from previous vision-language-action models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger transformer with 8.5 billion parameters">It uses a larger transformer with 8.5 billion parameters</div><div class="quiz-choice long-text" data-value="It represents vision, language, and action as discrete tokens within a unified autoregressive framework">It represents vision, language, and action as discrete tokens within a unified autoregressive framework</div><div class="quiz-choice" data-value="It only focuses on long-horizon robotic manipulation tasks">It only focuses on long-horizon robotic manipulation tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">2. According to the experimental results, what was UniVLA's performance improvement on the LIBERO benchmark compared to the previous state-of-the-art π0-FAST?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Improved from 85.5% to 95.5% average success rate">Improved from 85.5% to 95.5% average success rate</div><div class="quiz-choice" data-value="Improved from 69.0% to 94.0% on long-horizon tasks only">Improved from 69.0% to 94.0% on long-horizon tasks only</div><div class="quiz-choice" data-value="Achieved exactly the same performance as π0-FAST">Achieved exactly the same performance as π0-FAST</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">3. What post-training strategy did the authors find most effective for enhancing downstream policy learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Action prediction training using robotic demonstration data">Action prediction training using robotic demonstration data</div><div class="quiz-choice" data-value="Text-to-image generation training on static image datasets">Text-to-image generation training on static image datasets</div><div class="quiz-choice" data-value="World model training that captures video dynamics from large-scale video data">World model training that captures video dynamics from large-scale video data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Phantom-Data : Towards a General Subject-Consistent Video Generation
+  Dataset</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.18851" target="_blank">http://arxiv.org/pdf/2506.18851</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing a large-scale cross-pair dataset called Phantom-Data for subject-consistent video generation in computer vision and AI.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing in-pair training approaches and face-based datasets, it proposes a novel cross-pair dataset that spans diverse subject categories beyond just faces and includes varied contexts.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the "copy-paste problem" in subject-to-video generation, where models struggle to follow textual instructions while maintaining subject identity across different contexts.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop a three-stage pipeline: S2V Detection for subject identification, Contextually Diverse Retrieval from 53M videos and 3B images, and Prior-Based Identity Verification to ensure consistency.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The approach achieved superior performance in text-video alignment and overall video quality while maintaining subject consistency, with their method receiving 76% preference in user studies compared to baselines under 12%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Phantom-Data : Towards a General Subject-Consistent Video Generation
+  Dataset</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Phantom-Data Construction Pipeline</text>
+  
+  <!-- Stage 1: S2V Detection -->
+  <rect x="50" y="70" width="280" height="200" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="190" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Stage 1: S2V Detection</text>
+  
+  <rect x="70" y="110" width="240" height="25" fill="#fff" stroke="#3498db" rx="5"/>
+  <text x="190" y="127" text-anchor="middle" font-size="12" fill="#2c3e50">1. Frame Sampling (t=0.05, 0.5, 0.95)</text>
+  
+  <rect x="70" y="140" width="240" height="25" fill="#fff" stroke="#3498db" rx="5"/>
+  <text x="190" y="157" text-anchor="middle" font-size="12" fill="#2c3e50">2. Keyword Extraction (Qwen2.5)</text>
+  
+  <rect x="70" y="170" width="240" height="25" fill="#fff" stroke="#3498db" rx="5"/>
+  <text x="190" y="187" text-anchor="middle" font-size="12" fill="#2c3e50">3. Visual Grounding (Qwen2.5-VL)</text>
+  
+  <rect x="70" y="200" width="240" height="25" fill="#fff" stroke="#3498db" rx="5"/>
+  <text x="190" y="217" text-anchor="middle" font-size="12" fill="#2c3e50">4. Bbox Filtering (4%-90% coverage)</text>
+  
+  <rect x="70" y="230" width="240" height="25" fill="#fff" stroke="#3498db" rx="5"/>
+  <text x="190" y="247" text-anchor="middle" font-size="12" fill="#2c3e50">5. Visual-Semantic Recheck</text>
+  
+  <!-- Stage 2: Contextually Diverse Retrieval -->
+  <rect x="360" y="70" width="280" height="200" fill="#fff2e8" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="500" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#d35400">Stage 2: Contextually Diverse Retrieval</text>
+  
+  <rect x="380" y="110" width="240" height="30" fill="#fff" stroke="#e67e22" rx="5"/>
+  <text x="500" y="127" text-anchor="middle" font-size="12" fill="#2c3e50">Large-Scale Retrieval Bank</text>
+  <text x="500" y="137" text-anchor="middle" font-size="10" fill="#7f8c8d">53M videos + 3B images</text>
+  
+  <rect x="380" y="145" width="115" height="35" fill="#fff" stroke="#e67e22" rx="5"/>
+  <text x="437" y="160" text-anchor="middle" font-size="11" fill="#2c3e50">Face Encoder</text>
+  <text x="437" y="172" text-anchor="middle" font-size="9" fill="#7f8c8d">(ArcFace)</text>
+  
+  <rect x="505" y="145" width="115" height="35" fill="#fff" stroke="#e67e22" rx="5"/>
+  <text x="562" y="160" text-anchor="middle" font-size="11" fill="#2c3e50">General Encoder</text>
+  <text x="562" y="172" text-anchor="middle" font-size="9" fill="#7f8c8d">(CLIP-based)</text>
+  
+  <rect x="380" y="185" width="240" height="30" fill="#fff" stroke="#e67e22" rx="5"/>
+  <text x="500" y="202" text-anchor="middle" font-size="12" fill="#2c3e50">Query-Based Retrieval</text>
+  <text x="500" y="212" text-anchor="middle" font-size="10" fill="#7f8c8d">Upper & Lower Similarity Bounds</text>
+  
+  <rect x="380" y="220" width="240" height="25" fill="#fff" stroke="#e67e22" rx="5"/>
+  <text x="500" y="237" text-anchor="middle" font-size="12" fill="#2c3e50">Cross-Context Candidate Selection</text>
+  
+  <!-- Stage 3: Prior-Based Identity Verification -->
+  <rect x="670" y="70" width="280" height="200" fill="#e8f6f3" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="810" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#229954">Stage 3: Prior-Based Identity Verification</text>
+  
+  <rect x="690" y="110" width="240" height="35" fill="#fff" stroke="#27ae60" rx="5"/>
+  <text x="810" y="127" text-anchor="middle" font-size="12" fill="#2c3e50">Prior Knowledge Filtering</text>
+  <text x="810" y="137" text-anchor="middle" font-size="10" fill="#7f8c8d">Products: Logo check | Living: Same video</text>
+  
+  <rect x="690" y="150" width="240" height="35" fill="#fff" stroke="#27ae60" rx="5"/>
+  <text x="810" y="167" text-anchor="middle" font-size="12" fill="#2c3e50">VLM-Based Verification</text>
+  <text x="810" y="177" text-anchor="middle" font-size="10" fill="#7f8c8d">Identity consistency + Context diversity</text>
+  
+  <rect x="690" y="190" width="240" height="35" fill="#fff" stroke="#27ae60" rx="5"/>
+  <text x="810" y="207" text-anchor="middle" font-size="12" fill="#2c3e50">Final Cross-Pair Dataset</text>
+  <text x="810" y="217" text-anchor="middle" font-size="10" fill="#7f8c8d">~1M identity-consistent pairs</text>
+  
+  <!-- Data Sources -->
+  <rect x="50" y="300" width="200" height="120" fill="#fdf2e9" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="150" y="320" text-anchor="middle" font-size="14" font-weight="bold" fill="#e67e22">Data Sources</text>
+  <text x="150" y="340" text-anchor="middle" font-size="12" fill="#2c3e50">• Koala-36M videos</text>
+  <text x="150" y="355" text-anchor="middle" font-size="12" fill="#2c3e50">• Internal repositories</text>
+  <text x="150" y="370" text-anchor="middle" font-size="12" fill="#2c3e50">• LAION-3B images</text>
+  <text x="150" y="385" text-anchor="middle" font-size="12" fill="#2c3e50">• Scene segmentation</text>
+  <text x="150" y="400" text-anchor="middle" font-size="12" fill="#2c3e50">• Quality filtering</text>
+  
+  <!-- Subject Categories -->
+  <rect x="280" y="300" width="200" height="120" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" rx="10"/>
+  <text x="380" y="320" text-anchor="middle" font-size="14" font-weight="bold" fill="#8e44ad">Subject Categories</text>
+  <text x="380" y="340" text-anchor="middle" font-size="12" fill="#2c3e50">• Humans (face + body)</text>
+  <text x="380" y="355" text-anchor="middle" font-size="12" fill="#2c3e50">• Animals</text>
+  <text x="380" y="370" text-anchor="middle" font-size="12" fill="#2c3e50">• Products</text>
+  <text x="380" y="385" text-anchor="middle" font-size="12" fill="#2c3e50">• Environments</text>
+  <text x="380" y="400" text-anchor="middle" font-size="12" fill="#2c3e50">• Multi-subject scenes</text>
+  
+  <!-- Quality Metrics -->
+  <rect x="510" y="300" width="200" height="120" fill="#eaf2f8" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="610" y="320" text-anchor="middle" font-size="14" font-weight="bold" fill="#3498db">Quality Metrics</text>
+  <text x="610" y="340" text-anchor="middle" font-size="12" fill="#2c3e50">• Completeness check</text>
+  <text x="610" y="355" text-anchor="middle" font-size="12" fill="#2c3e50">• Specificity validation</text>
+  <text x="610" y="370" text-anchor="middle" font-size="12" fill="#2c3e50">• Subject-text matching</text>
+  <text x="610" y="385" text-anchor="middle" font-size="12" fill="#2c3e50">• Identity consistency</text>
+  <text x="610" y="400" text-anchor="middle" font-size="12" fill="#2c3e50">• Context diversity</text>
+  
+  <!-- Final Output -->
+  <rect x="750" y="300" width="200" height="120" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2" rx="10"/>
+  <text x="850" y="320" text-anchor="middle" font-size="14" font-weight="bold" fill="#1abc9c">Final Dataset</text>
+  <text x="850" y="340" text-anchor="middle" font-size="12" fill="#2c3e50">• 1M cross-pair samples</text>
+  <text x="850" y="355" text-anchor="middle" font-size="12" fill="#2c3e50">• 30K+ multi-subject</text>
+  <text x="850" y="370" text-anchor="middle" font-size="12" fill="#2c3e50">• General-purpose</text>
+  <text x="850" y="385" text-anchor="middle" font-size="12" fill="#2c3e50">• Publicly available</text>
+  <text x="850" y="400" text-anchor="middle" font-size="12" fill="#2c3e50">• Cross-context diversity</text>
+  
+  <!-- Key Innovation -->
+  <rect x="200" y="450" width="600" height="80" fill="#fff5f5" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="500" y="470" text-anchor="middle" font-size="16" font-weight="bold" fill="#c0392b">Key Innovation: Cross-Pair Training</text>
+  <text x="500" y="490" text-anchor="middle" font-size="13" fill="#2c3e50">Reference subjects from DIFFERENT contexts than target video</text>
+  <text x="500" y="505" text-anchor="middle" font-size="13" fill="#2c3e50">Reduces copy-paste problem while maintaining identity consistency</text>
+  <text x="500" y="520" text-anchor="middle" font-size="13" fill="#2c3e50">Improves text alignment and visual quality</text>
+  
+  <!-- Evaluation Results -->
+  <rect x="50" y="560" width="280" height="100" fill="#f0f8ff" stroke="#4682b4" stroke-width="2" rx="10"/>
+  <text x="190" y="580" text-anchor="middle" font-size="14" font-weight="bold" fill="#4682b4">Evaluation Results</text>
+  <text x="190" y="600" text-anchor="middle" font-size="12" fill="#2c3e50">✓ Better text alignment</text>
+  <text x="190" y="615" text-anchor="middle" font-size="12" fill="#2c3e50">✓ Improved visual quality</text>
+  <text x="190" y="630" text-anchor="middle" font-size="12" fill="#2c3e50">✓ Maintained identity consistency</text>
+  <text x="190" y="645" text-anchor="middle" font-size="12" fill="#2c3e50">✓ 76% user preference</text>
+  
+  <!-- Technical Details -->
+  <rect x="360" y="560" width="280" height="100" fill="#f5f5dc" stroke="#daa520" stroke-width="2" rx="10"/>
+  <text x="500" y="580" text-anchor="middle" font-size="14" font-weight="bold" fill="#b8860b">Technical Implementation</text>
+  <text x="500" y="600" text-anchor="middle" font-size="12" fill="#2c3e50">• Phantom-wan model (1.3B params)</text>
+  <text x="500" y="615" text-anchor="middle" font-size="12" fill="#2c3e50">• Rectified Flow training</text>
+  <text x="500" y="630" text-anchor="middle" font-size="12" fill="#2c3e50">• 64 A100 GPUs, 30k iterations</text>
+  <text x="500" y="645" text-anchor="middle" font-size="12" fill="#2c3e50">• 480p resolution</text>
+  
+  <!-- Applications -->
+  <rect x="670" y="560" width="280" height="100" fill="#f0fff0" stroke="#32cd32" stroke-width="2" rx="10"/>
+  <text x="810" y="580" text-anchor="middle" font-size="14" font-weight="bold" fill="#228b22">Applications</text>
+  <text x="810" y="600" text-anchor="middle" font-size="12" fill="#2c3e50">• Personalized advertising</text>
+  <text x="810" y="615" text-anchor="middle" font-size="12" fill="#2c3e50">• AI-driven filmmaking</text>
+  <text x="810" y="630" text-anchor="middle" font-size="12" fill="#2c3e50">• Digital content creation</text>
+  <text x="810" y="645" text-anchor="middle" font-size="12" fill="#2c3e50">• Educational media</text>
+  
+  <!-- Problem Solved -->
+  <rect x="200" y="690" width="600" height="60" fill="#ffe4e1" stroke="#dc143c" stroke-width="2" rx="10"/>
+  <text x="500" y="710" text-anchor="middle" font-size="14" font-weight="bold" fill="#dc143c">Problem Solved: Copy-Paste Issue</text>
+  <text x="500" y="725" text-anchor="middle" font-size="12" fill="#2c3e50">Traditional in-pair training copies background and context</text>
+  <text x="500" y="740" text-anchor="middle" font-size="12" fill="#2c3e50">Cross-pair training preserves identity while enabling new contexts</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">1. What is the main problem that Phantom-Data aims to solve in subject-to-video generation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="The copy-paste problem where models replicate reference subjects without following textual instructions">The copy-paste problem where models replicate reference subjects without following textual instructions</div><div class="quiz-choice" data-value="Low video resolution and poor frame rate in generated videos">Low video resolution and poor frame rate in generated videos</div><div class="quiz-choice" data-value="Inability to generate videos longer than 10 seconds">Inability to generate videos longer than 10 seconds</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">2. How large is the retrieval bank used in Phantom-Data's contextually diverse retrieval stage?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Over 10 million videos and 1 billion images">Over 10 million videos and 1 billion images</div><div class="quiz-choice" data-value="Over 53 million videos and 3 billion images">Over 53 million videos and 3 billion images</div><div class="quiz-choice" data-value="Over 100 million videos and 5 billion images">Over 100 million videos and 5 billion images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="">
+                        <div class="quiz-question">3. In the user study comparing different training approaches, what percentage of votes did the Phantom-Data method receive?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="56%">56%</div><div class="quiz-choice" data-value="65%">65%</div><div class="quiz-choice" data-value="76%">76%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
