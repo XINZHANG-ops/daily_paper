@@ -1,0 +1,1193 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-06-27 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-06-27 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>MADrive: Memory-Augmented Driving Scene Modeling</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-26</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.21520" target="_blank">http://arxiv.org/pdf/2506.21520</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Memory-augmented 3D scene reconstruction for autonomous driving using Gaussian splatting techniques.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on recent 3D Gaussian splatting methods for scene reconstruction, introduces a novel approach using an external memory bank of car models (MAD-Cars dataset) to replace partially observed vehicles.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing driving scene reconstruction methods struggle to generate photorealistic views of vehicles from significantly altered angles or novel scenarios due to limited original observations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a retrieval-based approach to find similar cars in a 70K car video database, reconstructs them as 3D assets, and integrates them into scenes with proper orientation alignment and relighting.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved superior performance compared to baselines in tracking metrics (MOTA, IDF1) and segmentation (IoU), demonstrating more realistic and consistent vehicle reconstructions in novel views and future scene predictions.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MADrive: Memory-Augmented Driving Scene Modeling</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">MADrive: Memory-Augmented Driving Scene Modeling</text>
+  
+  <!-- Input Data -->
+  <rect x="50" y="70" width="120" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="110" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Input Driving</text>
+  <text x="110" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Scene Video</text>
+  
+  <!-- Scene Decomposition -->
+  <rect x="220" y="70" width="150" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="295" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Scene Decomposition</text>
+  <text x="295" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="white">(Static + Dynamic)</text>
+  
+  <!-- Static Background -->
+  <rect x="120" y="180" width="120" height="60" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="180" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Static Background</text>
+  <text x="180" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reconstruction</text>
+  
+  <!-- Vehicle Extraction -->
+  <rect x="320" y="180" width="120" height="60" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="380" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Vehicle</text>
+  <text x="380" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Extraction</text>
+  
+  <!-- MAD-Cars Database -->
+  <rect x="550" y="70" width="120" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="610" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MAD-Cars</text>
+  <text x="610" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Database</text>
+  <text x="610" y="125" text-anchor="middle" font-size="11" fill="white">(~70K cars)</text>
+  <text x="610" y="140" text-anchor="middle" font-size="11" fill="white">360° videos</text>
+  
+  <!-- Retrieval Module -->
+  <rect x="520" y="200" width="180" height="60" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="610" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Retrieval Module</text>
+  <text x="610" y="235" text-anchor="middle" font-size="11" fill="white">SigLIP + Color Filtering</text>
+  <text x="610" y="250" text-anchor="middle" font-size="11" fill="white">Find Similar Cars</text>
+  
+  <!-- 3D Car Reconstruction -->
+  <rect x="480" y="320" width="160" height="80" rx="10" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="560" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="white">3D Car</text>
+  <text x="560" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reconstruction</text>
+  <text x="560" y="375" text-anchor="middle" font-size="11" fill="white">2D Gaussian Splats</text>
+  <text x="560" y="390" text-anchor="middle" font-size="11" fill="white">Relightable Assets</text>
+  
+  <!-- Relighting -->
+  <rect x="120" y="320" width="120" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="180" y="340" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Environmental</text>
+  <text x="180" y="355" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Map Estimation</text>
+  <text x="180" y="370" text-anchor="middle" font-size="11" fill="white">& Relighting</text>
+  
+  <!-- Orientation Alignment -->
+  <rect x="280" y="320" width="120" height="60" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="340" y="340" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Orientation</text>
+  <text x="340" y="355" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Alignment</text>
+  <text x="340" y="370" text-anchor="middle" font-size="11" fill="white">ICP Algorithm</text>
+  
+  <!-- Scene Composition -->
+  <rect x="250" y="450" width="180" height="80" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="340" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Scene Composition</text>
+  <text x="340" y="495" text-anchor="middle" font-size="12" fill="white">Replace Original Cars</text>
+  <text x="340" y="510" text-anchor="middle" font-size="12" fill="white">with Retrieved Assets</text>
+  <text x="340" y="525" text-anchor="middle" font-size="11" fill="white">Add Shadows</text>
+  
+  <!-- Output -->
+  <rect x="200" y="580" width="280" height="80" rx="10" fill="#2c3e50" stroke="#1b2631" stroke-width="2"/>
+  <text x="340" y="605" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Enhanced Driving Scene</text>
+  <text x="340" y="625" text-anchor="middle" font-size="12" fill="white">Novel View Synthesis</text>
+  <text x="340" y="640" text-anchor="middle" font-size="12" fill="white">Alternative Scenarios</text>
+  <text x="340" y="655" text-anchor="middle" font-size="12" fill="white">Future Frame Prediction</text>
+  
+  <!-- Key Components Box -->
+  <rect x="720" y="200" width="250" height="280" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="845" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Components</text>
+  
+  <circle cx="740" cy="250" r="5" fill="#3498db"/>
+  <text x="755" y="255" font-size="11" fill="#2c3e50">3D Gaussian Splatting</text>
+  
+  <circle cx="740" cy="275" r="5" fill="#e74c3c"/>
+  <text x="755" y="280" font-size="11" fill="#2c3e50">Spherical Harmonic Lighting</text>
+  
+  <circle cx="740" cy="300" r="5" fill="#27ae60"/>
+  <text x="755" y="305" font-size="11" fill="#2c3e50">Diffuse Surface Model</text>
+  
+  <circle cx="740" cy="325" r="5" fill="#f39c12"/>
+  <text x="755" y="330" font-size="11" fill="#2c3e50">Mask & Normal Estimation</text>
+  
+  <circle cx="740" cy="350" r="5" fill="#9b59b6"/>
+  <text x="755" y="355" font-size="11" fill="#2c3e50">Multi-view Consistency</text>
+  
+  <circle cx="740" cy="375" r="5" fill="#1abc9c"/>
+  <text x="755" y="380" font-size="11" fill="#2c3e50">Photometric Loss</text>
+  
+  <circle cx="740" cy="400" r="5" fill="#e67e22"/>
+  <text x="755" y="405" font-size="11" fill="#2c3e50">Opacity Regularization</text>
+  
+  <circle cx="740" cy="425" r="5" fill="#34495e"/>
+  <text x="755" y="430" font-size="11" fill="#2c3e50">Normal Regularization</text>
+  
+  <circle cx="740" cy="450" r="5" fill="#8e44ad"/>
+  <text x="755" y="455" font-size="11" fill="#2c3e50">Shadow Generation</text>
+  
+  <!-- Connection lines -->
+  <line x1="170" y1="100" x2="220" y2="100" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="295" y1="130" x2="180" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="295" y1="130" x2="380" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="440" y1="210" x2="520" y2="220" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="610" y1="150" x2="610" y2="200" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="610" y1="260" x2="560" y2="320" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="180" y1="240" x2="180" y2="320" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="380" y1="240" x2="340" y2="320" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="240" y1="380" x2="300" y2="450" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="380" x2="380" y2="450" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="480" y1="380" x2="420" y2="450" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="340" y1="530" x2="340" y2="580" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It replaces partially observed vehicles with similar 3D assets from a memory bank">
+                        <div class="quiz-question">1. What is the main innovation of MADrive compared to previous scene reconstruction methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger training dataset of driving scenes">It uses a larger training dataset of driving scenes</div><div class="quiz-choice" data-value="It replaces partially observed vehicles with similar 3D assets from a memory bank">It replaces partially observed vehicles with similar 3D assets from a memory bank</div><div class="quiz-choice" data-value="It improves the speed of 3D reconstruction">It improves the speed of 3D reconstruction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Around 70,000 videos">
+                        <div class="quiz-question">2. How many car videos are included in the MAD-Cars dataset introduced by this paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Around 2,500 videos">Around 2,500 videos</div><div class="quiz-choice" data-value="Around 35,000 videos">Around 35,000 videos</div><div class="quiz-choice" data-value="Around 70,000 videos">Around 70,000 videos</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Training a new car detection model for each scene">
+                        <div class="quiz-question">3. Which step is NOT part of MADrive's car replacement pipeline?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Retrieving similar cars from the database using image embeddings">Retrieving similar cars from the database using image embeddings</div><div class="quiz-choice" data-value="Training a new car detection model for each scene">Training a new car detection model for each scene</div><div class="quiz-choice" data-value="Relighting the retrieved car model to match scene conditions">Relighting the retrieved car model to match scene conditions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>WorldVLA: Towards Autoregressive Action World Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-26</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.21539" target="_blank">http://arxiv.org/pdf/2506.21539</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents WorldVLA, an autoregressive action world model in robotics that unifies vision, language, and action understanding and generation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Vision-Language-Action (VLA) models and world models, it introduces a novel unified framework that combines both capabilities while adding an attention mask strategy for better action generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitations of standalone VLA models (lacking action understanding) and world models (unable to generate actions), while also solving the performance degradation in sequential action generation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors integrate three tokenizers (image, text, action) into a unified framework, implement an attention mask strategy for action generation, and train the model using mixed action model and world model data.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> WorldVLA outperformed standalone models with 4% higher grasping success rate than action models and 10% reduced Fréchet Video Distance compared to world models, while the attention masking strategy improved grasping success rate by 4-23%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>WorldVLA: Towards Autoregressive Action World Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff"/>
+      <stop offset="100%" style="stop-color:#e6f3ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    WorldVLA: Autoregressive Action World Model Workflow
+  </text>
+  
+  <!-- Input Layer -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="120" height="60" rx="10" fill="#3498db" filter="url(#shadow)"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Image Input</text>
+  </g>
+  
+  <g transform="translate(200, 80)">
+    <rect x="0" y="0" width="120" height="60" rx="10" fill="#e74c3c" filter="url(#shadow)"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Text Instruction</text>
+  </g>
+  
+  <g transform="translate(350, 80)">
+    <rect x="0" y="0" width="120" height="60" rx="10" fill="#f39c12" filter="url(#shadow)"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Action Input</text>
+  </g>
+  
+  <!-- Tokenization Layer -->
+  <g transform="translate(50, 180)">
+    <ellipse cx="60" cy="30" rx="60" ry="25" fill="#9b59b6" filter="url(#shadow)"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">Image Tokenizer</text>
+  </g>
+  
+  <g transform="translate(200, 180)">
+    <ellipse cx="60" cy="30" rx="60" ry="25" fill="#9b59b6" filter="url(#shadow)"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">Text Tokenizer</text>
+  </g>
+  
+  <g transform="translate(350, 180)">
+    <ellipse cx="60" cy="30" rx="60" ry="25" fill="#9b59b6" filter="url(#shadow)"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">Action Tokenizer</text>
+  </g>
+  
+  <!-- Unified Token Space -->
+  <g transform="translate(200, 280)">
+    <rect x="0" y="0" width="300" height="50" rx="25" fill="#2ecc71" filter="url(#shadow)"/>
+    <text x="150" y="30" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="white">Unified Token Vocabulary</text>
+  </g>
+  
+  <!-- Core WorldVLA Model -->
+  <g transform="translate(150, 380)">
+    <rect x="0" y="0" width="400" height="120" rx="15" fill="#34495e" filter="url(#shadow)"/>
+    <text x="200" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="white">WorldVLA Core Model</text>
+    <text x="200" y="45" text-anchor="middle" font-family="Arial" font-size="12" fill="#ecf0f1">Autoregressive Transformer</text>
+    <text x="200" y="65" text-anchor="middle" font-family="Arial" font-size="12" fill="#ecf0f1">with Attention Masking Strategy</text>
+    <text x="200" y="85" text-anchor="middle" font-family="Arial" font-size="12" fill="#ecf0f1">Joint Training: L = L_action + α·L_world</text>
+  </g>
+  
+  <!-- Dual Output Branches -->
+  <g transform="translate(100, 550)">
+    <rect x="0" y="0" width="160" height="80" rx="10" fill="#e67e22" filter="url(#shadow)"/>
+    <text x="80" y="25" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">Action Model</text>
+    <text x="80" y="45" text-anchor="middle" font-family="Arial" font-size="11" fill="white">Generate Actions</text>
+    <text x="80" y="60" text-anchor="middle" font-family="Arial" font-size="11" fill="white">Based on Vision+Text</text>
+  </g>
+  
+  <g transform="translate(440, 550)">
+    <rect x="0" y="0" width="160" height="80" rx="10" fill="#16a085" filter="url(#shadow)"/>
+    <text x="80" y="25" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">World Model</text>
+    <text x="80" y="45" text-anchor="middle" font-family="Arial" font-size="11" fill="white">Predict Future Images</text>
+    <text x="80" y="60" text-anchor="middle" font-family="Arial" font-size="11" fill="white">Based on Current State+Action</text>
+  </g>
+  
+  <!-- Output Layer -->
+  <g transform="translate(100, 680)">
+    <polygon points="0,20 40,0 120,0 160,20 120,40 40,40" fill="#c0392b" filter="url(#shadow)"/>
+    <text x="80" y="25" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Action Chunks</text>
+  </g>
+  
+  <g transform="translate(440, 680)">
+    <polygon points="0,20 40,0 120,0 160,20 120,40 40,40" fill="#27ae60" filter="url(#shadow)"/>
+    <text x="80" y="25" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Generated Videos</text>
+  </g>
+  
+  <!-- Mutual Enhancement Indicator -->
+  <g transform="translate(300, 590)">
+    <circle cx="20" cy="20" r="15" fill="#f1c40f" filter="url(#shadow)"/>
+    <text x="20" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#2c3e50">⟷</text>
+    <text x="20" y="50" text-anchor="middle" font-family="Arial" font-size="10" fill="#2c3e50">Mutual</text>
+    <text x="20" y="62" text-anchor="middle" font-family="Arial" font-size="10" fill="#2c3e50">Enhancement</text>
+  </g>
+  
+  <!-- Key Innovation Box -->
+  <g transform="translate(650, 200)">
+    <rect x="0" y="0" width="320" height="180" rx="10" fill="#8e44ad" stroke="#663399" stroke-width="2" filter="url(#shadow)"/>
+    <text x="160" y="20" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="white">Key Innovations</text>
+    
+    <text x="10" y="45" font-family="Arial" font-size="11" fill="#ecf0f1">• Unified Action & Image Understanding</text>
+    <text x="10" y="65" font-family="Arial" font-size="11" fill="#ecf0f1">• Attention Masking for Action Chunks</text>
+    <text x="10" y="85" font-family="Arial" font-size="11" fill="#ecf0f1">• Autoregressive Generation</text>
+    <text x="10" y="105" font-family="Arial" font-size="11" fill="#ecf0f1">• Error Propagation Mitigation</text>
+    <text x="10" y="125" font-family="Arial" font-size="11" fill="#ecf0f1">• Physics Understanding Integration</text>
+    <text x="10" y="145" font-family="Arial" font-size="11" fill="#ecf0f1">• Bidirectional Enhancement</text>
+    <text x="10" y="165" font-family="Arial" font-size="11" fill="#ecf0f1">• LIBERO Benchmark Evaluation</text>
+  </g>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 110 140 Q 110 160 110 180" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 260 140 Q 260 160 260 180" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 410 140 Q 410 160 410 180" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  
+  <path d="M 110 210 Q 110 245 200 280" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 260 210 Q 260 245 280 280" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 410 210 Q 410 245 420 280" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  
+  <path d="M 350 330 Q 350 355 350 380" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  
+  <path d="M 250 500 Q 180 525 180 550" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 450 500 Q 520 525 520 550" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  
+  <path d="M 180 630 Q 180 655 180 680" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 520 630 Q 520 655 520 680" stroke="#2c3e50" stroke-width="2" fill="none"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It prevents current actions from accessing prior actions to reduce error propagation">
+                        <div class="quiz-question">1. What is the main innovation of WorldVLA's attention mask strategy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It allows actions to be generated based on all previous actions">It allows actions to be generated based on all previous actions</div><div class="quiz-choice" data-value="It prevents current actions from accessing prior actions to reduce error propagation">It prevents current actions from accessing prior actions to reduce error propagation</div><div class="quiz-choice" data-value="It enables actions to see future frames for better planning">It enables actions to see future frames for better planning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Uses three distinct tokenizers (image, text, action) sharing the same vocabulary">
+                        <div class="quiz-question">2. How does WorldVLA process different types of input?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Uses a single universal tokenizer for all inputs">Uses a single universal tokenizer for all inputs</div><div class="quiz-choice" data-value="Uses separate neural networks for each input type">Uses separate neural networks for each input type</div><div class="quiz-choice" data-value="Uses three distinct tokenizers (image, text, action) sharing the same vocabulary">Uses three distinct tokenizers (image, text, action) sharing the same vocabulary</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It helps the model learn environmental physics and evaluate potential outcomes">
+                        <div class="quiz-question">3. Why does incorporating world model data help improve action generation in WorldVLA?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It provides more training data volume">It provides more training data volume</div><div class="quiz-choice" data-value="It helps the model learn environmental physics and evaluate potential outcomes">It helps the model learn environmental physics and evaluate potential outcomes</div><div class="quiz-choice" data-value="It makes the model architecture more complex">It makes the model architecture more complex</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Where to find Grokking in LLM Pretraining? Monitor
+  Memorization-to-Generalization without Test</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-26</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.21551" target="_blank">http://arxiv.org/pdf/2506.21551</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A study of "grokking" (delayed generalization) phenomenon in Large Language Model (LLM) pretraining, specifically in the domain of machine learning and neural network training.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research on grokking in small models with synthetic tasks, this paper newly investigates grokking in practical large-scale LLM pretraining using a 7B parameter model.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to understand when and how generalization emerges during LLM pretraining, particularly after training loss has converged, and develop metrics to monitor this without requiring test data.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Analyzed routing pathways in a Mixture-of-Experts (MoE) architecture by introducing two novel metrics: pathway edit distance between samples and pathway consistency across layers.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Found that grokking occurs asynchronously across different domains during LLM pretraining, with pathway metrics strongly correlating with generalization performance, providing a test-free way to monitor generalization.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Where to find Grokking in LLM Pretraining? Monitor
+  Memorization-to-Generalization without Test</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4dabf7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1971c2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#51cf66;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2f9e44;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff922b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fd7e14;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9775fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7048e8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c2c2c">
+    Grokking in LLM Pretraining: Methodology Flow
+  </text>
+  
+  <!-- Step 1: Data Collection -->
+  <rect x="50" y="70" width="180" height="80" rx="10" fill="url(#blueGrad)" stroke="#1971c2" stroke-width="2"/>
+  <text x="140" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Data Collection
+  </text>
+  <text x="140" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    OLMoE 7B checkpoints
+  </text>
+  <text x="140" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    4 domains: Math, Code,
+  </text>
+  <text x="140" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Commonsense, Domain-specific
+  </text>
+  
+  <!-- Step 2: Grokking Data Identification -->
+  <rect x="280" y="70" width="180" height="80" rx="10" fill="url(#greenGrad)" stroke="#2f9e44" stroke-width="2"/>
+  <text x="370" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Grokking Data ID
+  </text>
+  <text x="370" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Convergence criteria:
+  </text>
+  <text x="370" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    max ℓᵢ(t') ≤ ε and
+  </text>
+  <text x="370" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    |ℓᵢ(t) - ℓᵢ(T)| ≤ δ
+  </text>
+  
+  <!-- Step 3: Domain-Level Analysis -->
+  <rect x="50" y="200" width="180" height="80" rx="10" fill="url(#orangeGrad)" stroke="#fd7e14" stroke-width="2"/>
+  <text x="140" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Domain-Level Analysis
+  </text>
+  <text x="140" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Track cumulative
+  </text>
+  <text x="140" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    grokking samples vs
+  </text>
+  <text x="140" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    test accuracy
+  </text>
+  
+  <!-- Step 4: Group-Level Analysis -->
+  <rect x="280" y="200" width="180" height="80" rx="10" fill="url(#purpleGrad)" stroke="#7048e8" stroke-width="2"/>
+  <text x="370" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Group-Level Analysis
+  </text>
+  <text x="370" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Hungarian matching
+  </text>
+  <text x="370" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    between train/test groups
+  </text>
+  <text x="370" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    by semantic similarity
+  </text>
+  
+  <!-- Step 5: Pathway Analysis -->
+  <rect x="520" y="70" width="200" height="120" rx="10" fill="#ff6b6b" stroke="#e03131" stroke-width="2"/>
+  <text x="620" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    MoE Pathway Analysis
+  </text>
+  <text x="620" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Extract expert routing patterns
+  </text>
+  <text x="620" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    sᵢ = concat(e₁ⁱ, e₂ⁱ, ..., eₗⁱ)
+  </text>
+  <text x="620" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Pathway = sequence of
+  </text>
+  <text x="620" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    expert choices across layers
+  </text>
+  <text x="620" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+  </text>
+  
+  <!-- Step 6: Metric 1 - Edit Distance -->
+  <rect x="520" y="220" width="180" height="80" rx="10" fill="url(#blueGrad)" stroke="#1971c2" stroke-width="2"/>
+  <text x="610" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Pathway Distance
+  </text>
+  <text x="610" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Edit distance between
+  </text>
+  <text x="610" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    different samples' pathways
+  </text>
+  <text x="610" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Dₚₐₜₕ(sᵢ, sⱼ) = EditDistance(sᵢ, sⱼ)
+  </text>
+  
+  <!-- Step 7: Metric 2 - Pathway Consistency -->
+  <rect x="750" y="220" width="180" height="80" rx="10" fill="url(#greenGrad)" stroke="#2f9e44" stroke-width="2"/>
+  <text x="840" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Pathway Consistency
+  </text>
+  <text x="840" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Cosine similarity between
+  </text>
+  <text x="840" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    consecutive layer embeddings
+  </text>
+  <text x="840" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Cᵢ = 1 - Σcos(eᵢ,ₗ, eᵢ,ₗ₊₁)
+  </text>
+  
+  <!-- Step 8: Correlation Analysis -->
+  <rect x="200" y="350" width="200" height="80" rx="10" fill="url(#orangeGrad)" stroke="#fd7e14" stroke-width="2"/>
+  <text x="300" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Correlation Analysis
+  </text>
+  <text x="300" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Pearson & Spearman correlations
+  </text>
+  <text x="300" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    between pathway metrics
+  </text>
+  <text x="300" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    and test accuracy
+  </text>
+  
+  <!-- Step 9: Instruction Tuning -->
+  <rect x="450" y="350" width="180" height="80" rx="10" fill="url(#purpleGrad)" stroke="#7048e8" stroke-width="2"/>
+  <text x="540" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Light Instruction Tuning
+  </text>
+  <text x="540" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    LoRA finetuning for
+  </text>
+  <text x="540" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    instruction following
+  </text>
+  <text x="540" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    (rank=32, 3 epochs)
+  </text>
+  
+  <!-- Step 10: Theoretical Analysis -->
+  <rect x="680" y="350" width="180" height="80" rx="10" fill="#845ef7" stroke="#7048e8" stroke-width="2"/>
+  <text x="770" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Theoretical Analysis
+  </text>
+  <text x="770" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    NTK analysis of routing
+  </text>
+  <text x="770" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    kernel generalization bound
+  </text>
+  <text x="770" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    E ≤ Bias + Variance + Noise
+  </text>
+  
+  <!-- Final Results -->
+  <rect x="350" y="480" width="300" height="100" rx="10" fill="#20c997" stroke="#12b886" stroke-width="3"/>
+  <text x="500" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Key Findings
+  </text>
+  <text x="500" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    • Local, asynchronous grokking in LLM pretraining
+  </text>
+  <text x="500" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    • Pathway similarity increases during grokking
+  </text>
+  <text x="500" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    • Pathway consistency improves post-convergence
+  </text>
+  <text x="500" y="570" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    • Strong correlation with generalization (r > 0.9)
+  </text>
+  
+  <!-- Data Security -->
+  <rect x="50" y="620" width="180" height="60" rx="10" fill="#ffd43b" stroke="#fab005" stroke-width="2"/>
+  <text x="140" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#495057">
+    Data Separation
+  </text>
+  <text x="140" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#495057">
+    Min-K%++ membership
+  </text>
+  <text x="140" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#495057">
+    inference attack
+  </text>
+  
+  <!-- Validation -->
+  <rect x="770" y="620" width="180" height="60" rx="10" fill="#ff8cc8" stroke="#e64980" stroke-width="2"/>
+  <text x="860" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Validation
+  </text>
+  <text x="860" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Multiple domains &
+  </text>
+  <text x="860" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    benchmark tasks
+  </text>
+  
+  <!-- Connecting lines with subtle styling -->
+  <line x1="230" y1="110" x2="280" y2="110" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="140" y1="150" x2="140" y2="200" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="370" y1="150" x2="370" y2="200" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="460" y1="110" x2="520" y2="110" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="620" y1="190" x2="620" y2="220" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="620" y1="190" x2="840" y2="220" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="300" y1="280" x2="300" y2="350" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="610" y1="300" x2="540" y2="350" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="840" y1="300" x2="770" y2="350" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="400" y1="390" x2="450" y2="390" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="630" y1="390" x2="680" y2="390" stroke="#6c757d" stroke-width="2" opacity="0.7"/>
+  <line x1="500" y1="430" x2="500" y2="480" stroke="#6c757d" stroke-width="3" opacity="0.8"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It occurs asynchronously across different domains">
+                        <div class="quiz-question">1. What is the main difference in how grokking manifests in large-scale LLM pretraining compared to previous studies on small models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It occurs simultaneously across all domains">It occurs simultaneously across all domains</div><div class="quiz-choice" data-value="It occurs asynchronously across different domains">It occurs asynchronously across different domains</div><div class="quiz-choice" data-value="It doesn't occur at all in large models">It doesn't occur at all in large models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Pathway edit distance and pathway consistency">
+                        <div class="quiz-question">2. What novel metrics did the researchers introduce to monitor generalization without requiring test data?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Training loss and validation accuracy">Training loss and validation accuracy</div><div class="quiz-choice" data-value="Model size and parameter count">Model size and parameter count</div><div class="quiz-choice" data-value="Pathway edit distance and pathway consistency">Pathway edit distance and pathway consistency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="They become more structured and shareable between samples">
+                        <div class="quiz-question">3. What happens to pathway patterns during the grokking phase according to the study?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They become more random and diverse">They become more random and diverse</div><div class="quiz-choice" data-value="They become more structured and shareable between samples">They become more structured and shareable between samples</div><div class="quiz-choice" data-value="They remain unchanged throughout training">They remain unchanged throughout training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
