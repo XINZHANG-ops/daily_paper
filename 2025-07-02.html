@@ -1,0 +1,1275 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-02 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-02 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/robots.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>SPIRAL: Self-Play on Zero-Sum Games Incentivizes Reasoning via
+  Multi-Agent Multi-Turn Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.24119" target="_blank">http://arxiv.org/pdf/2506.24119</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores using self-play in zero-sum games to develop reasoning capabilities in large language models, focusing on artificial intelligence and machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research in reinforcement learning for LLM reasoning and self-play in games like AlphaGo, the paper proposes SPIRAL - a novel framework that enables language models to learn reasoning through competitive self-play without human supervision.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the scalability bottleneck in current approaches to enhancing LLM reasoning, which rely heavily on human-curated data, domain-specific rewards, and expert supervision.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement a fully online multi-turn, multi-agent reinforcement learning system with a distributed actor-learner architecture and introduce Role-conditioned Advantage Estimation (RAE) to stabilize multi-agent training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Training on Kuhn Poker alone improved mathematical reasoning by 8.6% and general reasoning by 8.4%, outperforming supervised fine-tuning on 25,000 expert game trajectories, while multi-game training achieved even better results and improved strong reasoning models by 2.0%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SPIRAL: Self-Play on Zero-Sum Games Incentivizes Reasoning via
+  Multi-Agent Multi-Turn Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">SPIRAL: Self-Play Framework for Reasoning via Multi-Agent RL</text>
+  
+  <!-- Input Games Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Zero-Sum Games</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="white">• TicTacToe (Spatial)</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="white">• Kuhn Poker (Probabilistic)</text>
+  <text x="150" y="145" text-anchor="middle" font-size="12" fill="white">• Simple Negotiation (Strategic)</text>
+  <text x="150" y="165" text-anchor="middle" font-size="12" fill="white">Turn-based, Multi-turn</text>
+  
+  <!-- Self-Play Training Section -->
+  <rect x="300" y="60" width="180" height="120" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="390" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Self-Play Training</text>
+  <text x="390" y="105" text-anchor="middle" font-size="12" fill="white">Shared Policy π_θ</text>
+  <text x="390" y="125" text-anchor="middle" font-size="12" fill="white">Role Conditioning</text>
+  <text x="390" y="145" text-anchor="middle" font-size="12" fill="white">Continuous Curriculum</text>
+  <text x="390" y="165" text-anchor="middle" font-size="12" fill="white">Player 0 vs Player 1</text>
+  
+  <!-- MARL System Section -->
+  <rect x="520" y="60" width="180" height="120" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="610" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Multi-Agent RL System</text>
+  <text x="610" y="105" text-anchor="middle" font-size="12" fill="white">Actor-Learner Architecture</text>
+  <text x="610" y="125" text-anchor="middle" font-size="12" fill="white">Distributed Training</text>
+  <text x="610" y="145" text-anchor="middle" font-size="12" fill="white">Vectorized Environments</text>
+  <text x="610" y="165" text-anchor="middle" font-size="12" fill="white">Online Updates</text>
+  
+  <!-- RAE Section -->
+  <rect x="750" y="60" width="180" height="120" rx="10" fill="#e67e22" opacity="0.8"/>
+  <text x="840" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Role-Conditioned</text>
+  <text x="840" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Advantage Estimation</text>
+  <text x="840" y="125" text-anchor="middle" font-size="12" fill="white">Separate Baselines b_G,p</text>
+  <text x="840" y="145" text-anchor="middle" font-size="12" fill="white">Variance Reduction</text>
+  <text x="840" y="165" text-anchor="middle" font-size="12" fill="white">Prevents Thinking Collapse</text>
+  
+  <!-- Trajectory Generation -->
+  <rect x="200" y="220" width="250" height="80" rx="10" fill="#27ae60" opacity="0.8"/>
+  <text x="325" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Trajectory Generation</text>
+  <text x="325" y="265" text-anchor="middle" font-size="12" fill="white">Multi-turn Game Episodes</text>
+  <text x="325" y="285" text-anchor="middle" font-size="12" fill="white">Think-Act Format: &lt;think&gt;...&lt;/think&gt;&lt;answer&gt;...&lt;/answer&gt;</text>
+  
+  <!-- Policy Optimization -->
+  <rect x="500" y="220" width="250" height="80" rx="10" fill="#f39c12" opacity="0.8"/>
+  <text x="625" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Policy Optimization</text>
+  <text x="625" y="265" text-anchor="middle" font-size="12" fill="white">REINFORCE with RAE</text>
+  <text x="625" y="285" text-anchor="middle" font-size="12" fill="white">Role-specific Advantages A_G,p(τ)</text>
+  
+  <!-- Reasoning Patterns -->
+  <rect x="100" y="340" width="800" height="100" rx="10" fill="#34495e" opacity="0.8"/>
+  <text x="500" y="365" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Emergent Reasoning Patterns</text>
+  
+  <rect x="120" y="380" width="240" height="50" rx="5" fill="#1abc9c" opacity="0.9"/>
+  <text x="240" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Case-by-Case Analysis</text>
+  <text x="240" y="415" text-anchor="middle" font-size="10" fill="white">Systematic enumeration</text>
+  
+  <rect x="380" y="380" width="240" height="50" rx="5" fill="#e74c3c" opacity="0.9"/>
+  <text x="500" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Expected Value Calculation</text>
+  <text x="500" y="415" text-anchor="middle" font-size="10" fill="white">Probabilistic decision-making</text>
+  
+  <rect x="640" y="380" width="240" height="50" rx="5" fill="#9b59b6" opacity="0.9"/>
+  <text x="760" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Pattern Recognition</text>
+  <text x="760" y="415" text-anchor="middle" font-size="10" fill="white">Structure identification</text>
+  
+  <!-- Transfer Learning -->
+  <rect x="50" y="480" width="200" height="120" rx="10" fill="#16a085" opacity="0.8"/>
+  <text x="150" y="505" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Game Performance</text>
+  <text x="150" y="525" text-anchor="middle" font-size="12" fill="white">Training Games</text>
+  <text x="150" y="545" text-anchor="middle" font-size="12" fill="white">OOD Games</text>
+  <text x="150" y="565" text-anchor="middle" font-size="12" fill="white">vs Fixed Opponents</text>
+  <text x="150" y="585" text-anchor="middle" font-size="12" fill="white">Head-to-Head</text>
+  
+  <rect x="300" y="480" width="200" height="120" rx="10" fill="#2980b9" opacity="0.8"/>
+  <text x="400" y="505" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Math Reasoning</text>
+  <text x="400" y="525" text-anchor="middle" font-size="12" fill="white">MATH500: +10.6%</text>
+  <text x="400" y="545" text-anchor="middle" font-size="12" fill="white">Minerva Math: +18.1%</text>
+  <text x="400" y="565" text-anchor="middle" font-size="12" fill="white">AIME, OlympiadBench</text>
+  <text x="400" y="585" text-anchor="middle" font-size="12" fill="white">AMC-23</text>
+  
+  <rect x="550" y="480" width="200" height="120" rx="10" fill="#8e44ad" opacity="0.8"/>
+  <text x="650" y="505" text-anchor="middle" font-size="14" font-weight="bold" fill="white">General Reasoning</text>
+  <text x="650" y="525" text-anchor="middle" font-size="12" fill="white">GPQA: +6.4%</text>
+  <text x="650" y="545" text-anchor="middle" font-size="12" fill="white">MMLU-Pro: +10.5%</text>
+  <text x="650" y="565" text-anchor="middle" font-size="12" fill="white">Zero-shot Evaluation</text>
+  <text x="650" y="585" text-anchor="middle" font-size="12" fill="white">Cross-domain Transfer</text>
+  
+  <!-- Key Findings -->
+  <rect x="800" y="480" width="150" height="120" rx="10" fill="#c0392b" opacity="0.8"/>
+  <text x="875" y="505" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Findings</text>
+  <text x="875" y="525" text-anchor="middle" font-size="11" fill="white">8.7% avg improvement</text>
+  <text x="875" y="545" text-anchor="middle" font-size="11" fill="white">Outperforms SFT</text>
+  <text x="875" y="565" text-anchor="middle" font-size="11" fill="white">Multi-game synergy</text>
+  <text x="875" y="585" text-anchor="middle" font-size="11" fill="white">RAE essential</text>
+  
+  <!-- Evaluation Methods -->
+  <rect x="200" y="640" width="600" height="80" rx="10" fill="#7f8c8d" opacity="0.8"/>
+  <text x="500" y="665" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Evaluation Framework</text>
+  <text x="300" y="685" text-anchor="middle" font-size="12" fill="white">• Pattern Analysis (GPT-4.1)</text>
+  <text x="500" y="685" text-anchor="middle" font-size="12" fill="white">• Ablation Studies</text>
+  <text x="700" y="685" text-anchor="middle" font-size="12" fill="white">• Transfer Quantification</text>
+  <text x="500" y="705" text-anchor="middle" font-size="12" fill="white">• Multi-scale Validation (4B to 7B models)</text>
+  
+  <!-- Flow connections (simplified lines instead of arrows) -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#34495e" stroke-width="3"/>
+  <line x1="480" y1="120" x2="520" y2="120" stroke="#34495e" stroke-width="3"/>
+  <line x1="700" y1="120" x2="750" y2="120" stroke="#34495e" stroke-width="3"/>
+  
+  <line x1="325" y1="180" x2="325" y2="220" stroke="#34495e" stroke-width="3"/>
+  <line x1="625" y1="180" x2="625" y2="220" stroke="#34495e" stroke-width="3"/>
+  
+  <line x1="500" y1="300" x2="500" y2="340" stroke="#34495e" stroke-width="3"/>
+  <line x1="500" y1="440" x2="500" y2="480" stroke="#34495e" stroke-width="3"/>
+  <line x1="500" y1="600" x2="500" y2="640" stroke="#34495e" stroke-width="3"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables models to learn through self-play without human supervision">
+                        <div class="quiz-question">1. What is the main innovation of SPIRAL that addresses the scalability bottleneck in LLM reasoning enhancement?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses human experts to create better training datasets">It uses human experts to create better training datasets</div><div class="quiz-choice" data-value="It enables models to learn through self-play without human supervision">It enables models to learn through self-play without human supervision</div><div class="quiz-choice" data-value="It increases the size of language models">It increases the size of language models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Kuhn Poker">
+                        <div class="quiz-question">2. Which game showed the most significant transfer of learning to mathematical reasoning when used alone for training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="TicTacToe">TicTacToe</div><div class="quiz-choice" data-value="Simple Negotiation">Simple Negotiation</div><div class="quiz-choice" data-value="Kuhn Poker">Kuhn Poker</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The model experiences 'thinking collapse' and stops generating reasoning traces">
+                        <div class="quiz-question">3. What happens to the model's performance when Role-conditioned Advantage Estimation (RAE) is removed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The model performs better due to simplified training">The model performs better due to simplified training</div><div class="quiz-choice" data-value="The model experiences 'thinking collapse' and stops generating reasoning traces">The model experiences 'thinking collapse' and stops generating reasoning traces</div><div class="quiz-choice" data-value="The model's performance remains unchanged">The model's performance remains unchanged</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Calligrapher: Freestyle Text Image Customization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.24123" target="_blank">http://arxiv.org/pdf/2506.24123</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Text image customization and typography generation using diffusion models in computer vision and digital design.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on prior work in text rendering and style transfer, proposes new approaches including self-distillation learning, localized style injection, and in-context generation for typography customization.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of automated, high-quality text customization while maintaining style consistency and reducing manual design effort in typography.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Employs a diffusion-based framework with three key components: self-distillation for dataset construction, localized style injection via trainable encoders, and in-context generation for style consistency.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved superior performance across multiple metrics (FID, CLIP, DINO, OCR accuracy) compared to baselines, with best user study scores for style synchronization, text matching, and aesthetics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Calligrapher: Freestyle Text Image Customization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="process1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ff8e8e;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="process2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#6ed5cd;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="process3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#45b7d1;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#67c5da;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="output" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#96ceb4;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#a8d4bd;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#2c3e50">
+    Calligrapher: Freestyle Text Image Customization Workflow
+  </text>
+  
+  <!-- Main Framework Sections -->
+  
+  <!-- Section 1: Self-Distillation -->
+  <rect x="50" y="80" width="280" height="160" rx="15" fill="url(#process1)" stroke="#e74c3c" stroke-width="2"/>
+  <text x="190" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Self-Distillation Pipeline
+  </text>
+  
+  <circle cx="100" cy="130" r="15" fill="#fff" stroke="#e74c3c" stroke-width="2"/>
+  <text x="100" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#e74c3c">LLM</text>
+  
+  <rect x="130" y="120" width="60" height="20" rx="5" fill="#fff" stroke="#e74c3c" stroke-width="1"/>
+  <text x="160" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#e74c3c">Prompts</text>
+  
+  <rect x="200" y="120" width="60" height="20" rx="5" fill="#fff" stroke="#e74c3c" stroke-width="1"/>
+  <text x="230" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#e74c3c">T2I Gen</text>
+  
+  <rect x="80" y="155" width="80" height="20" rx="5" fill="#fff" stroke="#e74c3c" stroke-width="1"/>
+  <text x="120" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#e74c3c">OCR Detection</text>
+  
+  <rect x="170" y="155" width="80" height="20" rx="5" fill="#fff" stroke="#e74c3c" stroke-width="1"/>
+  <text x="210" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#e74c3c">Crop & Pair</text>
+  
+  <rect x="80" y="190" width="120" height="25" rx="8" fill="#fff" stroke="#e74c3c" stroke-width="2"/>
+  <text x="140" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#e74c3c">
+    Style Dataset
+  </text>
+  
+  <!-- Section 2: Localized Style Injection -->
+  <rect x="360" y="80" width="280" height="160" rx="15" fill="url(#process2)" stroke="#16a085" stroke-width="2"/>
+  <text x="500" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Localized Style Injection
+  </text>
+  
+  <rect x="380" y="120" width="70" height="20" rx="5" fill="#fff" stroke="#16a085" stroke-width="1"/>
+  <text x="415" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#16a085">Visual Encoder</text>
+  
+  <rect x="460" y="120" width="60" height="20" rx="5" fill="#fff" stroke="#16a085" stroke-width="1"/>
+  <text x="490" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#16a085">Qformer</text>
+  
+  <rect x="530" y="120" width="70" height="20" rx="5" fill="#fff" stroke="#16a085" stroke-width="1"/>
+  <text x="565" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#16a085">Linear Layers</text>
+  
+  <rect x="400" y="155" width="80" height="20" rx="5" fill="#fff" stroke="#16a085" stroke-width="1"/>
+  <text x="440" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#16a085">Style Features</text>
+  
+  <rect x="490" y="155" width="80" height="20" rx="5" fill="#fff" stroke="#16a085" stroke-width="1"/>
+  <text x="530" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#16a085">Cross-Attention</text>
+  
+  <rect x="420" y="190" width="120" height="25" rx="8" fill="#fff" stroke="#16a085" stroke-width="2"/>
+  <text x="480" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#16a085">
+    Style Injection
+  </text>
+  
+  <!-- Section 3: In-Context Generation -->
+  <rect x="670" y="80" width="280" height="160" rx="15" fill="url(#process3)" stroke="#3498db" stroke-width="2"/>
+  <text x="810" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    In-Context Generation
+  </text>
+  
+  <rect x="690" y="120" width="80" height="20" rx="5" fill="#fff" stroke="#3498db" stroke-width="1"/>
+  <text x="730" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#3498db">Reference Image</text>
+  
+  <rect x="780" y="120" width="80" height="20" rx="5" fill="#fff" stroke="#3498db" stroke-width="1"/>
+  <text x="820" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#3498db">Spatial Concat</text>
+  
+  <rect x="710" y="155" width="60" height="20" rx="5" fill="#fff" stroke="#3498db" stroke-width="1"/>
+  <text x="740" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#3498db">VAE</text>
+  
+  <rect x="780" y="155" width="60" height="20" rx="5" fill="#fff" stroke="#3498db" stroke-width="1"/>
+  <text x="810" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#3498db">DiT</text>
+  
+  <rect x="720" y="190" width="120" height="25" rx="8" fill="#fff" stroke="#3498db" stroke-width="2"/>
+  <text x="780" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#3498db">
+    Context Fusion
+  </text>
+  
+  <!-- Main Processing Flow -->
+  <rect x="200" y="300" width="600" height="120" rx="15" fill="#f8f9fa" stroke="#495057" stroke-width="2"/>
+  <text x="500" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#495057">
+    Diffusion-Based Framework (FLUX)
+  </text>
+  
+  <rect x="230" y="345" width="100" height="30" rx="8" fill="#fff3cd" stroke="#856404" stroke-width="1"/>
+  <text x="280" y="363" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">Masked Image</text>
+  
+  <rect x="350" y="345" width="100" height="30" rx="8" fill="#d4edda" stroke="#155724" stroke-width="1"/>
+  <text x="400" y="363" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#155724">Style Encoder</text>
+  
+  <rect x="470" y="345" width="100" height="30" rx="8" fill="#cce5ff" stroke="#004085" stroke-width="1"/>
+  <text x="520" y="363" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#004085">Text Prompt</text>
+  
+  <rect x="590" y="345" width="100" height="30" rx="8" fill="#f8d7da" stroke="#721c24" stroke-width="1"/>
+  <text x="640" y="363" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#721c24">Denoising</text>
+  
+  <ellipse cx="500" cy="395" rx="80" ry="15" fill="#e9ecef" stroke="#6c757d" stroke-width="1"/>
+  <text x="500" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6c757d">Flow Matching Loss</text>
+  
+  <!-- Applications -->
+  <rect x="100" y="480" width="200" height="100" rx="10" fill="#e8f5e8" stroke="#28a745" stroke-width="2"/>
+  <text x="200" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#28a745">
+    Self-Reference
+  </text>
+  <text x="200" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#28a745">
+    Text Customization
+  </text>
+  <text x="200" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Same style, different text
+  </text>
+  <text x="200" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    "Eugenia" → "Infatuate"
+  </text>
+  
+  <rect x="350" y="480" width="200" height="100" rx="10" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="450" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#856404">
+    Cross-Reference
+  </text>
+  <text x="450" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">
+    Style Transfer
+  </text>
+  <text x="450" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Different style reference
+  </text>
+  <text x="450" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Text + Non-text references
+  </text>
+  
+  <rect x="600" y="480" width="200" height="100" rx="10" fill="#e1ecf4" stroke="#0c5aa6" stroke-width="2"/>
+  <text x="700" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0c5aa6">
+    Reference-Based
+  </text>
+  <text x="700" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#0c5aa6">
+    Generation
+  </text>
+  <text x="700" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    From noise to styled text
+  </text>
+  <text x="700" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    No training required
+  </text>
+  
+  <!-- Output -->
+  <rect x="300" y="630" width="400" height="80" rx="15" fill="url(#output)" stroke="#27ae60" stroke-width="3"/>
+  <text x="500" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">
+    Customized Text Images
+  </text>
+  <text x="500" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    High-quality, style-consistent typography
+  </text>
+  <text x="500" y="690" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    Accurate glyph positioning and artistic details
+  </text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 190 240 Q 190 270 280 300" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 240 Q 500 270 450 300" stroke="#16a085" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 810 240 Q 810 270 650 300" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 300 420 Q 350 450 200 480" stroke="#28a745" stroke-width="2" fill="none"/>
+  <path d="M 500 420 Q 500 450 450 480" stroke="#ffc107" stroke-width="2" fill="none"/>
+  <path d="M 650 420 Q 650 450 700 480" stroke="#0c5aa6" stroke-width="2" fill="none"/>
+  
+  <path d="M 500 580 Q 500 605 500 630" stroke="#27ae60" stroke-width="4" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Features -->
+  <circle cx="80" cy="750" r="8" fill="#ff6b6b"/>
+  <text x="95" y="755" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    Self-distillation for data synthesis
+  </text>
+  
+  <circle cx="280" cy="750" r="8" fill="#4ecdc4"/>
+  <text x="295" y="755" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    Localized style injection mechanism
+  </text>
+  
+  <circle cx="520" cy="750" r="8" fill="#45b7d1"/>
+  <text x="535" y="755" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    In-context generation for fine alignment
+  </text>
+  
+  <circle cx="750" cy="750" r="8" fill="#96ceb4"/>
+  <text x="765" y="755" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    Automated typography design
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables style transfer from both text and non-text reference images">
+                        <div class="quiz-question">1. What is the main innovation of Calligrapher compared to previous text customization methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It can only handle standard fonts and basic text editing">It can only handle standard fonts and basic text editing</div><div class="quiz-choice" data-value="It enables style transfer from both text and non-text reference images">It enables style transfer from both text and non-text reference images</div><div class="quiz-choice" data-value="It focuses solely on handwriting recognition">It focuses solely on handwriting recognition</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It reduces the need for manually annotated training data by generating synthetic pairs">
+                        <div class="quiz-question">2. How does the self-distillation mechanism help in training the model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It reduces the need for manually annotated training data by generating synthetic pairs">It reduces the need for manually annotated training data by generating synthetic pairs</div><div class="quiz-choice" data-value="It only works with pre-existing font libraries">It only works with pre-existing font libraries</div><div class="quiz-choice" data-value="It slows down the training process significantly">It slows down the training process significantly</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It enhances style consistency by embedding reference images directly into the denoising process">
+                        <div class="quiz-question">3. What unique capability does the in-context generation mechanism provide?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only works with black and white text">It only works with black and white text</div><div class="quiz-choice" data-value="It enables real-time font creation">It enables real-time font creation</div><div class="quiz-choice" data-value="It enhances style consistency by embedding reference images directly into the denoising process">It enhances style consistency by embedding reference images directly into the denoising process</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>VMoBA: Mixture-of-Block Attention for Video Diffusion Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.23858" target="_blank">http://arxiv.org/pdf/2506.23858</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Video diffusion models and sparse attention mechanisms, specifically focused on improving computational efficiency for long video generation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Mixture of Block Attention (MoBA) for language models, proposing new adaptations specifically for video data by introducing video-specific block partitioning and selection methods.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The quadratic computational complexity of full attention mechanisms in Video Diffusion Models (VDMs) when generating long-duration, high-resolution videos.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduced VMoBA with three key innovations: layer-wise recurrent block partition scheme (1D-2D-3D), global block selection for prioritizing salient query-key interactions, and threshold-based block selection for dynamic block determination.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 2.92x FLOPs and 1.48x latency speedup while maintaining comparable or superior generation quality to full attention, with particular effectiveness in training-based settings for longer sequences.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VMoBA: Mixture-of-Block Attention for Video Diffusion Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="step1Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ff8e8e;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="step2Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#6ee8df;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="step3Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#45b7d1;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#67c4e8;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGradient)"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    VMoBA: Video Mixture of Block Attention Workflow
+  </text>
+  
+  <!-- Step 1: Partition and Mean Key Blocks -->
+  <rect x="50" y="80" width="280" height="200" rx="15" fill="url(#step1Gradient)" stroke="#d63031" stroke-width="2"/>
+  <text x="190" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Step 1: Partition &amp; Mean Key Blocks
+  </text>
+  
+  <!-- Input Video -->
+  <rect x="70" y="120" width="50" height="35" rx="5" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="95" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Video</text>
+  <text x="95" y="152" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Input K</text>
+  
+  <!-- Layer-wise Recurrent Block Partition -->
+  <rect x="140" y="120" width="170" height="50" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="225" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#856404">
+    Layer-wise Recurrent Block Partition
+  </text>
+  <text x="225" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">
+    1D → 2D → 3D (Cyclical)
+  </text>
+  <text x="225" y="162" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#856404">
+    Temporal | Spatial | Spatio-temporal
+  </text>
+  
+  <!-- Key Blocks Output -->
+  <circle cx="190" cy="210" r="25" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="190" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Key</text>
+  <text x="190" y="222" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Blocks B</text>
+  
+  <!-- Step 2: Select Key Blocks -->
+  <rect x="360" y="80" width="280" height="200" rx="15" fill="url(#step2Gradient)" stroke="#00b894" stroke-width="2"/>
+  <text x="500" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Step 2: Select Key Blocks
+  </text>
+  
+  <!-- Global Block Selection -->
+  <rect x="380" y="120" width="240" height="40" rx="8" fill="#d1ecf1" stroke="#bee5eb" stroke-width="2"/>
+  <text x="500" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#0c5460">
+    Global Block Selection
+  </text>
+  <text x="500" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#0c5460">
+    Select from global pool across all queries
+  </text>
+  
+  <!-- Threshold-based Selection -->
+  <rect x="380" y="170" width="240" height="40" rx="8" fill="#f8d7da" stroke="#f5c6cb" stroke-width="2"/>
+  <text x="500" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#721c24">
+    Threshold-based Block Selection
+  </text>
+  <text x="500" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#721c24">
+    Dynamic selection based on cumulative similarity τ
+  </text>
+  
+  <!-- Similarity Map -->
+  <rect x="380" y="220" width="100" height="40" rx="5" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="430" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Q-K Block</text>
+  <text x="430" y="247" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Similarity</text>
+  <text x="430" y="259" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Map</text>
+  
+  <!-- Selected Blocks -->
+  <circle cx="550" cy="240" r="25" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="550" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Selected</text>
+  <text x="550" y="252" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Blocks</text>
+  
+  <!-- Step 3: Calculate Sparse Attention -->
+  <rect x="670" y="80" width="280" height="200" rx="15" fill="url(#step3Gradient)" stroke="#0984e3" stroke-width="2"/>
+  <text x="810" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Step 3: Calculate Sparse Attention
+  </text>
+  
+  <!-- Sparse Attention Computation -->
+  <rect x="690" y="120" width="240" height="50" rx="8" fill="#e7f3ff" stroke="#b3d9ff" stroke-width="2"/>
+  <text x="810" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#003d82">
+    Sparse Attention on Selected Blocks
+  </text>
+  <text x="810" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#003d82">
+    Q × K^T → Softmax → × V</text>
+  <text x="810" y="162" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#003d82">
+    Only with selected key-value pairs
+  </text>
+  
+  <!-- FlashAttention Implementation -->
+  <rect x="690" y="180" width="240" height="30" rx="5" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+  <text x="810" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#7d6608">
+    Implemented with FlashAttention for efficiency
+  </text>
+  
+  <!-- Final Output -->
+  <rect x="750" y="220" width="120" height="40" rx="8" fill="#d4edda" stroke="#c3e6cb" stroke-width="2"/>
+  <text x="810" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#155724">
+    Attention Output
+  </text>
+  <text x="810" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#155724">
+    Concatenated heads
+  </text>
+  
+  <!-- Key Innovations -->
+  <rect x="50" y="320" width="900" height="120" rx="15" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="500" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#495057">
+    Key Innovations of VMoBA
+  </text>
+  
+  <!-- Innovation 1 -->
+  <rect x="70" y="360" width="260" height="60" rx="8" fill="#ffe6e6" stroke="#ff9999" stroke-width="1"/>
+  <text x="200" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#cc0000">
+    1. Layer-wise 1D-2D-3D Partition
+  </text>
+  <text x="200" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#cc0000">
+    Adapts to spatio-temporal patterns
+  </text>
+  <text x="200" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#cc0000">
+    Improves efficiency vs uniform 3D
+  </text>
+  
+  <!-- Innovation 2 -->
+  <rect x="370" y="360" width="260" height="60" rx="8" fill="#e6f7f7" stroke="#99e6e6" stroke-width="1"/>
+  <text x="500" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#006666">
+    2. Global Block Selection
+  </text>
+  <text x="500" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#006666">
+    Prioritizes most important
+  </text>
+  <text x="500" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#006666">
+    query-key interactions globally
+  </text>
+  
+  <!-- Innovation 3 -->
+  <rect x="670" y="360" width="260" height="60" rx="8" fill="#e6f3ff" stroke="#99ccff" stroke-width="1"/>
+  <text x="800" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#003399">
+    3. Threshold-based Selection
+  </text>
+  <text x="800" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#003399">
+    Dynamic block count based on
+  </text>
+  <text x="800" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#003399">
+    cumulative similarity scores
+  </text>
+  
+  <!-- Results Summary -->
+  <rect x="50" y="470" width="900" height="100" rx="15" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="500" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2e7d32">
+    Performance Results
+  </text>
+  
+  <!-- Training Results -->
+  <rect x="70" y="510" width="200" height="45" rx="5" fill="#fff" stroke="#4caf50" stroke-width="1"/>
+  <text x="170" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2e7d32">
+    Training Speedup
+  </text>
+  <text x="170" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    2.92× FLOPs, 1.48× Latency
+  </text>
+  <text x="170" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    Comparable/Better Quality
+  </text>
+  
+  <!-- Inference Results -->
+  <rect x="290" y="510" width="200" height="45" rx="5" fill="#fff" stroke="#4caf50" stroke-width="1"/>
+  <text x="390" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2e7d32">
+    Inference Speedup
+  </text>
+  <text x="390" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    2.40× FLOPs, 1.35× Latency
+  </text>
+  <text x="390" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    Training-free inference
+  </text>
+  
+  <!-- Quality Comparison -->
+  <rect x="510" y="510" width="200" height="45" rx="5" fill="#fff" stroke="#4caf50" stroke-width="1"/>
+  <text x="610" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2e7d32">
+    Quality Score
+  </text>
+  <text x="610" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    VMoBA: 68.34 vs Full: 68.25
+  </text>
+  <text x="610" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    vs MoBA: 56.88
+  </text>
+  
+  <!-- Efficiency Analysis -->
+  <rect x="730" y="510" width="200" height="45" rx="5" fill="#fff" stroke="#4caf50" stroke-width="1"/>
+  <text x="830" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2e7d32">
+    Training Time
+  </text>
+  <text x="830" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    VMoBA: 187h vs Full: 276h
+  </text>
+  <text x="830" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2e7d32">
+    vs MoBA: 226h
+  </text>
+  
+  <!-- Complexity Analysis -->
+  <rect x="50" y="590" width="900" height="80" rx="15" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="500" y="615" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#856404">
+    Computational Complexity: O(sd(s/sb + kavgsb))
+  </text>
+  <text x="200" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">
+    s: sequence length
+  </text>
+  <text x="350" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">
+    d: hidden dimension
+  </text>
+  <text x="500" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">
+    sb: block size
+  </text>
+  <text x="650" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">
+    kavg: avg selected blocks
+  </text>
+  
+  <text x="500" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">
+    Larger block sizes and fewer selected blocks → Lower FLOPs
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Video data exhibits strong spatio-temporal locality in attention patterns">
+                        <div class="quiz-question">1. What was the main motivation behind developing VMoBA based on the analysis of pre-trained video transformers?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Video data shows random attention patterns that need better modeling">Video data shows random attention patterns that need better modeling</div><div class="quiz-choice" data-value="Video data exhibits strong spatio-temporal locality in attention patterns">Video data exhibits strong spatio-temporal locality in attention patterns</div><div class="quiz-choice" data-value="Video transformers were too fast and needed to be slowed down">Video transformers were too fast and needed to be slowed down</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Implemented a cyclical 1D-2D-3D scheme across layers">
+                        <div class="quiz-question">2. What unique innovation did VMoBA introduce for block partitioning compared to traditional MoBA?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Used only 1D partitioning throughout all layers">Used only 1D partitioning throughout all layers</div><div class="quiz-choice" data-value="Implemented a cyclical 1D-2D-3D scheme across layers">Implemented a cyclical 1D-2D-3D scheme across layers</div><div class="quiz-choice" data-value="Removed block partitioning entirely">Removed block partitioning entirely</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="1.35x latency speedup while maintaining comparable quality">
+                        <div class="quiz-question">3. When comparing VMoBA to full attention for a 720p video generation task, what performance improvement was achieved?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.35x latency speedup with worse quality">1.35x latency speedup with worse quality</div><div class="quiz-choice" data-value="No speedup but better quality">No speedup but better quality</div><div class="quiz-choice" data-value="1.35x latency speedup while maintaining comparable quality">1.35x latency speedup while maintaining comparable quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
