@@ -1,0 +1,1084 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-03 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-03 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>LongAnimation: Long Animation Generation with Dynamic Global-Local
+  Memory</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-02</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.01945" target="_blank">http://arxiv.org/pdf/2507.01945</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Long animation colorization using diffusion models in computer vision and animation generation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing short-term animation colorization methods that use local paradigms for feature fusion, proposes a novel dynamic global-local paradigm to maintain long-term color consistency.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Solving the challenge of maintaining color consistency in long animation sequences (300-1000 frames), which current methods fail to achieve due to their focus on local features and short-term generation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces LongAnimation framework with three key components: SketchDiT for reference feature extraction, Dynamic Global-Local Memory for historical feature compression and fusion, and Color Consistency Reward for refining color consistency.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves significant improvements over previous methods, with 35.1% improvement in short-term (14 frames) and 49.1% improvement in long-term (500 frames) animation colorization based on FVD metrics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LongAnimation: Long Animation Generation with Dynamic Global-Local
+  Memory</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357abd;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5cb85c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#449d44;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0ad4e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec971f;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9b59b6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8e44ad;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    LongAnimation Workflow
+  </text>
+  
+  <!-- Input Stage -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="2"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Input Data</text>
+    <text x="90" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Reference Image I</text>
+    <text x="90" y="52" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Sketches {Sf}</text>
+    <text x="90" y="64" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Text Description</text>
+  </g>
+  
+  <!-- SketchDiT Module -->
+  <g transform="translate(300, 80)">
+    <rect x="0" y="0" width="180" height="120" rx="10" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="2"/>
+    <text x="90" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">SketchDiT</text>
+    <text x="90" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">3D VAE Encoder Ev(·)</text>
+    <text x="90" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Text Encoder Et(·)</text>
+    <text x="90" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Feature Concatenation</text>
+    <text x="90" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Hybrid Features</text>
+    <text x="90" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">S(ct, ci, ck)</text>
+  </g>
+  
+  <!-- First Generation Branch -->
+  <g transform="translate(550, 50)">
+    <rect x="0" y="0" width="120" height="60" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+    <text x="60" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">First Segment</text>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Direct to</text>
+    <text x="60" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">CogVideoX</text>
+  </g>
+  
+  <!-- DGLM Module -->
+  <g transform="translate(300, 250)">
+    <rect x="0" y="0" width="400" height="180" rx="15" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="3"/>
+    <text x="200" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Dynamic Global-Local Memory (DGLM)</text>
+    
+    <!-- Global Memory -->
+    <rect x="20" y="40" width="160" height="120" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+    <text x="100" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Global Memory</text>
+    <text x="100" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Video-XL LVU Model</text>
+    <text x="100" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Historical Features</text>
+    <text x="100" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">KV Cache {kg, vg}</text>
+    <text x="100" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Dynamic Compression</text>
+    <text x="100" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Long-term Consistency</text>
+    
+    <!-- Local Memory -->
+    <rect x="220" y="40" width="160" height="120" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+    <text x="300" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Local Memory</text>
+    <text x="300" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Recent Segments</text>
+    <text x="300" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">KV Cache {kl, vl}</text>
+    <text x="300" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Local Video Vl</text>
+    <text x="300" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Smooth Transitions</text>
+    <text x="300" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Short-term Features</text>
+  </g>
+  
+  <!-- Cross Attention -->
+  <g transform="translate(750, 280)">
+    <rect x="0" y="0" width="140" height="80" rx="10" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+    <text x="70" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Cross Attention</text>
+    <text x="70" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Q = Wq · S(ct,ci,ck)</text>
+    <text x="70" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">K,V = [kg,kl], [vg,vl]</text>
+    <text x="70" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Adaptive Fusion</text>
+  </g>
+  
+  <!-- CogVideoX Generation -->
+  <g transform="translate(300, 480)">
+    <rect x="0" y="0" width="200" height="80" rx="10" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">CogVideoX DiT</text>
+    <text x="100" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Video Generation</text>
+    <text x="100" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Skip-layer Control</text>
+  </g>
+  
+  <!-- Color Consistency Reward -->
+  <g transform="translate(550, 480)">
+    <rect x="0" y="0" width="180" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+    <text x="90" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Color Consistency</text>
+    <text x="90" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Reward (CCR)</text>
+    <text x="90" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">KV Cache Alignment</text>
+    <text x="90" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Non-gradient Reward</text>
+  </g>
+  
+  <!-- Color Consistency Fusion -->
+  <g transform="translate(300, 600)">
+    <rect x="0" y="0" width="200" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+    <text x="100" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Color Consistency</text>
+    <text x="100" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Fusion (CCF)</text>
+    <text x="100" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Late Denoising Stage</text>
+    <text x="100" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Latent Blending</text>
+  </g>
+  
+  <!-- Final Output -->
+  <g transform="translate(550, 600)">
+    <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="2"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Long Animation</text>
+    <text x="90" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">500+ Frames</text>
+    <text x="90" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Color Consistent</text>
+  </g>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M230 120 Q265 120 300 140" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M480 140 Q515 120 550 80" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M390 200 Q390 225 390 250" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M700 320 Q725 320 750 320" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M820 360 Q820 420 500 480" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M400 560 Q400 580 400 600" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M500 640 Q525 640 550 640" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M640 560 Q640 580 640 600" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Process labels -->
+  <text x="800" y="750" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-style="italic" fill="#7f8c8d">
+    Training: SketchDiT → DGLM → CCR | Inference: CCF for smooth transitions
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Dynamic extraction of global-local color features">
+                        <div class="quiz-question">1. What is the main innovation in LongAnimation's approach compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using multiple reference images instead of one">Using multiple reference images instead of one</div><div class="quiz-choice" data-value="Dynamic extraction of global-local color features">Dynamic extraction of global-local color features</div><div class="quiz-choice" data-value="Frame-by-frame colorization with AI">Frame-by-frame colorization with AI</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To maintain better brightness consistency">
+                        <div class="quiz-question">2. Why does LongAnimation perform color consistency fusion only in the late denoising stage?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To save computational resources">To save computational resources</div><div class="quiz-choice" data-value="To maintain better brightness consistency">To maintain better brightness consistency</div><div class="quiz-choice" data-value="To speed up the generation process">To speed up the generation process</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="About 500 frames vs 100 frames">
+                        <div class="quiz-question">3. What is the typical length of animation sequences that LongAnimation can handle compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="About 100 frames vs 14 frames">About 100 frames vs 14 frames</div><div class="quiz-choice" data-value="About 500 frames vs 100 frames">About 500 frames vs 100 frames</div><div class="quiz-choice" data-value="About 1000 frames vs 500 frames">About 1000 frames vs 500 frames</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Depth Anything at Any Condition</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-02</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.01634" target="_blank">http://arxiv.org/pdf/2507.01634</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A foundation monocular depth estimation model called DepthAnything-AC for handling diverse environmental conditions in computer vision and depth estimation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous foundation MDE models like Depth Anything series that work well in general scenes but struggle with complex conditions; proposes new unsupervised consistency regularization and spatial distance constraint approaches.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing foundation MDE models perform poorly in complex real-world environments involving challenging lighting, weather conditions, and sensor distortions, while also struggling with boundary delineation and detail preservation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses perturbation-based consistency framework to generate consistent predictions under different corruptions, and spatial distance constraint to enforce geometric relationships between patches; fine-tuned on 540K unlabeled images with various augmentations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperformed state-of-the-art approaches across multiple benchmarks including DA-2K, real-world adverse weather datasets, and synthetic corruption benchmarks, while maintaining performance on general scenes; showed particular improvements in boundary definition and detail preservation.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Depth Anything at Any Condition</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">DepthAnything-AC Methodology Flow</text>
+  
+  <!-- Input Data -->
+  <rect x="50" y="70" width="120" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="110" y="95" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Unlabeled</text>
+  <text x="110" y="110" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Images</text>
+  <text x="110" y="125" text-anchor="middle" font-size="10" fill="white">(540K samples)</text>
+  
+  <!-- Data Augmentation -->
+  <rect x="220" y="70" width="140" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="290" y="90" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Perturbation</text>
+  <text x="290" y="105" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Augmentation</text>
+  <text x="290" y="120" text-anchor="middle" font-size="10" fill="white">(Dark, Weather, Blur, Contrast)</text>
+  
+  <!-- Split into two branches -->
+  <rect x="420" y="40" width="100" height="40" rx="5" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="470" y="55" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Normal</text>
+  <text x="470" y="70" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Image x^w</text>
+  
+  <rect x="420" y="100" width="100" height="40" rx="5" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="470" y="115" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Perturbed</text>
+  <text x="470" y="130" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Image x^s</text>
+  
+  <!-- Teacher Model (Frozen) -->
+  <rect x="50" y="200" width="120" height="60" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="110" y="220" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Teacher Model</text>
+  <text x="110" y="235" text-anchor="middle" font-size="12" fill="white" font-weight="bold">(Frozen)</text>
+  <text x="110" y="250" text-anchor="middle" font-size="10" fill="white">DepthAnything V2</text>
+  
+  <!-- Student Model -->
+  <rect x="580" y="160" width="120" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="640" y="185" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Student Model</text>
+  <text x="640" y="200" text-anchor="middle" font-size="12" fill="white" font-weight="bold">(Trainable)</text>
+  <text x="640" y="215" text-anchor="middle" font-size="10" fill="white">ViT-S + DPT</text>
+  <text x="640" y="230" text-anchor="middle" font-size="10" fill="white">Decoder</text>
+  
+  <!-- Spatial Distance Constraint -->
+  <rect x="750" y="70" width="140" height="80" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="820" y="90" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Spatial Distance</text>
+  <text x="820" y="105" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Constraint</text>
+  <text x="820" y="125" text-anchor="middle" font-size="10" fill="white">SD = √(S²_p + S²_d)</text>
+  <text x="820" y="140" text-anchor="middle" font-size="10" fill="white">Geometric Relations</text>
+  
+  <!-- Loss Functions -->
+  <rect x="200" y="320" width="100" height="50" rx="5" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="250" y="340" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Consistency</text>
+  <text x="250" y="355" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Loss L_c</text>
+  
+  <rect x="320" y="320" width="100" height="50" rx="5" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="370" y="340" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Knowledge</text>
+  <text x="370" y="355" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Distill. L_kd</text>
+  
+  <rect x="440" y="320" width="100" height="50" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="490" y="340" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Spatial Dist.</text>
+  <text x="490" y="355" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Loss L_s</text>
+  
+  <!-- Combined Loss -->
+  <rect x="320" y="420" width="160" height="50" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="400" y="440" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Total Loss</text>
+  <text x="400" y="455" text-anchor="middle" font-size="10" fill="white">L = λ₁L_c + λ₂L_kd + λ₃L_s</text>
+  
+  <!-- Output -->
+  <rect x="580" y="320" width="120" height="60" rx="10" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="640" y="340" text-anchor="middle" font-size="12" fill="white" font-weight="bold">DepthAnything-AC</text>
+  <text x="640" y="355" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Output</text>
+  <text x="640" y="370" text-anchor="middle" font-size="10" fill="white">Robust Depth Maps</text>
+  
+  <!-- Key Features Box -->
+  <rect x="750" y="200" width="200" height="140" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="850" y="220" text-anchor="middle" font-size="14" fill="#2c3e50" font-weight="bold">Key Features</text>
+  <text x="760" y="240" font-size="11" fill="#2c3e50">• Perturbation-based consistency</text>
+  <text x="760" y="255" font-size="11" fill="#2c3e50">• Unsupervised framework</text>
+  <text x="760" y="270" font-size="11" fill="#2c3e50">• Spatial geometric relationships</text>
+  <text x="760" y="285" font-size="11" fill="#2c3e50">• Semantic boundary enhancement</text>
+  <text x="760" y="300" font-size="11" fill="#2c3e50">• Complex weather robustness</text>
+  <text x="760" y="315" font-size="11" fill="#2c3e50">• Fine-grained detail recovery</text>
+  <text x="760" y="330" font-size="11" fill="#2c3e50">• Zero-shot capabilities</text>
+  
+  <!-- Evaluation Box -->
+  <rect x="50" y="520" width="900" height="120" rx="10" fill="#fff" stroke="#3498db" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-size="16" fill="#2c3e50" font-weight="bold">Evaluation Benchmarks</text>
+  
+  <rect x="70" y="560" width="140" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+  <text x="140" y="575" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Multi-condition</text>
+  <text x="140" y="590" text-anchor="middle" font-size="11" fill="white" font-weight="bold">DA-2K</text>
+  
+  <rect x="230" y="560" width="140" height="40" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+  <text x="300" y="575" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Real Complex</text>
+  <text x="300" y="590" text-anchor="middle" font-size="11" fill="white" font-weight="bold">NuScenes, RobotCar</text>
+  
+  <rect x="390" y="560" width="140" height="40" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+  <text x="460" y="575" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Synthetic</text>
+  <text x="460" y="590" text-anchor="middle" font-size="11" fill="white" font-weight="bold">KITTI-C</text>
+  
+  <rect x="550" y="560" width="140" height="40" rx="5" fill="#27ae60" stroke="#229954" stroke-width="1"/>
+  <text x="620" y="575" text-anchor="middle" font-size="11" fill="white" font-weight="bold">General</text>
+  <text x="620" y="590" text-anchor="middle" font-size="11" fill="white" font-weight="bold">KITTI, NYU-D, Sintel</text>
+  
+  <rect x="710" y="560" width="140" height="40" rx="5" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
+  <text x="780" y="575" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Performance</text>
+  <text x="780" y="590" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Zero-shot SOTA</text>
+  
+  <!-- Results -->
+  <text x="500" y="680" text-anchor="middle" font-size="14" fill="#2c3e50" font-weight="bold">Results: Superior performance on complex conditions while maintaining general scene capabilities</text>
+  <text x="500" y="700" text-anchor="middle" font-size="12" fill="#7f8c8d">Trained on only 540K unlabeled images (~1% of DepthAnything training data)</text>
+  
+  <!-- Connection lines -->
+  <line x1="170" y1="100" x2="220" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="360" y1="80" x2="420" y2="60" stroke="#34495e" stroke-width="2"/>
+  <line x1="360" y1="120" x2="420" y2="120" stroke="#34495e" stroke-width="2"/>
+  <line x1="520" y1="60" x2="580" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="520" y1="120" x2="580" y2="200" stroke="#34495e" stroke-width="2"/>
+  <line x1="170" y1="230" x2="320" y2="345" stroke="#9b59b6" stroke-width="2"/>
+  <line x1="640" y1="240" x2="640" y2="320" stroke="#27ae60" stroke-width="2"/>
+  <line x1="400" y1="370" x2="400" y2="420" stroke="#34495e" stroke-width="2"/>
+  <line x1="750" y1="110" x2="700" y2="200" stroke="#f39c12" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses unsupervised learning with perturbation-based consistency on unlabeled data">
+                        <div class="quiz-question">1. What is the main innovation in how DepthAnything-AC handles training data compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a massive labeled dataset of adverse weather conditions">It uses a massive labeled dataset of adverse weather conditions</div><div class="quiz-choice" data-value="It uses unsupervised learning with perturbation-based consistency on unlabeled data">It uses unsupervised learning with perturbation-based consistency on unlabeled data</div><div class="quiz-choice" data-value="It combines multiple existing datasets with manual annotations">It combines multiple existing datasets with manual annotations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Color temperature">
+                        <div class="quiz-question">2. Which of these is NOT one of the four typical scenarios considered for image perturbation in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Lighting conditions">Lighting conditions</div><div class="quiz-choice" data-value="Color temperature">Color temperature</div><div class="quiz-choice" data-value="Blurriness">Blurriness</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It helps recover object boundaries and details from corrupted images">
+                        <div class="quiz-question">3. What is the key advantage of using the Spatial Distance Constraint in the model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It reduces the computational complexity of the model">It reduces the computational complexity of the model</div><div class="quiz-choice" data-value="It helps recover object boundaries and details from corrupted images">It helps recover object boundaries and details from corrupted images</div><div class="quiz-choice" data-value="It improves the model's speed during inference">It improves the model's speed during inference</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>FreeMorph: Tuning-Free Generalized Image Morphing with Diffusion Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-02</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.01953" target="_blank">http://arxiv.org/pdf/2507.01953</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Image morphing using diffusion models in computer vision, specifically focusing on generating smooth transitions between two input images.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in image warping, GANs, and diffusion models, proposing a novel tuning-free approach that doesn't require per-instance training like existing methods.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the challenge of creating high-quality image morphing transitions between images with different semantics or layouts without requiring extensive fine-tuning or training.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces FreeMorph with two key innovations: guidance-aware spherical interpolation for maintaining identity and directional transitions, and step-oriented variation trend for controlled transitions between inputs.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperforms existing methods by being 10-50x faster (under 30 seconds per morphing), achieving superior results in FID, PPL, and LPIPS metrics, and receiving 60.13% preference in user studies.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>FreeMorph: Tuning-Free Generalized Image Morphing with Diffusion Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">FreeMorph: Tuning-Free Image Morphing Workflow</text>
+  
+  <!-- Input Images -->
+  <rect x="50" y="70" width="120" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="110" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Input Images</text>
+  <text x="110" y="120" text-anchor="middle" font-size="10" fill="white">I_left, I_right</text>
+  
+  <!-- Caption Generation -->
+  <rect x="220" y="70" width="120" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="280" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Caption via</text>
+  <text x="280" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">LLaVA</text>
+  
+  <!-- VAE Encoding -->
+  <rect x="390" y="70" width="120" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="450" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="white">VAE Encoding</text>
+  <text x="450" y="120" text-anchor="middle" font-size="10" fill="white">z_0-left, z_0-right</text>
+  
+  <!-- Spherical Interpolation -->
+  <rect x="560" y="70" width="120" height="80" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="620" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Spherical</text>
+  <text x="620" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Interpolation</text>
+  
+  <!-- Forward Diffusion Process -->
+  <rect x="150" y="200" width="200" height="120" rx="15" fill="#27ae60" stroke="#229954" stroke-width="3"/>
+  <text x="250" y="230" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Forward Diffusion Process</text>
+  
+  <!-- Forward substeps -->
+  <rect x="170" y="250" width="160" height="20" rx="5" fill="#2ecc71"/>
+  <text x="250" y="263" text-anchor="middle" font-size="9" fill="white">λ₁T: Original Attention</text>
+  
+  <rect x="170" y="275" width="160" height="20" rx="5" fill="#58d68d"/>
+  <text x="250" y="288" text-anchor="middle" font-size="9" fill="white">λ₂T: Prior-driven Self-Attention</text>
+  
+  <rect x="170" y="300" width="160" height="15" rx="5" fill="#85e085"/>
+  <text x="250" y="310" text-anchor="middle" font-size="9" fill="white">Step-oriented Variation</text>
+  
+  <!-- High-frequency Noise Injection -->
+  <rect x="400" y="200" width="150" height="80" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="475" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">High-frequency</text>
+  <text x="475" y="245" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Noise Injection</text>
+  <text x="475" y="265" text-anchor="middle" font-size="10" fill="white">(FFT/IFFT)</text>
+  
+  <!-- Core Components Box -->
+  <rect x="600" y="180" width="350" height="200" rx="15" fill="#34495e" stroke="#2c3e50" stroke-width="3"/>
+  <text x="775" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Core Innovation Components</text>
+  
+  <!-- Guidance-aware Spherical Interpolation -->
+  <rect x="620" y="220" width="140" height="70" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="690" y="240" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Guidance-aware</text>
+  <text x="690" y="255" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Spherical Interpolation</text>
+  <text x="690" y="275" text-anchor="middle" font-size="8" fill="white">• Spherical Feature Aggregation</text>
+  
+  <!-- Step-oriented Variation Trend -->
+  <rect x="780" y="220" width="140" height="70" rx="8" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="850" y="240" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Step-oriented</text>
+  <text x="850" y="255" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Variation Trend</text>
+  <text x="850" y="275" text-anchor="middle" font-size="8" fill="white">• Controlled Transitions</text>
+  
+  <!-- Attention Mechanism Details -->
+  <rect x="620" y="310" width="300" height="50" rx="8" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="770" y="330" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Modified Self-Attention Modules</text>
+  <text x="770" y="345" text-anchor="middle" font-size="9" fill="white">ATT(Q, K, V) with blended features from input images</text>
+  
+  <!-- Reverse Denoising Process -->
+  <rect x="150" y="430" width="200" height="120" rx="15" fill="#2980b9" stroke="#1f618d" stroke-width="3"/>
+  <text x="250" y="460" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Reverse Denoising Process</text>
+  
+  <!-- Reverse substeps -->
+  <rect x="170" y="480" width="160" height="20" rx="5" fill="#3498db"/>
+  <text x="250" y="493" text-anchor="middle" font-size="9" fill="white">λ₃T: Step-oriented Variation</text>
+  
+  <rect x="170" y="505" width="160" height="20" rx="5" fill="#5dade2"/>
+  <text x="250" y="518" text-anchor="middle" font-size="9" fill="white">λ₄T: Spherical Feature Aggregation</text>
+  
+  <rect x="170" y="530" width="160" height="15" rx="5" fill="#85c1e9"/>
+  <text x="250" y="540" text-anchor="middle" font-size="9" fill="white">Original Attention</text>
+  
+  <!-- Text Conditioning -->
+  <rect x="400" y="450" width="150" height="60" rx="10" fill="#7d3c98" stroke="#6c3483" stroke-width="2"/>
+  <text x="475" y="475" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Text-conditioned</text>
+  <text x="475" y="495" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Features</text>
+  
+  <!-- DDIM Integration -->
+  <rect x="600" y="430" width="150" height="80" rx="10" fill="#148f77" stroke="#117a65" stroke-width="2"/>
+  <text x="675" y="460" text-anchor="middle" font-size="12" font-weight="bold" fill="white">DDIM Framework</text>
+  <text x="675" y="480" text-anchor="middle" font-size="10" fill="white">T = 50 steps</text>
+  <text x="675" y="495" text-anchor="middle" font-size="10" fill="white">CFG = 7.5</text>
+  
+  <!-- Output -->
+  <rect x="400" y="580" width="200" height="80" rx="15" fill="#c0392b" stroke="#a93226" stroke-width="3"/>
+  <text x="500" y="610" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Generated Sequence</text>
+  <text x="500" y="635" text-anchor="middle" font-size="12" fill="white">J=5 Intermediate Images</text>
+  <text x="500" y="650" text-anchor="middle" font-size="10" fill="white">< 30 seconds</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="700" y="580" width="250" height="80" rx="10" fill="#d35400" stroke="#ca6f1e" stroke-width="2"/>
+  <text x="825" y="605" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Performance Advantages</text>
+  <text x="825" y="625" text-anchor="middle" font-size="10" fill="white">• 10×-50× faster than existing methods</text>
+  <text x="825" y="640" text-anchor="middle" font-size="10" fill="white">• Handles different semantics/layouts</text>
+  <text x="825" y="655" text-anchor="middle" font-size="10" fill="white">• No fine-tuning required</text>
+  
+  <!-- Key Innovation Highlight -->
+  <ellipse cx="775" cx="775" cy="120" rx="80" ry="25" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
+  <text x="775" y="125" text-anchor="middle" font-size="11" font-weight="bold" fill="#8b4513">Tuning-Free!</text>
+  
+  <!-- Flow indicators with subtle styling -->
+  <circle cx="185" cy="110" r="3" fill="#34495e"/>
+  <circle cx="355" cy="110" r="3" fill="#34495e"/>
+  <circle cx="525" cy="110" r="3" fill="#34495e"/>
+  <circle cx="250" cy="175" r="3" fill="#34495e"/>
+  <circle cx="475" cy="175" r="3" fill="#34495e"/>
+  <circle cx="250" cy="405" r="3" fill="#34495e"/>
+  <circle cx="475" cy="405" r="3" fill="#34495e"/>
+  <circle cx="500" cy="555" r="3" fill="#34495e"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It is tuning-free and requires no per-instance training">
+                        <div class="quiz-question">1. What is the main advantage of FreeMorph over previous image morphing methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It produces higher quality images">It produces higher quality images</div><div class="quiz-choice" data-value="It is tuning-free and requires no per-instance training">It is tuning-free and requires no per-instance training</div><div class="quiz-choice" data-value="It can only work with similar images">It can only work with similar images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Neural cross-attention mapping">
+                        <div class="quiz-question">2. Which of the following is NOT one of the two key innovations introduced in FreeMorph?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Guidance-aware spherical interpolation">Guidance-aware spherical interpolation</div><div class="quiz-choice" data-value="Step-oriented variation trend">Step-oriented variation trend</div><div class="quiz-choice" data-value="Neural cross-attention mapping">Neural cross-attention mapping</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="10-50x faster">
+                        <div class="quiz-question">3. How much faster is FreeMorph compared to existing methods according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="2-5x faster">2-5x faster</div><div class="quiz-choice" data-value="10-50x faster">10-50x faster</div><div class="quiz-choice" data-value="100-200x faster">100-200x faster</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
