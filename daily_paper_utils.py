@@ -456,7 +456,7 @@ QUESTION_FORMAT = """
     "answer": "option1 or option2 or option3"
   }
 }
-Notice you need to generate 3 questions as shown in template.
+Notice you need to generate 3 questions as shown above, you must follow the exact format, for each question the keys include the question text, 3 options, and the answer, do not miss any "delimiter".
 Now output your the questions and nothing else:
 """
 
@@ -540,7 +540,7 @@ def create_question(paper_title, paper_content, summary):
 
     questions_content = model_response(
         prompt,
-        'claude4',
+        'claude35',
         max_tokens=8000
 
     )
