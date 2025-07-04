@@ -1,0 +1,1077 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-04 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-04 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>LangScene-X: Reconstruct Generalizable 3D Language-Embedded Scenes with
+  TriMap Video Diffusion</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.02813" target="_blank">http://arxiv.org/pdf/2507.02813</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> 3D scene reconstruction and understanding from sparse image views using language-embedded representations and video diffusion models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on prior work in NeRF and Gaussian Splatting for 3D reconstruction, proposes novel integration of video diffusion models and language compression for generalized 3D scene understanding.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing methods require dense calibrated views and per-scene optimization, limiting generalization and applicability when only sparse views are available.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces TriMap video diffusion to generate consistent RGB, normal and semantic maps; develops Language Quantized Compressor for efficient feature encoding; combines these to reconstruct language-embedded 3D surface fields.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves superior performance on LERF-OVS and ScanNet datasets, with 10.58% improvement in mIoU and 31.18% in mAcc compared to state-of-the-art methods.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LangScene-X: Reconstruct Generalizable 3D Language-Embedded Scenes with
+  TriMap Video Diffusion</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357abd;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5cb85c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#449d44;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0ad4e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec971f;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9b59b6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8e44ad;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">LangScene-X: Workflow Overview</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="70" width="140" height="80" rx="10" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="2"/>
+  <text x="120" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Sparse Views Input</text>
+  <text x="120" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">(As few as 2 images)</text>
+  <text x="120" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">View 1 & View 2</text>
+  
+  <!-- TriMap Video Diffusion -->
+  <rect x="250" y="50" width="200" height="120" rx="15" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="3"/>
+  <text x="350" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">TriMap Video Diffusion</text>
+  
+  <!-- Three output branches from TriMap -->
+  <rect x="270" y="90" width="50" height="25" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="295" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">RGB</text>
+  
+  <rect x="325" y="90" width="50" height="25" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="350" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Normal</text>
+  
+  <rect x="380" y="90" width="50" height="25" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="405" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Semantic</text>
+  
+  <!-- Progressive Training Steps -->
+  <rect x="270" y="125" width="160" height="35" rx="5" fill="#e8f5e8" stroke="#27ae60" stroke-width="1"/>
+  <text x="350" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#27ae60">Progressive Multi-task Training:</text>
+  <text x="350" y="152" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#27ae60">Web Data → 3D Consistent → Normal → Semantic</text>
+  
+  <!-- Language Quantized Compressor -->
+  <rect x="520" y="50" width="180" height="120" rx="15" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="3"/>
+  <text x="610" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Language Quantized</text>
+  <text x="610" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Compressor (LQC)</text>
+  
+  <!-- LQC Details -->
+  <rect x="540" y="105" width="140" height="55" rx="5" fill="#fdf2e9" stroke="#e67e22" stroke-width="1"/>
+  <text x="610" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#d35400">Vector Quantization</text>
+  <text x="610" y="132" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#d35400">K=2048 embeddings, D=3</text>
+  <text x="610" y="144" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#d35400">Discrete feature compression</text>
+  <text x="610" y="156" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#d35400">Trained on COCO dataset</text>
+  
+  <!-- Dense Frame Generation -->
+  <rect x="200" y="220" width="250" height="60" rx="10" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="2"/>
+  <text x="325" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Dense Frame Generation</text>
+  <text x="325" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">3D Consistent RGB + Normal + Semantic Maps</text>
+  <text x="325" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Multi-hierarchy segmentation masks</text>
+  
+  <!-- Feature Processing -->
+  <rect x="500" y="220" width="200" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="600" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Feature Compression</text>
+  <text x="600" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">CLIP features → LQC</text>
+  <text x="600" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Discrete indices</text>
+  
+  <!-- Language-Embedded Surface Fields -->
+  <rect x="250" y="320" width="300" height="100" rx="15" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="3"/>
+  <text x="400" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Language-Embedded Surface Fields</text>
+  
+  <!-- Surface Fields Components -->
+  <rect x="270" y="360" width="80" height="25" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="310" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">RGB Loss</text>
+  
+  <rect x="360" y="360" width="80" height="25" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="400" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Normal Loss</text>
+  
+  <rect x="450" y="360" width="80" height="25" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="490" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Semantic Loss</text>
+  
+  <rect x="270" y="390" width="260" height="20" rx="5" fill="#e8f4fd" stroke="#2980b9" stroke-width="1"/>
+  <text x="400" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2980b9">Surface alignment + 2D/3D clustering + Gaussian optimization</text>
+  
+  <!-- Final Output -->
+  <rect x="300" y="460" width="200" height="80" rx="15" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="3"/>
+  <text x="400" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">3D Language Field</text>
+  <text x="400" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">Open-ended Queries</text>
+  <text x="400" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Novel view synthesis</text>
+  <text x="400" y="532" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Semantic understanding</text>
+  
+  <!-- Query Examples -->
+  <rect x="650" y="460" width="280" height="80" rx="10" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="790" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#495057">Query Examples</text>
+  <text x="790" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">"paper towel roll", "red mug"</text>
+  <text x="790" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">"stuffed bear", "paper bag"</text>
+  <text x="790" y="530" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">→ Relevancy maps rendered</text>
+  
+  <!-- Training Details Box -->
+  <rect x="50" y="600" width="900" height="150" rx="10" fill="#f8f9fa" stroke="#dee2e6" stroke-width="2"/>
+  <text x="500" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#495057">Training Strategy & Key Components</text>
+  
+  <!-- Training Steps -->
+  <rect x="70" y="640" width="200" height="100" rx="8" fill="#e3f2fd" stroke="#2196f3" stroke-width="1"/>
+  <text x="170" y="660" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1976d2">Progressive Training</text>
+  <text x="170" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1976d2">1. Web data key-frame interpolation</text>
+  <text x="170" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1976d2">2. 3D consistent data (10K clips)</text>
+  <text x="170" y="701" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1976d2">3. Normal annotation (200 clips)</text>
+  <text x="170" y="714" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1976d2">4. Semantic annotation (300 clips)</text>
+  <text x="170" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1976d2">Architecture: CogVideoX DiT</text>
+  
+  <!-- LQC Training -->
+  <rect x="290" y="640" width="200" height="100" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="1"/>
+  <text x="390" y="660" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#f57c00">LQC Training</text>
+  <text x="390" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#f57c00">Loss: λ₁Lᵣₑcₒₙ + λ₂Lₑₘb + λ₃Lₘₐₛₖ</text>
+  <text x="390" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#f57c00">Vector quantization with stop gradient</text>
+  <text x="390" y="701" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#f57c00">Dictionary learning for embeddings</text>
+  <text x="390" y="714" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#f57c00">Text-guided activation alignment</text>
+  <text x="390" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#f57c00">500K steps on COCO dataset</text>
+  
+  <!-- Surface Fields Training -->
+  <rect x="510" y="640" width="200" height="100" rx="8" fill="#e8f5e8" stroke="#4caf50" stroke-width="1"/>
+  <text x="610" y="660" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#388e3c">Surface Fields Training</text>
+  <text x="610" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#388e3c">5K steps: RGB + Normal loss</text>
+  <text x="610" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#388e3c">5K steps: + Semantic losses</text>
+  <text x="610" y="701" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#388e3c">Progressive normal regularization</text>
+  <text x="610" y="714" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#388e3c">2D/3D clustering with masks</text>
+  <text x="610" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#388e3c">DUSt3R initialization</text>
+  
+  <!-- Key Innovation -->
+  <rect x="730" y="640" width="200" height="100" rx="8" fill="#fce4ec" stroke="#e91e63" stroke-width="1"/>
+  <text x="830" y="660" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#c2185b">Key Innovation</text>
+  <text x="830" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#c2185b">Unified generative paradigm</text>
+  <text x="830" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#c2185b">Multi-modal consistency</text>
+  <text x="830" y="701" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#c2185b">Generalizable compression</text>
+  <text x="830" y="714" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#c2185b">No per-scene optimization</text>
+  <text x="830" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#c2185b">Sparse view capability</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It can work with as few as two input images using video diffusion">
+                        <div class="quiz-question">1. What is the main innovation of LangScene-X compared to previous 3D scene reconstruction methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires more camera views than previous methods">It requires more camera views than previous methods</div><div class="quiz-choice" data-value="It can work with as few as two input images using video diffusion">It can work with as few as two input images using video diffusion</div><div class="quiz-choice" data-value="It only works on indoor scenes">It only works on indoor scenes</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To compress high-dimensional language features into efficient discrete representations">
+                        <div class="quiz-question">2. What is the purpose of the Language Quantized Compressor (LQC) in the system?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To increase the dimensionality of language features">To increase the dimensionality of language features</div><div class="quiz-choice" data-value="To generate new semantic labels">To generate new semantic labels</div><div class="quiz-choice" data-value="To compress high-dimensional language features into efficient discrete representations">To compress high-dimensional language features into efficient discrete representations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="RGB, normal maps, and semantic maps">
+                        <div class="quiz-question">3. What types of maps does the TriMap video diffusion model generate?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Only RGB and depth maps">Only RGB and depth maps</div><div class="quiz-choice" data-value="RGB, normal maps, and semantic maps">RGB, normal maps, and semantic maps</div><div class="quiz-choice" data-value="Only semantic segmentation maps">Only semantic segmentation maps</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>WebSailor: Navigating Super-human Reasoning for Web Agent</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.02592" target="_blank">http://arxiv.org/pdf/2507.02592</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing WebSailor, a post-training methodology for web agents to achieve superhuman reasoning capabilities in complex information-seeking tasks.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on proprietary systems like DeepResearch that demonstrated superhuman capabilities, the paper proposes a novel approach to instill similar advanced reasoning patterns in open-source models through uncertainty reduction techniques.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the performance gap between open-source and proprietary web agents in complex information-seeking tasks, particularly their inability to systematically reduce uncertainty when navigating vast information landscapes.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a combination of structured sampling and information obfuscation to generate complex training data (SailorFog-QA), implement rejection sampling fine-tuning (RFT) cold start, and develop an efficient agentic RL algorithm called Duplicating Sampling Policy Optimization (DUPO).</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> WebSailor significantly outperformed all open-source agents and matched proprietary agents' performance on BrowseComp-en/zh benchmarks, while also showing strong performance on simpler tasks like GAIA and XBench-DeepSearch.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>WebSailor: Navigating Super-human Reasoning for Web Agent</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">WebSailor: Training Pipeline Flow</text>
+  
+  <!-- Phase 1: Data Synthesis -->
+  <rect x="50" y="80" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Synthesis</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#34495e">SailorFog-QA</text>
+  <text x="150" y="145" text-anchor="middle" font-size="11" fill="#7f8c8d">• Graph sampling</text>
+  <text x="150" y="160" text-anchor="middle" font-size="11" fill="#7f8c8d">• Information obfuscation</text>
+  <text x="150" y="175" text-anchor="middle" font-size="11" fill="#7f8c8d">• Level 3 complexity</text>
+  
+  <!-- Phase 2: Trajectory Generation -->
+  <rect x="300" y="80" width="200" height="120" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Trajectory Generation</text>
+  <text x="400" y="125" text-anchor="middle" font-size="12" fill="#34495e">Expert LRM Solutions</text>
+  <text x="400" y="145" text-anchor="middle" font-size="11" fill="#7f8c8d">• QwQ/DeepSeek-R1</text>
+  <text x="400" y="160" text-anchor="middle" font-size="11" fill="#7f8c8d">• Action-observation traces</text>
+  <text x="400" y="175" text-anchor="middle" font-size="11" fill="#7f8c8d">• Reasoning reconstruction</text>
+  
+  <!-- Phase 3: RFT Cold Start -->
+  <rect x="200" y="250" width="200" height="120" rx="10" fill="#ebf3fd" stroke="#3498db" stroke-width="2"/>
+  <text x="300" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">RFT Cold Start</text>
+  <text x="300" y="295" text-anchor="middle" font-size="12" fill="#34495e">Rejection Sampling</text>
+  <text x="300" y="315" text-anchor="middle" font-size="11" fill="#7f8c8d">• Correct trajectories only</text>
+  <text x="300" y="330" text-anchor="middle" font-size="11" fill="#7f8c8d">• <32k tokens filter</text>
+  <text x="300" y="345" text-anchor="middle" font-size="11" fill="#7f8c8d">• >5 tool calls filter</text>
+  <text x="300" y="360" text-anchor="middle" font-size="11" fill="#7f8c8d">• 2k+ examples</text>
+  
+  <!-- Phase 4: DUPO RL Training -->
+  <rect x="450" y="250" width="200" height="120" rx="10" fill="#e8f5e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="550" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">DUPO RL Training</text>
+  <text x="550" y="295" text-anchor="middle" font-size="12" fill="#34495e">Policy Optimization</text>
+  <text x="550" y="315" text-anchor="middle" font-size="11" fill="#7f8c8d">• Dynamic sampling</text>
+  <text x="550" y="330" text-anchor="middle" font-size="11" fill="#7f8c8d">• Duplicating strategy</text>
+  <text x="550" y="345" text-anchor="middle" font-size="11" fill="#7f8c8d">• Group-relative advantage</text>
+  <text x="550" y="360" text-anchor="middle" font-size="11" fill="#7f8c8d">• 2-3x speedup</text>
+  
+  <!-- Final Model -->
+  <rect x="350" y="450" width="200" height="80" rx="10" fill="#f4e8f8" stroke="#8e44ad" stroke-width="2"/>
+  <text x="450" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">WebSailor Models</text>
+  <text x="450" y="495" text-anchor="middle" font-size="12" fill="#34495e">3B, 7B, 32B, 72B</text>
+  <text x="450" y="515" text-anchor="middle" font-size="11" fill="#7f8c8d">Superior reasoning capability</text>
+  
+  <!-- Evaluation Results -->
+  <rect x="100" y="580" width="150" height="60" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="175" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">BrowseComp-en</text>
+  <text x="175" y="620" text-anchor="middle" font-size="11" fill="#7f8c8d">12.0% (72B)</text>
+  
+  <rect x="280" y="580" width="150" height="60" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="355" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">BrowseComp-zh</text>
+  <text x="355" y="620" text-anchor="middle" font-size="11" fill="#7f8c8d">30.1% (72B)</text>
+  
+  <rect x="460" y="580" width="150" height="60" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="535" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">GAIA</text>
+  <text x="535" y="620" text-anchor="middle" font-size="11" fill="#7f8c8d">55.4% (72B)</text>
+  
+  <rect x="640" y="580" width="150" height="60" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="715" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">XBench</text>
+  <text x="715" y="620" text-anchor="middle" font-size="11" fill="#7f8c8d">55.0% (72B)</text>
+  
+  <!-- Key Innovation Boxes -->
+  <rect x="720" y="80" width="220" height="100" rx="8" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2"/>
+  <text x="830" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Key Innovations</text>
+  <text x="830" y="125" text-anchor="middle" font-size="10" fill="#7f8c8d">• Level 3 uncertainty tasks</text>
+  <text x="830" y="140" text-anchor="middle" font-size="10" fill="#7f8c8d">• Graph-based QA synthesis</text>
+  <text x="830" y="155" text-anchor="middle" font-size="10" fill="#7f8c8d">• Reasoning reconstruction</text>
+  <text x="830" y="170" text-anchor="middle" font-size="10" fill="#7f8c8d">• DUPO algorithm</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 250 140 Q 275 140 300 140" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 150 200 Q 150 225 200 250" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 200 Q 400 225 450 250" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 310 Q 425 310 450 310" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 450 370 Q 450 410 450 450" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 450 530 Q 450 555 450 580" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Process labels -->
+  <text x="275" y="130" text-anchor="middle" font-size="10" fill="#7f8c8d">generates</text>
+  <text x="175" y="235" text-anchor="middle" font-size="10" fill="#7f8c8d">feeds into</text>
+  <text x="525" y="235" text-anchor="middle" font-size="10" fill="#7f8c8d">provides</text>
+  <text x="425" y="300" text-anchor="middle" font-size="10" fill="#7f8c8d">then</text>
+  <text x="470" y="395" text-anchor="middle" font-size="10" fill="#7f8c8d">produces</text>
+  <text x="470" y="555" text-anchor="middle" font-size="10" fill="#7f8c8d">evaluated on</text>
+  
+  <!-- Task complexity indicator -->
+  <rect x="50" y="680" width="300" height="80" rx="8" fill="#f8f9fa" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="200" y="705" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Task Complexity Levels</text>
+  <text x="200" y="725" text-anchor="middle" font-size="10" fill="#27ae60">Level 1: Low uncertainty (single search)</text>
+  <text x="200" y="740" text-anchor="middle" font-size="10" fill="#f39c12">Level 2: Multi-hop QA (structured path)</text>
+  <text x="200" y="755" text-anchor="middle" font-size="10" fill="#e74c3c">Level 3: High uncertainty (complex reasoning)</text>
+  
+  <!-- Training details -->
+  <rect x="650" y="680" width="300" height="80" rx="8" fill="#f8f9fa" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="800" y="705" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Training Specifications</text>
+  <text x="800" y="725" text-anchor="middle" font-size="10" fill="#7f8c8d">• ReAct framework with search/visit tools</text>
+  <text x="800" y="740" text-anchor="middle" font-size="10" fill="#7f8c8d">• Up to 30 tool calls per trajectory</text>
+  <text x="800" y="755" text-anchor="middle" font-size="10" fill="#7f8c8d">• Rule-based reward (format + answer)</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Generating data with deliberately high and hard-to-reduce uncertainty">
+                        <div class="quiz-question">1. What is the key innovation in WebSailor's training data generation that helps achieve superhuman reasoning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using pre-existing web browsing datasets">Using pre-existing web browsing datasets</div><div class="quiz-choice" data-value="Generating data with deliberately high and hard-to-reduce uncertainty">Generating data with deliberately high and hard-to-reduce uncertainty</div><div class="quiz-choice" data-value="Copying training patterns from proprietary systems">Copying training patterns from proprietary systems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The LRMs' verbose reasoning style could restrict the agent's ability to develop flexible strategies">
+                        <div class="quiz-question">2. What unique challenge did the authors face when using powerful open-source LRMs to generate training trajectories?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The LRMs were too slow to generate enough training data">The LRMs were too slow to generate enough training data</div><div class="quiz-choice" data-value="The LRMs could not solve complex reasoning tasks">The LRMs could not solve complex reasoning tasks</div><div class="quiz-choice" data-value="The LRMs' verbose reasoning style could restrict the agent's ability to develop flexible strategies">The LRMs' verbose reasoning style could restrict the agent's ability to develop flexible strategies</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It achieved better results than much larger 32B models despite its smaller size">
+                        <div class="quiz-question">3. How did WebSailor-7B's performance demonstrate the effectiveness of the proposed methodology?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It achieved better results than much larger 32B models despite its smaller size">It achieved better results than much larger 32B models despite its smaller size</div><div class="quiz-choice" data-value="It performed well only on simple tasks">It performed well only on simple tasks</div><div class="quiz-choice" data-value="It matched the performance of GPT-4">It matched the performance of GPT-4</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Heeding the Inner Voice: Aligning ControlNet Training via Intermediate
+  Features Feedback</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.02321" target="_blank">http://arxiv.org/pdf/2507.02321</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on improving spatial control in text-to-image diffusion models, specifically enhancing ControlNet's ability to maintain consistency between input controls and generated images.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on ControlNet and ControlNet++ which focus on late-stage alignment, this paper proposes a novel approach called InnerControl that enforces spatial consistency across all diffusion steps using intermediate features.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitation of existing methods that only enforce control alignment in late diffusion steps while neglecting early stages where spatial structure predominantly emerges.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use lightweight convolutional networks to extract control signals from intermediate UNet features at every diffusion step, enabling explicit alignment throughout the entire generation process.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The method achieved better control alignment across different tasks (depth, edges, LineArt), with 7.87% RMSE reduction compared to ControlNet++ and 10.22% compared to CtrlU for depth estimation, while maintaining competitive image quality measured by FID scores.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Heeding the Inner Voice: Aligning ControlNet Training via Intermediate
+  Features Feedback</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    InnerControl: Training Strategy with Intermediate Features Feedback
+  </text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="70" width="150" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="125" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#1976d2">Input Image</text>
+  <text x="125" y="115" text-anchor="middle" font-size="10" fill="#1976d2">& Control Signal</text>
+  <text x="125" y="135" text-anchor="middle" font-size="10" fill="#1976d2">(depth, edges)</text>
+  
+  <!-- Add Noise -->
+  <rect x="250" y="70" width="120" height="80" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="310" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Add Noise</text>
+  <text x="310" y="120" text-anchor="middle" font-size="10" fill="#f57c00">xt at timestep t</text>
+  
+  <!-- UNet Encoder -->
+  <rect x="420" y="70" width="120" height="80" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="480" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#7b1fa2">UNet Encoder</text>
+  <text x="480" y="120" text-anchor="middle" font-size="10" fill="#7b1fa2">Feature Extraction</text>
+  
+  <!-- ControlNet Block -->
+  <rect x="50" y="200" width="150" height="80" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="125" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="#388e3c">ControlNet</text>
+  <text x="125" y="245" text-anchor="middle" font-size="10" fill="#388e3c">Control Block</text>
+  <text x="125" y="265" text-anchor="middle" font-size="10" fill="#388e3c">Zero Convolution</text>
+  
+  <!-- UNet Decoder -->
+  <rect x="420" y="200" width="120" height="80" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="480" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="#7b1fa2">UNet Decoder</text>
+  <text x="480" y="245" text-anchor="middle" font-size="10" fill="#7b1fa2">Intermediate</text>
+  <text x="480" y="265" text-anchor="middle" font-size="10" fill="#7b1fa2">Features</text>
+  
+  <!-- Feature Aggregation Network -->
+  <rect x="600" y="200" width="150" height="80" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="675" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2185b">Aggregation</text>
+  <text x="675" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2185b">Network H(·,t)</text>
+  <text x="675" y="260" text-anchor="middle" font-size="10" fill="#c2185b">Lightweight CNN</text>
+  
+  <!-- Predicted Control -->
+  <rect x="800" y="200" width="120" height="80" rx="10" fill="#fff8e1" stroke="#ffa000" stroke-width="2"/>
+  <text x="860" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa000">Predicted</text>
+  <text x="860" y="245" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa000">Control</text>
+  <text x="860" y="265" text-anchor="middle" font-size="10" fill="#ffa000">ĉspatial</text>
+  
+  <!-- Loss Functions -->
+  <rect x="50" y="350" width="150" height="100" rx="10" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="125" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#d32f2f">Diffusion Loss</text>
+  <text x="125" y="395" text-anchor="middle" font-size="10" fill="#d32f2f">Ldiffusion</text>
+  <text x="125" y="415" text-anchor="middle" font-size="10" fill="#d32f2f">Standard noise</text>
+  <text x="125" y="435" text-anchor="middle" font-size="10" fill="#d32f2f">prediction error</text>
+  
+  <rect x="250" y="350" width="150" height="100" rx="10" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="325" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#d32f2f">Reward Loss</text>
+  <text x="325" y="395" text-anchor="middle" font-size="10" fill="#d32f2f">Lreward</text>
+  <text x="325" y="415" text-anchor="middle" font-size="10" fill="#d32f2f">Late steps only</text>
+  <text x="325" y="435" text-anchor="middle" font-size="10" fill="#d32f2f">(t ∈ [0, 200])</text>
+  
+  <rect x="450" y="350" width="150" height="100" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="525" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#388e3c">Alignment Loss</text>
+  <text x="525" y="395" text-anchor="middle" font-size="10" fill="#388e3c">Lalignment (Ours)</text>
+  <text x="525" y="415" text-anchor="middle" font-size="10" fill="#388e3c">All steps</text>
+  <text x="525" y="435" text-anchor="middle" font-size="10" fill="#388e3c">(t ∈ [0, 920])</text>
+  
+  <!-- Combined Training Loss -->
+  <rect x="300" y="500" width="400" height="80" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="500" y="525" text-anchor="middle" font-size="14" font-weight="bold" fill="#0277bd">Combined Training Objective</text>
+  <text x="500" y="550" text-anchor="middle" font-size="12" fill="#0277bd">Ltraining = Ldiffusion + α·Lreward + β·Lalignment</text>
+  <text x="500" y="570" text-anchor="middle" font-size="10" fill="#0277bd">Enforces consistency across entire diffusion trajectory</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="650" y="350" width="300" height="100" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="3"/>
+  <text x="800" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#689f38">Key Innovation</text>
+  <text x="800" y="395" text-anchor="middle" font-size="10" fill="#689f38">Extract control signals from</text>
+  <text x="800" y="410" text-anchor="middle" font-size="10" fill="#689f38">intermediate UNet features</text>
+  <text x="800" y="425" text-anchor="middle" font-size="10" fill="#689f38">at ALL denoising steps</text>
+  <text x="800" y="440" text-anchor="middle" font-size="10" fill="#689f38">(not just final steps)</text>
+  
+  <!-- Generated Image -->
+  <rect x="650" y="70" width="120" height="80" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="710" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Generated</text>
+  <text x="710" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Image</text>
+  
+  <!-- Benefits -->
+  <rect x="50" y="650" width="900" height="120" rx="10" fill="#f9fbe7" stroke="#827717" stroke-width="2"/>
+  <text x="500" y="680" text-anchor="middle" font-size="14" font-weight="bold" fill="#827717">Benefits of InnerControl</text>
+  <text x="200" y="710" text-anchor="middle" font-size="11" fill="#827717">Better Control Alignment</text>
+  <text x="200" y="725" text-anchor="middle" font-size="10" fill="#827717">RMSE ↓ 7.87% vs ControlNet++</text>
+  
+  <text x="500" y="710" text-anchor="middle" font-size="11" fill="#827717">Improved Image Quality</text>
+  <text x="500" y="725" text-anchor="middle" font-size="10" fill="#827717">Maintains FID while better control</text>
+  
+  <text x="800" y="710" text-anchor="middle" font-size="11" fill="#827717">Early Stage Alignment</text>
+  <text x="800" y="725" text-anchor="middle" font-size="10" fill="#827717">Works on high-noise latents</text>
+  
+  <text x="350" y="750" text-anchor="middle" font-size="11" fill="#827717">Stability Across Guidance</text>
+  <text x="350" y="765" text-anchor="middle" font-size="10" fill="#827717">Effective at both low & high scales</text>
+  
+  <text x="650" y="750" text-anchor="middle" font-size="11" fill="#827717">Compatible with Existing Methods</text>
+  <text x="650" y="765" text-anchor="middle" font-size="10" fill="#827717">Can integrate with ControlNet++</text>
+  
+  <!-- Flow connections (simplified lines instead of arrows) -->
+  <line x1="200" y1="110" x2="250" y2="110" stroke="#666" stroke-width="2"/>
+  <line x1="370" y1="110" x2="420" y2="110" stroke="#666" stroke-width="2"/>
+  <line x1="540" y1="110" x2="650" y2="110" stroke="#666" stroke-width="2"/>
+  
+  <line x1="125" y1="150" x2="125" y2="200" stroke="#666" stroke-width="2"/>
+  <line x1="480" y1="150" x2="480" y2="200" stroke="#666" stroke-width="2"/>
+  
+  <line x1="540" y1="240" x2="600" y2="240" stroke="#666" stroke-width="2"/>
+  <line x1="750" y1="240" x2="800" y2="240" stroke="#666" stroke-width="2"/>
+  
+  <line x1="125" y1="280" x2="125" y2="350" stroke="#666" stroke-width="2"/>
+  <line x1="860" y1="280" x2="525" y2="350" stroke="#666" stroke-width="2"/>
+  
+  <line x1="525" y1="450" x2="500" y2="500" stroke="#666" stroke-width="2"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Focus only on late-stage alignment while neglecting early diffusion steps">
+                        <div class="quiz-question">1. What is the main limitation of ControlNet++ that InnerControl aims to address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Poor image quality in generated outputs">Poor image quality in generated outputs</div><div class="quiz-choice" data-value="Focus only on late-stage alignment while neglecting early diffusion steps">Focus only on late-stage alignment while neglecting early diffusion steps</div><div class="quiz-choice" data-value="High computational cost during training">High computational cost during training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Using lightweight convolutional networks on intermediate UNet features">
+                        <div class="quiz-question">2. How does InnerControl extract control signals during the diffusion process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using large pretrained vision models">Using large pretrained vision models</div><div class="quiz-choice" data-value="Through single-step image prediction">Through single-step image prediction</div><div class="quiz-choice" data-value="Using lightweight convolutional networks on intermediate UNet features">Using lightweight convolutional networks on intermediate UNet features</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="7.87%">
+                        <div class="quiz-question">3. What was the improvement in RMSE for depth estimation compared to ControlNet++ at guidance scale 7.5?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="7.87%">7.87%</div><div class="quiz-choice" data-value="15.22%">15.22%</div><div class="quiz-choice" data-value="3.94%">3.94%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
