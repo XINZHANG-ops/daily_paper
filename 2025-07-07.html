@@ -1,0 +1,1202 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-07 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-07 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>IntFold: A Controllable Foundation Model for General and Specialized
+  Biomolecular Structure Prediction</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-02</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.02025" target="_blank">http://arxiv.org/pdf/2507.02025</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of IntFold, a controllable foundation model for biomolecular structure prediction in computational biology and drug discovery.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on AlphaFold 3's architecture for biomolecular structure prediction, introduces new controllable adapters for specialized tasks and a custom attention kernel.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of efficiently adapting large structure prediction models for specialized applications while maintaining high accuracy across general prediction tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements modular adapters (LoRA architecture), custom FlashAttentionPairBias kernel, and a model-agnostic ranking method, trained on comprehensive datasets including PDB structures and specialized datasets.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves accuracy comparable to AlphaFold 3 across various biomolecular structures (protein-protein, protein-ligand, nucleic acids), with significant improvements in specialized tasks like allosteric state prediction and binding affinity estimation.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>IntFold: A Controllable Foundation Model for General and Specialized
+  Biomolecular Structure Prediction</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">IntFold: Controllable Foundation Model Workflow</text>
+  
+  <!-- Data Sources Section -->
+  <rect x="50" y="60" width="200" height="140" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="150" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9">Data Sources</text>
+  <text x="60" y="100" font-size="11" fill="#34495e">• Protein Data Bank (PDB)</text>
+  <text x="60" y="115" font-size="11" fill="#34495e">• AlphaFold Database</text>
+  <text x="60" y="130" font-size="11" fill="#34495e">• Disordered Protein PDB</text>
+  <text x="60" y="145" font-size="11" fill="#34495e">• Antibody-Antigen</text>
+  <text x="60" y="160" font-size="11" fill="#34495e">• Affinity Dataset</text>
+  <text x="60" y="175" font-size="11" fill="#34495e">• CDK2 Dataset</text>
+  <text x="60" y="190" font-size="11" fill="#34495e">• MSAs and Templates</text>
+  
+  <!-- Core Model Architecture -->
+  <rect x="320" y="60" width="360" height="200" fill="#fff3cd" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="500" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#d68910">Core Model Architecture</text>
+  
+  <!-- Embedding Trunk -->
+  <rect x="340" y="100" width="120" height="40" fill="#e74c3c" stroke="#c0392b" stroke-width="1" rx="5"/>
+  <text x="400" y="120" text-anchor="middle" font-size="11" fill="white">Embedding Trunk</text>
+  <text x="400" y="130" text-anchor="middle" font-size="9" fill="white">(Sequences + MSAs)</text>
+  
+  <!-- Diffusion Block -->
+  <rect x="480" y="100" width="120" height="40" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="540" y="120" text-anchor="middle" font-size="11" fill="white">Diffusion Block</text>
+  <text x="540" y="130" text-anchor="middle" font-size="9" fill="white">(Structure Generation)</text>
+  
+  <!-- Confidence Head -->
+  <rect x="340" y="160" width="120" height="40" fill="#27ae60" stroke="#229954" stroke-width="1" rx="5"/>
+  <text x="400" y="180" text-anchor="middle" font-size="11" fill="white">Confidence Head</text>
+  <text x="400" y="190" text-anchor="middle" font-size="9" fill="white">(pLDDT, pTM)</text>
+  
+  <!-- Modular Adapter -->
+  <rect x="480" y="160" width="120" height="40" fill="#e67e22" stroke="#d35400" stroke-width="1" rx="5"/>
+  <text x="540" y="180" text-anchor="middle" font-size="11" fill="white">Modular Adapter</text>
+  <text x="540" y="190" text-anchor="middle" font-size="9" fill="white">(Optional)</text>
+  
+  <!-- Flash Attention -->
+  <rect x="410" y="220" width="180" height="30" fill="#34495e" stroke="#2c3e50" stroke-width="1" rx="5"/>
+  <text x="500" y="240" text-anchor="middle" font-size="11" fill="white">FlashAttentionPairBias Kernel</text>
+  
+  <!-- Specialized Applications -->
+  <rect x="50" y="320" width="280" height="160" fill="#f4f6f7" stroke="#85929e" stroke-width="2" rx="10"/>
+  <text x="190" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Specialized Applications</text>
+  
+  <rect x="70" y="360" width="240" height="30" fill="#3498db" stroke="#2980b9" stroke-width="1" rx="5"/>
+  <text x="190" y="380" text-anchor="middle" font-size="11" fill="white">Target-Specific Modeling (CDK2)</text>
+  
+  <rect x="70" y="400" width="240" height="30" fill="#e74c3c" stroke="#c0392b" stroke-width="1" rx="5"/>
+  <text x="190" y="420" text-anchor="middle" font-size="11" fill="white">Guided Folding with Constraints</text>
+  
+  <rect x="70" y="440" width="240" height="30" fill="#f39c12" stroke="#d68910" stroke-width="1" rx="5"/>
+  <text x="190" y="460" text-anchor="middle" font-size="11" fill="white">Binding Affinity Prediction</text>
+  
+  <!-- Adapter Types -->
+  <rect x="380" y="320" width="260" height="120" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2" rx="10"/>
+  <text x="510" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Adapter Types</text>
+  
+  <rect x="400" y="360" width="220" height="25" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="510" y="378" text-anchor="middle" font-size="10" fill="white">Per-layer LoRA Adapters</text>
+  
+  <rect x="400" y="395" width="220" height="25" fill="#27ae60" stroke="#229954" stroke-width="1" rx="5"/>
+  <text x="510" y="413" text-anchor="middle" font-size="10" fill="white">Post-Hoc Downstream Module</text>
+  
+  <!-- Benchmarking -->
+  <rect x="700" y="60" width="250" height="380" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="825" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">Benchmarking Results</text>
+  
+  <text x="710" y="105" font-size="11" font-weight="bold" fill="#2c3e50">Protein Systems:</text>
+  <text x="720" y="120" font-size="10" fill="#34495e">• Monomers: LDDT 0.88</text>
+  <text x="720" y="135" font-size="10" fill="#34495e">• Protein-Protein: 72.9%</text>
+  <text x="720" y="150" font-size="10" fill="#34495e">• Ab-Ag: 37.6% → 43.2%</text>
+  
+  <text x="710" y="175" font-size="11" font-weight="bold" fill="#2c3e50">Protein-Ligand:</text>
+  <text x="720" y="190" font-size="10" fill="#34495e">• Success Rate: 58.5%</text>
+  <text x="720" y="205" font-size="10" fill="#34495e">• IntFold+: 61.8%</text>
+  <text x="720" y="220" font-size="10" fill="#34495e">• PoseBusters: 76.1%</text>
+  
+  <text x="710" y="245" font-size="11" font-weight="bold" fill="#2c3e50">Nucleic Acids:</text>
+  <text x="720" y="260" font-size="10" fill="#34495e">• Protein-DNA: 74.1%</text>
+  <text x="720" y="275" font-size="10" fill="#34495e">• Protein-RNA: 58.9%</text>
+  <text x="720" y="290" font-size="10" fill="#34495e">• RNA LDDT: 0.63</text>
+  
+  <text x="710" y="315" font-size="11" font-weight="bold" fill="#2c3e50">Compared to:</text>
+  <text x="720" y="330" font-size="10" fill="#34495e">• AlphaFold 3</text>
+  <text x="720" y="345" font-size="10" fill="#34495e">• Boltz-1, Boltz-2</text>
+  <text x="720" y="360" font-size="10" fill="#34495e">• Chai-1</text>
+  <text x="720" y="375" font-size="10" fill="#34495e">• HelixFold 3</text>
+  <text x="720" y="390" font-size="10" fill="#34495e">• Protenix</text>
+  
+  <!-- Technical Innovations -->
+  <rect x="380" y="500" width="570" height="120" fill="#e8f8f5" stroke="#16a085" stroke-width="2" rx="10"/>
+  <text x="665" y="520" text-anchor="middle" font-size="14" font-weight="bold" fill="#138d75">Technical Innovations</text>
+  
+  <rect x="400" y="540" width="160" height="30" fill="#e74c3c" stroke="#c0392b" stroke-width="1" rx="5"/>
+  <text x="480" y="560" text-anchor="middle" font-size="10" fill="white">Custom Attention Kernel</text>
+  
+  <rect x="580" y="540" width="160" height="30" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="660" y="560" text-anchor="middle" font-size="10" fill="white">Model-Agnostic Ranking</text>
+  
+  <rect x="760" y="540" width="160" height="30" fill="#f39c12" stroke="#d68910" stroke-width="1" rx="5"/>
+  <text x="840" y="560" text-anchor="middle" font-size="10" fill="white">Stability Improvements</text>
+  
+  <text x="400" y="590" font-size="10" fill="#34495e">• Faster than DeepSpeed/NVIDIA</text>
+  <text x="580" y="590" font-size="10" fill="#34495e">• Training-free similarity method</text>
+  <text x="760" y="590" font-size="10" fill="#34495e">• Skip-and-recover mechanism</text>
+  
+  <!-- Training Insights -->
+  <rect x="50" y="500" width="280" height="120" fill="#fef9e7" stroke="#f4d03f" stroke-width="2" rx="10"/>
+  <text x="190" y="520" text-anchor="middle" font-size="14" font-weight="bold" fill="#b7950b">Training Insights</text>
+  
+  <text x="60" y="545" font-size="11" fill="#34495e">• Activation explosion issues</text>
+  <text x="60" y="560" font-size="11" fill="#34495e">• Gradient spike handling</text>
+  <text x="60" y="575" font-size="11" fill="#34495e">• Parametrization choices</text>
+  <text x="60" y="590" font-size="11" fill="#34495e">• Numerical considerations</text>
+  <text x="60" y="605" font-size="11" fill="#34495e">• Float32 for diffusion module</text>
+  
+  <!-- Output -->
+  <rect x="400" y="660" width="200" height="60" fill="#16a085" stroke="#138d75" stroke-width="2" rx="10"/>
+  <text x="500" y="685" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Final Output</text>
+  <text x="500" y="705" text-anchor="middle" font-size="11" fill="white">3D Biomolecular Structures</text>
+  
+  <!-- Flow lines -->
+  <line x1="250" y1="130" x2="320" y2="130" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="680" y1="180" x2="700" y2="180" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="330" y1="400" x2="380" y2="370" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="260" x2="500" y2="320" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="440" x2="500" y1="500" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="620" x2="500" y1="660" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Performance comparison box -->
+  <rect x="50" y="650" width="280" height="100" fill="#d5e8d4" stroke="#82b366" stroke-width="2" rx="10"/>
+  <text x="190" y="670" text-anchor="middle" font-size="14" font-weight="bold" fill="#2d5016">Key Achievements</text>
+  <text x="60" y="690" font-size="10" fill="#2d5016">✓ Matches AlphaFold 3 performance</text>
+  <text x="60" y="705" font-size="10" fill="#2d5016">✓ Outperforms contemporary methods</text>
+  <text x="60" y="720" font-size="10" fill="#2d5016">✓ Controllable specialized applications</text>
+  <text x="60" y="735" font-size="10" fill="#2d5016">✓ Superior attention kernel efficiency</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Its controllability through specialized adapters while keeping the base model frozen">
+                        <div class="quiz-question">1. What is the key innovation that distinguishes IntFold from other biomolecular structure prediction models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Its faster processing speed compared to AlphaFold 3">Its faster processing speed compared to AlphaFold 3</div><div class="quiz-choice" data-value="Its controllability through specialized adapters while keeping the base model frozen">Its controllability through specialized adapters while keeping the base model frozen</div><div class="quiz-choice" data-value="Its ability to handle larger protein structures">Its ability to handle larger protein structures</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A custom FlashAttentionPairBias kernel for faster and more memory-efficient processing">
+                        <div class="quiz-question">2. Which technical innovation did IntFold introduce to improve computational efficiency?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A new data preprocessing pipeline">A new data preprocessing pipeline</div><div class="quiz-choice" data-value="A quantum computing integration module">A quantum computing integration module</div><div class="quiz-choice" data-value="A custom FlashAttentionPairBias kernel for faster and more memory-efficient processing">A custom FlashAttentionPairBias kernel for faster and more memory-efficient processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By using a training-free similarity-based method that compares multiple predictions">
+                        <div class="quiz-question">3. How does IntFold handle the ranking of multiple structure predictions for a given target?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using a deep learning confidence score">By using a deep learning confidence score</div><div class="quiz-choice" data-value="By selecting the structure with highest energy score">By selecting the structure with highest energy score</div><div class="quiz-choice" data-value="By using a training-free similarity-based method that compares multiple predictions">By using a training-free similarity-based method that compares multiple predictions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Ovis-U1 Technical Report</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-06-28</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2506.23044" target="_blank">http://arxiv.org/pdf/2506.23044</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A technical report introducing Ovis-U1, a 3-billion-parameter unified multimodal AI model for image understanding, text-to-image generation, and image editing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on GPT-4o and previous Ovis models, proposing a new unified training approach starting from a language model instead of using a frozen multimodal language model.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing how to endow a multimodal understanding model with image generation capabilities and effectively train a unified model on both understanding and generation tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a diffusion-based visual decoder with bidirectional token refiner, utilizing a 6-stage unified training process combining understanding, generation, and editing tasks.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves 69.6 on OpenCompass Multi-modal Academic Benchmark, 83.72 on DPG-Bench, 0.89 on GenEval, and scores of 4.00 and 6.42 on ImgEdit-Bench and GEdit-Bench-EN respectively, surpassing several state-of-the-art models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Ovis-U1 Technical Report</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Ovis-U1 Training Pipeline</text>
+  
+  <!-- Stage 0 -->
+  <rect x="50" y="80" width="180" height="80" rx="10" fill="#ff6b6b" stroke="#d63031" stroke-width="2"/>
+  <text x="140" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 0</text>
+  <text x="140" y="120" text-anchor="middle" font-size="10" fill="white">Visual Decoder</text>
+  <text x="140" y="135" text-anchor="middle" font-size="10" fill="white">Pretraining</text>
+  <text x="140" y="150" text-anchor="middle" font-size="9" fill="white">T2I Generation</text>
+  
+  <!-- Stage 1 -->
+  <rect x="270" y="80" width="180" height="80" rx="10" fill="#74b9ff" stroke="#0984e3" stroke-width="2"/>
+  <text x="360" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 1</text>
+  <text x="360" y="120" text-anchor="middle" font-size="10" fill="white">Adapter</text>
+  <text x="360" y="135" text-anchor="middle" font-size="10" fill="white">Pretraining</text>
+  <text x="360" y="150" text-anchor="middle" font-size="9" fill="white">Und., T2I, Editing</text>
+  
+  <!-- Stage 2 -->
+  <rect x="490" y="80" width="180" height="80" rx="10" fill="#55a3ff" stroke="#2d3436" stroke-width="2"/>
+  <text x="580" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 2</text>
+  <text x="580" y="120" text-anchor="middle" font-size="10" fill="white">Visual Encoder</text>
+  <text x="580" y="135" text-anchor="middle" font-size="10" fill="white">Alignment</text>
+  <text x="580" y="150" text-anchor="middle" font-size="9" fill="white">Und., T2I, Editing</text>
+  
+  <!-- Stage 3 -->
+  <rect x="160" y="200" width="180" height="80" rx="10" fill="#00b894" stroke="#00a085" stroke-width="2"/>
+  <text x="250" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 3</text>
+  <text x="250" y="240" text-anchor="middle" font-size="10" fill="white">Understanding</text>
+  <text x="250" y="255" text-anchor="middle" font-size="10" fill="white">Learning</text>
+  <text x="250" y="270" text-anchor="middle" font-size="9" fill="white">Understanding Only</text>
+  
+  <!-- Stage 4 -->
+  <rect x="380" y="200" width="180" height="80" rx="10" fill="#fdcb6e" stroke="#e17055" stroke-width="2"/>
+  <text x="470" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 4</text>
+  <text x="470" y="240" text-anchor="middle" font-size="10" fill="white">Generation</text>
+  <text x="470" y="255" text-anchor="middle" font-size="10" fill="white">Learning</text>
+  <text x="470" y="270" text-anchor="middle" font-size="9" fill="white">T2I Generation</text>
+  
+  <!-- Stage 5 -->
+  <rect x="270" y="320" width="180" height="80" rx="10" fill="#a29bfe" stroke="#6c5ce7" stroke-width="2"/>
+  <text x="360" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 5</text>
+  <text x="360" y="360" text-anchor="middle" font-size="10" fill="white">Generation</text>
+  <text x="360" y="375" text-anchor="middle" font-size="10" fill="white">Fine-tuning</text>
+  <text x="360" y="390" text-anchor="middle" font-size="9" fill="white">T2I Gen., Editing</text>
+  
+  <!-- Architecture Components -->
+  <rect x="50" y="450" width="900" height="300" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="480" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Ovis-U1 Architecture</text>
+  
+  <!-- LLM Component -->
+  <rect x="100" y="520" width="120" height="60" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="160" y="545" text-anchor="middle" font-size="11" font-weight="bold" fill="white">LLM</text>
+  <text x="160" y="560" text-anchor="middle" font-size="9" fill="white">Qwen3-1.7B</text>
+  <text x="160" y="572" text-anchor="middle" font-size="8" fill="white">1720M params</text>
+  
+  <!-- Visual Encoder -->
+  <rect x="250" y="520" width="120" height="60" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="310" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Visual Encoder</text>
+  <text x="310" y="555" text-anchor="middle" font-size="9" fill="white">AIMv2-Large</text>
+  <text x="310" y="570" text-anchor="middle" font-size="8" fill="white">578M params</text>
+  
+  <!-- Adapter -->
+  <rect x="400" y="520" width="120" height="60" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="460" y="545" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Adapter</text>
+  <text x="460" y="560" text-anchor="middle" font-size="9" fill="white">Visual-Text</text>
+  <text x="460" y="572" text-anchor="middle" font-size="8" fill="white">135M params</text>
+  
+  <!-- Refiner -->
+  <rect x="550" y="520" width="120" height="60" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="610" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Refiner</text>
+  <text x="610" y="555" text-anchor="middle" font-size="9" fill="white">Bidirectional</text>
+  <text x="610" y="570" text-anchor="middle" font-size="8" fill="white">81M params</text>
+  
+  <!-- Visual Decoder -->
+  <rect x="700" y="520" width="120" height="60" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="760" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Visual Decoder</text>
+  <text x="760" y="555" text-anchor="middle" font-size="9" fill="white">MMDiT</text>
+  <text x="760" y="570" text-anchor="middle" font-size="8" fill="white">1046M params</text>
+  
+  <!-- Data Flow -->
+  <rect x="100" y="620" width="200" height="50" rx="8" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="200" y="640" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Understanding Data</text>
+  <text x="200" y="655" text-anchor="middle" font-size="9" fill="white">COYO, Wukong, ShareGPT4V</text>
+  
+  <rect x="320" y="620" width="200" height="50" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="420" y="640" text-anchor="middle" font-size="11" font-weight="bold" fill="white">T2I Generation Data</text>
+  <text x="420" y="655" text-anchor="middle" font-size="9" fill="white">Laion-aes6, JourneyDB</text>
+  
+  <rect x="540" y="620" width="200" height="50" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="640" y="640" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Image Editing Data</text>
+  <text x="640" y="655" text-anchor="middle" font-size="9" fill="white">OmniEdit, UltraEdit, SeedEdit</text>
+  
+  <!-- Performance Results -->
+  <rect x="100" y="700" width="150" height="40" rx="5" fill="#27ae60" stroke="#229954" stroke-width="1"/>
+  <text x="175" y="715" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Understanding</text>
+  <text x="175" y="730" text-anchor="middle" font-size="9" fill="white">MMB: 77.8</text>
+  
+  <rect x="270" y="700" width="150" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+  <text x="345" y="715" text-anchor="middle" font-size="10" font-weight="bold" fill="white">T2I Generation</text>
+  <text x="345" y="730" text-anchor="middle" font-size="9" fill="white">GenEval: 0.89</text>
+  
+  <rect x="440" y="700" width="150" height="40" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+  <text x="515" y="715" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Image Editing</text>
+  <text x="515" y="730" text-anchor="middle" font-size="9" fill="white">ImgEdit: 4.00</text>
+  
+  <!-- Total Parameters -->
+  <rect x="620" y="700" width="150" height="40" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+  <text x="695" y="715" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Total Parameters</text>
+  <text x="695" y="730" text-anchor="middle" font-size="9" fill="white">3.6B</text>
+  
+  <!-- Connection lines with flow direction -->
+  <line x1="230" y1="120" x2="270" y2="120" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="120" x2="490" y2="120" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="580" y1="160" x2="250" y2="200" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="340" y1="240" x2="380" y2="240" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="470" y1="280" x2="360" y2="320" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Starting from a language model and training with unified tasks">
+                        <div class="quiz-question">1. What is the key innovation in Ovis-U1's training approach compared to previous models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a frozen multimodal language model">Using a frozen multimodal language model</div><div class="quiz-choice" data-value="Starting from a language model and training with unified tasks">Starting from a language model and training with unified tasks</div><div class="quiz-choice" data-value="Training only on image generation tasks">Training only on image generation tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The bidirectional token refiner">
+                        <div class="quiz-question">2. Which component is responsible for enhancing the interaction between textual and visual embeddings in Ovis-U1?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The visual encoder">The visual encoder</div><div class="quiz-choice" data-value="The VAE decoder">The VAE decoder</div><div class="quiz-choice" data-value="The bidirectional token refiner">The bidirectional token refiner</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="3.6B parameters with 1.7B in LLM and 1.9B in other components">
+                        <div class="quiz-question">3. What is the total number of parameters in Ovis-U1 and how are they distributed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="3.6B parameters with 1.7B in LLM and 1.9B in other components">3.6B parameters with 1.7B in LLM and 1.9B in other components</div><div class="quiz-choice" data-value="3B parameters evenly distributed across all components">3B parameters evenly distributed across all components</div><div class="quiz-choice" data-value="3.6B parameters with 1B in visual decoder and 2.6B in other parts">3.6B parameters with 1B in visual decoder and 2.6B in other parts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Decoupled Planning and Execution: A Hierarchical Reasoning Framework for
+  Deep Search</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.02652" target="_blank">http://arxiv.org/pdf/2507.02652</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents HiRA, a hierarchical reasoning framework for deep search tasks in artificial intelligence that separates planning from execution.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on previous retrieval-augmented generation (RAG) and single-model reasoning approaches, it proposes a novel multi-agent hierarchical architecture that decouples high-level planning from specialized execution.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitations of current single-model approaches that struggle with handling both high-level planning and detailed execution simultaneously, leading to inefficient reasoning and limited scalability.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> HiRA implements a three-tier architecture consisting of a Meta Reasoning Planner for task decomposition, an Adaptive Reasoning Coordinator for task delegation, and Domain-Specialized Executors for specialized task execution.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Experiments on four complex cross-modal deep search benchmarks showed that HiRA significantly outperformed state-of-the-art RAG and agent-based systems, with notable improvements in both answer quality and system efficiency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Decoupled Planning and Execution: A Hierarchical Reasoning Framework for
+  Deep Search</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    HiRA: Hierarchical Reasoning Framework Flow
+  </text>
+  
+  <!-- Meta Reasoning Planner -->
+  <rect x="50" y="80" width="200" height="120" rx="15" fill="#3498db" opacity="0.8"/>
+  <text x="150" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">
+    Meta Reasoning
+  </text>
+  <text x="150" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="white">
+    Planner
+  </text>
+  <text x="150" y="155" text-anchor="middle" font-size="11" fill="white">
+    • Task Decomposition
+  </text>
+  <text x="150" y="175" text-anchor="middle" font-size="11" fill="white">
+    • Strategic Planning
+  </text>
+  <text x="150" y="195" text-anchor="middle" font-size="11" fill="white">
+    • Answer Generation
+  </text>
+  
+  <!-- Adaptive Reasoning Coordinator -->
+  <rect x="400" y="80" width="200" height="120" rx="15" fill="#e74c3c" opacity="0.8"/>
+  <text x="500" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">
+    Adaptive Reasoning
+  </text>
+  <text x="500" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="white">
+    Coordinator
+  </text>
+  <text x="500" y="155" text-anchor="middle" font-size="11" fill="white">
+    • Task Assignment
+  </text>
+  <text x="500" y="175" text-anchor="middle" font-size="11" fill="white">
+    • Reasoning Distillation
+  </text>
+  <text x="500" y="195" text-anchor="middle" font-size="11" fill="white">
+    • Memory Management
+  </text>
+  
+  <!-- Domain-Specialized Executors -->
+  <rect x="750" y="80" width="200" height="120" rx="15" fill="#27ae60" opacity="0.8"/>
+  <text x="850" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">
+    Domain-Specialized
+  </text>
+  <text x="850" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="white">
+    Executors
+  </text>
+  <text x="850" y="155" text-anchor="middle" font-size="11" fill="white">
+    • Expert Agents
+  </text>
+  <text x="850" y="175" text-anchor="middle" font-size="11" fill="white">
+    • Tool Integration
+  </text>
+  <text x="850" y="195" text-anchor="middle" font-size="11" fill="white">
+    • Specialized Reasoning
+  </text>
+  
+  <!-- Flow connections -->
+  <polygon points="250,140 380,140 370,130 370,150" fill="#34495e"/>
+  <polygon points="600,140 730,140 720,130 720,150" fill="#34495e"/>
+  <polygon points="730,160 600,160 610,150 610,170" fill="#34495e"/>
+  <polygon points="380,160 250,160 260,150 260,170" fill="#34495e"/>
+  
+  <!-- Memory System -->
+  <rect x="350" y="250" width="300" height="80" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="500" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="white">
+    Dual-Channel Memory System
+  </text>
+  <text x="430" y="300" text-anchor="middle" font-size="12" fill="white">
+    Fact Memory
+  </text>
+  <text x="570" y="300" text-anchor="middle" font-size="12" fill="white">
+    Resource Memory
+  </text>
+  <text x="430" y="315" text-anchor="middle" font-size="10" fill="white">
+    • Factual discoveries
+  </text>
+  <text x="570" y="315" text-anchor="middle" font-size="10" fill="white">
+    • Information resources
+  </text>
+  
+  <!-- Expert Agents Details -->
+  <g transform="translate(50, 380)">
+    <!-- Search Expert -->
+    <rect x="0" y="0" width="180" height="100" rx="10" fill="#f39c12" opacity="0.8"/>
+    <text x="90" y="25" text-anchor="middle" font-size="12" font-weight="bold" fill="white">
+      Search Expert
+    </text>
+    <text x="90" y="45" text-anchor="middle" font-size="10" fill="white">
+      • Simple RAG
+    </text>
+    <text x="90" y="60" text-anchor="middle" font-size="10" fill="white">
+      • Deep Search (WebThinker)
+    </text>
+    <text x="90" y="75" text-anchor="middle" font-size="10" fill="white">
+      • Web Information
+    </text>
+    <text x="90" y="90" text-anchor="middle" font-size="10" fill="white">
+      Acquisition
+    </text>
+  </g>
+  
+  <g transform="translate(250, 380)">
+    <!-- Code Expert -->
+    <rect x="0" y="0" width="180" height="100" rx="10" fill="#e67e22" opacity="0.8"/>
+    <text x="90" y="25" text-anchor="middle" font-size="12" font-weight="bold" fill="white">
+      Code Expert
+    </text>
+    <text x="90" y="45" text-anchor="middle" font-size="10" fill="white">
+      • Python Interpreter
+    </text>
+    <text x="90" y="60" text-anchor="middle" font-size="10" fill="white">
+      • Mathematical Computation
+    </text>
+    <text x="90" y="75" text-anchor="middle" font-size="10" fill="white">
+      • File Processing
+    </text>
+    <text x="90" y="90" text-anchor="middle" font-size="10" fill="white">
+      • Data Analysis
+    </text>
+  </g>
+  
+  <g transform="translate(450, 380)">
+    <!-- Multimodal Expert -->
+    <rect x="0" y="0" width="180" height="100" rx="10" fill="#8e44ad" opacity="0.8"/>
+    <text x="90" y="25" text-anchor="middle" font-size="12" font-weight="bold" fill="white">
+      Multimodal Expert
+    </text>
+    <text x="90" y="45" text-anchor="middle" font-size="10" fill="white">
+      • Image Understanding
+    </text>
+    <text x="90" y="60" text-anchor="middle" font-size="10" fill="white">
+      • Video Analysis
+    </text>
+    <text x="90" y="75" text-anchor="middle" font-size="10" fill="white">
+      • Audio Processing
+    </text>
+    <text x="90" y="90" text-anchor="middle" font-size="10" fill="white">
+      • Cross-modal Fusion
+    </text>
+  </g>
+  
+  <g transform="translate(650, 380)">
+    <!-- Additional Tools -->
+    <rect x="0" y="0" width="180" height="100" rx="10" fill="#16a085" opacity="0.8"/>
+    <text x="90" y="25" text-anchor="middle" font-size="12" font-weight="bold" fill="white">
+      External Tools
+    </text>
+    <text x="90" y="45" text-anchor="middle" font-size="10" fill="white">
+      • Bing Search API
+    </text>
+    <text x="90" y="60" text-anchor="middle" font-size="10" fill="white">
+      • Web Browser
+    </text>
+    <text x="90" y="75" text-anchor="middle" font-size="10" fill="white">
+      • Code Sandbox
+    </text>
+    <text x="90" y="90" text-anchor="middle" font-size="10" fill="white">
+      • Multimodal Models
+    </text>
+  </g>
+  
+  <!-- Process Flow -->
+  <g transform="translate(50, 520)">
+    <rect x="0" y="0" width="900" height="200" rx="15" fill="#ecf0f1" opacity="0.5"/>
+    <text x="450" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">
+      Inference Process Flow
+    </text>
+    
+    <!-- Step 1 -->
+    <circle cx="100" cy="80" r="25" fill="#3498db"/>
+    <text x="100" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">1</text>
+    <text x="100" y="115" text-anchor="middle" font-size="11" fill="#2c3e50">Query Input</text>
+    <text x="100" y="130" text-anchor="middle" font-size="11" fill="#2c3e50">Task Analysis</text>
+    
+    <!-- Step 2 -->
+    <circle cx="250" cy="80" r="25" fill="#e74c3c"/>
+    <text x="250" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">2</text>
+    <text x="250" y="115" text-anchor="middle" font-size="11" fill="#2c3e50">Subtask</text>
+    <text x="250" y="130" text-anchor="middle" font-size="11" fill="#2c3e50">Generation</text>
+    
+    <!-- Step 3 -->
+    <circle cx="400" cy="80" r="25" fill="#f39c12"/>
+    <text x="400" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">3</text>
+    <text x="400" y="115" text-anchor="middle" font-size="11" fill="#2c3e50">Agent</text>
+    <text x="400" y="130" text-anchor="middle" font-size="11" fill="#2c3e50">Selection</text>
+    
+    <!-- Step 4 -->
+    <circle cx="550" cy="80" r="25" fill="#27ae60"/>
+    <text x="550" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">4</text>
+    <text x="550" y="115" text-anchor="middle" font-size="11" fill="#2c3e50">Task</text>
+    <text x="550" y="130" text-anchor="middle" font-size="11" fill="#2c3e50">Execution</text>
+    
+    <!-- Step 5 -->
+    <circle cx="700" cy="80" r="25" fill="#9b59b6"/>
+    <text x="700" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">5</text>
+    <text x="700" y="115" text-anchor="middle" font-size="11" fill="#2c3e50">Result</text>
+    <text x="700" y="130" text-anchor="middle" font-size="11" fill="#2c3e50">Distillation</text>
+    
+    <!-- Step 6 -->
+    <circle cx="800" cy="80" r="25" fill="#34495e"/>
+    <text x="800" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">6</text>
+    <text x="800" y="115" text-anchor="middle" font-size="11" fill="#2c3e50">Answer</text>
+    <text x="800" y="130" text-anchor="middle" font-size="11" fill="#2c3e50">Generation</text>
+    
+    <!-- Flow arrows between steps -->
+    <polygon points="125,80 225,80 215,70 215,90" fill="#7f8c8d"/>
+    <polygon points="275,80 375,80 365,70 365,90" fill="#7f8c8d"/>
+    <polygon points="425,80 525,80 515,70 515,90" fill="#7f8c8d"/>
+    <polygon points="575,80 675,80 665,70 665,90" fill="#7f8c8d"/>
+    <polygon points="725,80 775,80 765,70 765,90" fill="#7f8c8d"/>
+    
+    <!-- Feedback loop -->
+    <path d="M 700 105 Q 450 150 250 105" stroke="#e74c3c" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+    <text x="450" y="170" text-anchor="middle" font-size="10" fill="#e74c3c">Iterative Refinement</text>
+  </g>
+  
+  <!-- Connection lines from coordinator to memory -->
+  <line x1="500" y1="200" x2="500" y2="250" stroke="#9b59b6" stroke-width="2"/>
+  
+  <!-- Connection lines from experts to coordinator -->
+  <line x1="850" y1="200" x2="500" y2="250" stroke="#27ae60" stroke-width="2" opacity="0.6"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It separates planning from execution using a three-tier architecture">
+                        <div class="quiz-question">1. What is the main architectural innovation of HiRA compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a single large language model for all tasks">It uses a single large language model for all tasks</div><div class="quiz-choice" data-value="It separates planning from execution using a three-tier architecture">It separates planning from execution using a three-tier architecture</div><div class="quiz-choice" data-value="It only focuses on web search capabilities">It only focuses on web search capabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="They mix execution details with high-level reasoning, disrupting the core reasoning process">
+                        <div class="quiz-question">2. Why do traditional single-model approaches struggle with complex search tasks according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They are too slow to process search results">They are too slow to process search results</div><div class="quiz-choice" data-value="They cannot handle multiple languages">They cannot handle multiple languages</div><div class="quiz-choice" data-value="They mix execution details with high-level reasoning, disrupting the core reasoning process">They mix execution details with high-level reasoning, disrupting the core reasoning process</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The Adaptive Reasoning Coordinator">
+                        <div class="quiz-question">3. What component in HiRA is responsible for matching subtasks with the most appropriate expert agents?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The Meta Reasoning Planner">The Meta Reasoning Planner</div><div class="quiz-choice" data-value="The Adaptive Reasoning Coordinator">The Adaptive Reasoning Coordinator</div><div class="quiz-choice" data-value="The Domain-Specialized Executors">The Domain-Specialized Executors</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
