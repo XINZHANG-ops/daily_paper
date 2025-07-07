@@ -11,6 +11,7 @@ from string import Template
 from threading import Thread
 from queue import Queue, Empty
 from dotenv import load_dotenv
+from inspirational_quotes import quote
 
 
 from daily_paper_utils import (
@@ -270,9 +271,10 @@ if __name__ == "__main__":
             paper_summary="\n".join(paper_summaries)
         )
 
-        random_quote = fetch_data("/quotes/random")
+        # random_quote = fetch_data("/quotes/random")
+        random_quote = quote()
         if random_quote:
-            additional_content = f"{random_quote[0]['content']} --{random_quote[0]['author']}"
+            additional_content = f"{random_quote['quote']} --{random_quote['author']}"
         else:
             additional_content = model_response(
                 quotes_prompt,
