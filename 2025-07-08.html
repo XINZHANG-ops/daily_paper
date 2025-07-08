@@ -1,0 +1,1207 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-08 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-08 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>4DSloMo: 4D Reconstruction for High Speed Scene with Asynchronous
+  Capture</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.05163" target="_blank">http://arxiv.org/pdf/2507.05163</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> 4D reconstruction of high-speed dynamic scenes using asynchronous multi-camera capture and video diffusion models in computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous 4D Gaussian Splatting work limited to 30 FPS, introduces novel asynchronous capture scheme and video diffusion model refinement.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Current 4D capture systems are limited to low frame rates (<30 FPS), making it difficult to reconstruct fast-moving scenes with high fidelity.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Combines asynchronous camera capture (staggering camera start times) with a video diffusion model for artifact removal, implemented through 4D Gaussian Splatting and LoRA-based fine-tuning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves superior reconstruction quality compared to synchronous methods on both synthetic and real datasets, with significant improvements in PSNR, SSIM, and LPIPS metrics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>4DSloMo: 4D Reconstruction for High Speed Scene with Asynchronous
+  Capture</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">4DSloMo: Method Workflow</text>
+  
+  <!-- Stage 1: Asynchronous Capture -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Asynchronous Capture</text>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#1976d2">• Stagger camera start times</text>
+  <text x="150" y="120" text-anchor="middle" font-size="11" fill="#1976d2">• 25 FPS → 100-200 FPS</text>
+  <text x="150" y="135" text-anchor="middle" font-size="11" fill="#1976d2">• Divide cameras into groups</text>
+  <text x="150" y="150" text-anchor="middle" font-size="11" fill="#1976d2">• ti = i·(τ/K) + j·τ</text>
+  
+  <!-- Stage 2: Initial 4D Gaussian Splatting -->
+  <rect x="300" y="60" width="200" height="120" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">Initial 4D Gaussian</text>
+  <text x="400" y="105" text-anchor="middle" font-size="11" fill="#f57c00">• GS4D reconstruction</text>
+  <text x="400" y="120" text-anchor="middle" font-size="11" fill="#f57c00">• 7k iterations training</text>
+  <text x="400" y="135" text-anchor="middle" font-size="11" fill="#f57c00">• Sparse view artifacts</text>
+  <text x="400" y="150" text-anchor="middle" font-size="11" fill="#f57c00">• p(x|μ,Σ) = exp(-½(x-μ)ᵀΣ⁻¹(x-μ))</text>
+  
+  <!-- Stage 3: Video Rendering -->
+  <rect x="550" y="60" width="200" height="120" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="650" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#7b1fa2">Video Rendering</text>
+  <text x="650" y="105" text-anchor="middle" font-size="11" fill="#7b1fa2">• Render high-frame-rate videos</text>
+  <text x="650" y="120" text-anchor="middle" font-size="11" fill="#7b1fa2">• Contains floater artifacts</text>
+  <text x="650" y="135" text-anchor="middle" font-size="11" fill="#7b1fa2">• All camera viewpoints</text>
+  <text x="650" y="150" text-anchor="middle" font-size="11" fill="#7b1fa2">• Vrender ∈ R^(C×T×H×W)</text>
+  
+  <!-- Stage 4: Data Curation for Training -->
+  <rect x="50" y="220" width="200" height="120" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="150" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">Data Curation</text>
+  <text x="150" y="265" text-anchor="middle" font-size="11" fill="#388e3c">• Temporal sub-sampling</text>
+  <text x="150" y="280" text-anchor="middle" font-size="11" fill="#388e3c">• Simulate async capture</text>
+  <text x="150" y="295" text-anchor="middle" font-size="11" fill="#388e3c">• 750 noisy-clean pairs</text>
+  <text x="150" y="310" text-anchor="middle" font-size="11" fill="#388e3c">• DNA-Rendering dataset</text>
+  
+  <!-- Stage 5: Video Diffusion Model Training -->
+  <rect x="300" y="220" width="200" height="120" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="400" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#c2185b">Video Diffusion Training</text>
+  <text x="400" y="265" text-anchor="middle" font-size="11" fill="#c2185b">• Wan2.1 backbone</text>
+  <text x="400" y="280" text-anchor="middle" font-size="11" fill="#c2185b">• LoRA fine-tuning</text>
+  <text x="400" y="295" text-anchor="middle" font-size="11" fill="#c2185b">• DiT component</text>
+  <text x="400" y="310" text-anchor="middle" font-size="11" fill="#c2185b">• Ltune = E[||ε - εθ||²]</text>
+  
+  <!-- Stage 6: Artifact Fix Model -->
+  <rect x="550" y="220" width="200" height="120" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="650" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#0277bd">Artifact-Fix Model</text>
+  <text x="650" y="265" text-anchor="middle" font-size="11" fill="#0277bd">• Video enhancement</text>
+  <text x="650" y="280" text-anchor="middle" font-size="11" fill="#0277bd">• Temporal consistency</text>
+  <text x="650" y="295" text-anchor="middle" font-size="11" fill="#0277bd">• Remove floater artifacts</text>
+  <text x="650" y="310" text-anchor="middle" font-size="11" fill="#0277bd">• Vrender → V̂</text>
+  
+  <!-- Stage 7: Refined 4D Reconstruction -->
+  <rect x="200" y="380" width="200" height="120" rx="10" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/>
+  <text x="300" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#f9a825">Refined 4D Gaussian</text>
+  <text x="300" y="425" text-anchor="middle" font-size="11" fill="#f9a825">• Additional 7k iterations</text>
+  <text x="300" y="440" text-anchor="middle" font-size="11" fill="#f9a825">• Diffusion supervision</text>
+  <text x="300" y="455" text-anchor="middle" font-size="11" fill="#f9a825">• Ldiff = ||Vrender - V̂||₁ + Lp</text>
+  <text x="300" y="470" text-anchor="middle" font-size="11" fill="#f9a825">• Enhanced visual quality</text>
+  
+  <!-- Stage 8: Final Output -->
+  <rect x="450" y="380" width="200" height="120" rx="10" fill="#e8f5e8" stroke="#2e7d32" stroke-width="2"/>
+  <text x="550" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#2e7d32">High-Quality 4D Output</text>
+  <text x="550" y="425" text-anchor="middle" font-size="11" fill="#2e7d32">• Temporal consistency</text>
+  <text x="550" y="440" text-anchor="middle" font-size="11" fill="#2e7d32">• Reduced artifacts</text>
+  <text x="550" y="455" text-anchor="middle" font-size="11" fill="#2e7d32">• High-speed motion</text>
+  <text x="550" y="470" text-anchor="middle" font-size="11" fill="#2e7d32">• 100-200 FPS equivalent</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 250 120 Q 275 120 300 120" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 500 120 Q 525 120 550 120" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 150 180 Q 150 200 150 220" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 250 280 Q 275 280 300 280" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 500 280 Q 525 280 550 280" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 400 340 Q 350 360 300 380" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 650 340 Q 600 360 550 380" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 400 440 Q 425 440 450 440" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Key Components Box -->
+  <rect x="50" y="550" width="900" height="200" rx="10" fill="#f5f5f5" stroke="#424242" stroke-width="2"/>
+  <text x="500" y="575" text-anchor="middle" font-size="18" font-weight="bold" fill="#424242">Key Technical Components</text>
+  
+  <!-- Component 1 -->
+  <rect x="80" y="590" width="160" height="60" rx="5" fill="#e3f2fd" stroke="#1976d2"/>
+  <text x="160" y="610" text-anchor="middle" font-size="12" font-weight="bold" fill="#1976d2">Asynchronous Scheme</text>
+  <text x="160" y="625" text-anchor="middle" font-size="10" fill="#1976d2">K camera groups</text>
+  <text x="160" y="640" text-anchor="middle" font-size="10" fill="#1976d2">Effective rate × K</text>
+  
+  <!-- Component 2 -->
+  <rect x="260" y="590" width="160" height="60" rx="5" fill="#fff3e0" stroke="#f57c00"/>
+  <text x="340" y="610" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">4D Gaussian Splatting</text>
+  <text x="340" y="625" text-anchor="middle" font-size="10" fill="#f57c00">Spatiotemporal modeling</text>
+  <text x="340" y="640" text-anchor="middle" font-size="10" fill="#f57c00">x = (x,y,z,t)</text>
+  
+  <!-- Component 3 -->
+  <rect x="440" y="590" width="160" height="60" rx="5" fill="#fce4ec" stroke="#c2185b"/>
+  <text x="520" y="610" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2185b">Video Diffusion</text>
+  <text x="520" y="625" text-anchor="middle" font-size="10" fill="#c2185b">Wan2.1 + LoRA</text>
+  <text x="520" y="640" text-anchor="middle" font-size="10" fill="#c2185b">Temporal consistency</text>
+  
+  <!-- Component 4 -->
+  <rect x="620" y="590" width="160" height="60" rx="5" fill="#e8f5e8" stroke="#388e3c"/>
+  <text x="700" y="610" text-anchor="middle" font-size="12" font-weight="bold" fill="#388e3c">Artifact Removal</text>
+  <text x="700" y="625" text-anchor="middle" font-size="10" fill="#388e3c">Sparse view handling</text>
+  <text x="700" y="640" text-anchor="middle" font-size="10" fill="#388e3c">Quality enhancement</text>
+  
+  <!-- Performance metrics -->
+  <rect x="80" y="670" width="700" height="60" rx="5" fill="#fff" stroke="#666"/>
+  <text x="430" y="690" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">Performance Improvements</text>
+  <text x="200" y="710" text-anchor="middle" font-size="11" fill="#666">PSNR: 26.76 ↑</text>
+  <text x="350" y="710" text-anchor="middle" font-size="11" fill="#666">SSIM: 0.845 ↑</text>
+  <text x="500" y="710" text-anchor="middle" font-size="11" fill="#666">LPIPS: 0.293 ↓</text>
+  <text x="650" y="710" text-anchor="middle" font-size="11" fill="#666">Frame Rate: 100-200 FPS</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Staggering the start times of different cameras">
+                        <div class="quiz-question">1. What is the main innovation in the camera capture system proposed by this paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using specialized high-speed cameras">Using specialized high-speed cameras</div><div class="quiz-choice" data-value="Staggering the start times of different cameras">Staggering the start times of different cameras</div><div class="quiz-choice" data-value="Increasing the number of cameras in the setup">Increasing the number of cameras in the setup</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Video diffusion models maintain better temporal consistency">
+                        <div class="quiz-question">2. Why does the paper use a video diffusion model instead of an image diffusion model for artifact removal?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Video diffusion models are faster to train">Video diffusion models are faster to train</div><div class="quiz-choice" data-value="Video diffusion models require less data">Video diffusion models require less data</div><div class="quiz-choice" data-value="Video diffusion models maintain better temporal consistency">Video diffusion models maintain better temporal consistency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="100-200 FPS">
+                        <div class="quiz-question">3. What effective frame rate can be achieved using the paper's asynchronous capture method with 8 cameras at 25 FPS?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="50 FPS">50 FPS</div><div class="quiz-choice" data-value="100-200 FPS">100-200 FPS</div><div class="quiz-choice" data-value="25 FPS">25 FPS</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Reviving Cultural Heritage: A Novel Approach for Comprehensive
+  Historical Document Restoration</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.05108" target="_blank">http://arxiv.org/pdf/2507.05108</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on historical document restoration using AI, specifically in the domain of computer vision and digital heritage preservation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in single-modal restoration and limited-size patch restoration, this paper proposes a novel automated three-stage restoration approach that mimics historians' workflow and introduces a comprehensive full-page historical document dataset.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitations of existing historical document restoration methods that focus only on single modality or limited-size restoration, failing to provide a fully automated solution for comprehensive document restoration.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed AutoHDR, a three-stage approach combining OCR-assisted damage localization, vision-language context text prediction, and patch autoregressive appearance restoration, along with creating the FPHDR dataset containing both real and synthetic damaged documents.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The method improved OCR accuracy from 46.83% to 84.05% for severely damaged documents, with further enhancement to 94.25% through human-machine collaboration, demonstrating superior performance in both text restoration accuracy and historical appearance preservation.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Reviving Cultural Heritage: A Novel Approach for Comprehensive
+  Historical Document Restoration</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">AutoHDR: Historical Document Restoration Workflow</text>
+  
+  <!-- Stage 1: OCR-Assisted Damage Localization -->
+  <rect x="50" y="80" width="280" height="200" rx="15" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="190" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#1976d2">Stage 1: OCR-Assisted Damage Localization</text>
+  
+  <!-- OCR Model -->
+  <rect x="70" y="120" width="100" height="40" rx="8" fill="#bbdefb" stroke="#1976d2"/>
+  <text x="120" y="143" text-anchor="middle" font-size="12" fill="#1976d2">Character OCR</text>
+  
+  <!-- Damage Detection -->
+  <rect x="190" y="120" width="120" height="40" rx="8" fill="#bbdefb" stroke="#1976d2"/>
+  <text x="250" y="135" text-anchor="middle" font-size="11" fill="#1976d2">DINO Damage</text>
+  <text x="250" y="150" text-anchor="middle" font-size="11" fill="#1976d2">Detection</text>
+  
+  <!-- Localization Fusion -->
+  <rect x="110" y="180" width="120" height="40" rx="8" fill="#90caf9" stroke="#1976d2"/>
+  <text x="170" y="195" text-anchor="middle" font-size="11" fill="#1976d2">Localization</text>
+  <text x="170" y="210" text-anchor="middle" font-size="11" fill="#1976d2">Fusion</text>
+  
+  <!-- Output -->
+  <rect x="90" y="235" width="160" height="30" rx="5" fill="#ffecb3" stroke="#f57c00"/>
+  <text x="170" y="253" text-anchor="middle" font-size="11" fill="#f57c00">Character & Damage Positions</text>
+  
+  <!-- Stage 2: Damaged Content Prediction -->
+  <rect x="380" y="80" width="280" height="200" rx="15" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="520" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#7b1fa2">Stage 2: Damaged Content Prediction</text>
+  
+  <!-- LLM Fine-tuning -->
+  <rect x="400" y="120" width="100" height="40" rx="8" fill="#e1bee7" stroke="#7b1fa2"/>
+  <text x="450" y="135" text-anchor="middle" font-size="11" fill="#7b1fa2">Qwen2 LLM</text>
+  <text x="450" y="150" text-anchor="middle" font-size="11" fill="#7b1fa2">Fine-tuning</text>
+  
+  <!-- VLCP Algorithm -->
+  <rect x="520" y="120" width="120" height="40" rx="8" fill="#e1bee7" stroke="#7b1fa2"/>
+  <text x="580" y="135" text-anchor="middle" font-size="11" fill="#7b1fa2">Vision-Language</text>
+  <text x="580" y="150" text-anchor="middle" font-size="11" fill="#7b1fa2">Context Prediction</text>
+  
+  <!-- Content Scoring -->
+  <rect x="430" y="180" width="120" height="40" rx="8" fill="#ce93d8" stroke="#7b1fa2"/>
+  <text x="490" y="195" text-anchor="middle" font-size="11" fill="#7b1fa2">Composite</text>
+  <text x="490" y="210" text-anchor="middle" font-size="11" fill="#7b1fa2">Scoring</text>
+  
+  <!-- Output -->
+  <rect x="420" y="235" width="160" height="30" rx="5" fill="#ffecb3" stroke="#f57c00"/>
+  <text x="500" y="253" text-anchor="middle" font-size="11" fill="#f57c00">Predicted Text Content</text>
+  
+  <!-- Stage 3: Historical Appearance Restoration -->
+  <rect x="710" y="80" width="240" height="200" rx="15" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="830" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#388e3c">Stage 3: Appearance Restoration</text>
+  
+  <!-- Diffusion Model -->
+  <rect x="730" y="120" width="100" height="40" rx="8" fill="#c8e6c9" stroke="#388e3c"/>
+  <text x="780" y="135" text-anchor="middle" font-size="11" fill="#388e3c">Diffusion</text>
+  <text x="780" y="150" text-anchor="middle" font-size="11" fill="#388e3c">Model</text>
+  
+  <!-- PAR Mechanism -->
+  <rect x="850" y="120" width="80" height="40" rx="8" fill="#c8e6c9" stroke="#388e3c"/>
+  <text x="890" y="135" text-anchor="middle" font-size="10" fill="#388e3c">Patch Auto-</text>
+  <text x="890" y="150" text-anchor="middle" font-size="10" fill="#388e3c">Regressive</text>
+  
+  <!-- Page-level Restoration -->
+  <rect x="760" y="180" width="120" height="40" rx="8" fill="#a5d6a7" stroke="#388e3c"/>
+  <text x="820" y="195" text-anchor="middle" font-size="11" fill="#388e3c">Page-level</text>
+  <text x="820" y="210" text-anchor="middle" font-size="11" fill="#388e3c">Restoration</text>
+  
+  <!-- Final Output -->
+  <rect x="750" y="235" width="160" height="30" rx="5" fill="#ffecb3" stroke="#f57c00"/>
+  <text x="830" y="253" text-anchor="middle" font-size="11" fill="#f57c00">Restored Document Image</text>
+  
+  <!-- Flow connections -->
+  <path d="M330 190 Q350 190 380 190" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M660 190 Q690 190 710 190" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Dataset Section -->
+  <rect x="100" y="320" width="800" height="120" rx="15" fill="#fff3e0" stroke="#ff8f00" stroke-width="2"/>
+  <text x="500" y="345" text-anchor="middle" font-size="18" font-weight="bold" fill="#ff8f00">FPHDR Dataset</text>
+  
+  <!-- Real Data -->
+  <rect x="150" y="360" width="150" height="60" rx="8" fill="#ffe0b2" stroke="#ff8f00"/>
+  <text x="225" y="380" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff8f00">Real Data</text>
+  <text x="225" y="395" text-anchor="middle" font-size="10" fill="#ff8f00">1,633 samples</text>
+  <text x="225" y="408" text-anchor="middle" font-size="10" fill="#ff8f00">Manual annotation</text>
+  
+  <!-- Synthetic Data -->
+  <rect x="350" y="360" width="150" height="60" rx="8" fill="#ffe0b2" stroke="#ff8f00"/>
+  <text x="425" y="380" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff8f00">Synthetic Data</text>
+  <text x="425" y="395" text-anchor="middle" font-size="10" fill="#ff8f00">6,543 samples</text>
+  <text x="425" y="408" text-anchor="middle" font-size="10" fill="#ff8f00">Automated generation</text>
+  
+  <!-- Damage Grades -->
+  <rect x="550" y="360" width="150" height="60" rx="8" fill="#ffe0b2" stroke="#ff8f00"/>
+  <text x="625" y="375" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff8f00">Damage Grades</text>
+  <text x="625" y="388" text-anchor="middle" font-size="9" fill="#ff8f00">Light • Medium • Severe</text>
+  <text x="625" y="400" text-anchor="middle" font-size="9" fill="#ff8f00">Character-level annotation</text>
+  <text x="625" y="412" text-anchor="middle" font-size="9" fill="#ff8f00">Bounding boxes</text>
+  
+  <!-- Human-AI Collaboration -->
+  <rect x="750" y="360" width="120" height="60" rx="8" fill="#ffe0b2" stroke="#ff8f00"/>
+  <text x="810" y="375" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff8f00">Collaboration</text>
+  <text x="810" y="388" text-anchor="middle" font-size="9" fill="#ff8f00">Modular design</text>
+  <text x="810" y="400" text-anchor="middle" font-size="9" fill="#ff8f00">Human intervention</text>
+  <text x="810" y="412" text-anchor="middle" font-size="9" fill="#ff8f00">Quality enhancement</text>
+  
+  <!-- Performance Results -->
+  <rect x="200" y="480" width="600" height="100" rx="15" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="500" y="505" text-anchor="middle" font-size="18" font-weight="bold" fill="#4caf50">Performance Results</text>
+  
+  <!-- OCR Accuracy -->
+  <rect x="230" y="520" width="120" height="50" rx="8" fill="#c8e6c9" stroke="#4caf50"/>
+  <text x="290" y="535" text-anchor="middle" font-size="11" font-weight="bold" fill="#4caf50">OCR Accuracy</text>
+  <text x="290" y="548" text-anchor="middle" font-size="10" fill="#4caf50">46.83% → 84.05%</text>
+  <text x="290" y="560" text-anchor="middle" font-size="9" fill="#4caf50">(Severe damage)</text>
+  
+  <!-- With Collaboration -->
+  <rect x="370" y="520" width="120" height="50" rx="8" fill="#c8e6c9" stroke="#4caf50"/>
+  <text x="430" y="535" text-anchor="middle" font-size="11" font-weight="bold" fill="#4caf50">+ Collaboration</text>
+  <text x="430" y="548" text-anchor="middle" font-size="10" fill="#4caf50">→ 94.25%</text>
+  <text x="430" y="560" text-anchor="middle" font-size="9" fill="#4caf50">(Human-AI)</text>
+  
+  <!-- Damage Localization -->
+  <rect x="510" y="520" width="120" height="50" rx="8" fill="#c8e6c9" stroke="#4caf50"/>
+  <text x="570" y="535" text-anchor="middle" font-size="11" font-weight="bold" fill="#4caf50">Damage Detection</text>
+  <text x="570" y="548" text-anchor="middle" font-size="10" fill="#4caf50">F1: 94.1%</text>
+  <text x="570" y="560" text-anchor="middle" font-size="9" fill="#4caf50">(DINO-based)</text>
+  
+  <!-- Content Prediction -->
+  <rect x="650" y="520" width="120" height="50" rx="8" fill="#c8e6c9" stroke="#4caf50"/>
+  <text x="710" y="535" text-anchor="middle" font-size="11" font-weight="bold" fill="#4caf50">Text Prediction</text>
+  <text x="710" y="548" text-anchor="middle" font-size="10" fill="#4caf50">Top-5: 97.75%</text>
+  <text x="710" y="560" text-anchor="middle" font-size="9" fill="#4caf50">(Qwen2-7B)</text>
+  
+  <!-- Key Features -->
+  <rect x="100" y="620" width="800" height="120" rx="15" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="500" y="645" text-anchor="middle" font-size="18" font-weight="bold" fill="#e91e63">Key Innovations</text>
+  
+  <!-- Full-page -->
+  <rect x="130" y="660" width="140" height="60" rx="8" fill="#f8bbd9" stroke="#e91e63"/>
+  <text x="200" y="675" text-anchor="middle" font-size="11" font-weight="bold" fill="#e91e63">Full-page</text>
+  <text x="200" y="688" text-anchor="middle" font-size="10" fill="#e91e63">Processing capability</text>
+  <text x="200" y="700" text-anchor="middle" font-size="10" fill="#e91e63">Context preservation</text>
+  <text x="200" y="712" text-anchor="middle" font-size="9" fill="#e91e63">vs. patch-level methods</text>
+  
+  <!-- Automated -->
+  <rect x="290" y="660" width="140" height="60" rx="8" fill="#f8bbd9" stroke="#e91e63"/>
+  <text x="360" y="675" text-anchor="middle" font-size="11" font-weight="bold" fill="#e91e63">Fully Automated</text>
+  <text x="360" y="688" text-anchor="middle" font-size="10" fill="#e91e63">Three-stage pipeline</text>
+  <text x="360" y="700" text-anchor="middle" font-size="10" fill="#e91e63">No manual intervention</text>
+  <text x="360" y="712" text-anchor="middle" font-size="9" fill="#e91e63">End-to-end solution</text>
+  
+  <!-- Multimodal -->
+  <rect x="450" y="660" width="140" height="60" rx="8" fill="#f8bbd9" stroke="#e91e63"/>
+  <text x="520" y="675" text-anchor="middle" font-size="11" font-weight="bold" fill="#e91e63">Multimodal</text>
+  <text x="520" y="688" text-anchor="middle" font-size="10" fill="#e91e63">Text + Appearance</text>
+  <text x="520" y="700" text-anchor="middle" font-size="10" fill="#e91e63">Vision-Language fusion</text>
+  <text x="520" y="712" text-anchor="middle" font-size="9" fill="#e91e63">OCR + LLM synergy</text>
+  
+  <!-- Historian Workflow -->
+  <rect x="610" y="660" width="140" height="60" rx="8" fill="#f8bbd9" stroke="#e91e63"/>
+  <text x="680" y="675" text-anchor="middle" font-size="11" font-weight="bold" fill="#e91e63">Historian-inspired</text>
+  <text x="680" y="688" text-anchor="middle" font-size="10" fill="#e91e63">Workflow mimicking</text>
+  <text x="680" y="700" text-anchor="middle" font-size="10" fill="#e91e63">Cultural principles</text>
+  <text x="680" y="712" text-anchor="middle" font-size="9" fill="#e91e63">"Old as old/new"</text>
+  
+  <!-- Collaboration -->
+  <rect x="770" y="660" width="110" height="60" rx="8" fill="#f8bbd9" stroke="#e91e63"/>
+  <text x="825" y="675" text-anchor="middle" font-size="11" font-weight="bold" fill="#e91e63">Collaborative</text>
+  <text x="825" y="688" text-anchor="middle" font-size="10" fill="#e91e63">Modular design</text>
+  <text x="825" y="700" text-anchor="middle" font-size="10" fill="#e91e63">Expert integration</text>
+  <text x="825" y="712" text-anchor="middle" font-size="9" fill="#e91e63">Quality assurance</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It provides a fully automated three-stage restoration process mimicking historians' workflow">
+                        <div class="quiz-question">1. What is the main innovation of AutoHDR compared to previous historical document restoration methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses higher resolution cameras to capture documents">It uses higher resolution cameras to capture documents</div><div class="quiz-choice" data-value="It provides a fully automated three-stage restoration process mimicking historians' workflow">It provides a fully automated three-stage restoration process mimicking historians' workflow</div><div class="quiz-choice" data-value="It only focuses on text restoration without considering appearance">It only focuses on text restoration without considering appearance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Severe, Medium, Light damage">
+                        <div class="quiz-question">2. How does the FPHDR dataset categorize document damage levels?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High, Medium, Low damage">High, Medium, Low damage</div><div class="quiz-choice" data-value="Complete, Partial, Minor damage">Complete, Partial, Minor damage</div><div class="quiz-choice" data-value="Severe, Medium, Light damage">Severe, Medium, Light damage</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="From 46.83% to 94.25%">
+                        <div class="quiz-question">3. What was the improvement in OCR accuracy for severely damaged documents when using AutoHDR with human collaboration?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="From 46.83% to 84.05%">From 46.83% to 84.05%</div><div class="quiz-choice" data-value="From 46.83% to 94.25%">From 46.83% to 94.25%</div><div class="quiz-choice" data-value="From 84.05% to 94.25%">From 84.05% to 94.25%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>ArtifactsBench: Bridging the Visual-Interactive Gap in LLM Code
+  Generation Evaluation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.04952" target="_blank">http://arxiv.org/pdf/2507.04952</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces ArtifactsBench, a benchmark framework for evaluating Large Language Models' ability to generate interactive visual code artifacts in software development.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing code generation benchmarks that focus mainly on static code evaluation, this paper proposes a novel framework that evaluates both visual fidelity and interactive behavior of generated code.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the critical gap in evaluating LLMs' ability to generate dynamic, interactive visual artifacts, as current benchmarks cannot assess visual quality and interactive functionality comprehensively.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed a multi-stage evaluation pipeline using Multimodal LLMs as judges, programmatically rendering generated artifacts and capturing their dynamic behavior through temporal screenshots against fine-grained checklists.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The automated evaluation achieved 94.4% ranking consistency with WebDev Arena (human preference benchmark) and over 90% agreement with human experts, while revealing that generalist models often outperform domain-specific ones in visual code generation tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ArtifactsBench: Bridging the Visual-Interactive Gap in LLM Code
+  Generation Evaluation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dataGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357abd;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="evalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7ed321;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5ba517;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="validGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5a623;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e89611;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    ArtifactsBench Methodology Flow
+  </text>
+  
+  <!-- Phase 1: Dataset Construction -->
+  <g transform="translate(50,80)">
+    <rect x="0" y="0" width="280" height="200" rx="15" fill="url(#dataGrad)" stroke="#2980b9" stroke-width="2"/>
+    <text x="140" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      Dataset Construction Pipeline
+    </text>
+    
+    <!-- Step boxes -->
+    <rect x="20" y="40" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="57" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      1. Extraction & Filtering (4 sources)
+    </text>
+    
+    <rect x="20" y="70" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="87" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      2. Manual & LLM Rewrite & Polish
+    </text>
+    
+    <rect x="20" y="100" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="117" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      3. Classification & Difficulty Filtering
+    </text>
+    
+    <rect x="20" y="130" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="147" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      4. Checklist Generation
+    </text>
+    
+    <rect x="20" y="160" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="177" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      5. Quality Control & Final Consolidation
+    </text>
+  </g>
+  
+  <!-- Dataset Stats Box -->
+  <g transform="translate(370,80)">
+    <rect x="0" y="0" width="260" height="200" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+    <text x="130" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">
+      Dataset Composition
+    </text>
+    
+    <text x="20" y="50" font-family="Arial, sans-serif" font-size="12" fill="#34495e">• 1,825 diverse tasks</text>
+    <text x="20" y="70" font-family="Arial, sans-serif" font-size="12" fill="#34495e">• 9 primary categories</text>
+    <text x="20" y="90" font-family="Arial, sans-serif" font-size="12" fill="#34495e">• 3 difficulty levels</text>
+    <text x="20" y="110" font-family="Arial, sans-serif" font-size="12" fill="#34495e">• Web Apps, Games, SVG</text>
+    <text x="20" y="130" font-family="Arial, sans-serif" font-size="12" fill="#34495e">• Data Science, Simulations</text>
+    <text x="20" y="150" font-family="Arial, sans-serif" font-size="12" fill="#34495e">• Management Systems</text>
+    <text x="20" y="170" font-family="Arial, sans-serif" font-size="12" fill="#34495e">• Multimedia Editing</text>
+  </g>
+  
+  <!-- Phase 2: Evaluation Pipeline -->
+  <g transform="translate(670,80)">
+    <rect x="0" y="0" width="280" height="200" rx="15" fill="url(#evalGrad)" stroke="#27ae60" stroke-width="2"/>
+    <text x="140" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      Multimodal Evaluation Pipeline
+    </text>
+    
+    <rect x="20" y="40" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="57" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      1. Code Extraction (Regex)
+    </text>
+    
+    <rect x="20" y="70" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="87" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      2. Dynamic Rendering (Playwright)
+    </text>
+    
+    <rect x="20" y="100" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="117" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      3. Temporal Screenshot Capture
+    </text>
+    
+    <rect x="20" y="130" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="147" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      4. MLLM-as-Judge Assessment
+    </text>
+    
+    <rect x="20" y="160" width="240" height="25" rx="5" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+    <text x="140" y="177" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">
+      5. Fine-grained Checklist Scoring
+    </text>
+  </g>
+  
+  <!-- Phase 3: Validation -->
+  <g transform="translate(200,320)">
+    <rect x="0" y="0" width="600" height="180" rx="15" fill="url(#validGrad)" stroke="#f39c12" stroke-width="2"/>
+    <text x="300" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      Validation & Analysis Framework
+    </text>
+    
+    <!-- Left column -->
+    <g transform="translate(30,40)">
+      <rect x="0" y="0" width="250" height="120" rx="10" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+      <text x="125" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2c3e50">
+        Human Expert Validation
+      </text>
+      <text x="15" y="40" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• 280 sampled instances</text>
+      <text x="15" y="55" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• Double-blind protocol</text>
+      <text x="15" y="70" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• >90% pairwise agreement</text>
+      <text x="15" y="85" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• Multiple annotators</text>
+      <text x="15" y="100" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• Median scoring</text>
+    </g>
+    
+    <!-- Right column -->
+    <g transform="translate(320,40)">
+      <rect x="0" y="0" width="250" height="120" rx="10" fill="rgba(255,255,255,0.9)" stroke="#34495e"/>
+      <text x="125" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2c3e50">
+        WebDev Arena Correlation
+      </text>
+      <text x="15" y="40" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• 94.4% ranking consistency</text>
+      <text x="15" y="55" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• Normalized Footrule metric</text>
+      <text x="15" y="70" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• Human preference alignment</text>
+      <text x="15" y="85" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• Gold-standard validation</text>
+      <text x="15" y="100" font-family="Arial, sans-serif" font-size="11" fill="#34495e">• Real-world relevance</text>
+    </g>
+  </g>
+  
+  <!-- Evaluation Metrics -->
+  <g transform="translate(50,540)">
+    <rect x="0" y="0" width="900" height="120" rx="15" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <text x="450" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      Comprehensive Evaluation Dimensions
+    </text>
+    
+    <!-- Metrics grid -->
+    <g transform="translate(50,40)">
+      <rect x="0" y="0" width="160" height="60" rx="8" fill="#3498db" stroke="#2980b9"/>
+      <text x="80" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Visual Fidelity</text>
+      <text x="80" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Layout, Aesthetics</text>
+      <text x="80" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Color Harmony</text>
+    </g>
+    
+    <g transform="translate(220,40)">
+      <rect x="0" y="0" width="160" height="60" rx="8" fill="#e74c3c" stroke="#c0392b"/>
+      <text x="80" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Functionality</text>
+      <text x="80" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Core Features</text>
+      <text x="80" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Robustness</text>
+    </g>
+    
+    <g transform="translate(390,40)">
+      <rect x="0" y="0" width="160" height="60" rx="8" fill="#9b59b6" stroke="#8e44ad"/>
+      <text x="80" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Interactivity</text>
+      <text x="80" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Dynamic Effects</text>
+      <text x="80" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">User Experience</text>
+    </g>
+    
+    <g transform="translate(560,40)">
+      <rect x="0" y="0" width="160" height="60" rx="8" fill="#1abc9c" stroke="#16a085"/>
+      <text x="80" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Code Quality</text>
+      <text x="80" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Engineering</text>
+      <text x="80" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Practices</text>
+    </g>
+    
+    <g transform="translate(730,40)">
+      <rect x="0" y="0" width="120" height="60" rx="8" fill="#f39c12" stroke="#e67e22"/>
+      <text x="60" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Innovation</text>
+      <text x="60" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Creativity</text>
+      <text x="60" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Features</text>
+    </g>
+  </g>
+  
+  <!-- Results Summary -->
+  <g transform="translate(200,690)">
+    <rect x="0" y="0" width="600" height="80" rx="12" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+    <text x="300" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      Key Findings & Results
+    </text>
+    <text x="50" y="45" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">• 30+ LLMs evaluated</text>
+    <text x="200" y="45" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">• Generalist > Specialist models</text>
+    <text x="400" y="45" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">• Performance scales with size</text>
+    <text x="50" y="65" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">• Proprietary models lead</text>
+    <text x="200" y="65" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">• Complex tasks remain challenging</text>
+    <text x="400" y="65" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">• First automated visual evaluation</text>
+  </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Generalist models outperformed specialized models">
+                        <div class="quiz-question">1. What was the most surprising finding revealed by ArtifactsBench regarding model performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Domain-specific models performed best at visual code generation">Domain-specific models performed best at visual code generation</div><div class="quiz-choice" data-value="Generalist models outperformed specialized models">Generalist models outperformed specialized models</div><div class="quiz-choice" data-value="All models performed equally well on visual tasks">All models performed equally well on visual tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By capturing temporal screenshots during programmatic rendering">
+                        <div class="quiz-question">2. How did ArtifactsBench evaluate the dynamic behavior of generated code?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By manually testing each interaction">By manually testing each interaction</div><div class="quiz-choice" data-value="Through static code analysis only">Through static code analysis only</div><div class="quiz-choice" data-value="By capturing temporal screenshots during programmatic rendering">By capturing temporal screenshots during programmatic rendering</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="94.4% ranking consistency">
+                        <div class="quiz-question">3. What level of agreement did ArtifactsBench achieve with human preference benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="74.4% ranking consistency">74.4% ranking consistency</div><div class="quiz-choice" data-value="84.4% ranking consistency">84.4% ranking consistency</div><div class="quiz-choice" data-value="94.4% ranking consistency">94.4% ranking consistency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
