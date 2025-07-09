@@ -1,0 +1,1148 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-09 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-09 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>OmniPart: Part-Aware 3D Generation with Semantic Decoupling and
+  Structural Cohesion</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.06165" target="_blank">http://arxiv.org/pdf/2507.06165</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Part-aware 3D object generation from 2D images with semantic decoupling and structural cohesion.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on TRELLIS (holistic 3D generator) and part segmentation research, proposes a novel two-stage framework that decouples part structure planning from part synthesis.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing 3D generative methods produce monolithic shapes lacking editable part structures, limiting their utility for interactive applications.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses autoregressive structure planning to generate 3D part bounding boxes guided by 2D masks, followed by spatially-conditioned rectified flow model to synthesize all parts simultaneously.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance in part-aware 3D generation with better Chamfer Distance and F1 scores, while being significantly faster (0.75 minutes vs 5-15 minutes for baselines).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>OmniPart: Part-Aware 3D Generation with Semantic Decoupling and
+  Structural Cohesion</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">OmniPart: Part-Aware 3D Generation Workflow</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Input</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#1976d2">Single Image</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#1976d2">2D Part Masks</text>
+  
+  <!-- Stage 1: Structure Planning -->
+  <rect x="320" y="50" width="280" height="120" rx="15" fill="#fff3e0" stroke="#f57c00" stroke-width="3"/>
+  <text x="460" y="75" text-anchor="middle" font-size="16" font-weight="bold" fill="#f57c00">Stage 1: Controllable Structure Planning</text>
+  
+  <!-- Feature Extraction -->
+  <rect x="340" y="90" width="100" height="35" rx="5" fill="#ffe0b2" stroke="#ff9800"/>
+  <text x="390" y="110" text-anchor="middle" font-size="10" fill="#e65100">DINOv2 Features</text>
+  
+  <!-- Part Conditioning -->
+  <rect x="460" y="90" width="120" height="35" rx="5" fill="#ffe0b2" stroke="#ff9800"/>
+  <text x="520" y="110" text-anchor="middle" font-size="10" fill="#e65100">Part-aware Conditioning</text>
+  
+  <!-- Autoregressive Generation -->
+  <rect x="340" y="135" width="240" height="25" rx="5" fill="#ffcc02" stroke="#ff6f00"/>
+  <text x="460" y="150" text-anchor="middle" font-size="11" font-weight="bold" fill="#e65100">Autoregressive Transformer + Coverage Loss</text>
+  
+  <!-- Output of Stage 1 -->
+  <rect x="680" y="80" width="150" height="60" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="755" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">3D Bounding Boxes</text>
+  <text x="755" y="120" text-anchor="middle" font-size="10" fill="#2e7d32">Variable-length sequence</text>
+  
+  <!-- Stage 2: Part Synthesis -->
+  <rect x="100" y="220" width="700" height="200" rx="15" fill="#f3e5f5" stroke="#9c27b0" stroke-width="3"/>
+  <text x="450" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#7b1fa2">Stage 2: Spatially-Conditioned Part Synthesis</text>
+  
+  <!-- TRELLIS Base -->
+  <rect x="120" y="265" width="120" height="40" rx="5" fill="#e1bee7" stroke="#8e24aa"/>
+  <text x="180" y="280" text-anchor="middle" font-size="11" font-weight="bold" fill="#4a148c">Pre-trained</text>
+  <text x="180" y="295" text-anchor="middle" font-size="11" font-weight="bold" fill="#4a148c">TRELLIS</text>
+  
+  <!-- Voxel Initialization -->
+  <rect x="260" y="265" width="120" height="40" rx="5" fill="#e1bee7" stroke="#8e24aa"/>
+  <text x="320" y="280" text-anchor="middle" font-size="10" fill="#4a148c">Spatial Voxel</text>
+  <text x="320" y="295" text-anchor="middle" font-size="10" fill="#4a148c">Initialization</text>
+  
+  <!-- Part-aware Processing -->
+  <rect x="400" y="265" width="120" height="40" rx="5" fill="#e1bee7" stroke="#8e24aa"/>
+  <text x="460" y="280" text-anchor="middle" font-size="10" fill="#4a148c">Part Position</text>
+  <text x="460" y="295" text-anchor="middle" font-size="10" fill="#4a148c">Embeddings (PPE)</text>
+  
+  <!-- Voxel Discarding -->
+  <rect x="540" y="265" width="120" height="40" rx="5" fill="#e1bee7" stroke="#8e24aa"/>
+  <text x="600" y="280" text-anchor="middle" font-size="10" fill="#4a148c">Voxel Discarding</text>
+  <text x="600" y="295" text-anchor="middle" font-size="10" fill="#4a148c">Mechanism</text>
+  
+  <!-- Rectified Flow -->
+  <rect x="680" y="265" width="100" height="40" rx="5" fill="#e1bee7" stroke="#8e24aa"/>
+  <text x="730" y="280" text-anchor="middle" font-size="10" fill="#4a148c">Rectified Flow</text>
+  <text x="730" y="295" text-anchor="middle" font-size="10" fill="#4a148c">Denoising</text>
+  
+  <!-- Joint Processing -->
+  <rect x="200" y="325" width="400" height="35" rx="5" fill="#ce93d8" stroke="#7b1fa2"/>
+  <text x="400" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="#4a148c">Simultaneous Part Generation with Global Context</text>
+  
+  <!-- Training Data -->
+  <rect x="120" y="380" width="200" height="30" rx="5" fill="#f8bbd9" stroke="#e91e63"/>
+  <text x="220" y="398" text-anchor="middle" font-size="11" fill="#880e4f">180K objects (Stage 1) + 15K high-quality (Stage 2)</text>
+  
+  <!-- Output Section -->
+  <rect x="300" y="480" width="400" height="120" rx="15" fill="#e8f5e8" stroke="#4caf50" stroke-width="3"/>
+  <text x="500" y="505" text-anchor="middle" font-size="16" font-weight="bold" fill="#2e7d32">Generated 3D Parts</text>
+  
+  <!-- Output Types -->
+  <rect x="320" y="520" width="80" height="30" rx="5" fill="#c8e6c9" stroke="#4caf50"/>
+  <text x="360" y="538" text-anchor="middle" font-size="10" fill="#1b5e20">Meshes</text>
+  
+  <rect x="420" y="520" width="80" height="30" rx="5" fill="#c8e6c9" stroke="#4caf50"/>
+  <text x="460" y="538" text-anchor="middle" font-size="10" fill="#1b5e20">NeRF</text>
+  
+  <rect x="520" y="520" width="80" height="30" rx="5" fill="#c8e6c9" stroke="#4caf50"/>
+  <text x="560" y="538" text-anchor="middle" font-size="10" fill="#1b5e20">3D Gaussians</text>
+  
+  <text x="500" y="575" text-anchor="middle" font-size="12" fill="#2e7d32">Low Semantic Coupling + High Structural Cohesion</text>
+  
+  <!-- Applications -->
+  <rect x="150" y="650" width="700" height="100" rx="15" fill="#fff8e1" stroke="#ffa000" stroke-width="2"/>
+  <text x="500" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#ff8f00">Applications</text>
+  
+  <!-- Application boxes -->
+  <rect x="170" y="690" width="100" height="25" rx="5" fill="#ffecb3" stroke="#ffa000"/>
+  <text x="220" y="705" text-anchor="middle" font-size="10" fill="#e65100">Animation</text>
+  
+  <rect x="290" y="690" width="100" height="25" rx="5" fill="#ffecb3" stroke="#ffa000"/>
+  <text x="340" y="705" text-anchor="middle" font-size="10" fill="#e65100">Material Editing</text>
+  
+  <rect x="410" y="690" width="100" height="25" rx="5" fill="#ffecb3" stroke="#ffa000"/>
+  <text x="460" y="705" text-anchor="middle" font-size="10" fill="#e65100">Mask Control</text>
+  
+  <rect x="530" y="690" width="100" height="25" rx="5" fill="#ffecb3" stroke="#ffa000"/>
+  <text x="580" y="705" text-anchor="middle" font-size="10" fill="#e65100">Multi-granularity</text>
+  
+  <rect x="650" y="690" width="120" height="25" rx="5" fill="#ffecb3" stroke="#ffa000"/>
+  <text x="710" y="705" text-anchor="middle" font-size="10" fill="#e65100">Geometry Processing</text>
+  
+  <!-- Flow lines -->
+  <path d="M 250 100 Q 285 100 320 100" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 600 110 Q 640 110 680 110" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 755 140 Q 755 180 450 220" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 420 Q 500 450 500 480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 600 Q 500 625 500 650" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Innovation Highlights -->
+  <circle cx="460" cy="155" r="8" fill="#ff5722"/>
+  <text x="480" y="160" font-size="8" fill="#d84315">Coverage Loss</text>
+  
+  <circle cx="600" cy="285" r="8" fill="#ff5722"/>
+  <text x="620" y="290" font-size="8" fill="#d84315">Novel Mechanism</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It decouples structure planning from part synthesis while maintaining cohesion">
+                        <div class="quiz-question">1. What is the main innovation in OmniPart's two-stage framework compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses machine learning to generate 3D objects faster">It uses machine learning to generate 3D objects faster</div><div class="quiz-choice" data-value="It decouples structure planning from part synthesis while maintaining cohesion">It decouples structure planning from part synthesis while maintaining cohesion</div><div class="quiz-choice" data-value="It directly converts 2D images to 3D models without intermediate steps">It directly converts 2D images to 3D models without intermediate steps</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It uses flexible 2D masks as guidance without requiring strict correspondences">
+                        <div class="quiz-question">2. How does OmniPart handle the ambiguity in part decomposition (e.g., whether hands should be separate from arms)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It always uses a fixed number of predefined parts">It always uses a fixed number of predefined parts</div><div class="quiz-choice" data-value="It relies on a large database of labeled 3D models">It relies on a large database of labeled 3D models</div><div class="quiz-choice" data-value="It uses flexible 2D masks as guidance without requiring strict correspondences">It uses flexible 2D masks as guidance without requiring strict correspondences</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="About 20 times faster (0.75 vs 15 minutes)">
+                        <div class="quiz-question">3. What is the approximate speed advantage of OmniPart compared to competing methods like Part123?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="About 20 times faster (0.75 vs 15 minutes)">About 20 times faster (0.75 vs 15 minutes)</div><div class="quiz-choice" data-value="About 2 times faster (7.5 vs 15 minutes)">About 2 times faster (7.5 vs 15 minutes)</div><div class="quiz-choice" data-value="About 5 times faster (3 vs 15 minutes)">About 5 times faster (3 vs 15 minutes)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>SingLoRA: Low Rank Adaptation Using a Single Matrix</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.05566" target="_blank">http://arxiv.org/pdf/2507.05566</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Low-rank adaptation (LoRA) technique for efficient fine-tuning of large pre-trained AI models in machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on traditional LoRA which uses two matrices for parameter updates; proposes a new single-matrix approach called SingLoRA that uses symmetric low-rank updates.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses scale disparities between matrices in traditional LoRA that cause unstable training dynamics and suboptimal performance.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Reformulates low-rank adaptation using a single matrix A multiplied by its transpose (AA^T) instead of two separate matrices, and implements a ramp-up function to control adaptation rate.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 91.3% accuracy on MNLI task (vs LoRA's 89.1%) while using 60% fewer parameters, and improved image fidelity on DreamBooth with DINO similarity score of 0.151 (vs LoRA's 0.143).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SingLoRA: Low Rank Adaptation Using a Single Matrix</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#45a049;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F57C00;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7B1FA2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">SingLoRA: Low Rank Adaptation Using a Single Matrix</text>
+  
+  <!-- Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="url(#grad1)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Problem</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="white">LoRA Scale Disparities</text>
+  <text x="150" y="120" text-anchor="middle" font-size="12" fill="white">W₀ + BA unstable</text>
+  
+  <!-- Theoretical Analysis -->
+  <rect x="300" y="60" width="200" height="80" rx="10" fill="url(#grad2)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Theoretical Analysis</text>
+  <text x="400" y="105" text-anchor="middle" font-size="12" fill="white">Infinite-width Framework</text>
+  <text x="400" y="120" text-anchor="middle" font-size="12" fill="white">Stability Issues</text>
+  
+  <!-- SingLoRA Formulation -->
+  <rect x="550" y="60" width="200" height="80" rx="10" fill="url(#grad3)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="650" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">SingLoRA Design</text>
+  <text x="650" y="105" text-anchor="middle" font-size="12" fill="white">W₀ + AA^T</text>
+  <text x="650" y="120" text-anchor="middle" font-size="12" fill="white">Single Matrix</text>
+  
+  <!-- Mathematical Foundation -->
+  <rect x="100" y="180" width="180" height="100" rx="10" fill="#e8f4fd" stroke="#2196F3" stroke-width="2"/>
+  <text x="190" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#1976D2">Toy Model Analysis</text>
+  <text x="190" y="225" text-anchor="middle" font-size="11" fill="#333">f(x) = (W₀ + u(t)aa^T)x</text>
+  <text x="190" y="245" text-anchor="middle" font-size="11" fill="#333">Stable Learning: Δf = Θ(1)</text>
+  <text x="190" y="265" text-anchor="middle" font-size="11" fill="#333">η = Θ(n^(-1/2))</text>
+  
+  <!-- Transformation Invariance -->
+  <rect x="320" y="180" width="180" height="100" rx="10" fill="#fff3e0" stroke="#FF9800" stroke-width="2"/>
+  <text x="410" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#F57C00">Transformation</text>
+  <text x="410" y="220" text-anchor="middle" font-size="13" font-weight="bold" fill="#F57C00">Invariance</text>
+  <text x="410" y="240" text-anchor="middle" font-size="11" fill="#333">Standard Optimizers</text>
+  <text x="410" y="255" text-anchor="middle" font-size="11" fill="#333">SGD, Adam Compatible</text>
+  <text x="410" y="270" text-anchor="middle" font-size="11" fill="#333">No Special Tuning</text>
+  
+  <!-- Extension to Non-Square -->
+  <rect x="540" y="180" width="180" height="100" rx="10" fill="#f3e5f5" stroke="#9C27B0" stroke-width="2"/>
+  <text x="630" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#7B1FA2">Non-Square</text>
+  <text x="630" y="220" text-anchor="middle" font-size="13" font-weight="bold" fill="#7B1FA2">Extension</text>
+  <text x="630" y="240" text-anchor="middle" font-size="11" fill="#333">W₀ ∈ R^(d_in × d_out)</text>
+  <text x="630" y="255" text-anchor="middle" font-size="11" fill="#333">A* truncation</text>
+  <text x="630" y="270" text-anchor="middle" font-size="11" fill="#333">Preserves Properties</text>
+  
+  <!-- Initialization Scheme -->
+  <rect x="750" y="180" width="180" height="100" rx="10" fill="#e8f5e8" stroke="#4CAF50" stroke-width="2"/>
+  <text x="840" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">Initialization</text>
+  <text x="840" y="225" text-anchor="middle" font-size="11" fill="#333">Kaiming for A</text>
+  <text x="840" y="245" text-anchor="middle" font-size="11" fill="#333">u(t) = min(t/T, 1)</text>
+  <text x="840" y="265" text-anchor="middle" font-size="11" fill="#333">Smooth Ramp-up</text>
+  
+  <!-- Experiments Section -->
+  <rect x="50" y="320" width="900" height="40" rx="5" fill="#34495e"/>
+  <text x="500" y="345" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Experimental Validation</text>
+  
+  <!-- Language Models -->
+  <rect x="80" y="380" width="200" height="120" rx="10" fill="#e3f2fd" stroke="#2196F3" stroke-width="2"/>
+  <text x="180" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976D2">Language Models</text>
+  <text x="180" y="425" text-anchor="middle" font-size="12" fill="#333">RoBERTa-base, GPT-2</text>
+  <text x="180" y="445" text-anchor="middle" font-size="12" fill="#333">LLaMA-7B</text>
+  <text x="180" y="465" text-anchor="middle" font-size="12" fill="#333">GLUE, MNLI Tasks</text>
+  <text x="180" y="485" text-anchor="middle" font-size="12" font-weight="bold" fill="#4CAF50">91.3% vs 89.1%</text>
+  
+  <!-- Image Generation -->
+  <rect x="320" y="380" width="200" height="120" rx="10" fill="#fff3e0" stroke="#FF9800" stroke-width="2"/>
+  <text x="420" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#F57C00">Image Generation</text>
+  <text x="420" y="425" text-anchor="middle" font-size="12" fill="#333">Stable Diffusion V1.5</text>
+  <text x="420" y="445" text-anchor="middle" font-size="12" fill="#333">DreamBooth Dataset</text>
+  <text x="420" y="465" text-anchor="middle" font-size="12" fill="#333">DINO Similarity</text>
+  <text x="420" y="485" text-anchor="middle" font-size="12" font-weight="bold" fill="#4CAF50">0.151 vs 0.143</text>
+  
+  <!-- Stability Analysis -->
+  <rect x="560" y="380" width="200" height="120" rx="10" fill="#f3e5f5" stroke="#9C27B0" stroke-width="2"/>
+  <text x="660" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#7B1FA2">Stability Study</text>
+  <text x="660" y="425" text-anchor="middle" font-size="12" fill="#333">Learning Rate Range</text>
+  <text x="660" y="445" text-anchor="middle" font-size="12" fill="#333">SingLoRA: ±1%</text>
+  <text x="660" y="465" text-anchor="middle" font-size="12" fill="#333">LoRA: ±4.8%</text>
+  <text x="660" y="485" text-anchor="middle" font-size="12" font-weight="bold" fill="#4CAF50">More Robust</text>
+  
+  <!-- Parameter Efficiency -->
+  <rect x="800" y="380" width="150" height="120" rx="10" fill="#e8f5e8" stroke="#4CAF50" stroke-width="2"/>
+  <text x="875" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#2e7d32">Efficiency</text>
+  <text x="875" y="430" text-anchor="middle" font-size="12" fill="#333">60% Fewer</text>
+  <text x="875" y="450" text-anchor="middle" font-size="12" fill="#333">Parameters</text>
+  <text x="875" y="470" text-anchor="middle" font-size="12" fill="#333">Better</text>
+  <text x="875" y="490" text-anchor="middle" font-size="12" fill="#333">Performance</text>
+  
+  <!-- Key Benefits -->
+  <rect x="150" y="540" width="700" height="100" rx="10" fill="#2c3e50"/>
+  <text x="500" y="565" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Key Benefits of SingLoRA</text>
+  
+  <circle cx="250" cy="600" r="8" fill="#4CAF50"/>
+  <text x="270" y="605" font-size="12" fill="white">Eliminates inter-matrix scale conflicts</text>
+  
+  <circle cx="250" cy="620" r="8" fill="#2196F3"/>
+  <text x="270" y="625" font-size="12" fill="white">Stable optimization by design</text>
+  
+  <circle cx="550" cy="600" r="8" fill="#FF9800"/>
+  <text x="570" y="605" font-size="12" fill="white">~50% parameter reduction</text>
+  
+  <circle cx="550" cy="620" r="8" fill="#9C27B0"/>
+  <text x="570" y="625" font-size="12" fill="white">Compatible with standard optimizers</text>
+  
+  <!-- Conclusion -->
+  <rect x="200" y="680" width="600" height="60" rx="10" fill="url(#grad1)" stroke="#2c3e50" stroke-width="2"/>
+  <text x="500" y="705" text-anchor="middle" font-size="14" font-weight="bold" fill="white">SingLoRA: W₀ + AA^T achieves superior performance</text>
+  <text x="500" y="725" text-anchor="middle" font-size="12" fill="white">with fewer parameters and stable training dynamics</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses a single matrix multiplied by its transpose">
+                        <div class="quiz-question">1. What is the primary innovation of SingLoRA compared to traditional LoRA?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses three matrices instead of two">It uses three matrices instead of two</div><div class="quiz-choice" data-value="It uses a single matrix multiplied by its transpose">It uses a single matrix multiplied by its transpose</div><div class="quiz-choice" data-value="It eliminates the need for pre-trained weights">It eliminates the need for pre-trained weights</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Long training time requirements">
+                        <div class="quiz-question">2. Which of the following problems does SingLoRA NOT claim to solve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Scale disparities between matrices">Scale disparities between matrices</div><div class="quiz-choice" data-value="High parameter count in adaptation">High parameter count in adaptation</div><div class="quiz-choice" data-value="Long training time requirements">Long training time requirements</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It improved DINO similarity score by 5.4%">
+                        <div class="quiz-question">3. In the Dreambooth image generation experiment, what was SingLoRA's advantage over LoRA?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It achieved faster training speeds">It achieved faster training speeds</div><div class="quiz-choice" data-value="It improved DINO similarity score by 5.4%">It improved DINO similarity score by 5.4%</div><div class="quiz-choice" data-value="It required less memory usage">It required less memory usage</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Is Diversity All You Need for Scalable Robotic Manipulation?</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.06219" target="_blank">http://arxiv.org/pdf/2507.06219</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Investigation of data diversity's role in robotic manipulation learning, focusing on task diversity, embodiment diversity, and expert diversity.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on foundation models in NLP/CV and recent robotic learning research; proposes new insights challenging the "more diverse is better" assumption in robotic data collection.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Understanding how different types of data diversity affect robotic learning performance and developing effective strategies for scaling robotic manipulation datasets.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Conducted experiments comparing different data sampling strategies, evaluated cross-embodiment transfer capabilities, and developed a velocity model for distribution debiasing to handle expert diversity.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Found that task diversity outperforms per-task quantity, single-embodiment pre-training can effectively transfer to different robots, and their distribution debiasing method achieved 15% performance improvement (equivalent to using 2.5x more training data).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Is Diversity All You Need for Scalable Robotic Manipulation?</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1565C0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E65100;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6A1B9A;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">
+    Robotic Manipulation Data Diversity Research Workflow
+  </text>
+  
+  <!-- Task Diversity Section -->
+  <rect x="50" y="80" width="280" height="200" rx="15" fill="url(#grad1)" stroke="#2E7D32" stroke-width="2"/>
+  <text x="190" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    TASK DIVERSITY
+  </text>
+  <text x="60" y="130" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Dataset Construction:
+  </text>
+  <text x="70" y="150" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - Task-based sampling (10% tasks)
+  </text>
+  <text x="70" y="165" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - Episode-based sampling (10% episodes)
+  </text>
+  <text x="60" y="185" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Pre-training → Fine-tuning
+  </text>
+  <text x="60" y="205" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Evaluation: 4 challenging tasks
+  </text>
+  <text x="60" y="225" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Finding: Task diversity > quantity
+  </text>
+  <text x="60" y="245" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Power-law scaling relationship
+  </text>
+  
+  <!-- Embodiment Diversity Section -->
+  <rect x="360" y="80" width="280" height="200" rx="15" fill="url(#grad2)" stroke="#1565C0" stroke-width="2"/>
+  <text x="500" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    EMBODIMENT DIVERSITY
+  </text>
+  <text x="370" y="130" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Single vs Multi-embodiment:
+  </text>
+  <text x="380" y="150" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - AgiBot G1 (single) pre-training
+  </text>
+  <text x="380" y="165" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - OXE (multi) comparison
+  </text>
+  <text x="370" y="185" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Cross-embodiment evaluation:
+  </text>
+  <text x="380" y="200" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - ManiSkill (Franka arm)
+  </text>
+  <text x="380" y="215" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - RoboTwin (Arx arm)
+  </text>
+  <text x="380" y="230" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - Real-world Agilex (Piper arm)
+  </text>
+  <text x="370" y="250" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Finding: Single-embodiment sufficient
+  </text>
+  
+  <!-- Expert Diversity Section -->
+  <rect x="670" y="80" width="280" height="200" rx="15" fill="url(#grad3)" stroke="#E65100" stroke-width="2"/>
+  <text x="810" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    EXPERT DIVERSITY
+  </text>
+  <text x="680" y="130" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Problem Identification:
+  </text>
+  <text x="690" y="150" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - Spatial multimodality (beneficial)
+  </text>
+  <text x="690" y="165" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - Velocity multimodality (confounding)
+  </text>
+  <text x="680" y="185" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Distribution Debiasing Method:
+  </text>
+  <text x="690" y="200" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - Velocity Model (VM) training
+  </text>
+  <text x="690" y="215" font-family="Arial, sans-serif" font-size="11" fill="white">
+    - Action chunk normalization
+  </text>
+  <text x="680" y="235" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • GO-1-Pro: 15% improvement
+  </text>
+  <text x="680" y="250" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Equivalent to 2.5× data scaling
+  </text>
+  
+  <!-- Central Methodology -->
+  <rect x="200" y="320" width="600" height="120" rx="15" fill="url(#grad4)" stroke="#6A1B9A" stroke-width="2"/>
+  <text x="500" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">
+    CORE METHODOLOGY
+  </text>
+  <text x="220" y="370" font-family="Arial, sans-serif" font-size="14" fill="white">
+    • Base Architecture: GO-1 (task-agnostic latent actions) & RDT (diffusion transformer)
+  </text>
+  <text x="220" y="390" font-family="Arial, sans-serif" font-size="14" fill="white">
+    • Dataset: AgiBot World (1M+ trajectories, 100+ scenarios, single embodiment)
+  </text>
+  <text x="220" y="410" font-family="Arial, sans-serif" font-size="14" fill="white">
+    • Training Pipeline: Large-scale pre-training → Task-specific fine-tuning
+  </text>
+  
+  <!-- Evaluation Framework -->
+  <rect x="50" y="480" width="400" height="140" rx="15" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="250" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    EVALUATION FRAMEWORK
+  </text>
+  <text x="60" y="530" font-family="Arial, sans-serif" font-size="13" fill="white">
+    Real-world Tasks:
+  </text>
+  <text x="70" y="550" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Wipe Table (contact-rich cleaning)
+  </text>
+  <text x="70" y="565" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Fold Shorts (deformable object manipulation)
+  </text>
+  <text x="70" y="580" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Pour Water (fine-grained pouring)
+  </text>
+  <text x="70" y="595" font-family="Arial, sans-serif" font-size="12" fill="white">
+    • Make Sandwich (long-horizon assembly)
+  </text>
+  
+  <!-- Key Findings -->
+  <rect x="550" y="480" width="400" height="140" rx="15" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="750" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    KEY FINDINGS
+  </text>
+  <text x="560" y="530" font-family="Arial, sans-serif" font-size="13" fill="white">
+    Challenge "More Diverse is Better" Paradigm:
+  </text>
+  <text x="570" y="550" font-family="Arial, sans-serif" font-size="12" fill="white">
+    ✓ Task diversity: Critical for transfer learning
+  </text>
+  <text x="570" y="565" font-family="Arial, sans-serif" font-size="12" fill="white">
+    ✓ Embodiment diversity: Optional for cross-platform
+  </text>
+  <text x="570" y="580" font-family="Arial, sans-serif" font-size="12" fill="white">
+    ✗ Expert diversity: Can be confounding
+  </text>
+  <text x="570" y="595" font-family="Arial, sans-serif" font-size="12" fill="white">
+    → Strategic data scaling > brute-force collection
+  </text>
+  
+  <!-- Impact and Contributions -->
+  <rect x="150" y="660" width="700" height="100" rx="15" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="500" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    CONTRIBUTIONS & IMPACT
+  </text>
+  <text x="170" y="710" font-family="Arial, sans-serif" font-size="13" fill="white">
+    1. Validated power-law scaling with task diversity for robotic manipulation
+  </text>
+  <text x="170" y="730" font-family="Arial, sans-serif" font-size="13" fill="white">
+    2. Demonstrated single-embodiment pre-training effectiveness for cross-embodiment transfer
+  </text>
+  <text x="170" y="750" font-family="Arial, sans-serif" font-size="13" fill="white">
+    3. Introduced velocity-based distribution debiasing achieving 15% performance gains
+  </text>
+  
+  <!-- Connection lines (subtle) -->
+  <line x1="190" y1="280" x2="250" y2="320" stroke="#95a5a6" stroke-width="2" opacity="0.6"/>
+  <line x1="500" y1="280" x2="500" y2="320" stroke="#95a5a6" stroke-width="2" opacity="0.6"/>
+  <line x1="810" y1="280" x2="750" y2="320" stroke="#95a5a6" stroke-width="2" opacity="0.6"/>
+  <line x1="250" y1="440" x2="250" y2="480" stroke="#95a5a6" stroke-width="2" opacity="0.6"/>
+  <line x1="750" y1="440" x2="750" y2="480" stroke="#95a5a6" stroke-width="2" opacity="0.6"/>
+  <line x1="500" y1="620" x2="500" y2="660" stroke="#95a5a6" stroke-width="2" opacity="0.6"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Single-embodiment pre-training can effectively transfer to different robot platforms">
+                        <div class="quiz-question">1. What surprising finding did the researchers make about embodiment diversity in robotic learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Multi-embodiment training is essential for cross-embodiment capabilities">Multi-embodiment training is essential for cross-embodiment capabilities</div><div class="quiz-choice" data-value="Single-embodiment pre-training can effectively transfer to different robot platforms">Single-embodiment pre-training can effectively transfer to different robot platforms</div><div class="quiz-choice" data-value="Robots can only learn tasks specific to their own embodiment">Robots can only learn tasks specific to their own embodiment</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Velocity multimodality in execution speeds">
+                        <div class="quiz-question">2. Which type of expert diversity was found to be harmful to robot learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Spatial multimodality in trajectory paths">Spatial multimodality in trajectory paths</div><div class="quiz-choice" data-value="Velocity multimodality in execution speeds">Velocity multimodality in execution speeds</div><div class="quiz-choice" data-value="Task strategy variations among experts">Task strategy variations among experts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="15% improvement, equivalent to using 2.5x more training data">
+                        <div class="quiz-question">3. What performance improvement was achieved by their distribution debiasing method?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="5% improvement, equivalent to using 1.5x more training data">5% improvement, equivalent to using 1.5x more training data</div><div class="quiz-choice" data-value="10% improvement, equivalent to using 2x more training data">10% improvement, equivalent to using 2x more training data</div><div class="quiz-choice" data-value="15% improvement, equivalent to using 2.5x more training data">15% improvement, equivalent to using 2.5x more training data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
