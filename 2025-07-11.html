@@ -1,0 +1,1133 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-11 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-11 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Scaling RL to Long Videos</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.07966" target="_blank">http://arxiv.org/pdf/2507.07966</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A framework for scaling up reasoning capabilities in vision-language models (VLMs) to handle long videos using reinforcement learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous VLM and reinforcement learning research, introduces new ideas including a large-scale long video dataset with reasoning annotations and a novel training infrastructure for efficient long video RL training.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of enabling vision-language models to perform complex reasoning tasks over long videos, which current models struggle with due to computational and dataset limitations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a two-stage training pipeline combining Chain-of-Thought supervised fine-tuning (CoT-SFT) and reinforcement learning (RL), along with a Multi-modal Reinforcement Sequence Parallelism (MR-SP) system for efficient training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> LongVILA-R1-7B achieves 68.4% accuracy on VideoMME benchmark and 67.9% average accuracy across four reasoning categories on their LongVideo-Reason-eval benchmark, with up to 2.1x speedup in training efficiency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Scaling RL to Long Videos</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">LongVILA-R1: Scaling RL to Long Videos - Method Flow</text>
+  
+  <!-- Data Construction Section -->
+  <rect x="50" y="60" width="200" height="150" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="150" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Construction</text>
+  <text x="150" y="100" text-anchor="middle" font-size="12" fill="#34495e">LongVideo-Reason</text>
+  <text x="150" y="115" text-anchor="middle" font-size="11" fill="#34495e">52K QA pairs</text>
+  <text x="150" y="130" text-anchor="middle" font-size="11" fill="#34495e">18K videos</text>
+  <text x="150" y="145" text-anchor="middle" font-size="11" fill="#34495e">4 reasoning types:</text>
+  <text x="150" y="160" text-anchor="middle" font-size="10" fill="#34495e">Temporal, Goal, Spatial, Plot</text>
+  <text x="150" y="175" text-anchor="middle" font-size="11" fill="#34495e">NVILA-8B captioning</text>
+  <text x="150" y="190" text-anchor="middle" font-size="11" fill="#34495e">Reasoning LLM generation</text>
+  
+  <!-- Stage 1 Training -->
+  <rect x="300" y="60" width="180" height="120" fill="#fff2e6" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="390" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stage 1: Long CoT-SFT</text>
+  <text x="390" y="100" text-anchor="middle" font-size="12" fill="#34495e">Warm-up Training</text>
+  <text x="390" y="115" text-anchor="middle" font-size="11" fill="#34495e">18K high-quality samples</text>
+  <text x="390" y="130" text-anchor="middle" font-size="11" fill="#34495e">MM-SP system</text>
+  <text x="390" y="145" text-anchor="middle" font-size="11" fill="#34495e">Chain-of-thought format</text>
+  <text x="390" y="160" text-anchor="middle" font-size="11" fill="#34495e">Reasoning capabilities</text>
+  
+  <!-- Stage 2 Training -->
+  <rect x="520" y="60" width="180" height="120" fill="#f0f8e6" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="610" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stage 2: RL Training</text>
+  <text x="610" y="100" text-anchor="middle" font-size="12" fill="#34495e">GRPO Algorithm</text>
+  <text x="610" y="115" text-anchor="middle" font-size="11" fill="#34495e">33K medium samples</text>
+  <text x="610" y="130" text-anchor="middle" font-size="11" fill="#34495e">110K additional data</text>
+  <text x="610" y="145" text-anchor="middle" font-size="11" fill="#34495e">MR-SP framework</text>
+  <text x="610" y="160" text-anchor="middle" font-size="11" fill="#34495e">Long video optimization</text>
+  
+  <!-- MR-SP System -->
+  <rect x="750" y="60" width="200" height="150" fill="#f4e6ff" stroke="#9b59b6" stroke-width="2" rx="10"/>
+  <text x="850" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">MR-SP System</text>
+  <text x="850" y="100" text-anchor="middle" font-size="12" fill="#34495e">Multi-modal RL SP</text>
+  <text x="850" y="115" text-anchor="middle" font-size="11" fill="#34495e">Stage 1: Parallel Encoding</text>
+  <text x="850" y="130" text-anchor="middle" font-size="11" fill="#34495e">Video embedding reuse</text>
+  <text x="850" y="145" text-anchor="middle" font-size="11" fill="#34495e">Stage 2: SP Prefilling</text>
+  <text x="850" y="160" text-anchor="middle" font-size="11" fill="#34495e">vLLM engine</text>
+  <text x="850" y="175" text-anchor="middle" font-size="11" fill="#34495e">2.1x speedup</text>
+  <text x="850" y="190" text-anchor="middle" font-size="11" fill="#34495e">3600 frames support</text>
+  
+  <!-- Data Processing Flow -->
+  <rect x="100" y="250" width="800" height="80" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2" rx="10"/>
+  <text x="500" y="270" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Processing Pipeline</text>
+  <circle cx="150" cy="300" r="20" fill="#3498db"/>
+  <text x="150" y="305" text-anchor="middle" font-size="10" fill="white">Video</text>
+  <circle cx="250" cy="300" r="20" fill="#e74c3c"/>
+  <text x="250" y="305" text-anchor="middle" font-size="10" fill="white">Clips</text>
+  <circle cx="350" cy="300" r="20" fill="#f39c12"/>
+  <text x="350" y="305" text-anchor="middle" font-size="10" fill="white">Caption</text>
+  <circle cx="450" cy="300" r="20" fill="#27ae60"/>
+  <text x="450" y="305" text-anchor="middle" font-size="10" fill="white">Q&A</text>
+  <circle cx="550" cy="300" r="20" fill="#9b59b6"/>
+  <text x="550" y="305" text-anchor="middle" font-size="10" fill="white">Reason</text>
+  <circle cx="650" cy="300" r="20" fill="#1abc9c"/>
+  <text x="650" y="305" text-anchor="middle" font-size="10" fill="white">Filter</text>
+  <circle cx="750" cy="300" r="20" fill="#e67e22"/>
+  <text x="750" y="305" text-anchor="middle" font-size="10" fill="white">Train</text>
+  <circle cx="850" cy="300" r="20" fill="#34495e"/>
+  <text x="850" y="305" text-anchor="middle" font-size="10" fill="white">Model</text>
+  
+  <!-- Training Framework -->
+  <rect x="50" y="360" width="900" height="120" fill="#fdf2e9" stroke="#d35400" stroke-width="2" rx="10"/>
+  <text x="500" y="380" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Two-Stage Training Framework</text>
+  
+  <!-- Base Model -->
+  <rect x="80" y="400" width="120" height="60" fill="#ecf0f1" stroke="#7f8c8d" stroke-width="1" rx="5"/>
+  <text x="140" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">VILA Base</text>
+  <text x="140" y="435" text-anchor="middle" font-size="10" fill="#34495e">LongVILA</text>
+  <text x="140" y="450" text-anchor="middle" font-size="10" fill="#34495e">Context Ext.</text>
+  
+  <!-- Stage 1 Detail -->
+  <rect x="240" y="400" width="200" height="60" fill="#fff2e6" stroke="#f39c12" stroke-width="1" rx="5"/>
+  <text x="340" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Stage 1: CoT-SFT</text>
+  <text x="340" y="435" text-anchor="middle" font-size="10" fill="#34495e">18K reasoning samples</text>
+  <text x="340" y="450" text-anchor="middle" font-size="10" fill="#34495e">MM-SP training</text>
+  
+  <!-- Stage 2 Detail -->
+  <rect x="480" y="400" width="200" height="60" fill="#f0f8e6" stroke="#27ae60" stroke-width="1" rx="5"/>
+  <text x="580" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Stage 2: RL</text>
+  <text x="580" y="435" text-anchor="middle" font-size="10" fill="#34495e">33K + 110K samples</text>
+  <text x="580" y="450" text-anchor="middle" font-size="10" fill="#34495e">MR-SP framework</text>
+  
+  <!-- Final Model -->
+  <rect x="720" y="400" width="150" height="60" fill="#e8f8f5" stroke="#16a085" stroke-width="1" rx="5"/>
+  <text x="795" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">LongVILA-R1</text>
+  <text x="795" y="435" text-anchor="middle" font-size="10" fill="#34495e">Enhanced</text>
+  <text x="795" y="450" text-anchor="middle" font-size="10" fill="#34495e">Reasoning</text>
+  
+  <!-- MR-SP Technical Details -->
+  <rect x="50" y="510" width="450" height="120" fill="#f4e6ff" stroke="#9b59b6" stroke-width="2" rx="10"/>
+  <text x="275" y="530" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">MR-SP Technical Components</text>
+  
+  <rect x="70" y="545" width="180" height="35" fill="#e8e4ff" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="160" y="560" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Stage 1: Rollout</text>
+  <text x="160" y="573" text-anchor="middle" font-size="10" fill="#34495e">Parallel video encoding</text>
+  
+  <rect x="270" y="545" width="180" height="35" fill="#e8e4ff" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="360" y="560" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Stage 2: Prefilling</text>
+  <text x="360" y="573" text-anchor="middle" font-size="10" fill="#34495e">Sequence parallelism</text>
+  
+  <rect x="70" y="585" width="180" height="35" fill="#e8e4ff" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="160" y="600" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Embedding Reuse</text>
+  <text x="160" y="613" text-anchor="middle" font-size="10" fill="#34495e">Cache optimization</text>
+  
+  <rect x="270" y="585" width="180" height="35" fill="#e8e4ff" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="360" y="600" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">vLLM Engine</text>
+  <text x="360" y="613" text-anchor="middle" font-size="10" fill="#34495e">Efficient inference</text>
+  
+  <!-- Performance Results -->
+  <rect x="530" y="510" width="420" height="120" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="740" y="530" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Results</text>
+  
+  <text x="550" y="550" font-size="11" fill="#2c3e50">• VideoMME: 68.4% (with subtitle)</text>
+  <text x="550" y="565" font-size="11" fill="#2c3e50">• LongVideo-Reason-eval: 67.9%</text>
+  <text x="550" y="580" font-size="11" fill="#2c3e50">• Outperforms Video-R1-7B</text>
+  <text x="550" y="595" font-size="11" fill="#2c3e50">• Matches Gemini-1.5-Pro</text>
+  <text x="550" y="610" font-size="11" fill="#2c3e50">• 2.1x training speedup</text>
+  
+  <text x="750" y="550" font-size="11" fill="#2c3e50">• Scales to 512+ frames</text>
+  <text x="750" y="565" font-size="11" fill="#2c3e50">• Supports 3600 frames</text>
+  <text x="750" y="580" font-size="11" fill="#2c3e50">• Hour-long video training</text>
+  <text x="750" y="595" font-size="11" fill="#2c3e50">• 8xA100 single node</text>
+  <text x="750" y="610" font-size="11" fill="#2c3e50">• 256K tokens support</text>
+  
+  <!-- Evaluation Categories -->
+  <rect x="50" y="660" width="900" height="100" fill="#f8f9fa" stroke="#bdc3c7" stroke-width="2" rx="10"/>
+  <text x="500" y="680" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Four Reasoning Categories in LongVideo-Reason-eval</text>
+  
+  <rect x="80" y="695" width="180" height="50" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="1" rx="5"/>
+  <text x="170" y="715" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Temporal</text>
+  <text x="170" y="730" text-anchor="middle" font-size="10" fill="#34495e">Time-based reasoning</text>
+  
+  <rect x="290" y="695" width="180" height="50" fill="#fab1a0" stroke="#e17055" stroke-width="1" rx="5"/>
+  <text x="380" y="715" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Goal & Purpose</text>
+  <text x="380" y="730" text-anchor="middle" font-size="10" fill="#34495e">Intent understanding</text>
+  
+  <rect x="500" y="695" width="180" height="50" fill="#a29bfe" stroke="#6c5ce7" stroke-width="1" rx="5"/>
+  <text x="590" y="715" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Spatial</text>
+  <text x="590" y="730" text-anchor="middle" font-size="10" fill="#34495e">Location tracking</text>
+  
+  <rect x="710" y="695" width="180" height="50" fill="#81ecec" stroke="#00b894" stroke-width="1" rx="5"/>
+  <text x="800" y="715" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Plot & Narrative</text>
+  <text x="800" y="730" text-anchor="middle" font-size="10" fill="#34495e">Story comprehension</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Multi-modal Reinforcement Sequence Parallelism (MR-SP)">
+                        <div class="quiz-question">1. What is the main technical innovation introduced in the paper to handle long video processing efficiently?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Multi-modal Reinforcement Sequence Parallelism (MR-SP)">Multi-modal Reinforcement Sequence Parallelism (MR-SP)</div><div class="quiz-choice" data-value="Chain-of-Thought Supervised Fine-tuning (CoT-SFT)">Chain-of-Thought Supervised Fine-tuning (CoT-SFT)</div><div class="quiz-choice" data-value="Large Language Model Pre-training">Large Language Model Pre-training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Four - Temporal, Goal and Purpose, Spatial, and Plot Reasoning">
+                        <div class="quiz-question">2. How many reasoning categories does the LongVideo-Reason dataset evaluate?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Three - Temporal, Spatial, and Plot Reasoning">Three - Temporal, Spatial, and Plot Reasoning</div><div class="quiz-choice" data-value="Four - Temporal, Goal and Purpose, Spatial, and Plot Reasoning">Four - Temporal, Goal and Purpose, Spatial, and Plot Reasoning</div><div class="quiz-choice" data-value="Five - Temporal, Goal, Spatial, Plot, and Narrative Reasoning">Five - Temporal, Goal, Spatial, Plot, and Narrative Reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="2.1x speedup">
+                        <div class="quiz-question">3. What is the maximum speedup achieved by the MR-SP system for long video RL training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.5x speedup">1.5x speedup</div><div class="quiz-choice" data-value="2.1x speedup">2.1x speedup</div><div class="quiz-choice" data-value="3.0x speedup">3.0x speedup</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>MIRIX: Multi-Agent Memory System for LLM-Based Agents</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.07957" target="_blank">http://arxiv.org/pdf/2507.07957</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of MIRIX, a multi-agent memory system for Large Language Model (LLM) based agents in the domain of artificial intelligence and cognitive systems.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing memory-augmented LLMs and cognitive science memory theories, proposing a novel six-component memory architecture (Core, Episodic, Semantic, Procedural, Resource Memory, and Knowledge Vault) managed by specialized agents.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the limitations of existing AI memory systems that rely on flat, narrowly-scoped memory components, which constrains their ability to personalize, abstract, and reliably recall user-specific information over time.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a multi-agent framework with six Memory Managers and a Meta Memory Manager, using Active Retrieval mechanism and multiple retrieval functions to coordinate memory updates and information retrieval across different memory components.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 35% higher accuracy than RAG baseline while reducing storage by 99.9% on ScreenshotVQA, and attained state-of-the-art performance of 85.4% on LOCOMO benchmark, surpassing existing baselines by 8.0%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MIRIX: Multi-Agent Memory System for LLM-Based Agents</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">MIRIX: Multi-Agent Memory System Workflow</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="70" width="120" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="110" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">User Input</text>
+  <text x="110" y="110" text-anchor="middle" font-size="10" fill="white">(Text/Images)</text>
+  
+  <!-- Meta Memory Manager -->
+  <rect x="250" y="70" width="140" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="320" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Meta Memory</text>
+  <text x="320" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Manager</text>
+  
+  <!-- Active Retrieval Box -->
+  <rect x="450" y="70" width="120" height="60" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="510" y="90" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Active Retrieval</text>
+  <text x="510" y="105" text-anchor="middle" font-size="9" fill="white">Topic Generation</text>
+  <text x="510" y="118" text-anchor="middle" font-size="9" fill="white">& Memory Search</text>
+  
+  <!-- Six Memory Components -->
+  <g id="memory-components">
+    <!-- Core Memory -->
+    <rect x="80" y="200" width="100" height="80" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+    <text x="130" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Core</text>
+    <text x="130" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Memory</text>
+    <text x="130" y="250" text-anchor="middle" font-size="8" fill="white">Persona &</text>
+    <text x="130" y="263" text-anchor="middle" font-size="8" fill="white">User Info</text>
+    
+    <!-- Episodic Memory -->
+    <rect x="200" y="200" width="100" height="80" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+    <text x="250" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Episodic</text>
+    <text x="250" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Memory</text>
+    <text x="250" y="250" text-anchor="middle" font-size="8" fill="white">Time-stamped</text>
+    <text x="250" y="263" text-anchor="middle" font-size="8" fill="white">Events</text>
+    
+    <!-- Semantic Memory -->
+    <rect x="320" y="200" width="100" height="80" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+    <text x="370" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Semantic</text>
+    <text x="370" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Memory</text>
+    <text x="370" y="250" text-anchor="middle" font-size="8" fill="white">Concepts &</text>
+    <text x="370" y="263" text-anchor="middle" font-size="8" fill="white">Entities</text>
+    
+    <!-- Procedural Memory -->
+    <rect x="440" y="200" width="100" height="80" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+    <text x="490" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Procedural</text>
+    <text x="490" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Memory</text>
+    <text x="490" y="250" text-anchor="middle" font-size="8" fill="white">Step-by-step</text>
+    <text x="490" y="263" text-anchor="middle" font-size="8" fill="white">Instructions</text>
+    
+    <!-- Resource Memory -->
+    <rect x="560" y="200" width="100" height="80" rx="8" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <text x="610" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Resource</text>
+    <text x="610" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Memory</text>
+    <text x="610" y="250" text-anchor="middle" font-size="8" fill="white">Documents &</text>
+    <text x="610" y="263" text-anchor="middle" font-size="8" fill="white">Files</text>
+    
+    <!-- Knowledge Vault -->
+    <rect x="680" y="200" width="100" height="80" rx="8" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+    <text x="730" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Knowledge</text>
+    <text x="730" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Vault</text>
+    <text x="730" y="250" text-anchor="middle" font-size="8" fill="white">Sensitive</text>
+    <text x="730" y="263" text-anchor="middle" font-size="8" fill="white">Information</text>
+  </g>
+  
+  <!-- Memory Managers -->
+  <g id="memory-managers">
+    <rect x="80" y="320" width="100" height="40" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+    <text x="130" y="340" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Memory Manager</text>
+    
+    <rect x="200" y="320" width="100" height="40" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+    <text x="250" y="340" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Memory Manager</text>
+    
+    <rect x="320" y="320" width="100" height="40" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+    <text x="370" y="340" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Memory Manager</text>
+    
+    <rect x="440" y="320" width="100" height="40" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+    <text x="490" y="340" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Memory Manager</text>
+    
+    <rect x="560" y="320" width="100" height="40" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+    <text x="610" y="340" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Memory Manager</text>
+    
+    <rect x="680" y="320" width="100" height="40" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+    <text x="730" y="340" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Memory Manager</text>
+  </g>
+  
+  <!-- Chat Agent -->
+  <rect x="800" y="70" width="120" height="60" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="860" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Chat Agent</text>
+  <text x="860" y="110" text-anchor="middle" font-size="10" fill="white">User Interface</text>
+  
+  <!-- Storage System -->
+  <rect x="400" y="420" width="200" height="60" rx="10" fill="#7f8c8d" stroke="#6c7b7b" stroke-width="2"/>
+  <text x="500" y="440" text-anchor="middle" font-size="12" font-weight="bold" fill="white">SQLite Database</text>
+  <text x="500" y="455" text-anchor="middle" font-size="10" fill="white">Structured Memory Storage</text>
+  <text x="500" y="470" text-anchor="middle" font-size="10" fill="white">(99.9% storage reduction)</text>
+  
+  <!-- Retrieval Methods -->
+  <rect x="50" y="520" width="280" height="80" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="190" y="540" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Retrieval Methods</text>
+  <rect x="70" y="550" width="70" height="25" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+  <text x="105" y="566" text-anchor="middle" font-size="9" fill="white">Embedding</text>
+  <rect x="150" y="550" width="70" height="25" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+  <text x="185" y="566" text-anchor="middle" font-size="9" fill="white">BM25</text>
+  <rect x="230" y="550" width="70" height="25" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+  <text x="265" y="566" text-anchor="middle" font-size="9" fill="white">String Match</text>
+  
+  <!-- Evaluation Results -->
+  <rect x="400" y="520" width="250" height="80" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="525" y="540" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Performance Results</text>
+  <text x="525" y="555" text-anchor="middle" font-size="10" fill="#27ae60">ScreenshotVQA: 35% improvement</text>
+  <text x="525" y="570" text-anchor="middle" font-size="10" fill="#27ae60">LOCOMO: 85.4% accuracy (SOTA)</text>
+  <text x="525" y="585" text-anchor="middle" font-size="10" fill="#e74c3c">99.9% storage reduction vs RAG</text>
+  
+  <!-- Application Layer -->
+  <rect x="700" y="520" width="250" height="80" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="825" y="540" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Application Features</text>
+  <text x="825" y="555" text-anchor="middle" font-size="10" fill="#2c3e50">• Real-time screen monitoring</text>
+  <text x="825" y="570" text-anchor="middle" font-size="10" fill="#2c3e50">• Memory visualization</text>
+  <text x="825" y="585" text-anchor="middle" font-size="10" fill="#2c3e50">• Privacy-preserving storage</text>
+  
+  <!-- Process Flow Indicators -->
+  <g stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+      </marker>
+    </defs>
+    
+    <!-- Input to Meta Manager -->
+    <line x1="170" y1="100" x2="250" y2="100"/>
+    
+    <!-- Meta Manager to Active Retrieval -->
+    <line x1="390" y1="100" x2="450" y2="100"/>
+    
+    <!-- Active Retrieval to Chat Agent -->
+    <line x1="570" y1="100" x2="800" y2="100"/>
+    
+    <!-- Meta Manager to Memory Components (simplified) -->
+    <line x1="320" y1="130" x2="320" y2="200"/>
+    <line x1="320" y1="160" x2="130" y2="200"/>
+    <line x1="320" y1="160" x2="250" y2="200"/>
+    <line x1="320" y1="160" x2="370" y2="200"/>
+    <line x1="320" y1="160" x2="490" y2="200"/>
+    <line x1="320" y1="160" x2="610" y2="200"/>
+    <line x1="320" y1="160" x2="730" y2="200"/>
+    
+    <!-- Memory Components to Managers -->
+    <line x1="130" y1="280" x2="130" y2="320"/>
+    <line x1="250" y1="280" x2="250" y2="320"/>
+    <line x1="370" y1="280" x2="370" y2="320"/>
+    <line x1="490" y1="280" x2="490" y2="320"/>
+    <line x1="610" y1="280" x2="610" y2="320"/>
+    <line x1="730" y1="280" x2="730" y2="320"/>
+    
+    <!-- Managers to Storage -->
+    <line x1="390" y1="360" x2="500" y2="420"/>
+  </g>
+  
+  <!-- Legend -->
+  <rect x="50" y="650" width="900" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="670" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">MIRIX System Architecture</text>
+  <text x="80" y="690" font-size="11" fill="#2c3e50">Key Features:</text>
+  <text x="80" y="710" font-size="10" fill="#2c3e50">• Six specialized memory components for different information types</text>
+  <text x="80" y="725" font-size="10" fill="#2c3e50">• Multi-agent architecture with dedicated memory managers</text>
+  <text x="80" y="740" font-size="10" fill="#2c3e50">• Active retrieval mechanism for automatic memory access</text>
+  <text x="80" y="755" font-size="10" fill="#2c3e50">• Supports multimodal input (text, images, screenshots)</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It has a six-component modular memory architecture with specialized agents">
+                        <div class="quiz-question">1. What is the primary innovation of MIRIX compared to existing memory systems?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more advanced language models">It uses more advanced language models</div><div class="quiz-choice" data-value="It has a six-component modular memory architecture with specialized agents">It has a six-component modular memory architecture with specialized agents</div><div class="quiz-choice" data-value="It processes information faster than other systems">It processes information faster than other systems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Processing high-resolution screenshots while maintaining minimal storage">
+                        <div class="quiz-question">2. In the ScreenshotVQA evaluation, what unique challenge did MIRIX address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Processing high-resolution screenshots while maintaining minimal storage">Processing high-resolution screenshots while maintaining minimal storage</div><div class="quiz-choice" data-value="Generating better quality images">Generating better quality images</div><div class="quiz-choice" data-value="Improving screenshot capture speed">Improving screenshot capture speed</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="To automatically generate topics for memory retrieval without explicit prompts">
+                        <div class="quiz-question">3. What is the purpose of the 'Active Retrieval' mechanism in MIRIX?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To speed up memory access time">To speed up memory access time</div><div class="quiz-choice" data-value="To automatically generate topics for memory retrieval without explicit prompts">To automatically generate topics for memory retrieval without explicit prompts</div><div class="quiz-choice" data-value="To compress stored information">To compress stored information</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Traceable Evidence Enhanced Visual Grounded Reasoning: Evaluation and
+  Methodology</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.07999" target="_blank">http://arxiv.org/pdf/2507.07999</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on visual grounded reasoning in AI models, specifically developing a benchmark and methodology for evaluating and improving how AI models "think with images" through traceable evidence.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous visual-language models like OpenAI-o3, the paper proposes TreeBench (a new evaluation benchmark) and TreeVGR (a novel training methodology) to enhance visual grounded reasoning with traceable evidence supervision.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of comprehensive benchmarks for evaluating visual grounded reasoning capabilities in AI models, particularly in terms of focused visual perception, traceable evidence, and second-order reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed TreeBench through expert annotation and quality control of 405 challenging visual question-answering pairs, and created TreeVGR using a two-stage training pipeline combining cold-start initialization and reinforcement learning with traceable evidence supervision.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> TreeVGR achieved significant improvements across various benchmarks (+16.8 on V* Bench, +12.6 on MME-RealWorld, +13.4 on TreeBench), while demonstrating that even advanced models like OpenAI-o3 only achieve 54.87% accuracy on TreeBench.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Traceable Evidence Enhanced Visual Grounded Reasoning: Evaluation and
+  Methodology</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">TreeBench & TreeVGR Methodology Flowchart</text>
+  
+  <!-- TreeBench Section -->
+  <rect x="50" y="60" width="400" height="320" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="250" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">TreeBench Development</text>
+  
+  <!-- TreeBench Steps -->
+  <rect x="70" y="100" width="160" height="40" fill="#3498db" rx="5"/>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="white">1K Images from SA-1B</text>
+  
+  <rect x="260" y="100" width="160" height="40" fill="#e74c3c" rx="5"/>
+  <text x="340" y="125" text-anchor="middle" font-size="12" fill="white">Dense Object Priority</text>
+  
+  <rect x="70" y="160" width="160" height="40" fill="#f39c12" rx="5"/>
+  <text x="150" y="185" text-anchor="middle" font-size="12" fill="white">LMM Generation</text>
+  
+  <rect x="260" y="160" width="160" height="40" fill="#9b59b6" rx="5"/>
+  <text x="340" y="185" text-anchor="middle" font-size="12" fill="white">OpenAI-o3 & Gemini</text>
+  
+  <rect x="70" y="220" width="160" height="40" fill="#27ae60" rx="5"/>
+  <text x="150" y="245" text-anchor="middle" font-size="12" fill="white">Expert Annotation</text>
+  
+  <rect x="260" y="220" width="160" height="40" fill="#34495e" rx="5"/>
+  <text x="340" y="245" text-anchor="middle" font-size="12" fill="white">8 LMM Experts</text>
+  
+  <rect x="165" y="280" width="160" height="40" fill="#16a085" rx="5"/>
+  <text x="245" y="305" text-anchor="middle" font-size="12" fill="white">405 VQA Pairs</text>
+  
+  <!-- Three Principles -->
+  <rect x="70" y="340" width="350" height="60" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1" rx="5"/>
+  <text x="245" y="360" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Three Core Principles</text>
+  <text x="245" y="380" text-anchor="middle" font-size="11" fill="#34495e">1. Focused Visual Perception</text>
+  <text x="245" y="395" text-anchor="middle" font-size="11" fill="#34495e">2. Traceable Evidence • 3. Second-Order Reasoning</text>
+  
+  <!-- TreeVGR Section -->
+  <rect x="550" y="60" width="400" height="320" fill="#fff5f5" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="750" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#c0392b">TreeVGR Training Pipeline</text>
+  
+  <!-- Cold Start Phase -->
+  <rect x="570" y="100" width="360" height="80" fill="#3498db" stroke="#2980b9" stroke-width="1" rx="5"/>
+  <text x="750" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Cold-Start Initialization</text>
+  <text x="750" y="140" text-anchor="middle" font-size="11" fill="white">SFT on VGR-158K → TreeVGR-SFT-35K</text>
+  <text x="750" y="155" text-anchor="middle" font-size="11" fill="white">Base: Qwen2.5-VL-7B</text>
+  <text x="750" y="170" text-anchor="middle" font-size="11" fill="white">Multi-box reasoning + Error correction</text>
+  
+  <!-- RL Phase -->
+  <rect x="570" y="200" width="360" height="120" fill="#e74c3c" stroke="#c0392b" stroke-width="1" rx="5"/>
+  <text x="750" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Reinforcement Learning</text>
+  <text x="750" y="240" text-anchor="middle" font-size="11" fill="white">Traceable Evidence Supervision</text>
+  
+  <!-- Reward Components -->
+  <rect x="590" y="250" width="100" height="25" fill="#f39c12" rx="3"/>
+  <text x="640" y="267" text-anchor="middle" font-size="10" fill="white">R_acc</text>
+  
+  <rect x="700" y="250" width="100" height="25" fill="#9b59b6" rx="3"/>
+  <text x="750" y="267" text-anchor="middle" font-size="10" fill="white">R_format</text>
+  
+  <rect x="810" y="250" width="100" height="25" fill="#27ae60" rx="3"/>
+  <text x="860" y="267" text-anchor="middle" font-size="10" fill="white">R_IoU</text>
+  
+  <text x="750" y="290" text-anchor="middle" font-size="11" fill="white">Dual IoU: Precision + Recall</text>
+  <text x="750" y="305" text-anchor="middle" font-size="11" fill="white">GRPO on TreeVGR-RL-37K</text>
+  
+  <!-- Data Sources -->
+  <rect x="570" y="340" width="170" height="40" fill="#95a5a6" rx="5"/>
+  <text x="655" y="365" text-anchor="middle" font-size="12" fill="white">V* Bench (30K)</text>
+  
+  <rect x="760" y="340" width="170" height="40" fill="#95a5a6" rx="5"/>
+  <text x="845" y="365" text-anchor="middle" font-size="12" fill="white">VisDrone (7K)</text>
+  
+  <!-- Evaluation Results -->
+  <rect x="100" y="450" width="800" height="120" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="10"/>
+  <text x="500" y="470" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Results & Improvements</text>
+  
+  <!-- Performance boxes -->
+  <rect x="130" y="490" width="120" height="35" fill="#27ae60" rx="5"/>
+  <text x="190" y="512" text-anchor="middle" font-size="11" fill="white">TreeBench: +13.4</text>
+  
+  <rect x="270" y="490" width="120" height="35" fill="#3498db" rx="5"/>
+  <text x="330" y="512" text-anchor="middle" font-size="11" fill="white">V*Bench: +16.8</text>
+  
+  <rect x="410" y="490" width="120" height="35" fill="#e74c3c" rx="5"/>
+  <text x="470" y="512" text-anchor="middle" font-size="11" fill="white">MME-RW: +12.6</text>
+  
+  <rect x="550" y="490" width="120" height="35" fill="#f39c12" rx="5"/>
+  <text x="610" y="512" text-anchor="middle" font-size="11" fill="white">mIoU: 44.0</text>
+  
+  <rect x="690" y="490" width="120" height="35" fill="#9b59b6" rx="5"/>
+  <text x="750" y="512" text-anchor="middle" font-size="11" fill="white">5 epochs only</text>
+  
+  <text x="500" y="545" text-anchor="middle" font-size="12" fill="#34495e">TreeVGR-7B achieves comparable performance with InternVL3-78B</text>
+  <text x="500" y="560" text-anchor="middle" font-size="12" fill="#34495e">Even OpenAI-o3 scores only 54.87% on TreeBench</text>
+  
+  <!-- Key Innovation -->
+  <rect x="150" y="600" width="700" height="80" fill="#2c3e50" rx="10"/>
+  <text x="500" y="625" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Core Innovation: Traceable Evidence</text>
+  <text x="500" y="645" text-anchor="middle" font-size="13" fill="#ecf0f1">First benchmark to evaluate "thinking with images" capabilities</text>
+  <text x="500" y="660" text-anchor="middle" font-size="13" fill="#ecf0f1">Explicit supervision of bounding box generation during RL training</text>
+  <text x="500" y="675" text-anchor="middle" font-size="13" fill="#ecf0f1">Enables explainable reasoning pathways with precise localization</text>
+  
+  <!-- Task Categories -->
+  <rect x="50" y="720" width="200" height="50" fill="#1abc9c" rx="5"/>
+  <text x="150" y="740" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Perception Tasks (37%)</text>
+  <text x="150" y="755" text-anchor="middle" font-size="10" fill="white">Attributes, Material, Physical State, etc.</text>
+  
+  <rect x="270" y="720" width="200" height="50" fill="#e67e22" rx="5"/>
+  <text x="370" y="740" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reasoning Tasks (63%)</text>
+  <text x="370" y="755" text-anchor="middle" font-size="10" fill="white">Perspective, Ordering, Occlusion, etc.</text>
+  
+  <rect x="750" y="720" width="200" height="50" fill="#8e44ad" rx="5"/>
+  <text x="850" y="740" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Small Objects</text>
+  <text x="850" y="755" text-anchor="middle" font-size="10" fill="white">Mean area: 3.05% of image</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It incorporates dual IoU rewards to supervise bounding box generation">
+                        <div class="quiz-question">1. What is the main innovation of TreeVGR's training methodology compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger dataset for training">It uses a larger dataset for training</div><div class="quiz-choice" data-value="It incorporates dual IoU rewards to supervise bounding box generation">It incorporates dual IoU rewards to supervise bounding box generation</div><div class="quiz-choice" data-value="It eliminates the need for visual grounding entirely">It eliminates the need for visual grounding entirely</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To ensure rigorous expert curation and quality control of each sample">
+                        <div class="quiz-question">2. Why was TreeBench developed with only 405 question-answer pairs instead of a larger dataset?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce computational costs during evaluation">To reduce computational costs during evaluation</div><div class="quiz-choice" data-value="Due to limitations in available visual data">Due to limitations in available visual data</div><div class="quiz-choice" data-value="To ensure rigorous expert curation and quality control of each sample">To ensure rigorous expert curation and quality control of each sample</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Even advanced models like OpenAI-o3 scored below 60% accuracy">
+                        <div class="quiz-question">3. What surprising finding emerged from testing state-of-the-art models on TreeBench?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="All models performed better than expected">All models performed better than expected</div><div class="quiz-choice" data-value="Even advanced models like OpenAI-o3 scored below 60% accuracy">Even advanced models like OpenAI-o3 scored below 60% accuracy</div><div class="quiz-choice" data-value="Smaller models consistently outperformed larger ones">Smaller models consistently outperformed larger ones</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
