@@ -1,0 +1,1049 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-15 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-15 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Reasoning or Memorization? Unreliable Results of Reinforcement Learning
+  Due to Data Contamination</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.10532" target="_blank">http://arxiv.org/pdf/2507.10532</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper examines the reliability of reinforcement learning results in large language models (LLMs), specifically focusing on mathematical reasoning capabilities and data contamination issues.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on recent work showing improved mathematical reasoning in LLMs through reinforcement learning, the paper proposes that some performance gains may be due to data contamination rather than actual learning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper investigates why Qwen2.5 models show improved performance with random/incorrect reward signals while other models like Llama do not, suggesting potential data contamination in evaluation benchmarks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors create a new synthetic arithmetic dataset called RandomCalculation for clean evaluation, analyze memorization capabilities through partial-prompt completion tests, and conduct controlled RLVR (Reinforcement Learning with Verifiable Rewards) experiments.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results show that Qwen2.5's performance gains on standard benchmarks like MATH-500 likely stem from data contamination, as only correct reward signals yield stable improvements on the clean RandomCalculation dataset, while random/incorrect rewards provide no benefit.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Reasoning or Memorization? Unreliable Results of Reinforcement Learning
+  Due to Data Contamination</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    Research Workflow: Data Contamination in RL for Mathematical Reasoning
+  </text>
+  
+  <!-- Phase 1: Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem Identification</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">Qwen2.5 shows unexpected</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">gains with spurious rewards</text>
+  
+  <!-- Phase 2: Hypothesis Formation -->
+  <rect x="300" y="60" width="200" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="400" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Hypothesis Formation</text>
+  <text x="400" y="105" text-anchor="middle" font-size="10" fill="white">Data Contamination vs</text>
+  <text x="400" y="120" text-anchor="middle" font-size="10" fill="white">Strong Baseline Skills</text>
+  
+  <!-- Phase 3: Memorization Testing -->
+  <rect x="550" y="60" width="200" height="80" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="650" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Memorization Testing</text>
+  <text x="650" y="105" text-anchor="middle" font-size="10" fill="white">Partial-prompt completion</text>
+  <text x="650" y="120" text-anchor="middle" font-size="10" fill="white">& answer accuracy</text>
+  
+  <!-- Phase 4: Clean Dataset Creation -->
+  <rect x="750" y="60" width="200" height="80" rx="10" fill="#e67e22" opacity="0.8"/>
+  <text x="850" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Clean Dataset Creation</text>
+  <text x="850" y="105" text-anchor="middle" font-size="10" fill="white">RandomCalculation</text>
+  <text x="850" y="120" text-anchor="middle" font-size="10" fill="white">Dataset Generation</text>
+  
+  <!-- Method 1: RLVR on MATH-500 -->
+  <rect x="100" y="180" width="180" height="100" rx="8" fill="#f39c12" opacity="0.7"/>
+  <text x="190" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">RLVR on MATH-500</text>
+  <text x="190" y="225" text-anchor="middle" font-size="9" fill="white">• Correct rewards</text>
+  <text x="190" y="240" text-anchor="middle" font-size="9" fill="white">• Random rewards</text>
+  <text x="190" y="255" text-anchor="middle" font-size="9" fill="white">• Inverted rewards</text>
+  <text x="190" y="270" text-anchor="middle" font-size="9" fill="white">• Mv-incorrect rewards</text>
+  
+  <!-- Method 2: Partial Prompt Analysis -->
+  <rect x="320" y="180" width="180" height="100" rx="8" fill="#27ae60" opacity="0.7"/>
+  <text x="410" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Partial Prompt Analysis</text>
+  <text x="410" y="225" text-anchor="middle" font-size="9" fill="white">• 40%, 60%, 80% prompts</text>
+  <text x="410" y="240" text-anchor="middle" font-size="9" fill="white">• ROUGE-L scores</text>
+  <text x="410" y="255" text-anchor="middle" font-size="9" fill="white">• Exact Match rates</text>
+  <text x="410" y="270" text-anchor="middle" font-size="9" fill="white">• Multiple benchmarks</text>
+  
+  <!-- Method 3: Multiple Model Comparison -->
+  <rect x="540" y="180" width="180" height="100" rx="8" fill="#8e44ad" opacity="0.7"/>
+  <text x="630" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Model Comparison</text>
+  <text x="630" y="225" text-anchor="middle" font-size="9" fill="white">• Qwen2.5 series</text>
+  <text x="630" y="240" text-anchor="middle" font-size="9" fill="white">• Llama3.1 series</text>
+  <text x="630" y="255" text-anchor="middle" font-size="9" fill="white">• Base vs Instruct</text>
+  <text x="630" y="270" text-anchor="middle" font-size="9" fill="white">• Template analysis</text>
+  
+  <!-- Method 4: Clean Evaluation -->
+  <rect x="760" y="180" width="180" height="100" rx="8" fill="#16a085" opacity="0.7"/>
+  <text x="850" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Clean Evaluation</text>
+  <text x="850" y="225" text-anchor="middle" font-size="9" fill="white">• RandomCalculation</text>
+  <text x="850" y="240" text-anchor="middle" font-size="9" fill="white">• 1-20 step problems</text>
+  <text x="850" y="255" text-anchor="middle" font-size="9" fill="white">• Continuous rewards</text>
+  <text x="850" y="270" text-anchor="middle" font-size="9" fill="white">• GRPO algorithm</text>
+  
+  <!-- Key Findings -->
+  <rect x="150" y="320" width="250" height="120" rx="10" fill="#e74c3c" opacity="0.9"/>
+  <text x="275" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Key Findings</text>
+  <text x="275" y="365" text-anchor="middle" font-size="10" fill="white">• Qwen shows high memorization</text>
+  <text x="275" y="380" text-anchor="middle" font-size="10" fill="white">  on MATH-500 (54.6% completion)</text>
+  <text x="275" y="395" text-anchor="middle" font-size="10" fill="white">• Llama shows minimal memorization</text>
+  <text x="275" y="410" text-anchor="middle" font-size="10" fill="white">  (3.8% completion)</text>
+  <text x="275" y="425" text-anchor="middle" font-size="10" fill="white">• Performance drops on fresh data</text>
+  
+  <!-- Validation Results -->
+  <rect x="450" y="320" width="250" height="120" rx="10" fill="#27ae60" opacity="0.9"/>
+  <text x="575" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Validation Results</text>
+  <text x="575" y="365" text-anchor="middle" font-size="10" fill="white">• Only correct rewards improve</text>
+  <text x="575" y="380" text-anchor="middle" font-size="10" fill="white">  performance on clean data</text>
+  <text x="575" y="395" text-anchor="middle" font-size="10" fill="white">• Random/inverse rewards fail</text>
+  <text x="575" y="410" text-anchor="middle" font-size="10" fill="white">• Confirms contamination hypothesis</text>
+  <text x="575" y="425" text-anchor="middle" font-size="10" fill="white">• Validates reward importance</text>
+  
+  <!-- Algorithm Details -->
+  <rect x="50" y="480" width="200" height="100" rx="8" fill="#34495e" opacity="0.8"/>
+  <text x="150" y="505" text-anchor="middle" font-size="11" font-weight="bold" fill="white">GRPO Algorithm</text>
+  <text x="150" y="525" text-anchor="middle" font-size="9" fill="white">Group Relative Policy</text>
+  <text x="150" y="540" text-anchor="middle" font-size="9" fill="white">Optimization for RLVR</text>
+  <text x="150" y="555" text-anchor="middle" font-size="9" fill="white">Binary & continuous</text>
+  <text x="150" y="570" text-anchor="middle" font-size="9" fill="white">reward functions</text>
+  
+  <!-- Dataset Construction -->
+  <rect x="280" y="480" width="200" height="100" rx="8" fill="#7f8c8d" opacity="0.8"/>
+  <text x="380" y="505" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Dataset Construction</text>
+  <text x="380" y="525" text-anchor="middle" font-size="9" fill="white">Algorithm 1: Random</text>
+  <text x="380" y="540" text-anchor="middle" font-size="9" fill="white">arithmetic expressions</text>
+  <text x="380" y="555" text-anchor="middle" font-size="9" fill="white">Basic operations</text>
+  <text x="380" y="570" text-anchor="middle" font-size="9" fill="white">Variable complexity</text>
+  
+  <!-- Evaluation Metrics -->
+  <rect x="510" y="480" width="200" height="100" rx="8" fill="#95a5a6" opacity="0.8"/>
+  <text x="610" y="505" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Evaluation Metrics</text>
+  <text x="610" y="525" text-anchor="middle" font-size="9" fill="white">• ROUGE-L scores</text>
+  <text x="610" y="540" text-anchor="middle" font-size="9" fill="white">• Exact Match rates</text>
+  <text x="610" y="555" text-anchor="middle" font-size="9" fill="white">• Answer accuracy</text>
+  <text x="610" y="570" text-anchor="middle" font-size="9" fill="white">• Performance curves</text>
+  
+  <!-- Conclusions -->
+  <rect x="740" y="480" width="200" height="100" rx="8" fill="#2c3e50" opacity="0.8"/>
+  <text x="840" y="505" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Recommendations</text>
+  <text x="840" y="525" text-anchor="middle" font-size="9" fill="white">• Use clean benchmarks</text>
+  <text x="840" y="540" text-anchor="middle" font-size="9" fill="white">• Test multiple models</text>
+  <text x="840" y="555" text-anchor="middle" font-size="9" fill="white">• Verify reward quality</text>
+  <text x="840" y="570" text-anchor="middle" font-size="9" fill="white">• Check for contamination</text>
+  
+  <!-- Final Conclusion Box -->
+  <rect x="200" y="620" width="600" height="80" rx="15" fill="#c0392b" opacity="0.9"/>
+  <text x="500" y="645" text-anchor="middle" font-size="14" font-weight="bold" fill="white">CONCLUSION</text>
+  <text x="500" y="665" text-anchor="middle" font-size="11" fill="white">Data contamination, not superior reasoning ability, explains</text>
+  <text x="500" y="680" text-anchor="middle" font-size="11" fill="white">Qwen2.5's performance gains under spurious rewards on MATH-500</text>
+  
+  <!-- Flow indicators -->
+  <circle cx="150" cy="150" r="3" fill="#34495e"/>
+  <circle cx="400" cy="150" r="3" fill="#34495e"/>
+  <circle cx="650" cy="150" r="3" fill="#34495e"/>
+  <circle cx="850" cy="150" r="3" fill="#34495e"/>
+  
+  <circle cx="190" cy="290" r="3" fill="#34495e"/>
+  <circle cx="410" cy="290" r="3" fill="#34495e"/>
+  <circle cx="630" cy="290" r="3" fill="#34495e"/>
+  <circle cx="850" cy="290" r="3" fill="#34495e"/>
+  
+  <circle cx="275" cy="450" r="3" fill="#34495e"/>
+  <circle cx="575" cy="450" r="3" fill="#34495e"/>
+  
+  <circle cx="500" cy="610" r="3" fill="#34495e"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Data contamination in evaluation benchmarks">
+                        <div class="quiz-question">1. What is the main reason behind Qwen2.5's apparent improvement in mathematical reasoning with random rewards according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Superior mathematical capabilities compared to other models">Superior mathematical capabilities compared to other models</div><div class="quiz-choice" data-value="Data contamination in evaluation benchmarks">Data contamination in evaluation benchmarks</div><div class="quiz-choice" data-value="Advanced reinforcement learning algorithms">Advanced reinforcement learning algorithms</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="They generated synthetic arithmetic problems with random operands">
+                        <div class="quiz-question">2. How did the researchers create a clean evaluation benchmark to test true mathematical reasoning abilities?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They used existing benchmarks but filtered out contaminated data">They used existing benchmarks but filtered out contaminated data</div><div class="quiz-choice" data-value="They generated synthetic arithmetic problems with random operands">They generated synthetic arithmetic problems with random operands</div><div class="quiz-choice" data-value="They collected new math problems from human experts">They collected new math problems from human experts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Training became unstable with no reliable improvement">
+                        <div class="quiz-question">3. What happened when Qwen2.5 was tested on the new RandomCalculation dataset with random rewards?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It showed steady improvement in performance">It showed steady improvement in performance</div><div class="quiz-choice" data-value="It maintained its baseline performance">It maintained its baseline performance</div><div class="quiz-choice" data-value="Training became unstable with no reliable improvement">Training became unstable with no reliable improvement</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>EmbRACE-3K: Embodied Reasoning and Action in Complex Environments</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.10548" target="_blank">http://arxiv.org/pdf/2507.10548</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on embodied AI and vision-language models, specifically developing a dataset and benchmark for training AI agents to perform physical tasks in simulated 3D environments.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing vision-language models (VLMs) like GPT-4o and Gemini, it introduces a novel dataset EmbRACE-3K that adds step-by-step reasoning annotations and closed-loop interaction capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitation of current VLMs in embodied settings, where agents struggle with spatial reasoning, long-horizon planning, and maintaining goal awareness in interactive environments.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created a dataset of 3,000 language-guided tasks in photorealistic environments using Unreal Engine, including step-by-step reasoning annotations, and developed a two-stage training approach combining supervised fine-tuning and reinforcement learning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The fine-tuned models achieved significant improvements over zero-shot baselines, with success rates improving from below 20% to over 80% on some tasks, though generalization to out-of-domain scenarios remained challenging.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>EmbRACE-3K: Embodied Reasoning and Action in Complex Environments</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">EmbRACE-3K: Embodied Reasoning and Action in Complex Environments - Method Flow</text>
+  
+  <!-- Stage 1: Environment Sampling -->
+  <rect x="50" y="80" width="180" height="100" rx="10" fill="#e8f4f8" stroke="#3498db" stroke-width="2"/>
+  <text x="140" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Stage 1</text>
+  <text x="140" y="120" text-anchor="middle" font-size="11" fill="#2c3e50">Environment Sampling</text>
+  <text x="140" y="135" text-anchor="middle" font-size="10" fill="#34495e">& Pose Selection</text>
+  <text x="140" y="150" text-anchor="middle" font-size="9" fill="#7f8c8d">6-DoF coordinates</text>
+  <text x="140" y="165" text-anchor="middle" font-size="9" fill="#7f8c8d">UnrealCV-Zoo</text>
+  
+  <!-- Stage 2: Task Generation -->
+  <rect x="280" y="80" width="180" height="100" rx="10" fill="#f0e8f8" stroke="#9b59b6" stroke-width="2"/>
+  <text x="370" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Stage 2</text>
+  <text x="370" y="120" text-anchor="middle" font-size="11" fill="#2c3e50">Task Instruction</text>
+  <text x="370" y="135" text-anchor="middle" font-size="11" fill="#2c3e50">Generation</text>
+  <text x="370" y="150" text-anchor="middle" font-size="9" fill="#7f8c8d">Gemini 2.5 Pro</text>
+  <text x="370" y="165" text-anchor="middle" font-size="9" fill="#7f8c8d">5 task categories</text>
+  
+  <!-- Stage 3: Human Demo -->
+  <rect x="510" y="80" width="180" height="100" rx="10" fill="#e8f8e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="600" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Stage 3</text>
+  <text x="600" y="120" text-anchor="middle" font-size="11" fill="#2c3e50">Human Demonstration</text>
+  <text x="600" y="135" text-anchor="middle" font-size="11" fill="#2c3e50">& Trajectory Capture</text>
+  <text x="600" y="150" text-anchor="middle" font-size="9" fill="#7f8c8d">Real-time control</text>
+  <text x="600" y="165" text-anchor="middle" font-size="9" fill="#7f8c8d">Action sequences</text>
+  
+  <!-- Stage 4: Reasoning Annotation -->
+  <rect x="740" y="80" width="180" height="100" rx="10" fill="#f8e8e8" stroke="#e74c3c" stroke-width="2"/>
+  <text x="830" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Stage 4</text>
+  <text x="830" y="120" text-anchor="middle" font-size="11" fill="#2c3e50">Step-wise Reasoning</text>
+  <text x="830" y="135" text-anchor="middle" font-size="11" fill="#2c3e50">Annotation</text>
+  <text x="830" y="150" text-anchor="middle" font-size="9" fill="#7f8c8d">CoT explanations</text>
+  <text x="830" y="165" text-anchor="middle" font-size="9" fill="#7f8c8d">Intent grounding</text>
+  
+  <!-- Dataset Output -->
+  <rect x="350" y="230" width="300" height="80" rx="15" fill="#fff3cd" stroke="#f39c12" stroke-width="3"/>
+  <text x="500" y="255" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">EmbRACE-3K Dataset</text>
+  <text x="500" y="275" text-anchor="middle" font-size="11" fill="#2c3e50">3,000+ tasks, 26,000+ decision steps</text>
+  <text x="500" y="290" text-anchor="middle" font-size="10" fill="#7f8c8d">Photorealistic environments with multimodal annotations</text>
+  
+  <!-- Training Pipeline -->
+  <rect x="150" y="360" width="200" height="120" rx="10" fill="#e6f3ff" stroke="#2980b9" stroke-width="2"/>
+  <text x="250" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Training Pipeline</text>
+  <rect x="170" y="400" width="160" height="30" rx="5" fill="#3498db" stroke="none"/>
+  <text x="250" y="420" text-anchor="middle" font-size="10" fill="white">Supervised Fine-tuning (SFT)</text>
+  <rect x="170" y="440" width="160" height="30" rx="5" fill="#1abc9c" stroke="none"/>
+  <text x="250" y="460" text-anchor="middle" font-size="10" fill="white">Reinforcement Learning (GRPO)</text>
+  
+  <!-- Evaluation -->
+  <rect x="400" y="360" width="200" height="120" rx="10" fill="#f0f8e6" stroke="#27ae60" stroke-width="2"/>
+  <text x="500" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Evaluation Framework</text>
+  <text x="500" y="405" text-anchor="middle" font-size="10" fill="#2c3e50">• Exploration</text>
+  <text x="500" y="420" text-anchor="middle" font-size="10" fill="#2c3e50">• Dynamic Spatial-Semantic</text>
+  <text x="500" y="435" text-anchor="middle" font-size="10" fill="#2c3e50">• Multi-stage Goal Execution</text>
+  <text x="500" y="450" text-anchor="middle" font-size="10" fill="#2c3e50">• Interaction Tasks</text>
+  <text x="500" y="465" text-anchor="middle" font-size="9" fill="#7f8c8d">Success Rate, GDE, SSPL metrics</text>
+  
+  <!-- Models Tested -->
+  <rect x="650" y="360" width="200" height="120" rx="10" fill="#ffe6f0" stroke="#e91e63" stroke-width="2"/>
+  <text x="750" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Models Evaluated</text>
+  <text x="750" y="405" text-anchor="middle" font-size="10" fill="#2c3e50">• GPT-4o</text>
+  <text x="750" y="420" text-anchor="middle" font-size="10" fill="#2c3e50">• Gemini 2.5 Pro</text>
+  <text x="750" y="435" text-anchor="middle" font-size="10" fill="#2c3e50">• Qwen2.5-VL-7B</text>
+  <text x="750" y="455" text-anchor="middle" font-size="9" fill="#7f8c8d">Zero-shot vs Fine-tuned</text>
+  <text x="750" y="470" text-anchor="middle" font-size="9" fill="#7f8c8d">In-domain vs Out-of-domain</text>
+  
+  <!-- Results -->
+  <rect x="200" y="530" width="600" height="100" rx="15" fill="#f8f8f8" stroke="#34495e" stroke-width="2"/>
+  <text x="500" y="555" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Results</text>
+  <text x="500" y="575" text-anchor="middle" font-size="11" fill="#2c3e50">Zero-shot models: <20% success rate across all tasks</text>
+  <text x="500" y="590" text-anchor="middle" font-size="11" fill="#2c3e50">Fine-tuned Qwen2.5-VL: Substantial improvements with SFT+RL</text>
+  <text x="500" y="605" text-anchor="middle" font-size="11" fill="#2c3e50">Step-wise reasoning annotations enhance decision quality</text>
+  <text x="500" y="620" text-anchor="middle" font-size="10" fill="#7f8c8d">Generalization remains challenging for out-of-domain scenarios</text>
+  
+  <!-- Key Features Box -->
+  <rect x="50" y="670" width="900" height="80" rx="10" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+  <text x="500" y="690" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Dataset Features</text>
+  <text x="200" y="710" text-anchor="middle" font-size="10" fill="#2c3e50">Closed-loop Interaction</text>
+  <text x="400" y="710" text-anchor="middle" font-size="10" fill="#2c3e50">Photorealistic Environments</text>
+  <text x="600" y="710" text-anchor="middle" font-size="10" fill="#2c3e50">Step-wise Annotations</text>
+  <text x="800" y="710" text-anchor="middle" font-size="10" fill="#2c3e50">Multimodal Grounding</text>
+  <text x="200" y="730" text-anchor="middle" font-size="10" fill="#2c3e50">Spatio-temporal Awareness</text>
+  <text x="400" y="730" text-anchor="middle" font-size="10" fill="#2c3e50">Long-horizon Planning</text>
+  <text x="600" y="730" text-anchor="middle" font-size="10" fill="#2c3e50">Natural Language Rationales</text>
+  <text x="800" y="730" text-anchor="middle" font-size="10" fill="#2c3e50">Diverse Task Types</text>
+  
+  <!-- Connection lines with flow direction -->
+  <path d="M 230 130 L 280 130" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 460 130 L 510 130" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 690 130 L 740 130" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 180 L 500 230" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 310 L 250 360" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 310 L 500 360" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 600 310 L 750 360" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 480 L 500 530" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Inability to handle real-time embodied interactions and spatial reasoning">
+                        <div class="quiz-question">1. What is the main limitation of current Vision-Language Models (VLMs) that EmbRACE-3K aims to address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Poor performance in image classification tasks">Poor performance in image classification tasks</div><div class="quiz-choice" data-value="Inability to handle real-time embodied interactions and spatial reasoning">Inability to handle real-time embodied interactions and spatial reasoning</div><div class="quiz-choice" data-value="Limited vocabulary in natural language processing">Limited vocabulary in natural language processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Two stages combining supervised fine-tuning and reinforcement learning">
+                        <div class="quiz-question">2. How many stages does the training pipeline in EmbRACE-3K consist of?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="One stage using only reinforcement learning">One stage using only reinforcement learning</div><div class="quiz-choice" data-value="Two stages combining supervised fine-tuning and reinforcement learning">Two stages combining supervised fine-tuning and reinforcement learning</div><div class="quiz-choice" data-value="Three stages including pre-training, fine-tuning, and testing">Three stages including pre-training, fine-tuning, and testing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Step-by-step natural language reasoning explanations for each action">
+                        <div class="quiz-question">3. What unique feature of EmbRACE-3K's dataset annotations sets it apart from previous embodied AI datasets?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High-resolution 4K images of environments">High-resolution 4K images of environments</div><div class="quiz-choice" data-value="Real-world robot demonstrations">Real-world robot demonstrations</div><div class="quiz-choice" data-value="Step-by-step natural language reasoning explanations for each action">Step-by-step natural language reasoning explanations for each action</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>REST: Stress Testing Large Reasoning Models by Asking Multiple Problems
+  at Once</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.10541" target="_blank">http://arxiv.org/pdf/2507.10541</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on evaluating large reasoning models (LRMs) through simultaneous multi-problem testing, in the domain of artificial intelligence and language model evaluation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research relied on single-question evaluation benchmarks which have become saturated; this paper introduces REST (Reasoning Evaluation through Simultaneous Testing), a novel framework that tests models by presenting multiple problems simultaneously.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses two key limitations of current evaluation methods: the saturation of existing benchmarks requiring constant creation of new ones, and the failure to assess models' performance under multi-context pressure that better reflects real-world scenarios.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors evaluated 34 advanced reasoning models across 7 reasoning benchmarks by concatenating multiple questions into a single prompt and measuring performance across different stress levels (number of simultaneous questions).</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results showed significant performance degradation even in state-of-the-art models under stress testing (e.g., DeepSeek-R1 dropped 29.1% on AIME24), revealed stronger discriminative power than single-question evaluations, and identified that models trained with "long2short" technique performed better under REST.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>REST: Stress Testing Large Reasoning Models by Asking Multiple Problems
+  at Once</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#2c3e50">REST: Reasoning Evaluation through Simultaneous Testing</text>
+  
+  <!-- Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Problem Identification</text>
+  <text x="150" y="105" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Benchmark saturation</text>
+  <text x="150" y="120" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Single-question limitation</text>
+  
+  <!-- Method: REST Framework -->
+  <rect x="300" y="60" width="180" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="390" y="85" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">REST Framework</text>
+  <text x="390" y="105" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Concatenate multiple</text>
+  <text x="390" y="120" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">questions into single prompt</text>
+  
+  <!-- Benchmark Reconstruction -->
+  <rect x="50" y="180" width="200" height="100" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="150" y="205" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Benchmark Reconstruction</text>
+  <text x="150" y="225" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">ps_i = Compose(qi, qi+1, ..., q[(i+s-1)mod N])</text>
+  <text x="150" y="245" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Stress level s ∈ Z+</text>
+  <text x="150" y="265" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Cyclic indexing for coverage</text>
+  
+  <!-- Evaluation Setup -->
+  <rect x="300" y="180" width="180" height="100" rx="10" fill="#e67e22" opacity="0.8"/>
+  <text x="390" y="205" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Evaluation Setup</text>
+  <text x="390" y="225" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• 34 LRMs (1.5B-671B params)</text>
+  <text x="390" y="245" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• 7 benchmarks</text>
+  <text x="390" y="265" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Variable stress levels</text>
+  
+  <!-- Answer Extraction -->
+  <rect x="520" y="180" width="180" height="100" rx="10" fill="#27ae60" opacity="0.8"/>
+  <text x="610" y="205" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Answer Extraction</text>
+  <text x="610" y="225" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Rule-based: \\boxed{}</text>
+  <text x="610" y="245" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">LLM-based: Gemma-3-27B</text>
+  <text x="610" y="265" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Extract() function</text>
+  
+  <!-- Key Findings -->
+  <rect x="50" y="320" width="300" height="120" rx="10" fill="#f39c12" opacity="0.8"/>
+  <text x="200" y="345" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Key Findings</text>
+  <text x="200" y="365" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• SOTA models show significant degradation</text>
+  <text x="200" y="380" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Enhanced discriminative power</text>
+  <text x="200" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Position bias effects</text>
+  <text x="200" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Long2Short training benefits</text>
+  <text x="200" y="425" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Post-training limitations</text>
+  
+  <!-- Error Analysis -->
+  <rect x="400" y="320" width="250" height="120" rx="10" fill="#8e44ad" opacity="0.8"/>
+  <text x="525" y="345" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Error Analysis</text>
+  <text x="525" y="365" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Question Omission (QO)</text>
+  <text x="525" y="380" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Reasoning Error (RE)</text>
+  <text x="525" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Output Truncation (OT)</text>
+  <text x="525" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Endless Repetition (ER)</text>
+  <text x="525" y="425" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Summary Error (SE)</text>
+  
+  <!-- Mechanistic Insights -->
+  <rect x="50" y="480" width="280" height="100" rx="10" fill="#1abc9c" opacity="0.8"/>
+  <text x="190" y="505" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Mechanistic Insights</text>
+  <text x="190" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Overthinking trap phenomenon</text>
+  <text x="190" y="545" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Adaptive reasoning effort allocation</text>
+  <text x="190" y="565" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Question order effects (easy-first better)</text>
+  
+  <!-- Applications -->
+  <rect x="370" y="480" width="280" height="100" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="510" y="505" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Applications & Impact</text>
+  <text x="510" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Cost-efficient evaluation paradigm</text>
+  <text x="510" y="545" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Revitalizes existing benchmarks</text>
+  <text x="510" y="565" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Real-world multi-context assessment</text>
+  
+  <!-- Future Directions -->
+  <rect x="200" y="620" width="300" height="80" rx="10" fill="#34495e" opacity="0.8"/>
+  <text x="350" y="645" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Future Directions</text>
+  <text x="350" y="665" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Robust reasoning system development</text>
+  <text x="350" y="680" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Enhanced Long2Short training techniques</text>
+  
+  <!-- Mathematical Formula Box -->
+  <rect x="720" y="180" width="250" height="120" rx="10" fill="#2c3e50" opacity="0.9"/>
+  <text x="845" y="205" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Accuracy Formula</text>
+  <text x="845" y="230" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Acc(Ps) = (1/N) Σ Acc(ps_i)</text>
+  <text x="845" y="250" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">= (1/N) Σ (1/s) Σ δ(â,a)</text>
+  <text x="845" y="275" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">where δ is Kronecker delta</text>
+  
+  <!-- Stress Level Examples -->
+  <rect x="720" y="320" width="250" height="100" rx="10" fill="#16a085" opacity="0.8"/>
+  <text x="845" y="345" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Stress Level Examples</text>
+  <text x="845" y="365" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">GSM8K: s ∈ {1,3,6,9,12}</text>
+  <text x="845" y="380" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">MATH500: s ∈ {1,3,5,7,9}</text>
+  <text x="845" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">AIME24: s ∈ {1,2,3,4,5}</text>
+  
+  <!-- Performance Examples -->
+  <rect x="720" y="450" width="250" height="100" rx="10" fill="#c0392b" opacity="0.8"/>
+  <text x="845" y="475" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Performance Examples</text>
+  <text x="845" y="495" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">DeepSeek-R1 AIME24:</text>
+  <text x="845" y="510" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">81.66% → 52.49% (-29.1%)</text>
+  <text x="845" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Reveals hidden weaknesses</text>
+  
+  <!-- Connecting lines with subtle styling -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="150" y1="140" x2="150" y2="180" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="390" y1="140" x2="390" y2="180" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="200" y1="280" x2="200" y2="320" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="525" y1="280" x2="525" y2="320" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="190" y1="440" x2="190" y2="480" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="510" y1="440" x2="510" y2="480" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="350" y1="580" x2="350" y2="620" stroke="#7f8c8d" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="To test models' performance in multi-context scenarios">
+                        <div class="quiz-question">1. What was the primary motivation behind developing the REST evaluation framework?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce the cost of creating new benchmarks">To reduce the cost of creating new benchmarks</div><div class="quiz-choice" data-value="To test models' performance in multi-context scenarios">To test models' performance in multi-context scenarios</div><div class="quiz-choice" data-value="To improve model training efficiency">To improve model training efficiency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Even state-of-the-art models like DeepSeek-R1 showed significant performance drops">
+                        <div class="quiz-question">2. Which of the following findings about model performance under REST was most surprising?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Models trained with 'long2short' technique performed better">Models trained with 'long2short' technique performed better</div><div class="quiz-choice" data-value="All models showed consistent performance across stress levels">All models showed consistent performance across stress levels</div><div class="quiz-choice" data-value="Even state-of-the-art models like DeepSeek-R1 showed significant performance drops">Even state-of-the-art models like DeepSeek-R1 showed significant performance drops</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It reveals performance differences between models that appear similar in single-question tests">
+                        <div class="quiz-question">3. What unique advantage does REST provide over traditional single-question evaluations?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires less computational resources">It requires less computational resources</div><div class="quiz-choice" data-value="It reveals performance differences between models that appear similar in single-question tests">It reveals performance differences between models that appear similar in single-question tests</div><div class="quiz-choice" data-value="It improves model training speed">It improves model training speed</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
