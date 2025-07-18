@@ -1,0 +1,1058 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-18 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-18 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-orchid.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>π^3: Scalable Permutation-Equivariant Visual Geometry Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.13347" target="_blank">http://arxiv.org/pdf/2507.13347</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Visual geometry reconstruction using neural networks, specifically focusing on 3D scene reconstruction from images in computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous feed-forward neural networks like DUSt3R and VGGT that rely on fixed reference views; introduces a novel permutation-equivariant architecture that eliminates the need for reference frames.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the limitation of existing methods that depend on selecting a fixed reference view for 3D reconstruction, which can lead to instability and failures if the reference is suboptimal.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Employs a fully permutation-equivariant architecture that predicts affine-invariant camera poses and scale-invariant local point maps without reference frames, using alternating view-wise and global self-attention layers.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance across multiple benchmarks, including reducing camera pose estimation ATE from 0.167 to 0.074 on Sintel, improving depth estimation, and running at 57.4 FPS compared to competitors' 1.25-43.2 FPS.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>π^3: Scalable Permutation-Equivariant Visual Geometry Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">π³: Scalable Permutation-Equivariant Visual Geometry Learning</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="70" width="150" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Input Images</text>
+  <text x="125" y="110" text-anchor="middle" font-size="10" fill="white">S = (I₁, ..., Iₙ)</text>
+  
+  <!-- Feature Encoding -->
+  <rect x="250" y="70" width="150" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="325" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">DINOv2 Encoder</text>
+  <text x="325" y="110" text-anchor="middle" font-size="10" fill="white">Patch Embeddings</text>
+  
+  <!-- Permutation-Equivariant Architecture -->
+  <rect x="450" y="40" width="200" height="120" rx="15" fill="#9b59b6" stroke="#8e44ad" stroke-width="3"/>
+  <text x="550" y="65" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Permutation-Equivariant</text>
+  <text x="550" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Architecture</text>
+  <text x="550" y="100" text-anchor="middle" font-size="10" fill="white">View-wise Self-Attention</text>
+  <text x="550" y="115" text-anchor="middle" font-size="10" fill="white">Global Self-Attention</text>
+  <text x="550" y="130" text-anchor="middle" font-size="10" fill="white">No Reference Frame</text>
+  <text x="550" y="145" text-anchor="middle" font-size="10" fill="white">No Order Dependencies</text>
+  
+  <!-- Decoder Stage -->
+  <rect x="700" y="70" width="150" height="60" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="775" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Multi-Head Decoder</text>
+  <text x="775" y="110" text-anchor="middle" font-size="10" fill="white">Shared Architecture</text>
+  
+  <!-- Three Output Branches -->
+  <!-- Camera Poses -->
+  <rect x="100" y="220" width="180" height="80" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="190" y="245" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Affine-Invariant</text>
+  <text x="190" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Camera Poses</text>
+  <text x="190" y="280" text-anchor="middle" font-size="10" fill="white">T₁, ..., Tₙ ∈ SE(3)</text>
+  <text x="190" y="295" text-anchor="middle" font-size="10" fill="white">Relative Supervision</text>
+  
+  <!-- Point Maps -->
+  <rect x="320" y="220" width="180" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="410" y="245" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Scale-Invariant</text>
+  <text x="410" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Point Maps</text>
+  <text x="410" y="280" text-anchor="middle" font-size="10" fill="white">X₁, ..., Xₙ ∈ ℝᴴˣᵂˣ³</text>
+  <text x="410" y="295" text-anchor="middle" font-size="10" fill="white">Local Coordinates</text>
+  
+  <!-- Confidence Maps -->
+  <rect x="540" y="220" width="180" height="80" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="630" y="245" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Confidence Maps</text>
+  <text x="630" y="270" text-anchor="middle" font-size="10" fill="white">C₁, ..., Cₙ ∈ ℝᴴˣᵂ</text>
+  <text x="630" y="285" text-anchor="middle" font-size="10" fill="white">BCE Loss</text>
+  
+  <!-- Loss Functions -->
+  <rect x="100" y="350" width="120" height="60" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="160" y="375" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Camera Loss</text>
+  <text x="160" y="390" text-anchor="middle" font-size="9" fill="white">L_cam = L_rot + λL_trans</text>
+  
+  <rect x="250" y="350" width="120" height="60" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="310" y="375" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Point Loss</text>
+  <text x="310" y="390" text-anchor="middle" font-size="9" fill="white">L_points + L_normal</text>
+  
+  <rect x="400" y="350" width="120" height="60" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="460" y="375" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Confidence Loss</text>
+  <text x="460" y="390" text-anchor="middle" font-size="9" fill="white">L_conf</text>
+  
+  <!-- Scale Alignment -->
+  <rect x="750" y="220" width="150" height="80" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="825" y="245" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Scale Alignment</text>
+  <text x="825" y="265" text-anchor="middle" font-size="10" fill="white">ROE Solver</text>
+  <text x="825" y="280" text-anchor="middle" font-size="10" fill="white">Optimal Scale s*</text>
+  <text x="825" y="295" text-anchor="middle" font-size="10" fill="white">Depth-weighted L1</text>
+  
+  <!-- Final Loss -->
+  <rect x="350" y="450" width="300" height="50" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="500" y="475" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Total Loss</text>
+  <text x="500" y="490" text-anchor="middle" font-size="10" fill="white">L = L_points + λ_normal L_normal + λ_conf L_conf + λ_cam L_cam</text>
+  
+  <!-- Key Properties Box -->
+  <rect x="50" y="550" width="200" height="120" rx="10" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="150" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Properties</text>
+  <text x="150" y="595" text-anchor="middle" font-size="11" fill="white">✓ Permutation Equivariant</text>
+  <text x="150" y="610" text-anchor="middle" font-size="11" fill="white">✓ Reference-Free</text>
+  <text x="150" y="625" text-anchor="middle" font-size="11" fill="white">✓ Scalable Architecture</text>
+  <text x="150" y="640" text-anchor="middle" font-size="11" fill="white">✓ Fast Convergence</text>
+  <text x="150" y="655" text-anchor="middle" font-size="11" fill="white">✓ Order Robust</text>
+  
+  <!-- Applications Box -->
+  <rect x="300" y="550" width="200" height="120" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Applications</text>
+  <text x="400" y="595" text-anchor="middle" font-size="11" fill="white">• Camera Pose Estimation</text>
+  <text x="400" y="610" text-anchor="middle" font-size="11" fill="white">• Video Depth Estimation</text>
+  <text x="400" y="625" text-anchor="middle" font-size="11" fill="white">• Monocular Depth</text>
+  <text x="400" y="640" text-anchor="middle" font-size="11" fill="white">• Point Map Reconstruction</text>
+  <text x="400" y="655" text-anchor="middle" font-size="11" fill="white">• Multi-view 3D Reconstruction</text>
+  
+  <!-- Training Data Box -->
+  <rect x="550" y="550" width="200" height="120" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="650" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Training Data</text>
+  <text x="650" y="595" text-anchor="middle" font-size="10" fill="white">15 Diverse Datasets</text>
+  <text x="650" y="610" text-anchor="middle" font-size="10" fill="white">Indoor & Outdoor Scenes</text>
+  <text x="650" y="625" text-anchor="middle" font-size="10" fill="white">Static & Dynamic Content</text>
+  <text x="650" y="640" text-anchor="middle" font-size="10" fill="white">Synthetic & Real Data</text>
+  <text x="650" y="655" text-anchor="middle" font-size="10" fill="white">Two-stage Training</text>
+  
+  <!-- Performance Box -->
+  <rect x="800" y="550" width="150" height="120" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="875" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Performance</text>
+  <text x="875" y="595" text-anchor="middle" font-size="11" fill="white">SOTA Results</text>
+  <text x="875" y="610" text-anchor="middle" font-size="11" fill="white">57.4 FPS</text>
+  <text x="875" y="625" text-anchor="middle" font-size="11" fill="white">959M Parameters</text>
+  <text x="875" y="640" text-anchor="middle" font-size="11" fill="white">Fast Inference</text>
+  <text x="875" y="655" text-anchor="middle" font-size="11" fill="white">Low Variance</text>
+  
+  <!-- Connecting Lines -->
+  <line x1="200" y1="100" x2="250" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="400" y1="100" x2="450" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="650" y1="100" x2="700" y2="100" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Lines from decoder to outputs -->
+  <line x1="775" y1="130" x2="775" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="775" y1="180" x2="190" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="190" y1="180" x2="190" y2="220" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="775" y1="180" x2="410" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="410" y1="180" x2="410" y2="220" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="775" y1="180" x2="630" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="630" y1="180" x2="630" y2="220" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Lines to scale alignment -->
+  <line x1="720" y1="260" x2="750" y2="260" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Lines from losses to final loss -->
+  <line x1="160" y1="410" x2="160" y2="430" stroke="#34495e" stroke-width="2"/>
+  <line x1="160" y1="430" x2="500" y2="430" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="430" x2="500" y2="450" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="310" y1="410" x2="310" y2="430" stroke="#34495e" stroke-width="2"/>
+  <line x1="460" y1="410" x2="460" y2="430" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Gradient background for visual appeal -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ecf0f1;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#bdc3c7;stop-opacity:0.1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="800" fill="url(#bgGrad)"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It eliminates the need for a fixed reference view">
+                        <div class="quiz-question">1. What is the main innovation of π³ compared to previous visual geometry reconstruction methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger neural network architecture">It uses a larger neural network architecture</div><div class="quiz-choice" data-value="It eliminates the need for a fixed reference view">It eliminates the need for a fixed reference view</div><div class="quiz-choice" data-value="It processes images at higher resolution">It processes images at higher resolution</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="57.4 FPS - fastest among compared methods">
+                        <div class="quiz-question">2. What is the inference speed of π³ compared to other methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="57.4 FPS - fastest among compared methods">57.4 FPS - fastest among compared methods</div><div class="quiz-choice" data-value="43.2 FPS - second to VGGT">43.2 FPS - second to VGGT</div><div class="quiz-choice" data-value="1.25 FPS - slowest among compared methods">1.25 FPS - slowest among compared methods</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Reference frame positional embeddings">
+                        <div class="quiz-question">3. Which of the following is NOT a key component of π³'s architecture?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Scale-invariant local point maps">Scale-invariant local point maps</div><div class="quiz-choice" data-value="Reference frame positional embeddings">Reference frame positional embeddings</div><div class="quiz-choice" data-value="Affine-invariant camera poses">Affine-invariant camera poses</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>The Imitation Game: Turing Machine Imitator is Length Generalizable
+  Reasoner</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.13332" target="_blank">http://arxiv.org/pdf/2507.13332</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on improving length generalization capabilities in large language models through Turing Machine-inspired learning approaches in the domain of natural language processing and machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research focused on task-specific data-driven approaches for arithmetic and symbolic tasks, while this paper proposes a novel universal solution called TAIL (Turing MAchine Imitation Learning) that imitates Turing Machine execution processes.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of length generalization in large language models - their ability to handle input sequences longer than those seen during training.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implemented TAIL with three core components: Linear Transition for complete reasoning steps, Atomic State for minimal unit decomposition, and Memory Fetcher for explicit memory access mechanisms.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Using only synthetic data, TAIL significantly improved Qwen2.5-7B's length generalization ability across 18 tasks spanning 8 algorithmic classes, outperforming previous methods and DeepSeek-R1 while demonstrating Turing Machine-like attention behaviors.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>The Imitation Game: Turing Machine Imitator is Length Generalizable
+  Reasoner</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    TAIL: Turing Machine Imitation Learning
+  </text>
+  
+  <!-- Problem Definition -->
+  <rect x="50" y="70" width="200" height="80" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="150" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Length Generalization</text>
+  <text x="150" y="115" text-anchor="middle" font-size="12" fill="#34495e">Challenge</text>
+  <text x="150" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">Handle longer sequences</text>
+  
+  <!-- Computable Problems -->
+  <rect x="300" y="70" width="200" height="80" fill="#fff2e6" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="400" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Computable Problems</text>
+  <text x="400" y="115" text-anchor="middle" font-size="12" fill="#34495e">Solvable by algorithms</text>
+  <text x="400" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">Church-Turing thesis</text>
+  
+  <!-- Turing Machine -->
+  <rect x="750" y="70" width="200" height="80" fill="#f0f8e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="850" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Turing Machine</text>
+  <text x="850" y="115" text-anchor="middle" font-size="12" fill="#34495e">Universal computation</text>
+  <text x="850" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">State transitions</text>
+  
+  <!-- TAIL Core Components -->
+  <rect x="200" y="200" width="600" height="40" fill="#8e44ad" stroke="#6c3483" stroke-width="2" rx="5"/>
+  <text x="500" y="225" text-anchor="middle" font-size="18" font-weight="bold" fill="white">
+    TAIL Core Modules
+  </text>
+  
+  <!-- Linear Transition -->
+  <rect x="100" y="280" width="180" height="120" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2" rx="10"/>
+  <text x="190" y="305" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Linear Transition</text>
+  <text x="190" y="325" text-anchor="middle" font-size="11" fill="#34495e">Sequential execution</text>
+  <text x="190" y="345" text-anchor="middle" font-size="10" fill="#7f8c8d">q₁ → q₂ → ... → qₙ</text>
+  <text x="190" y="365" text-anchor="middle" font-size="10" fill="#7f8c8d">Prevent shortcuts</text>
+  <text x="190" y="385" text-anchor="middle" font-size="10" fill="#7f8c8d">Complete reasoning</text>
+  
+  <!-- Atomic State -->
+  <rect x="320" y="280" width="180" height="120" fill="#fef9e7" stroke="#f1c40f" stroke-width="2" rx="10"/>
+  <text x="410" y="305" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Atomic State</text>
+  <text x="410" y="325" text-anchor="middle" font-size="11" fill="#34495e">Minimal units</text>
+  <text x="410" y="345" text-anchor="middle" font-size="10" fill="#7f8c8d">Read operations</text>
+  <text x="410" y="365" text-anchor="middle" font-size="10" fill="#7f8c8d">Write operations</text>
+  <text x="410" y="385" text-anchor="middle" font-size="10" fill="#7f8c8d">Logic control</text>
+  
+  <!-- Memory Fetcher -->
+  <rect x="540" y="280" width="180" height="120" fill="#fdedec" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="630" y="305" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Memory Fetcher</text>
+  <text x="630" y="325" text-anchor="middle" font-size="11" fill="#34495e">Explicit data access</text>
+  <text x="630" y="345" text-anchor="middle" font-size="10" fill="#7f8c8d">Operand retrieval</text>
+  <text x="630" y="365" text-anchor="middle" font-size="10" fill="#7f8c8d">Reduce attention</text>
+  <text x="630" y="385" text-anchor="middle" font-size="10" fill="#7f8c8d">distance</text>
+  
+  <!-- Data Synthesis -->
+  <rect x="200" y="440" width="600" height="40" fill="#e67e22" stroke="#d35400" stroke-width="2" rx="5"/>
+  <text x="500" y="465" text-anchor="middle" font-size="18" font-weight="bold" fill="white">
+    Data Synthesis Process
+  </text>
+  
+  <!-- Algorithm Implementation -->
+  <rect x="50" y="520" width="180" height="80" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="140" y="545" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Algorithm</text>
+  <text x="140" y="565" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Implementation</text>
+  <text x="140" y="585" text-anchor="middle" font-size="10" fill="#7f8c8d">8 algorithm classes</text>
+  
+  <!-- CoT Generation -->
+  <rect x="270" y="520" width="180" height="80" fill="#fff2e6" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="360" y="545" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">CoT Generation</text>
+  <text x="360" y="565" text-anchor="middle" font-size="12" fill="#34495e">Step-by-step traces</text>
+  <text x="360" y="585" text-anchor="middle" font-size="10" fill="#7f8c8d">18 tasks total</text>
+  
+  <!-- Training Data -->
+  <rect x="490" y="520" width="180" height="80" fill="#f0f8e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="580" y="545" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Training Data</text>
+  <text x="580" y="565" text-anchor="middle" font-size="12" fill="#34495e">Synthetic dataset</text>
+  <text x="580" y="585" text-anchor="middle" font-size="10" fill="#7f8c8d">100K samples/task</text>
+  
+  <!-- Fine-tuning -->
+  <rect x="710" y="520" width="180" height="80" fill="#e8f6f3" stroke="#16a085" stroke-width="2" rx="10"/>
+  <text x="800" y="545" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Model Fine-tuning</text>
+  <text x="800" y="565" text-anchor="middle" font-size="12" fill="#34495e">Qwen2.5-7B</text>
+  <text x="800" y="585" text-anchor="middle" font-size="10" fill="#7f8c8d">Short sequences</text>
+  
+  <!-- Results -->
+  <rect x="350" y="640" width="300" height="80" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="10"/>
+  <text x="500" y="665" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Length Generalization</text>
+  <text x="500" y="685" text-anchor="middle" font-size="14" fill="white">Success</text>
+  <text x="500" y="705" text-anchor="middle" font-size="12" fill="#ecf0f1">Outperforms DeepSeek-R1</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="110" x2="300" y2="110" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="110" x2="750" y2="110" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="150" x2="500" y2="200" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="240" x2="500" y2="280" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="400" x2="500" y2="440" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="480" x2="500" y2="520" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="600" x2="500" y2="640" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="150" cy="750" r="8" fill="#3498db" opacity="0.3"/>
+  <circle cx="400" cy="750" r="8" fill="#f39c12" opacity="0.3"/>
+  <circle cx="600" cy="750" r="8" fill="#27ae60" opacity="0.3"/>
+  <circle cx="850" cy="750" r="8" fill="#e74c3c" opacity="0.3"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It imitates Turing Machine execution processes for universal reasoning">
+                        <div class="quiz-question">1. What is the main innovation of TAIL compared to previous approaches for length generalization?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses task-specific data structures for arithmetic operations">It uses task-specific data structures for arithmetic operations</div><div class="quiz-choice" data-value="It imitates Turing Machine execution processes for universal reasoning">It imitates Turing Machine execution processes for universal reasoning</div><div class="quiz-choice" data-value="It focuses only on symbolic manipulation tasks">It focuses only on symbolic manipulation tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Recursive Iteration">
+                        <div class="quiz-question">2. Which of the following is NOT one of the three core components of TAIL?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Memory Fetcher">Memory Fetcher</div><div class="quiz-choice" data-value="Linear Transition">Linear Transition</div><div class="quiz-choice" data-value="Recursive Iteration">Recursive Iteration</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The specific style of CoT had minimal impact on performance">
+                        <div class="quiz-question">3. What interesting finding was revealed about the CoT style in the ablation studies?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Complex CoT styles were essential for length generalization">Complex CoT styles were essential for length generalization</div><div class="quiz-choice" data-value="The specific style of CoT had minimal impact on performance">The specific style of CoT had minimal impact on performance</div><div class="quiz-choice" data-value="Only mathematical CoT styles worked effectively">Only mathematical CoT styles worked effectively</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Diffuman4D: 4D Consistent Human View Synthesis from Sparse-View Videos
+  with Spatio-Temporal Diffusion Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.13344" target="_blank">http://arxiv.org/pdf/2507.13344</a></p>
+                        <div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Diffuman4D: 4D Consistent Human View Synthesis from Sparse-View Videos
+  with Spatio-Temporal Diffusion Models</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Diffuman4D: Method Flow Chart</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="80" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="115" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Sparse-View Videos</text>
+  <text x="150" y="135" text-anchor="middle" font-size="12" fill="#1976d2">M input views × T frames</text>
+  
+  <!-- Preprocessing Stage -->
+  <rect x="300" y="60" width="160" height="60" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="380" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">VAE Encoding</text>
+  <text x="380" y="105" text-anchor="middle" font-size="11" fill="#f57c00">Image → Latents</text>
+  
+  <rect x="300" y="140" width="160" height="60" rx="8" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="380" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#7b1fa2">3D Skeleton Extraction</text>
+  <text x="380" y="185" text-anchor="middle" font-size="11" fill="#7b1fa2">2D → 3D → RGB Maps</text>
+  
+  <!-- Conditioning Components -->
+  <rect x="520" y="80" width="140" height="50" rx="8" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="590" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#388e3c">Skeleton Latents</text>
+  <text x="590" y="115" text-anchor="middle" font-size="10" fill="#388e3c">Human pose prior</text>
+  
+  <rect x="520" y="150" width="140" height="50" rx="8" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="590" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2185b">Plücker Coords</text>
+  <text x="590" y="185" text-anchor="middle" font-size="10" fill="#c2185b">Camera parameters</text>
+  
+  <!-- 4D Latent Grid -->
+  <rect x="720" y="80" width="180" height="120" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="3"/>
+  <text x="810" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#0277bd">4D Latent Grid</text>
+  <text x="810" y="125" text-anchor="middle" font-size="12" fill="#0277bd">(N+M) × T samples</text>
+  <text x="810" y="145" text-anchor="middle" font-size="11" fill="#0277bd">Spatial × Temporal</text>
+  <text x="810" y="165" text-anchor="middle" font-size="11" fill="#0277bd">Image + Skeleton + Plücker</text>
+  
+  <!-- Core Innovation: Sliding Iterative Denoising -->
+  <rect x="50" y="280" width="850" height="200" rx="15" fill="#fff8e1" stroke="#ff8f00" stroke-width="4"/>
+  <text x="475" y="305" text-anchor="middle" font-size="16" font-weight="bold" fill="#ff8f00">Sliding Iterative Denoising Mechanism</text>
+  
+  <!-- Spatial Denoising -->
+  <rect x="80" y="330" width="200" height="120" rx="8" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="180" y="355" text-anchor="middle" font-size="13" font-weight="bold" fill="#388e3c">Spatial Denoising</text>
+  <text x="180" y="375" text-anchor="middle" font-size="11" fill="#388e3c">D/2 steps</text>
+  <text x="180" y="395" text-anchor="middle" font-size="10" fill="#388e3c">Counter-clockwise sliding</text>
+  <text x="180" y="410" text-anchor="middle" font-size="10" fill="#388e3c">Clockwise sliding</text>
+  <text x="180" y="425" text-anchor="middle" font-size="10" fill="#388e3c">Window size: W, Stride: S</text>
+  
+  <!-- Temporal Denoising -->
+  <rect x="320" y="330" width="200" height="120" rx="8" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="420" y="355" text-anchor="middle" font-size="13" font-weight="bold" fill="#c2185b">Temporal Denoising</text>
+  <text x="420" y="375" text-anchor="middle" font-size="11" fill="#c2185b">D/2 steps</text>
+  <text x="420" y="395" text-anchor="middle" font-size="10" fill="#c2185b">Forward sliding</text>
+  <text x="420" y="410" text-anchor="middle" font-size="10" fill="#c2185b">Backward sliding</text>
+  <text x="420" y="425" text-anchor="middle" font-size="10" fill="#c2185b">Past & future context</text>
+  
+  <!-- Diffusion Model -->
+  <rect x="560" y="330" width="200" height="120" rx="8" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="660" y="355" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b1fa2">Diffusion Model</text>
+  <text x="660" y="375" text-anchor="middle" font-size="11" fill="#7b1fa2">3D Self-Attention</text>
+  <text x="660" y="395" text-anchor="middle" font-size="10" fill="#7b1fa2">Multi-view consistency</text>
+  <text x="660" y="410" text-anchor="middle" font-size="10" fill="#7b1fa2">P denoising steps</text>
+  <text x="660" y="425" text-anchor="middle" font-size="10" fill="#7b1fa2">per sliding iteration</text>
+  
+  <!-- Output Generation -->
+  <rect x="200" y="520" width="180" height="80" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="290" y="550" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">VAE Decoding</text>
+  <text x="290" y="570" text-anchor="middle" font-size="12" fill="#388e3c">Denoised Latents</text>
+  <text x="290" y="585" text-anchor="middle" font-size="12" fill="#388e3c">→ Target Videos</text>
+  
+  <!-- 4DGS Reconstruction -->
+  <rect x="450" y="520" width="180" height="80" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="540" y="545" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">4DGS Reconstruction</text>
+  <text x="540" y="565" text-anchor="middle" font-size="12" fill="#f57c00">LongVolcap</text>
+  <text x="540" y="585" text-anchor="middle" font-size="12" fill="#f57c00">Real-time rendering</text>
+  
+  <!-- Final Output -->
+  <rect x="700" y="520" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="800" y="545" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Dense Multi-View</text>
+  <text x="800" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Videos</text>
+  <text x="800" y="585" text-anchor="middle" font-size="12" fill="#1976d2">N target views × T frames</text>
+  
+  <!-- Key Features Box -->
+  <rect x="50" y="650" width="850" height="120" rx="10" fill="#f5f5f5" stroke="#666" stroke-width="2"/>
+  <text x="475" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Key Innovations</text>
+  
+  <circle cx="120" cy="700" r="5" fill="#ff8f00"/>
+  <text x="140" y="705" font-size="12" fill="#333">Sliding iterative denoising for spatio-temporal consistency</text>
+  
+  <circle cx="120" cy="725" r="5" fill="#388e3c"/>
+  <text x="140" y="730" font-size="12" fill="#333">Skeleton-Plücker mixed conditioning for human-specific priors</text>
+  
+  <circle cx="120" cy="750" r="5" fill="#1976d2"/>
+  <text x="140" y="755" font-size="12" fill="#333">Alternating spatial-temporal denoising with context windows</text>
+  
+  <!-- Flow indicators -->
+  <polygon points="260,120 280,110 280,130" fill="#666"/>
+  <polygon points="470,120 490,110 490,130" fill="#666"/>
+  <polygon points="670,120 690,110 690,130" fill="#666"/>
+  <polygon points="810,210 810,230 820,220" fill="#666"/>
+  <polygon points="290,490 290,510 300,500" fill="#666"/>
+  <polygon points="540,490 540,510 550,500" fill="#666"/>
+  <polygon points="800,490 800,510 810,500" fill="#666"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="A sliding iterative approach that alternates between spatial and temporal dimensions">
+                        <div class="quiz-question">1. What is the main innovation in Diffuman4D's denoising process compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using multiple GPUs in parallel">Using multiple GPUs in parallel</div><div class="quiz-choice" data-value="A sliding iterative approach that alternates between spatial and temporal dimensions">A sliding iterative approach that alternates between spatial and temporal dimensions</div><div class="quiz-choice" data-value="Implementing a new type of neural network architecture">Implementing a new type of neural network architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To provide better pose control and reduce front-back ambiguity issues">
+                        <div class="quiz-question">2. Why does the paper use human skeleton conditioning in addition to Plücker coordinates?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To make the model run faster">To make the model run faster</div><div class="quiz-choice" data-value="To reduce GPU memory usage">To reduce GPU memory usage</div><div class="quiz-choice" data-value="To provide better pose control and reduce front-back ambiguity issues">To provide better pose control and reduce front-back ambiguity issues</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Achieved quality with 4 input views comparable to 48-view dense reconstruction">
+                        <div class="quiz-question">3. What impressive achievement did the paper demonstrate regarding view synthesis quality?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Generated perfect photorealistic images without any artifacts">Generated perfect photorealistic images without any artifacts</div><div class="quiz-choice" data-value="Achieved quality with 4 input views comparable to 48-view dense reconstruction">Achieved quality with 4 input views comparable to 48-view dense reconstruction</div><div class="quiz-choice" data-value="Eliminated the need for GPU processing entirely">Eliminated the need for GPU processing entirely</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
