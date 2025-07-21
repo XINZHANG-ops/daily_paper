@@ -1,0 +1,1081 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-21 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-21 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>A Data-Centric Framework for Addressing Phonetic and Prosodic Challenges
+  in Russian Speech Generative Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.13563" target="_blank">http://arxiv.org/pdf/2507.13563</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of a high-quality Russian speech dataset called Balalaika for improving speech synthesis and generative models, focusing on addressing Russian language-specific challenges.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing Russian speech datasets and TTS systems, proposing a new data-centric approach with comprehensive annotations including punctuation and stress markings, which were missing in previous datasets.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing unique Russian language challenges in speech synthesis, including vowel reduction, consonant devoicing, variable stress patterns, homograph ambiguity, and unnatural intonation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Created a pipeline including data collection from Yandex Music, audio cutting using Whisper-v3-large, quality assessment using NISQA-S, speaker clustering, and comprehensive annotation including stress markers and punctuation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The Balalaika dataset significantly outperformed existing datasets in both objective and subjective metrics, with models trained on it showing superior performance in speech synthesis, enhancement, and restoration tasks, particularly in the highest quality portion (1st part) of the dataset.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>A Data-Centric Framework for Addressing Phonetic and Prosodic Challenges
+  in Russian Speech Generative Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    Balalaika Dataset Construction Pipeline
+  </text>
+  
+  <!-- Data Collection -->
+  <rect x="50" y="60" width="180" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="140" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Data Collection</text>
+  <text x="140" y="105" text-anchor="middle" font-size="10" fill="white">Yandex Music Podcasts</text>
+  
+  <!-- Audio Cutting -->
+  <rect x="280" y="60" width="160" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="360" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Audio Cutting</text>
+  <text x="360" y="105" text-anchor="middle" font-size="10" fill="white">Whisper-v3-large</text>
+  
+  <!-- Audio Separation -->
+  <rect x="490" y="60" width="160" height="60" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="570" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Audio Separation</text>
+  <text x="570" y="105" text-anchor="middle" font-size="10" fill="white">NISQA-S + PyAnnotate</text>
+  
+  <!-- Quality Parts -->
+  <rect x="700" y="20" width="120" height="40" rx="5" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="760" y="35" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Part 1: High</text>
+  <text x="760" y="50" text-anchor="middle" font-size="9" fill="white">MOS > 4.2</text>
+  
+  <rect x="700" y="70" width="120" height="40" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="760" y="85" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Part 2: Medium</text>
+  <text x="760" y="100" text-anchor="middle" font-size="9" fill="white">3.5≤MOS≤4.2</text>
+  
+  <rect x="700" y="120" width="120" height="40" rx="5" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="760" y="135" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Part 3: Med-Low</text>
+  <text x="760" y="150" text-anchor="middle" font-size="9" fill="white">3≤MOS<3.5</text>
+  
+  <!-- Transcription -->
+  <rect x="50" y="200" width="180" height="60" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="140" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Transcription</text>
+  <text x="140" y="245" text-anchor="middle" font-size="10" fill="white">GigaAMv2-RNNT</text>
+  
+  <!-- Punctuation -->
+  <rect x="280" y="200" width="160" height="60" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="360" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Punctuation</text>
+  <text x="360" y="245" text-anchor="middle" font-size="10" fill="white">RuPunctBig</text>
+  
+  <!-- Stress & Normalization -->
+  <rect x="490" y="200" width="160" height="60" rx="10" fill="#d35400" stroke="#ba4a00" stroke-width="2"/>
+  <text x="570" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Stress & ё-norm</text>
+  <text x="570" y="240" text-anchor="middle" font-size="10" fill="white">RuAccent Model</text>
+  <text x="570" y="255" text-anchor="middle" font-size="9" fill="white">Homograph Resolution</text>
+  
+  <!-- G2P Translation -->
+  <rect x="700" y="200" width="160" height="60" rx="10" fill="#2e86ab" stroke="#1f5f99" stroke-width="2"/>
+  <text x="780" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">G2P Translation</text>
+  <text x="780" y="245" text-anchor="middle" font-size="10" fill="white">Transformer Model</text>
+  
+  <!-- Audio-Text Alignment -->
+  <rect x="50" y="340" width="180" height="60" rx="10" fill="#a569bd" stroke="#9b59b6" stroke-width="2"/>
+  <text x="140" y="365" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Audio-Text Align</text>
+  <text x="140" y="385" text-anchor="middle" font-size="10" fill="white">Montreal Forced Aligner</text>
+  
+  <!-- Speaker Clustering -->
+  <rect x="280" y="340" width="160" height="60" rx="10" fill="#ec7063" stroke="#e74c3c" stroke-width="2"/>
+  <text x="360" y="365" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Speaker Clustering</text>
+  <text x="360" y="385" text-anchor="middle" font-size="10" fill="white">Sim-AM-ResNet-100</text>
+  
+  <!-- Train-Test Split -->
+  <rect x="490" y="340" width="160" height="60" rx="10" fill="#58d68d" stroke="#52c41a" stroke-width="2"/>
+  <text x="570" y="365" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Train-Test Split</text>
+  <text x="570" y="385" text-anchor="middle" font-size="10" fill="white">18/1/1 Ratio</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="50" y="480" width="900" height="120" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="3"/>
+  <text x="500" y="505" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Evaluation Framework</text>
+  
+  <!-- Speech Restoration -->
+  <rect x="80" y="520" width="150" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="155" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Speech Restoration</text>
+  <text x="155" y="555" text-anchor="middle" font-size="9" fill="white">SEMamba Model</text>
+  
+  <!-- Speech Denoising -->
+  <rect x="260" y="520" width="150" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="335" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Speech Denoising</text>
+  <text x="335" y="555" text-anchor="middle" font-size="9" fill="white">Multiple Datasets</text>
+  
+  <!-- TTS Synthesis -->
+  <rect x="440" y="520" width="150" height="50" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="515" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">TTS Synthesis</text>
+  <text x="515" y="555" text-anchor="middle" font-size="9" fill="white">VITS Model</text>
+  
+  <!-- Metrics -->
+  <rect x="620" y="520" width="150" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="695" y="535" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Evaluation Metrics</text>
+  <text x="695" y="550" text-anchor="middle" font-size="8" fill="white">NISQA, UTMOS, MOS</text>
+  <text x="695" y="563" text-anchor="middle" font-size="8" fill="white">CER, TMR, IntMOS</text>
+  
+  <!-- Results -->
+  <rect x="200" y="640" width="600" height="80" rx="12" fill="#f39c12" stroke="#e67e22" stroke-width="3"/>
+  <text x="500" y="665" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Results</text>
+  <text x="500" y="685" text-anchor="middle" font-size="11" fill="white">• Balalaika outperforms existing Russian datasets</text>
+  <text x="500" y="700" text-anchor="middle" font-size="11" fill="white">• Stress and punctuation annotations improve TTS quality</text>
+  <text x="500" y="715" text-anchor="middle" font-size="11" fill="white">• 2000+ hours of studio-quality conversational speech</text>
+  
+  <!-- Connecting lines with better styling -->
+  <line x1="230" y1="90" x2="280" y2="90" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="440" y1="90" x2="490" y2="90" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="140" y1="120" x2="140" y2="200" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="230" y1="230" x2="280" y2="230" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="440" y1="230" x2="490" y2="230" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="650" y1="230" x2="700" y2="230" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="140" y1="260" x2="140" y2="340" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="230" y1="370" x2="280" y2="370" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="440" y1="370" x2="490" y2="370" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="400" x2="500" y2="480" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Dataset Statistics -->
+  <rect x="850" y="400" width="130" height="120" rx="8" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="915" y="420" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Dataset Stats</text>
+  <text x="915" y="440" text-anchor="middle" font-size="9" fill="white">Part 1: 594h</text>
+  <text x="915" y="455" text-anchor="middle" font-size="9" fill="white">Part 2: 1200h</text>
+  <text x="915" y="470" text-anchor="middle" font-size="9" fill="white">Part 3: 367h</text>
+  <text x="915" y="490" text-anchor="middle" font-size="9" fill="white">✓ Punctuation</text>
+  <text x="915" y="505" text-anchor="middle" font-size="9" fill="white">✓ Stress marks</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Its comprehensive annotations including both punctuation and stress markings">
+                        <div class="quiz-question">1. What was the primary innovation of the Balalaika dataset compared to existing Russian speech datasets?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Its massive size of over 10,000 hours of speech data">Its massive size of over 10,000 hours of speech data</div><div class="quiz-choice" data-value="Its comprehensive annotations including both punctuation and stress markings">Its comprehensive annotations including both punctuation and stress markings</div><div class="quiz-choice" data-value="Its focus on only single-speaker high-quality recordings">Its focus on only single-speaker high-quality recordings</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="They used NISQA-S model to split data into quality tiers and excluded samples below MOS 3.0">
+                        <div class="quiz-question">2. How did the researchers handle the quality assessment of audio recordings in creating the dataset?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They relied solely on manual human evaluation">They relied solely on manual human evaluation</div><div class="quiz-choice" data-value="They used random sampling without any quality checks">They used random sampling without any quality checks</div><div class="quiz-choice" data-value="They used NISQA-S model to split data into quality tiers and excluded samples below MOS 3.0">They used NISQA-S model to split data into quality tiers and excluded samples below MOS 3.0</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Regional accent variations across Russia">
+                        <div class="quiz-question">3. Which of the following challenges in Russian speech synthesis was NOT mentioned as a key issue in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Vowel reduction and consonant devoicing">Vowel reduction and consonant devoicing</div><div class="quiz-choice" data-value="Regional accent variations across Russia">Regional accent variations across Russia</div><div class="quiz-choice" data-value="Variable stress patterns and homograph ambiguity">Variable stress patterns and homograph ambiguity</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>RiemannLoRA: A Unified Riemannian Framework for Ambiguity-Free LoRA
+  Optimization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.12142" target="_blank">http://arxiv.org/pdf/2507.12142</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A new optimization framework called RiemannLoRA for improving parameter-efficient fine-tuning of large language models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Low-Rank Adaptation (LoRA) techniques, proposing a novel unified Riemannian framework that addresses initialization and overparametrization challenges simultaneously.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing two main challenges in LoRA: finding optimal initialization strategies and mitigating overparametrization in low-rank matrix factorization.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses Riemannian optimization on a fixed-rank manifold, treating LoRA matrices as elements on a smooth manifold and implementing numerically stable computations using best practices from linear algebra.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Demonstrated improved convergence speed and final performance over standard LoRA across LLM and diffusion model architectures, with reduced variance in results and better metrics in both text and image generation tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>RiemannLoRA: A Unified Riemannian Framework for Ambiguity-Free LoRA
+  Optimization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">RiemannLoRA: Workflow Overview</text>
+  
+  <!-- Input Layer -->
+  <rect x="50" y="70" width="150" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Pretrained Model</text>
+  <text x="125" y="110" text-anchor="middle" font-size="12" fill="white">W ∈ R^(m×n)</text>
+  
+  <!-- Problem Formulation -->
+  <rect x="250" y="70" width="180" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="340" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="white">LoRA Formulation</text>
+  <text x="340" y="105" text-anchor="middle" font-size="11" fill="white">W + ΔW = W + AB⊤</text>
+  <text x="340" y="120" text-anchor="middle" font-size="11" fill="white">rank(ΔW) = r</text>
+  
+  <!-- Riemannian Manifold -->
+  <rect x="480" y="70" width="180" height="60" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="570" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Fixed-Rank Manifold</text>
+  <text x="570" y="105" text-anchor="middle" font-size="11" fill="white">M_r = {X ∈ R^(m×n) | rank(X) = r}</text>
+  <text x="570" y="120" text-anchor="middle" font-size="11" fill="white">dim(M_r) = (m+n)r - r²</text>
+  
+  <!-- Initialization Branch -->
+  <rect x="100" y="180" width="200" height="80" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="200" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Locally Optimal Initialization</text>
+  <text x="200" y="215" text-anchor="middle" font-size="11" fill="white">max ||P_T_ΔW M_r ∇_W L(W)||²_F</text>
+  <text x="200" y="230" text-anchor="middle" font-size="11" fill="white">Randomized SVD:</text>
+  <text x="200" y="245" text-anchor="middle" font-size="11" fill="white">ΔW* = αU₁,ᵣV⊤ᵣ,₂ᵣ</text>
+  
+  <!-- Randomized SVD Detail -->
+  <rect x="50" y="300" width="160" height="70" rx="10" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="130" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="white">BackPropRSVD</text>
+  <text x="130" y="335" text-anchor="middle" font-size="10" fill="white">Power iterations: q</text>
+  <text x="130" y="350" text-anchor="middle" font-size="10" fill="white">Oversampling: p</text>
+  <text x="130" y="365" text-anchor="middle" font-size="10" fill="white">O((m+n)r²) complexity</text>
+  
+  <!-- Optimization Branch -->
+  <rect x="400" y="180" width="220" height="80" rx="10" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="510" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Riemannian Optimization</text>
+  <text x="510" y="215" text-anchor="middle" font-size="11" fill="white">Parametrization-free optimization</text>
+  <text x="510" y="230" text-anchor="middle" font-size="11" fill="white">X = A_L B⊤ = A B⊤_R</text>
+  <text x="510" y="245" text-anchor="middle" font-size="11" fill="white">Orthogonal parametrization</text>
+  
+  <!-- Gradient Computation -->
+  <rect x="350" y="300" width="180" height="70" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="440" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Riemannian Gradient</text>
+  <text x="440" y="335" text-anchor="middle" font-size="10" fill="white">grad F(X) = P_T_X M_r ∇F(X)</text>
+  <text x="440" y="350" text-anchor="middle" font-size="10" fill="white">Efficient computation via</text>
+  <text x="440" y="365" text-anchor="middle" font-size="10" fill="white">single forward/backward pass</text>
+  
+  <!-- Retraction -->
+  <rect x="570" y="300" width="160" height="70" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="650" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="white">SVD Retraction</text>
+  <text x="650" y="335" text-anchor="middle" font-size="10" fill="white">R_X(ξ) = U_r Σ_r V⊤_r</text>
+  <text x="650" y="350" text-anchor="middle" font-size="10" fill="white">Truncated SVD of X + ξ</text>
+  <text x="650" y="365" text-anchor="middle" font-size="10" fill="white">Back to manifold</text>
+  
+  <!-- Momentum Transport -->
+  <rect x="250" y="420" width="180" height="60" rx="10" fill="#8e44ad" stroke="#732d91" stroke-width="2"/>
+  <text x="340" y="440" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Vector Transport</text>
+  <text x="340" y="455" text-anchor="middle" font-size="10" fill="white">Heavy-Ball momentum</text>
+  <text x="340" y="470" text-anchor="middle" font-size="10" fill="white">with tangent projection</text>
+  
+  <!-- Final Algorithm -->
+  <rect x="470" y="420" width="180" height="60" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="560" y="440" text-anchor="middle" font-size="11" font-weight="bold" fill="white">RiemannLoRA Algorithm</text>
+  <text x="560" y="455" text-anchor="middle" font-size="10" fill="white">SGD + Heavy-Ball</text>
+  <text x="560" y="470" text-anchor="middle" font-size="10" fill="white">or Adam variant</text>
+  
+  <!-- Results -->
+  <rect x="200" y="530" width="600" height="80" rx="10" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+  <text x="500" y="555" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Experimental Results</text>
+  <text x="300" y="575" text-anchor="middle" font-size="11" fill="white">• LLM Fine-tuning</text>
+  <text x="500" y="575" text-anchor="middle" font-size="11" fill="white">• Diffusion Models</text>
+  <text x="700" y="575" text-anchor="middle" font-size="11" fill="white">• Subject-driven Generation</text>
+  <text x="350" y="590" text-anchor="middle" font-size="11" fill="white">Improved convergence</text>
+  <text x="500" y="590" text-anchor="middle" font-size="11" fill="white">Better performance</text>
+  <text x="650" y="590" text-anchor="middle" font-size="11" fill="white">Reduced variance</text>
+  
+  <!-- Key Benefits -->
+  <rect x="100" y="650" width="800" height="100" rx="10" fill="#2980b9" stroke="#1f618d" stroke-width="2"/>
+  <text x="500" y="675" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Contributions</text>
+  <text x="200" y="700" text-anchor="middle" font-size="11" fill="white">✓ Ambiguity-free optimization</text>
+  <text x="500" y="700" text-anchor="middle" font-size="11" fill="white">✓ Geometrically meaningful initialization</text>
+  <text x="800" y="700" text-anchor="middle" font-size="11" fill="white">✓ Numerically stable implementation</text>
+  <text x="200" y="720" text-anchor="middle" font-size="11" fill="white">✓ Unified framework</text>
+  <text x="500" y="720" text-anchor="middle" font-size="11" fill="white">✓ Efficient randomized SVD</text>
+  <text x="800" y="720" text-anchor="middle" font-size="11" fill="white">✓ Parameter-free approach</text>
+  
+  <!-- Connection lines (simplified curved paths) -->
+  <path d="M 200 130 Q 250 150 300 130" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 430 130 Q 450 150 480 130" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 200 180 Q 200 200 200 260" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 510 180 Q 440 200 440 300" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 510 180 Q 580 200 650 300" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 340 370 Q 340 395 340 420" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 560 370 Q 560 395 560 420" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 450 480 Q 450 505 450 530" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <path d="M 500 610 Q 500 630 500 650" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It treats low-rank matrices as elements on a smooth manifold">
+                        <div class="quiz-question">1. What is the main theoretical innovation of RiemannLoRA compared to standard LoRA?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It treats low-rank matrices as elements on a smooth manifold">It treats low-rank matrices as elements on a smooth manifold</div><div class="quiz-choice" data-value="It uses larger batch sizes during training">It uses larger batch sizes during training</div><div class="quiz-choice" data-value="It requires more GPU memory than standard LoRA">It requires more GPU memory than standard LoRA</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It learned concepts faster while maintaining text similarity">
+                        <div class="quiz-question">2. In the subject-driven generation experiments, what was a key advantage demonstrated by RiemannLoRA?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It required more training steps to converge">It required more training steps to converge</div><div class="quiz-choice" data-value="It learned concepts faster while maintaining text similarity">It learned concepts faster while maintaining text similarity</div><div class="quiz-choice" data-value="It needed larger model architectures">It needed larger model architectures</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Initialization strategy and overparametrization">
+                        <div class="quiz-question">3. What are the two main challenges that RiemannLoRA addresses simultaneously?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Model size and training speed">Model size and training speed</div><div class="quiz-choice" data-value="Data efficiency and hardware requirements">Data efficiency and hardware requirements</div><div class="quiz-choice" data-value="Initialization strategy and overparametrization">Initialization strategy and overparametrization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Voxtral</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.13264" target="_blank">http://arxiv.org/pdf/2507.13264</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of open-source multimodal language models (Voxtral Mini and Small) for audio and text understanding in the domain of speech processing and natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Whisper and Transformer architecture research, proposing new multimodal models that combine audio and text processing with a 32K context window allowing for longer audio processing.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The lack of open-source models that can effectively process both speech and text while maintaining strong performance across multiple languages and tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Used three-phase training (pretraining, supervised finetuning, preference alignment) with an architecture combining audio encoder, adapter layer, and language decoder, while employing audio-to-text repetition and cross-modal continuation patterns.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Voxtral Small achieved state-of-the-art performance in speech transcription and translation tasks, outperforming closed-source models, while Voxtral Mini demonstrated competitive performance with larger models while being small enough to run locally.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Voxtral</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Voxtral Methodology Workflow</text>
+  
+  <!-- Phase 1: Architecture -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4f8" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Architecture Design</text>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#34495e">Audio Encoder</text>
+  <text x="150" y="120" text-anchor="middle" font-size="11" fill="#34495e">(Whisper large-v3)</text>
+  <text x="150" y="135" text-anchor="middle" font-size="11" fill="#34495e">Adapter Layer (4x downsample)</text>
+  <text x="150" y="150" text-anchor="middle" font-size="11" fill="#34495e">Language Decoder</text>
+  <text x="150" y="165" text-anchor="middle" font-size="11" fill="#34495e">(Ministral 3B / Mistral Small 24B)</text>
+  
+  <!-- Phase 2: Pretraining -->
+  <rect x="300" y="60" width="220" height="160" rx="10" fill="#f0e8ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="410" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Pretraining</text>
+  
+  <!-- Two patterns box -->
+  <rect x="315" y="95" width="190" height="70" rx="5" fill="#e8d5ff" stroke="#8e44ad" stroke-width="1"/>
+  <text x="410" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Two Data Patterns</text>
+  <text x="410" y="130" text-anchor="middle" font-size="10" fill="#34495e">Audio-to-text repetition</text>
+  <text x="410" y="145" text-anchor="middle" font-size="10" fill="#34495e">Cross-modal continuation</text>
+  <text x="410" y="160" text-anchor="middle" font-size="10" fill="#7d3c98">&lt;repeat&gt; &amp; &lt;next&gt; tokens</text>
+  
+  <text x="410" y="185" text-anchor="middle" font-size="10" fill="#34495e">Freeze encoder &amp; decoder first</text>
+  <text x="410" y="200" text-anchor="middle" font-size="10" fill="#34495e">Train adapter only (warm-up)</text>
+  
+  <!-- Phase 3: SFT -->
+  <rect x="570" y="60" width="200" height="140" rx="10" fill="#e8f8e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="670" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Supervised Finetuning</text>
+  
+  <rect x="585" y="95" width="170" height="45" rx="5" fill="#d5f4d5" stroke="#229954" stroke-width="1"/>
+  <text x="670" y="110" text-anchor="middle" font-size="11" fill="#2c3e50">Audio Context + Text Query</text>
+  <text x="670" y="125" text-anchor="middle" font-size="9" fill="#34495e">Synthetic QA, Summarization</text>
+  
+  <rect x="585" y="145" width="170" height="45" rx="5" fill="#d5f4d5" stroke="#229954" stroke-width="1"/>
+  <text x="670" y="160" text-anchor="middle" font-size="11" fill="#2c3e50">Audio-Only Input</text>
+  <text x="670" y="175" text-anchor="middle" font-size="9" fill="#34495e">TTS + Real speech data</text>
+  
+  <!-- Phase 4: Preference Alignment -->
+  <rect x="820" y="60" width="150" height="120" rx="10" fill="#fff0e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="895" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Preference</text>
+  <text x="895" y="100" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Alignment</text>
+  <text x="895" y="125" text-anchor="middle" font-size="11" fill="#34495e">DPO</text>
+  <text x="895" y="140" text-anchor="middle" font-size="11" fill="#34495e">Online DPO</text>
+  <text x="895" y="155" text-anchor="middle" font-size="10" fill="#d35400">Text-based reward model</text>
+  <text x="895" y="170" text-anchor="middle" font-size="10" fill="#d35400">on transcriptions</text>
+  
+  <!-- Data Processing Section -->
+  <rect x="50" y="250" width="300" height="100" rx="10" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="200" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Processing</text>
+  <text x="200" y="295" text-anchor="middle" font-size="11" fill="#34495e">30-second audio chunks</text>
+  <text x="200" y="310" text-anchor="middle" font-size="11" fill="#34495e">Voice activity detection</text>
+  <text x="200" y="325" text-anchor="middle" font-size="11" fill="#34495e">Audio-text segmentation</text>
+  <text x="200" y="340" text-anchor="middle" font-size="11" fill="#34495e">ASR pseudo-labeling when needed</text>
+  
+  <!-- Audio Features -->
+  <rect x="400" y="250" width="250" height="100" rx="10" fill="#f4f1ff" stroke="#6c5ce7" stroke-width="2"/>
+  <text x="525" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Audio Processing Features</text>
+  <text x="525" y="295" text-anchor="middle" font-size="11" fill="#34495e">Log-Mel spectrogram (128 bins)</text>
+  <text x="525" y="310" text-anchor="middle" font-size="11" fill="#34495e">50Hz → 12.5Hz (4x downsample)</text>
+  <text x="525" y="325" text-anchor="middle" font-size="11" fill="#34495e">32K context (40min audio)</text>
+  <text x="525" y="340" text-anchor="middle" font-size="11" fill="#34495e">Chunk-wise attention</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="700" y="250" width="250" height="140" rx="10" fill="#e8f5e8" stroke="#00b894" stroke-width="2"/>
+  <text x="825" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Evaluation Benchmarks</text>
+  
+  <rect x="715" y="285" width="220" height="25" rx="3" fill="#d1f2d1" stroke="#00a085" stroke-width="1"/>
+  <text x="825" y="300" text-anchor="middle" font-size="10" fill="#2c3e50">Speech Recognition: FLEURS, MCV, LibriSpeech</text>
+  
+  <rect x="715" y="315" width="220" height="25" rx="3" fill="#d1f2d1" stroke="#00a085" stroke-width="1"/>
+  <text x="825" y="330" text-anchor="middle" font-size="10" fill="#2c3e50">Speech Understanding: LlamaQA, OpenBookQA</text>
+  
+  <rect x="715" y="345" width="220" height="25" rx="3" fill="#d1f2d1" stroke="#00a085" stroke-width="1"/>
+  <text x="825" y="360" text-anchor="middle" font-size="10" fill="#2c3e50">Synthesized: GSM8K, TriviaQA, MMLU</text>
+  
+  <!-- Model Variants -->
+  <rect x="50" y="400" width="400" height="100" rx="10" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2"/>
+  <text x="250" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Model Variants</text>
+  
+  <rect x="70" y="440" width="170" height="45" rx="5" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+  <text x="155" y="455" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Voxtral Mini</text>
+  <text x="155" y="470" text-anchor="middle" font-size="10" fill="#34495e">4.7B parameters</text>
+  <text x="155" y="480" text-anchor="middle" font-size="10" fill="#34495e">Ministral 3B backbone</text>
+  
+  <rect x="260" y="440" width="170" height="45" rx="5" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+  <text x="345" y="455" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Voxtral Small</text>
+  <text x="345" y="470" text-anchor="middle" font-size="10" fill="#34495e">24.3B parameters</text>
+  <text x="345" y="480" text-anchor="middle" font-size="10" fill="#34495e">Mistral Small 24B backbone</text>
+  
+  <!-- Key Innovations -->
+  <rect x="500" y="400" width="450" height="140" rx="10" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="725" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Technical Innovations</text>
+  
+  <circle cx="520" cy="445" r="3" fill="#1976d2"/>
+  <text x="535" y="450" font-size="11" fill="#34495e">Balanced pretraining patterns for transcription + understanding</text>
+  
+  <circle cx="520" cy="465" r="3" fill="#1976d2"/>
+  <text x="535" y="470" font-size="11" fill="#34495e">4x audio downsampling for efficiency vs. performance trade-off</text>
+  
+  <circle cx="520" cy="485" r="3" fill="#1976d2"/>
+  <text x="535" y="490" font-size="11" fill="#34495e">Special tokens (&lt;repeat&gt;, &lt;next&gt;) for pattern control</text>
+  
+  <circle cx="520" cy="505" r="3" fill="#1976d2"/>
+  <text x="535" y="510" font-size="11" fill="#34495e">Synthetic data generation with LLM (Mistral Large)</text>
+  
+  <circle cx="520" cy="525" r="3" fill="#1976d2"/>
+  <text x="535" y="530" font-size="11" fill="#34495e">Online DPO with text-based reward model on transcriptions</text>
+  
+  <!-- Performance Results -->
+  <rect x="50" y="570" width="900" height="80" rx="10" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="500" y="595" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Performance Results</text>
+  
+  <rect x="70" y="605" width="200" height="35" rx="5" fill="#d4edda" stroke="#28a745" stroke-width="1"/>
+  <text x="170" y="620" text-anchor="middle" font-size="10" fill="#2c3e50">State-of-the-art ASR</text>
+  <text x="170" y="632" text-anchor="middle" font-size="10" fill="#2c3e50">on multiple benchmarks</text>
+  
+  <rect x="290" y="605" width="200" height="35" rx="5" fill="#d4edda" stroke="#28a745" stroke-width="1"/>
+  <text x="390" y="620" text-anchor="middle" font-size="10" fill="#2c3e50">Competitive with GPT-4o</text>
+  <text x="390" y="632" text-anchor="middle" font-size="10" fill="#2c3e50">and Gemini 2.5 Flash</text>
+  
+  <rect x="510" y="605" width="200" height="35" rx="5" fill="#d4edda" stroke="#28a745" stroke-width="1"/>
+  <text x="610" y="620" text-anchor="middle" font-size="10" fill="#2c3e50">Preserved text capabilities</text>
+  <text x="610" y="632" text-anchor="middle" font-size="10" fill="#2c3e50">in multimodal setting</text>
+  
+  <rect x="730" y="605" width="200" height="35" rx="5" fill="#d4edda" stroke="#28a745" stroke-width="1"/>
+  <text x="830" y="620" text-anchor="middle" font-size="10" fill="#2c3e50">40-minute audio</text>
+  <text x="830" y="632" text-anchor="middle" font-size="10" fill="#2c3e50">processing capability</text>
+  
+  <!-- Training Flow Lines -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="520" y1="120" x2="570" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="770" y1="120" x2="820" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- Training phases labels -->
+  <text x="275" y="45" text-anchor="middle" font-size="10" font-weight="bold" fill="#7f8c8d">Phase 1</text>
+  <text x="545" y="45" text-anchor="middle" font-size="10" font-weight="bold" fill="#7f8c8d">Phase 2</text>
+  <text x="795" y="45" text-anchor="middle" font-size="10" font-weight="bold" fill="#7f8c8d">Phase 3</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="40 minutes">
+                        <div class="quiz-question">1. What is the maximum duration of audio that Voxtral can process with its 32K context window?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="20 minutes">20 minutes</div><div class="quiz-choice" data-value="30 minutes">30 minutes</div><div class="quiz-choice" data-value="40 minutes">40 minutes</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Text-to-audio generation">
+                        <div class="quiz-question">2. Which of these training patterns was NOT used in Voxtral's pretraining phase?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Audio-to-text repetition">Audio-to-text repetition</div><div class="quiz-choice" data-value="Cross-modal continuation">Cross-modal continuation</div><div class="quiz-choice" data-value="Text-to-audio generation">Text-to-audio generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="They are based on different language model backbones (3B vs 24B parameters)">
+                        <div class="quiz-question">3. What is the primary architectural difference between Voxtral Mini and Voxtral Small?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They use different audio encoders">They use different audio encoders</div><div class="quiz-choice" data-value="They are based on different language model backbones (3B vs 24B parameters)">They are based on different language model backbones (3B vs 24B parameters)</div><div class="quiz-choice" data-value="They have different context window sizes">They have different context window sizes</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
