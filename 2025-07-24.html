@@ -1,0 +1,1063 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-24 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-24 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>DesignLab: Designing Slides Through Iterative Detection and Correction</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.17202" target="_blank">http://arxiv.org/pdf/2507.17202</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Automated presentation slide design refinement using AI, within the domain of visual design and human-computer interaction.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in automated layout generation and design tools, introduces a novel iterative approach with separate reviewer and contributor roles for progressive refinement.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Non-experts struggle to create high-quality presentation slides due to complex design choices, while existing automated tools lack the ability to iteratively refine their output.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Fine-tuned large language models for two roles: a design reviewer that detects design flaws and a design contributor that corrects them, using JSON-formatted slide representations and simulated draft-to-final pairs for training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The system outperformed existing design generation methods including commercial tools in both user studies and GPT-4 evaluations, with most slides requiring 2-3 iterations to reach optimal design quality.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>DesignLab: Designing Slides Through Iterative Detection and Correction</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    DesignLab: Iterative Detection and Correction Workflow
+  </text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="80" width="150" height="60" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="125" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Initial Rough Draft</text>
+  <text x="125" y="120" text-anchor="middle" font-size="10" fill="#2c3e50">(Presentation Slide)</text>
+  
+  <!-- JSON Conversion -->
+  <rect x="250" y="80" width="150" height="60" rx="10" fill="#fff3cd" stroke="#f39c12" stroke-width="2"/>
+  <text x="325" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">JSON Conversion</text>
+  <text x="325" y="120" text-anchor="middle" font-size="10" fill="#2c3e50">Structured Format</text>
+  
+  <!-- Training Data Creation -->
+  <rect x="450" y="80" width="150" height="60" rx="10" fill="#f8d7da" stroke="#e74c3c" stroke-width="2"/>
+  <text x="525" y="100" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Perturbation</text>
+  <text x="525" y="115" text-anchor="middle" font-size="10" fill="#2c3e50">Simulate Drafts</text>
+  <text x="525" y="128" text-anchor="middle" font-size="9" fill="#2c3e50">(Remove, Shift, Alter)</text>
+  
+  <!-- Model Training Section -->
+  <rect x="100" y="200" width="800" height="120" rx="15" fill="#e8f5e8" stroke="#27ae60" stroke-width="3"/>
+  <text x="500" y="225" text-anchor="middle" font-size="16" font-weight="bold" fill="#27ae60">Model Training Phase</text>
+  
+  <!-- Design Reviewer Training -->
+  <rect x="150" y="250" width="200" height="50" rx="8" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="250" y="270" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Design Reviewer</text>
+  <text x="250" y="285" text-anchor="middle" font-size="10" fill="#2c3e50">Detect Issues → TENTATIVE</text>
+  
+  <!-- Design Contributor Training -->
+  <rect x="450" y="250" width="200" height="50" rx="8" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2"/>
+  <text x="550" y="270" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Design Contributor</text>
+  <text x="550" y="285" text-anchor="middle" font-size="10" fill="#2c3e50">Fix TENTATIVE Elements</text>
+  
+  <!-- Iterative Refinement Loop -->
+  <rect x="200" y="380" width="600" height="200" rx="20" fill="#fff2e6" stroke="#fd7e14" stroke-width="3"/>
+  <text x="500" y="410" text-anchor="middle" font-size="16" font-weight="bold" fill="#fd7e14">Iterative Refinement Loop</text>
+  
+  <!-- Step 1 -->
+  <ellipse cx="300" cy="460" rx="80" ry="30" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2"/>
+  <text x="300" y="460" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Initial Review</text>
+  <text x="300" y="475" text-anchor="middle" font-size="9" fill="#2c3e50">Mark all TENTATIVE</text>
+  
+  <!-- Step 2 -->
+  <ellipse cx="500" cy="460" rx="80" ry="30" fill="#74b9ff" stroke="#0984e3" stroke-width="2"/>
+  <text x="500" y="460" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Contribute</text>
+  <text x="500" y="475" text-anchor="middle" font-size="9" fill="#2c3e50">Fix Issues</text>
+  
+  <!-- Step 3 -->
+  <ellipse cx="700" cy="460" rx="80" ry="30" fill="#fd79a8" stroke="#e84393" stroke-width="2"/>
+  <text x="700" y="460" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Re-Review</text>
+  <text x="700" y="475" text-anchor="middle" font-size="9" fill="#2c3e50">Check Quality</text>
+  
+  <!-- Decision Diamond -->
+  <polygon points="500,520 530,540 500,560 470,540" fill="#a29bfe" stroke="#6c5ce7" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Done?</text>
+  
+  <!-- Output -->
+  <rect x="400" y="630" width="200" height="60" rx="10" fill="#d5f4e6" stroke="#00b894" stroke-width="2"/>
+  <text x="500" y="655" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Polished Design</text>
+  <text x="500" y="670" text-anchor="middle" font-size="10" fill="#2c3e50">Professional Quality</text>
+  
+  <!-- Interactive Features -->
+  <rect x="700" y="630" width="150" height="60" rx="10" fill="#e17055" stroke="#d63031" stroke-width="2"/>
+  <text x="775" y="650" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Interactive Mode</text>
+  <text x="775" y="665" text-anchor="middle" font-size="9" fill="#2c3e50">User Selection</text>
+  <text x="775" y="678" text-anchor="middle" font-size="9" fill="#2c3e50">Design Branching</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 200 110 Q 225 110 250 110" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 110 Q 425 110 450 110" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 250 170 Q 250 185 250 200" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 550 170 Q 550 185 550 200" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 300 320 Q 300 350 300 430" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 380 460 Q 440 460 420 460" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 580 460 Q 620 460 620 460" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 700 490 Q 700 505 500 520" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 470 540 Q 300 540 300 490" stroke="#e74c3c" stroke-width="2" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="5,5"/>
+  <path d="M 500 560 Q 500 595 500 630" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Labels for decision paths -->
+  <text x="400" y="535" font-size="10" fill="#e74c3c" font-weight="bold">No (Continue)</text>
+  <text x="520" y="585" font-size="10" fill="#00b894" font-weight="bold">Yes (Stop)</text>
+  
+  <!-- Key Features Box -->
+  <rect x="50" y="450" width="120" height="100" rx="8" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
+  <text x="110" y="470" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Key Features</text>
+  <text x="60" y="490" font-size="9" fill="#2c3e50">• Decomposed Roles</text>
+  <text x="60" y="505" font-size="9" fill="#2c3e50">• Progressive Refinement</text>
+  <text x="60" y="520" font-size="9" fill="#2c3e50">• Error Detection</text>
+  <text x="60" y="535" font-size="9" fill="#2c3e50">• Automated Correction</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Separating the design process into reviewer and contributor roles">
+                        <div class="quiz-question">1. What is the key innovation in DesignLab's approach compared to existing presentation design tools?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using advanced graphics processing algorithms">Using advanced graphics processing algorithms</div><div class="quiz-choice" data-value="Separating the design process into reviewer and contributor roles">Separating the design process into reviewer and contributor roles</div><div class="quiz-choice" data-value="Generating completely new slide content from scratch">Generating completely new slide content from scratch</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By introducing controlled perturbations to polished slides">
+                        <div class="quiz-question">2. How does DesignLab simulate rough drafts for training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By collecting real rough drafts from users">By collecting real rough drafts from users</div><div class="quiz-choice" data-value="By using AI to generate random slide layouts">By using AI to generate random slide layouts</div><div class="quiz-choice" data-value="By introducing controlled perturbations to polished slides">By introducing controlled perturbations to polished slides</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It struggles with complex data structures like tables and graphs">
+                        <div class="quiz-question">3. What is a current limitation of DesignLab according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It cannot handle slides with multiple pages">It cannot handle slides with multiple pages</div><div class="quiz-choice" data-value="It struggles with complex data structures like tables and graphs">It struggles with complex data structures like tables and graphs</div><div class="quiz-choice" data-value="It only works with specific presentation software">It only works with specific presentation software</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Can One Domain Help Others? A Data-Centric Study on Multi-Domain
+  Reasoning via Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.17512" target="_blank">http://arxiv.org/pdf/2507.17512</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A data-centric study examining multi-domain reasoning capabilities in large language models (LLMs) using reinforcement learning across mathematical reasoning, code generation, and logical puzzle solving domains.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research in Reinforcement Learning with Verifiable Rewards (RLVR) which focused on single domains; introduces new investigation into cross-domain interactions and generalization capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Understanding how different reasoning domains interact and influence each other during reinforcement learning training, including potential mutual enhancements and conflicts between domains.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Used Group Relative Policy Optimization (GRPO) algorithm with Qwen-2.5-7B models, conducting experiments across single-domain, dual-domain, and triple-domain combinations while analyzing impacts of curriculum learning, reward designs, and training languages.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Found that puzzle and math domains provide mutual support, code reasoning has mixed cross-domain effects, combining diverse data leads to more robust performance, template consistency is critical, and Chinese language training underperforms English training, with detailed evaluations across MATH500, HumanEval, CountDown and other benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Can One Domain Help Others? A Data-Centric Study on Multi-Domain
+  Reasoning via Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    Multi-Domain Reasoning via Reinforcement Learning Workflow
+  </text>
+  
+  <!-- Data Preparation Section -->
+  <rect x="50" y="60" width="900" height="120" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="500" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Data Preparation & Configuration</text>
+  
+  <!-- Three domain boxes -->
+  <rect x="80" y="100" width="240" height="60" fill="#ffffff" stroke="#3498db" rx="5"/>
+  <text x="200" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Math Domain</text>
+  <text x="200" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">DeepScaleR (10k)</text>
+  <text x="200" y="150" text-anchor="middle" font-size="10" fill="#7f8c8d">CountDown (10k)</text>
+  
+  <rect x="340" y="100" width="240" height="60" fill="#ffffff" stroke="#e74c3c" rx="5"/>
+  <text x="460" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Code Domain</text>
+  <text x="460" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">CodeR1-12k (12k)</text>
+  <text x="460" y="150" text-anchor="middle" font-size="10" fill="#7f8c8d">LeetCode + TACO</text>
+  
+  <rect x="600" y="100" width="240" height="60" fill="#ffffff" stroke="#27ae60" rx="5"/>
+  <text x="720" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Puzzle Domain</text>
+  <text x="720" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">Knights-and-Knaves (5.4k)</text>
+  <text x="720" y="150" text-anchor="middle" font-size="10" fill="#7f8c8d">Logic Puzzle Baron (2.4k)</text>
+  
+  <!-- Training Configuration -->
+  <rect x="50" y="200" width="900" height="100" fill="#fff3cd" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="500" y="225" text-anchor="middle" font-size="16" font-weight="bold" fill="#d68910">Training Configuration</text>
+  
+  <rect x="80" y="245" width="200" height="40" fill="#ffffff" stroke="#f39c12" rx="5"/>
+  <text x="180" y="260" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Model Selection</text>
+  <text x="180" y="275" text-anchor="middle" font-size="9" fill="#7f8c8d">Qwen2.5-7B Base/Instruct</text>
+  
+  <rect x="300" y="245" width="200" height="40" fill="#ffffff" stroke="#f39c12" rx="5"/>
+  <text x="400" y="260" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Algorithm</text>
+  <text x="400" y="275" text-anchor="middle" font-size="9" fill="#7f8c8d">GRPO Optimization</text>
+  
+  <rect x="520" y="245" width="200" height="40" fill="#ffffff" stroke="#f39c12" rx="5"/>
+  <text x="620" y="260" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Template</text>
+  <text x="620" y="275" text-anchor="middle" font-size="9" fill="#7f8c8d">R1-template (DeepSeek)</text>
+  
+  <rect x="740" y="245" width="120" height="40" fill="#ffffff" stroke="#f39c12" rx="5"/>
+  <text x="800" y="260" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Reward</text>
+  <text x="800" y="275" text-anchor="middle" font-size="9" fill="#7f8c8d">Binary/Partial</text>
+  
+  <!-- Experimental Design -->
+  <rect x="50" y="320" width="900" height="140" fill="#f0f0f0" stroke="#95a5a6" stroke-width="2" rx="10"/>
+  <text x="500" y="345" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Experimental Design</text>
+  
+  <!-- Single Domain Training -->
+  <rect x="80" y="365" width="200" height="80" fill="#e8f4fd" stroke="#3498db" rx="5"/>
+  <text x="180" y="385" text-anchor="middle" font-size="12" font-weight="bold" fill="#2980b9">Single Domain</text>
+  <text x="180" y="400" text-anchor="middle" font-size="10" fill="#2c3e50">• Math only</text>
+  <text x="180" y="415" text-anchor="middle" font-size="10" fill="#2c3e50">• Code only</text>
+  <text x="180" y="430" text-anchor="middle" font-size="10" fill="#2c3e50">• Puzzle only</text>
+  
+  <!-- Dual Domain Training -->
+  <rect x="300" y="365" width="200" height="80" fill="#fdeaa7" stroke="#f39c12" rx="5"/>
+  <text x="400" y="385" text-anchor="middle" font-size="12" font-weight="bold" fill="#d68910">Dual Domain</text>
+  <text x="400" y="400" text-anchor="middle" font-size="10" fill="#2c3e50">• Math + Puzzle</text>
+  <text x="400" y="415" text-anchor="middle" font-size="10" fill="#2c3e50">• Math + Code</text>
+  <text x="400" y="430" text-anchor="middle" font-size="10" fill="#2c3e50">• Puzzle + Code</text>
+  
+  <!-- Triple Domain Training -->
+  <rect x="520" y="365" width="140" height="80" fill="#d5f4e6" stroke="#27ae60" rx="5"/>
+  <text x="590" y="385" text-anchor="middle" font-size="12" font-weight="bold" fill="#229954">Triple Domain</text>
+  <text x="590" y="405" text-anchor="middle" font-size="10" fill="#2c3e50">Math + Code</text>
+  <text x="590" y="420" text-anchor="middle" font-size="10" fill="#2c3e50">+ Puzzle</text>
+  
+  <!-- Additional Studies -->
+  <rect x="680" y="365" width="180" height="80" fill="#fadbd8" stroke="#e74c3c" rx="5"/>
+  <text x="770" y="385" text-anchor="middle" font-size="12" font-weight="bold" fill="#c0392b">Additional Studies</text>
+  <text x="770" y="400" text-anchor="middle" font-size="9" fill="#2c3e50">• Template variation</text>
+  <text x="770" y="415" text-anchor="middle" font-size="9" fill="#2c3e50">• Curriculum learning</text>
+  <text x="770" y="430" text-anchor="middle" font-size="9" fill="#2c3e50">• Reward design</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="50" y="480" width="900" height="100" fill="#e8f5e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="500" y="505" text-anchor="middle" font-size="16" font-weight="bold" fill="#229954">Evaluation Framework</text>
+  
+  <rect x="80" y="525" width="240" height="40" fill="#ffffff" stroke="#27ae60" rx="5"/>
+  <text x="200" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Math Benchmarks</text>
+  <text x="200" y="555" text-anchor="middle" font-size="9" fill="#7f8c8d">MATH500, AIME24, CountDown</text>
+  
+  <rect x="340" y="525" width="240" height="40" fill="#ffffff" stroke="#27ae60" rx="5"/>
+  <text x="460" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Code Benchmarks</text>
+  <text x="460" y="555" text-anchor="middle" font-size="9" fill="#7f8c8d">HumanEval, MBPP</text>
+  
+  <rect x="600" y="525" width="240" height="40" fill="#ffffff" stroke="#27ae60" rx="5"/>
+  <text x="720" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Puzzle Benchmarks</text>
+  <text x="720" y="555" text-anchor="middle" font-size="9" fill="#7f8c8d">KK, ZebraLogicBench</text>
+  
+  <!-- Key Findings -->
+  <rect x="50" y="600" width="900" height="150" fill="#f8f9fa" stroke="#6c757d" stroke-width="2" rx="10"/>
+  <text x="500" y="625" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Findings</text>
+  
+  <!-- Findings boxes -->
+  <rect x="80" y="645" width="180" height="90" fill="#e3f2fd" stroke="#2196f3" rx="5"/>
+  <text x="170" y="665" text-anchor="middle" font-size="11" font-weight="bold" fill="#1976d2">Cross-Domain Effects</text>
+  <text x="170" y="680" text-anchor="middle" font-size="9" fill="#2c3e50">• Math ↔ Puzzle: Synergy</text>
+  <text x="170" y="695" text-anchor="middle" font-size="9" fill="#2c3e50">• Code: Mixed effects</text>
+  <text x="170" y="710" text-anchor="middle" font-size="9" fill="#2c3e50">• Multi-domain improves</text>
+  <text x="170" y="725" text-anchor="middle" font-size="9" fill="#2c3e50">  overall performance</text>
+  
+  <rect x="280" y="645" width="180" height="90" fill="#fff3e0" stroke="#ff9800" rx="5"/>
+  <text x="370" y="665" text-anchor="middle" font-size="11" font-weight="bold" fill="#f57c00">Technical Insights</text>
+  <text x="370" y="680" text-anchor="middle" font-size="9" fill="#2c3e50">• SFT boosts RL</text>
+  <text x="370" y="695" text-anchor="middle" font-size="9" fill="#2c3e50">• Template consistency</text>
+  <text x="370" y="710" text-anchor="middle" font-size="9" fill="#2c3e50">  is critical</text>
+  <text x="370" y="725" text-anchor="middle" font-size="9" fill="#2c3e50">• Curriculum helps</text>
+  
+  <rect x="480" y="645" width="180" height="90" fill="#e8f5e8" stroke="#4caf50" rx="5"/>
+  <text x="570" y="665" text-anchor="middle" font-size="11" font-weight="bold" fill="#388e3c">Reward Design</text>
+  <text x="570" y="680" text-anchor="middle" font-size="9" fill="#2c3e50">• Task-dependent</text>
+  <text x="570" y="695" text-anchor="middle" font-size="9" fill="#2c3e50">• Binary for simple tasks</text>
+  <text x="570" y="710" text-anchor="middle" font-size="9" fill="#2c3e50">• Partial for complex</text>
+  <text x="570" y="725" text-anchor="middle" font-size="9" fill="#2c3e50">• Need finer granularity</text>
+  
+  <rect x="680" y="645" width="180" height="90" fill="#fce4ec" stroke="#e91e63" rx="5"/>
+  <text x="770" y="665" text-anchor="middle" font-size="11" font-weight="bold" fill="#c2185b">Language Effects</text>
+  <text x="770" y="680" text-anchor="middle" font-size="9" fill="#2c3e50">• RLVR is language-</text>
+  <text x="770" y="695" text-anchor="middle" font-size="9" fill="#2c3e50">  sensitive</text>
+  <text x="770" y="710" text-anchor="middle" font-size="9" fill="#2c3e50">• English > Chinese</text>
+  <text x="770" y="725" text-anchor="middle" font-size="9" fill="#2c3e50">  performance</text>
+  
+  <!-- Flow indicators (using simple lines instead of arrows) -->
+  <line x1="500" y1="180" x2="500" y2="200" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="500" y1="300" x2="500" y2="320" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="500" y1="460" x2="500" y2="480" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="500" y1="580" x2="500" y2="600" stroke="#7f8c8d" stroke-width="2"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Puzzle and Math">
+                        <div class="quiz-question">1. According to the paper, which combination of domains showed the most promising mutual support in reinforcement learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Math and Code">Math and Code</div><div class="quiz-choice" data-value="Puzzle and Math">Puzzle and Math</div><div class="quiz-choice" data-value="Code and Puzzle">Code and Puzzle</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Mismatched templates between training and testing severely degraded performance">
+                        <div class="quiz-question">2. What unexpected finding did the researchers discover about template consistency in their experiments?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Templates had no impact on model performance">Templates had no impact on model performance</div><div class="quiz-choice" data-value="Mismatched templates between training and testing severely degraded performance">Mismatched templates between training and testing severely degraded performance</div><div class="quiz-choice" data-value="Complex templates performed better than simple ones">Complex templates performed better than simple ones</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It strengthened reasoning transfer for instruct model but constrained base model's reasoning">
+                        <div class="quiz-question">3. When training the model with CodeR1 dataset, what interesting cross-domain effect was observed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It improved performance equally across all domains">It improved performance equally across all domains</div><div class="quiz-choice" data-value="It strengthened reasoning transfer for instruct model but constrained base model's reasoning">It strengthened reasoning transfer for instruct model but constrained base model's reasoning</div><div class="quiz-choice" data-value="It completely eliminated the model's ability to solve math problems">It completely eliminated the model's ability to solve math problems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>MiroMind-M1: An Open-Source Advancement in Mathematical Reasoning via
+  Context-Aware Multi-Stage Policy Optimization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.14683" target="_blank">http://arxiv.org/pdf/2507.14683</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing MiroMind-M1, an open-source language model series specifically designed for mathematical reasoning through supervised fine-tuning and reinforcement learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in reasoning language models (RLMs) and reinforcement learning approaches, the paper proposes CAMPO (Context-Aware Multi-Stage Policy Optimization), a novel algorithm that integrates length-progressive training with adaptive repetition penalties.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of transparency and reproducibility in high-performing reasoning language models, as most successful models are closed-source and their training details are not publicly available.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors used a two-stage training approach: first supervised fine-tuning on 719K math problems with verified chain-of-thought trajectories, followed by reinforcement learning with verifiable rewards on 62K challenging problems using their CAMPO algorithm.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> MiroMind-M1 achieved state-of-the-art or competitive performance among Qwen-2.5-based open-source models on mathematical benchmarks (AIME24, AIME25, MATH500), with MiroMind-M1-RL-7B reaching 73.4% on AIME24 and 57.8% on AIME25, while demonstrating superior token efficiency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MiroMind-M1: An Open-Source Advancement in Mathematical Reasoning via
+  Context-Aware Multi-Stage Policy Optimization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">MiroMind-M1: Mathematical Reasoning via Context-Aware Multi-Stage Policy Optimization</text>
+  
+  <!-- Stage 1: Data Collection -->
+  <rect x="50" y="70" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Collection</text>
+  <text x="150" y="110" text-anchor="middle" font-size="11" fill="#34495e">OpenR1 (418k)</text>
+  <text x="150" y="125" text-anchor="middle" font-size="11" fill="#34495e">OpenThoughts (56k)</text>
+  <text x="150" y="140" text-anchor="middle" font-size="11" fill="#34495e">Light-R1 (76k)</text>
+  <text x="150" y="155" text-anchor="middle" font-size="11" fill="#34495e">Synthetic-1 (247k)</text>
+  <text x="150" y="175" text-anchor="middle" font-size="12" font-weight="bold" fill="#e74c3c">Total: 719K samples</text>
+  
+  <!-- Stage 2: Data Processing -->
+  <rect x="300" y="70" width="180" height="120" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="390" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Processing</text>
+  <text x="390" y="110" text-anchor="middle" font-size="11" fill="#34495e">Deduplication</text>
+  <text x="390" y="125" text-anchor="middle" font-size="11" fill="#34495e">Decontamination</text>
+  <text x="390" y="140" text-anchor="middle" font-size="11" fill="#34495e">Length Analysis</text>
+  <text x="390" y="155" text-anchor="middle" font-size="11" fill="#34495e">Quality Filtering</text>
+  
+  <!-- Stage 3: SFT Training -->
+  <rect x="530" y="70" width="180" height="120" rx="10" fill="#e8f5e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="620" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">SFT Training</text>
+  <text x="620" y="110" text-anchor="middle" font-size="11" fill="#34495e">Base: Qwen2.5-Math-7B</text>
+  <text x="620" y="125" text-anchor="middle" font-size="11" fill="#34495e">3 epochs, No-packing</text>
+  <text x="620" y="140" text-anchor="middle" font-size="11" fill="#34495e">LR: 5e-5, BS: 128</text>
+  <text x="620" y="155" text-anchor="middle" font-size="11" fill="#34495e">Max length: 32K</text>
+  <text x="620" y="175" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">→ MiroMind-M1-SFT-7B</text>
+  
+  <!-- Stage 4: RL Data Preparation -->
+  <rect x="50" y="240" width="200" height="140" rx="10" fill="#f4e8fd" stroke="#9b59b6" stroke-width="2"/>
+  <text x="150" y="260" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">RL Data Preparation</text>
+  <text x="150" y="280" text-anchor="middle" font-size="11" fill="#34495e">NuminaMath-1.5 (896K)</text>
+  <text x="150" y="295" text-anchor="middle" font-size="11" fill="#34495e">Skywork-OR1 (105K)</text>
+  <text x="150" y="310" text-anchor="middle" font-size="11" fill="#34495e">Big-Math (50K)</text>
+  <text x="150" y="325" text-anchor="middle" font-size="11" fill="#34495e">DAPO-Math (17K)</text>
+  <text x="150" y="345" text-anchor="middle" font-size="11" fill="#34495e">Filtering Pipeline:</text>
+  <text x="150" y="360" text-anchor="middle" font-size="10" fill="#34495e">Style → Duplicates → Difficulty → Length</text>
+  <text x="150" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#9b59b6">Final: 62K problems</text>
+  
+  <!-- Stage 5: CAMPO Algorithm -->
+  <rect x="300" y="240" width="400" height="140" rx="10" fill="#fff2e8" stroke="#f39c12" stroke-width="2"/>
+  <text x="500" y="260" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">CAMPO Algorithm</text>
+  <text x="500" y="280" text-anchor="middle" font-size="13" fill="#e74c3c">Context-Aware Multi-Stage Policy Optimization</text>
+  
+  <!-- CAMPO Components -->
+  <rect x="320" y="295" width="110" height="70" rx="5" fill="#ecf0f1" stroke="#34495e" stroke-width="1"/>
+  <text x="375" y="310" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Multi-Stage</text>
+  <text x="375" y="325" text-anchor="middle" font-size="10" fill="#34495e">16K → 32K → 49K</text>
+  <text x="375" y="340" text-anchor="middle" font-size="10" fill="#34495e">Progressive</text>
+  <text x="375" y="355" text-anchor="middle" font-size="10" fill="#34495e">Context Length</text>
+  
+  <rect x="445" y="295" width="110" height="70" rx="5" fill="#ecf0f1" stroke="#34495e" stroke-width="1"/>
+  <text x="500" y="310" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Repetition</text>
+  <text x="500" y="325" text-anchor="middle" font-size="10" fill="#34495e">Penalty f(oi)</text>
+  <text x="500" y="340" text-anchor="middle" font-size="10" fill="#34495e">Reduce</text>
+  <text x="500" y="355" text-anchor="middle" font-size="10" fill="#34495e">Redundancy</text>
+  
+  <rect x="570" y="295" width="110" height="70" rx="5" fill="#ecf0f1" stroke="#34495e" stroke-width="1"/>
+  <text x="625" y="310" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Enhanced</text>
+  <text x="625" y="325" text-anchor="middle" font-size="10" fill="#34495e">Math Verifier</text>
+  <text x="625" y="340" text-anchor="middle" font-size="10" fill="#34495e">Cascade</text>
+  <text x="625" y="355" text-anchor="middle" font-size="10" fill="#34495e">Design</text>
+  
+  <!-- Stage 6: Model Variants -->
+  <rect x="150" y="430" width="180" height="100" rx="10" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2"/>
+  <text x="240" y="450" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">MiroMind-M1-RL-7B</text>
+  <text x="240" y="470" text-anchor="middle" font-size="11" fill="#34495e">From SFT-7B</text>
+  <text x="240" y="485" text-anchor="middle" font-size="11" fill="#34495e">Two-stage RL</text>
+  <text x="240" y="500" text-anchor="middle" font-size="11" fill="#34495e">AIME24: 73.4</text>
+  <text x="240" y="515" text-anchor="middle" font-size="11" fill="#34495e">AIME25: 57.8</text>
+  
+  <rect x="370" y="430" width="180" height="100" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="460" y="450" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">MiroMind-M1-RL-32B</text>
+  <text x="460" y="470" text-anchor="middle" font-size="11" fill="#34495e">From DeepSeek-R1</text>
+  <text x="460" y="485" text-anchor="middle" font-size="11" fill="#34495e">Three-stage RL</text>
+  <text x="460" y="500" text-anchor="middle" font-size="11" fill="#34495e">AIME24: 77.5</text>
+  <text x="460" y="515" text-anchor="middle" font-size="11" fill="#34495e">AIME25: 65.6</text>
+  
+  <!-- Stage 7: Evaluation -->
+  <rect x="600" y="430" width="180" height="100" rx="10" fill="#fef9e7" stroke="#f1c40f" stroke-width="2"/>
+  <text x="690" y="450" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Evaluation</text>
+  <text x="690" y="470" text-anchor="middle" font-size="11" fill="#34495e">AIME24/25</text>
+  <text x="690" y="485" text-anchor="middle" font-size="11" fill="#34495e">MATH-500</text>
+  <text x="690" y="500" text-anchor="middle" font-size="11" fill="#34495e">Token Efficiency</text>
+  <text x="690" y="515" text-anchor="middle" font-size="11" fill="#34495e">avg@k metrics</text>
+  
+  <!-- Key Insights Box -->
+  <rect x="100" y="580" width="800" height="120" rx="10" fill="#f8f9fa" stroke="#2c3e50" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="500" y="600" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Insights & Contributions</text>
+  
+  <text x="120" y="625" font-size="12" fill="#34495e">• No-packing strategy outperforms packing in SFT training</text>
+  <text x="120" y="645" font-size="12" fill="#34495e">• Longer reasoning trajectories lead to better performance</text>
+  <text x="120" y="665" font-size="12" fill="#34495e">• Multi-stage training improves efficiency and token usage</text>
+  <text x="120" y="685" font-size="12" fill="#34495e">• Open-source release: models, datasets, training configs, and improved verifier</text>
+  
+  <!-- Flow connections with colored lines -->
+  <line x1="250" y1="130" x2="300" y2="130" stroke="#3498db" stroke-width="3"/>
+  <line x1="480" y1="130" x2="530" y2="130" stroke="#e67e22" stroke-width="3"/>
+  <line x1="620" y1="190" x2="620" y2="220" stroke="#27ae60" stroke-width="3"/>
+  <line x1="620" y1="220" x2="150" y2="240" stroke="#27ae60" stroke-width="3"/>
+  <line x1="250" y1="310" x2="300" y2="310" stroke="#9b59b6" stroke-width="3"/>
+  <line x1="500" y1="380" x2="240" y2="430" stroke="#f39c12" stroke-width="3"/>
+  <line x1="500" y1="380" x2="460" y2="430" stroke="#f39c12" stroke-width="3"/>
+  <line x1="550" y1="480" x2="600" y2="480" stroke="#1abc9c" stroke-width="3"/>
+  
+  <!-- Legend -->
+  <rect x="750" y="70" width="200" height="150" rx="5" fill="#ecf0f1" stroke="#34495e" stroke-width="1"/>
+  <text x="850" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Process Legend</text>
+  <rect x="760" y="100" width="15" height="10" fill="#e8f4fd"/>
+  <text x="780" y="108" font-size="10" fill="#34495e">Data Collection</text>
+  <rect x="760" y="115" width="15" height="10" fill="#fdf2e9"/>
+  <text x="780" y="123" font-size="10" fill="#34495e">Processing</text>
+  <rect x="760" y="130" width="15" height="10" fill="#e8f5e8"/>
+  <text x="780" y="138" font-size="10" fill="#34495e">SFT Training</text>
+  <rect x="760" y="145" width="15" height="10" fill="#f4e8fd"/>
+  <text x="780" y="153" font-size="10" fill="#34495e">RL Data Prep</text>
+  <rect x="760" y="160" width="15" height="10" fill="#fff2e8"/>
+  <text x="780" y="168" font-size="10" fill="#34495e">CAMPO Algorithm</text>
+  <rect x="760" y="175" width="15" height="10" fill="#e8f8f5"/>
+  <text x="780" y="183" font-size="10" fill="#34495e">Model Training</text>
+  <rect x="760" y="190" width="15" height="10" fill="#fef9e7"/>
+  <text x="780" y="198" font-size="10" fill="#34495e">Evaluation</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Integration of length-progressive training with adaptive repetition penalties">
+                        <div class="quiz-question">1. What is the main innovation in the CAMPO algorithm proposed in this paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Integration of length-progressive training with adaptive repetition penalties">Integration of length-progressive training with adaptive repetition penalties</div><div class="quiz-choice" data-value="Using a larger dataset for supervised fine-tuning">Using a larger dataset for supervised fine-tuning</div><div class="quiz-choice" data-value="Implementing a new tokenization method">Implementing a new tokenization method</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Two stages: supervised fine-tuning followed by reinforcement learning">
+                        <div class="quiz-question">2. How many stages were used in the training process of MiroMind-M1?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="One stage using only reinforcement learning">One stage using only reinforcement learning</div><div class="quiz-choice" data-value="Two stages: supervised fine-tuning followed by reinforcement learning">Two stages: supervised fine-tuning followed by reinforcement learning</div><div class="quiz-choice" data-value="Three stages: pre-training, fine-tuning, and testing">Three stages: pre-training, fine-tuning, and testing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It achieved similar or better results while using fewer tokens in its responses">
+                        <div class="quiz-question">3. What was a unique aspect of the model's evaluation process that demonstrated its efficiency?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It processed more math problems per second">It processed more math problems per second</div><div class="quiz-choice" data-value="It achieved higher accuracy with fewer training epochs">It achieved higher accuracy with fewer training epochs</div><div class="quiz-choice" data-value="It achieved similar or better results while using fewer tokens in its responses">It achieved similar or better results while using fewer tokens in its responses</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
