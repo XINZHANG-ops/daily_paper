@@ -1,0 +1,1111 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-25 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-25 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Group Sequence Policy Optimization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.18071" target="_blank">http://arxiv.org/pdf/2507.18071</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces a new reinforcement learning algorithm called Group Sequence Policy Optimization (GSPO) for training large language models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous GRPO (Group Relative Policy Optimization) algorithm, it proposes a novel sequence-level approach rather than token-level optimization for reinforcement learning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the instability and inefficiency issues in current RL algorithms like GRPO, which can lead to model collapse when training large language models.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> GSPO defines importance ratios based on sequence likelihood rather than token-level weights, and performs sequence-level clipping, rewarding, and optimization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> GSPO achieved superior training stability and efficiency compared to GRPO, stabilized Mixture-of-Experts (MoE) RL training without requiring complex stabilization strategies, and contributed to performance improvements in Qwen3 models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Group Sequence Policy Optimization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    Group Sequence Policy Optimization (GSPO) Workflow
+  </text>
+  
+  <!-- Problem Identification Section -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">GRPO Issues</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">Token-level importance</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">ratios cause instability</text>
+  
+  <!-- Core Innovation -->
+  <rect x="300" y="60" width="200" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="400" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Key Innovation</text>
+  <text x="400" y="105" text-anchor="middle" font-size="10" fill="white">Sequence-level</text>
+  <text x="400" y="120" text-anchor="middle" font-size="10" fill="white">importance ratios</text>
+  
+  <!-- GSPO Algorithm Box -->
+  <rect x="550" y="60" width="200" height="80" rx="10" fill="#27ae60" opacity="0.8"/>
+  <text x="650" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">GSPO Algorithm</text>
+  <text x="650" y="105" text-anchor="middle" font-size="10" fill="white">Sequence-level clipping</text>
+  <text x="650" y="120" text-anchor="middle" font-size="10" fill="white">and optimization</text>
+  
+  <!-- Mathematical Foundation -->
+  <rect x="100" y="180" width="250" height="100" rx="10" fill="#9b59b6" opacity="0.7"/>
+  <text x="225" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Mathematical Foundation</text>
+  <text x="225" y="225" text-anchor="middle" font-size="10" fill="white">Importance Sampling:</text>
+  <text x="225" y="245" text-anchor="middle" font-size="10" fill="white">s_i(θ) = π_θ(y_i|x)/π_θ_old(y_i|x)^(1/|y_i|)</text>
+  <text x="225" y="265" text-anchor="middle" font-size="10" fill="white">Length normalized</text>
+  
+  <!-- Group Advantage Estimation -->
+  <rect x="400" y="180" width="250" height="100" rx="10" fill="#f39c12" opacity="0.7"/>
+  <text x="525" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Group Advantage</text>
+  <text x="525" y="225" text-anchor="middle" font-size="10" fill="white">Â_i = (r(x,y_i) - mean)/std</text>
+  <text x="525" y="245" text-anchor="middle" font-size="10" fill="white">Normalized rewards across</text>
+  <text x="525" y="265" text-anchor="middle" font-size="10" fill="white">multiple responses</text>
+  
+  <!-- Objective Function -->
+  <rect x="700" y="180" width="250" height="100" rx="10" fill="#e67e22" opacity="0.7"/>
+  <text x="825" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Objective Function</text>
+  <text x="825" y="225" text-anchor="middle" font-size="10" fill="white">J_GSPO = E[1/G Σ min(s_i(θ)Â_i,</text>
+  <text x="825" y="245" text-anchor="middle" font-size="10" fill="white">clip(s_i(θ), 1-ε, 1+ε)Â_i)]</text>
+  <text x="825" y="265" text-anchor="middle" font-size="10" fill="white">Sequence-level clipping</text>
+  
+  <!-- Training Process -->
+  <rect x="150" y="320" width="180" height="80" rx="10" fill="#1abc9c" opacity="0.8"/>
+  <text x="240" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Training Process</text>
+  <text x="240" y="365" text-anchor="middle" font-size="10" fill="white">Generate G responses</text>
+  <text x="240" y="380" text-anchor="middle" font-size="10" fill="white">per query</text>
+  
+  <!-- Gradient Computation -->
+  <rect x="370" y="320" width="180" height="80" rx="10" fill="#34495e" opacity="0.8"/>
+  <text x="460" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Gradient Analysis</text>
+  <text x="460" y="365" text-anchor="middle" font-size="10" fill="white">Equal token weighting</text>
+  <text x="460" y="380" text-anchor="middle" font-size="10" fill="white">vs GRPO's unequal</text>
+  
+  <!-- Stability Benefits -->
+  <rect x="590" y="320" width="180" height="80" rx="10" fill="#8e44ad" opacity="0.8"/>
+  <text x="680" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stability Benefits</text>
+  <text x="680" y="365" text-anchor="middle" font-size="10" fill="white">Prevents model</text>
+  <text x="680" y="380" text-anchor="middle" font-size="10" fill="white">collapse</text>
+  
+  <!-- MoE Training Benefits -->
+  <rect x="100" y="440" width="200" height="100" rx="10" fill="#2ecc71" opacity="0.7"/>
+  <text x="200" y="465" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MoE Training</text>
+  <text x="200" y="485" text-anchor="middle" font-size="10" fill="white">Eliminates need for</text>
+  <text x="200" y="505" text-anchor="middle" font-size="10" fill="white">Routing Replay</text>
+  <text x="200" y="525" text-anchor="middle" font-size="10" fill="white">Handles expert volatility</text>
+  
+  <!-- Infrastructure Benefits -->
+  <rect x="350" y="440" width="200" height="100" rx="10" fill="#16a085" opacity="0.7"/>
+  <text x="450" y="465" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Infrastructure</text>
+  <text x="450" y="485" text-anchor="middle" font-size="10" fill="white">Precision tolerance</text>
+  <text x="450" y="505" text-anchor="middle" font-size="10" fill="white">Training-inference</text>
+  <text x="450" y="525" text-anchor="middle" font-size="10" fill="white">compatibility</text>
+  
+  <!-- Experimental Results -->
+  <rect x="600" y="440" width="200" height="100" rx="10" fill="#c0392b" opacity="0.7"/>
+  <text x="700" y="465" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Results</text>
+  <text x="700" y="485" text-anchor="middle" font-size="10" fill="white">Superior efficiency</text>
+  <text x="700" y="505" text-anchor="middle" font-size="10" fill="white">Better performance</text>
+  <text x="700" y="525" text-anchor="middle" font-size="10" fill="white">on benchmarks</text>
+  
+  <!-- GSPO-token Variant -->
+  <rect x="250" y="580" width="200" height="80" rx="10" fill="#d35400" opacity="0.7"/>
+  <text x="350" y="605" text-anchor="middle" font-size="12" font-weight="bold" fill="white">GSPO-token</text>
+  <text x="350" y="625" text-anchor="middle" font-size="10" fill="white">Token-level variant</text>
+  <text x="350" y="640" text-anchor="middle" font-size="10" fill="white">for multi-turn RL</text>
+  
+  <!-- Final Application -->
+  <rect x="500" y="580" width="200" height="80" rx="10" fill="#7f8c8d" opacity="0.7"/>
+  <text x="600" y="605" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Application</text>
+  <text x="600" y="625" text-anchor="middle" font-size="10" fill="white">Qwen3 models</text>
+  <text x="600" y="640" text-anchor="middle" font-size="10" fill="white">production success</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="100" x2="550" y2="100" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="225" y1="140" x2="225" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="525" y1="140" x2="525" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="825" y1="140" x2="825" y2="180" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="240" y1="280" x2="240" y2="320" stroke="#34495e" stroke-width="2"/>
+  <line x1="460" y1="280" x2="460" y2="320" stroke="#34495e" stroke-width="2"/>
+  <line x1="680" y1="280" x2="680" y2="320" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="200" y1="400" x2="200" y2="440" stroke="#34495e" stroke-width="2"/>
+  <line x1="450" y1="400" x2="450" y2="440" stroke="#34495e" stroke-width="2"/>
+  <line x1="700" y1="400" x2="700" y2="440" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="350" y1="540" x2="350" y2="580" stroke="#34495e" stroke-width="2"/>
+  <line x1="600" y1="540" x2="600" y2="580" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Highlight boxes for key concepts -->
+  <rect x="30" y="700" width="150" height="60" rx="5" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="105" y="720" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Key Innovation</text>
+  <text x="105" y="735" text-anchor="middle" font-size="9" fill="#2c3e50">Sequence-level vs</text>
+  <text x="105" y="750" text-anchor="middle" font-size="9" fill="#2c3e50">Token-level processing</text>
+  
+  <rect x="200" y="700" width="150" height="60" rx="5" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="275" y="720" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Benefits</text>
+  <text x="275" y="735" text-anchor="middle" font-size="9" fill="#2c3e50">Stability + Efficiency</text>
+  <text x="275" y="750" text-anchor="middle" font-size="9" fill="#2c3e50">+ MoE compatibility</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It defines importance ratio based on sequence likelihood">
+                        <div class="quiz-question">1. What is the main innovation of GSPO compared to previous algorithms?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses token-level importance ratios">It uses token-level importance ratios</div><div class="quiz-choice" data-value="It defines importance ratio based on sequence likelihood">It defines importance ratio based on sequence likelihood</div><div class="quiz-choice" data-value="It eliminates the need for rewards completely">It eliminates the need for rewards completely</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="GSPO clips two orders of magnitude more tokens but achieves better efficiency">
+                        <div class="quiz-question">2. What surprising observation was made about clipping fractions in GSPO versus GRPO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="GSPO clips two orders of magnitude more tokens but achieves better efficiency">GSPO clips two orders of magnitude more tokens but achieves better efficiency</div><div class="quiz-choice" data-value="GSPO and GRPO had identical clipping fractions">GSPO and GRPO had identical clipping fractions</div><div class="quiz-choice" data-value="GSPO clips fewer tokens than GRPO">GSPO clips fewer tokens than GRPO</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It eliminates the need for Routing Replay strategy while maintaining stability">
+                        <div class="quiz-question">3. How does GSPO benefit MoE (Mixture-of-Experts) model training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires more complex routing strategies">It requires more complex routing strategies</div><div class="quiz-choice" data-value="It makes MoE training impossible">It makes MoE training impossible</div><div class="quiz-choice" data-value="It eliminates the need for Routing Replay strategy while maintaining stability">It eliminates the need for Routing Replay strategy while maintaining stability</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Captain Cinema: Towards Short Movie Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-24</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.18634" target="_blank">http://arxiv.org/pdf/2507.18634</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents "Captain Cinema," a framework for generating short movies from textual descriptions, operating in the domain of AI-generated video content and narrative storytelling.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous text-to-video models that could only generate 5-10 second clips, this paper introduces a novel two-stage approach combining top-down keyframe planning with bottom-up video synthesis for longer, narratively coherent videos.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of generating long-form, narratively coherent videos with consistent characters and scenes, as existing approaches struggle with maintaining coherence beyond short clips.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method uses a two-stage approach: first generating keyframes using a Multimodal Diffusion Transformer with GoldenMem compression for long-context memory, then synthesizing video between keyframes using interleaved conditioning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results show superior performance in generating visually coherent and narratively consistent short movies compared to baselines, evaluated through automated metrics and user studies, with particularly strong results in temporal dynamics and character consistency preservation.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Captain Cinema: Towards Short Movie Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Captain Cinema: Short Movie Generation Framework</text>
+  
+  <!-- Top-Down Planning Section -->
+  <rect x="50" y="80" width="400" height="300" rx="15" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="250" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">Top-Down Keyframe Planning</text>
+  
+  <!-- Input Text -->
+  <rect x="70" y="130" width="150" height="40" rx="8" fill="#fff" stroke="#3498db"/>
+  <text x="145" y="152" text-anchor="middle" font-size="12" fill="#2c3e50">Movie Storyline</text>
+  
+  <!-- MM-DiT with Hybrid Attention -->
+  <rect x="250" y="120" width="170" height="60" rx="8" fill="#3498db" stroke="#2980b9"/>
+  <text x="335" y="140" text-anchor="middle" font-size="11" fill="white">MM-DiT with</text>
+  <text x="335" y="155" text-anchor="middle" font-size="11" fill="white">Hybrid Attention</text>
+  <text x="335" y="170" text-anchor="middle" font-size="11" fill="white">Masking</text>
+  
+  <!-- GoldenMem -->
+  <rect x="70" y="200" width="120" height="50" rx="8" fill="#f39c12" stroke="#e67e22"/>
+  <text x="130" y="220" text-anchor="middle" font-size="11" fill="white">GoldenMem</text>
+  <text x="130" y="235" text-anchor="middle" font-size="11" fill="white">Compression</text>
+  
+  <!-- Progressive Training -->
+  <rect x="210" y="200" width="120" height="50" rx="8" fill="#e74c3c" stroke="#c0392b"/>
+  <text x="270" y="220" text-anchor="middle" font-size="11" fill="white">Progressive</text>
+  <text x="270" y="235" text-anchor="middle" font-size="11" fill="white">Long-Context</text>
+  
+  <!-- Dynamic Sampling -->
+  <rect x="350" y="200" width="120" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad"/>
+  <text x="410" y="220" text-anchor="middle" font-size="11" fill="white">Dynamic Stride</text>
+  <text x="410" y="235" text-anchor="middle" font-size="11" fill="white">Sampling</text>
+  
+  <!-- Keyframes Output -->
+  <rect x="150" y="280" width="200" height="40" rx="8" fill="#27ae60" stroke="#229954"/>
+  <text x="250" y="302" text-anchor="middle" font-size="12" fill="white">Sequence of Keyframes</text>
+  
+  <!-- Bottom-Up Video Synthesis Section -->
+  <rect x="550" y="80" width="400" height="300" rx="15" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="750" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#d35400">Bottom-Up Video Synthesis</text>
+  
+  <!-- Multi-keyframe Conditioning -->
+  <rect x="570" y="130" width="160" height="50" rx="8" fill="#e67e22" stroke="#d35400"/>
+  <text x="650" y="150" text-anchor="middle" font-size="11" fill="white">Multi-keyframe</text>
+  <text x="650" y="165" text-anchor="middle" font-size="11" fill="white">Conditioning</text>
+  
+  <!-- Video Generation Model -->
+  <rect x="750" y="130" width="160" height="50" rx="8" fill="#e67e22" stroke="#d35400"/>
+  <text x="830" y="150" text-anchor="middle" font-size="11" fill="white">Video Generation</text>
+  <text x="830" y="165" text-anchor="middle" font-size="11" fill="white">Model</text>
+  
+  <!-- Interleaved Conditioning -->
+  <rect x="570" y="200" width="160" height="50" rx="8" fill="#f39c12" stroke="#e67e22"/>
+  <text x="650" y="220" text-anchor="middle" font-size="11" fill="white">Interleaved</text>
+  <text x="650" y="235" text-anchor="middle" font-size="11" fill="white">Conditioning</text>
+  
+  <!-- Long Context Learning -->
+  <rect x="750" y="200" width="160" height="50" rx="8" fill="#f39c12" stroke="#e67e22"/>
+  <text x="830" y="220" text-anchor="middle" font-size="11" fill="white">Long Context</text>
+  <text x="830" y="235" text-anchor="middle" font-size="11" fill="white">Learning</text>
+  
+  <!-- Final Video Output -->
+  <rect x="650" y="280" width="200" height="40" rx="8" fill="#27ae60" stroke="#229954"/>
+  <text x="750" y="302" text-anchor="middle" font-size="12" fill="white">Multi-Scene Short Movie</text>
+  
+  <!-- Data Processing Pipeline -->
+  <rect x="200" y="420" width="600" height="150" rx="15" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="445" text-anchor="middle" font-size="16" font-weight="bold" fill="#34495e">Data Processing Pipeline</text>
+  
+  <!-- Movie Data -->
+  <rect x="220" y="470" width="100" height="40" rx="8" fill="#95a5a6" stroke="#7f8c8d"/>
+  <text x="270" y="492" text-anchor="middle" font-size="11" fill="white">Movie Data</text>
+  <text x="270" y="505" text-anchor="middle" font-size="10" fill="white">(500 hours)</text>
+  
+  <!-- Scene Detection -->
+  <rect x="350" y="470" width="100" height="40" rx="8" fill="#95a5a6" stroke="#7f8c8d"/>
+  <text x="400" y="485" text-anchor="middle" font-size="11" fill="white">Scene</text>
+  <text x="400" y="497" text-anchor="middle" font-size="11" fill="white">Detection</text>
+  
+  <!-- Frame Extraction -->
+  <rect x="480" y="470" width="100" height="40" rx="8" fill="#95a5a6" stroke="#7f8c8d"/>
+  <text x="530" y="485" text-anchor="middle" font-size="11" fill="white">Frame</text>
+  <text x="530" y="497" text-anchor="middle" font-size="11" fill="white">Extraction</text>
+  
+  <!-- Annotation -->
+  <rect x="610" y="470" width="100" height="40" rx="8" fill="#95a5a6" stroke="#7f8c8d"/>
+  <text x="660" y="485" text-anchor="middle" font-size="11" fill="white">Gemini</text>
+  <text x="660" y="497" text-anchor="middle" font-size="11" fill="white">Annotation</text>
+  
+  <!-- Training Data -->
+  <rect x="350" y="530" width="200" height="30" rx="8" fill="#27ae60" stroke="#229954"/>
+  <text x="450" y="548" text-anchor="middle" font-size="11" fill="white">300K Keyframes + Video Shots</text>
+  
+  <!-- Key Features -->
+  <rect x="50" y="620" width="900" height="120" rx="15" fill="#fff" stroke="#34495e" stroke-width="2"/>
+  <text x="500" y="645" text-anchor="middle" font-size="16" font-weight="bold" fill="#34495e">Key Technical Contributions</text>
+  
+  <!-- Feature boxes -->
+  <rect x="80" y="665" width="150" height="60" rx="8" fill="#3498db" stroke="#2980b9"/>
+  <text x="155" y="685" text-anchor="middle" font-size="10" fill="white">Hybrid Attention</text>
+  <text x="155" y="697" text-anchor="middle" font-size="10" fill="white">Local + Global</text>
+  <text x="155" y="709" text-anchor="middle" font-size="10" fill="white">Processing</text>
+  
+  <rect x="250" y="665" width="150" height="60" rx="8" fill="#e74c3c" stroke="#c0392b"/>
+  <text x="325" y="685" text-anchor="middle" font-size="10" fill="white">GoldenMem</text>
+  <text x="325" y="697" text-anchor="middle" font-size="10" fill="white">Visual Memory</text>
+  <text x="325" y="709" text-anchor="middle" font-size="10" fill="white">Compression</text>
+  
+  <rect x="420" y="665" width="150" height="60" rx="8" fill="#f39c12" stroke="#e67e22"/>
+  <text x="495" y="685" text-anchor="middle" font-size="10" fill="white">Progressive</text>
+  <text x="495" y="697" text-anchor="middle" font-size="10" fill="white">Context</text>
+  <text x="495" y="709" text-anchor="middle" font-size="10" fill="white">Training</text>
+  
+  <rect x="590" y="665" width="150" height="60" rx="8" fill="#9b59b6" stroke="#8e44ad"/>
+  <text x="665" y="685" text-anchor="middle" font-size="10" fill="white">Semantic-Oriented</text>
+  <text x="665" y="697" text-anchor="middle" font-size="10" fill="white">Context</text>
+  <text x="665" y="709" text-anchor="middle" font-size="10" fill="white">Retrieval</text>
+  
+  <rect x="760" y="665" width="150" height="60" rx="8" fill="#27ae60" stroke="#229954"/>
+  <text x="835" y="685" text-anchor="middle" font-size="10" fill="white">Multi-Scene</text>
+  <text x="835" y="697" text-anchor="middle" font-size="10" fill="white">Narrative</text>
+  <text x="835" y="709" text-anchor="middle" font-size="10" fill="white">Coherence</text>
+  
+  <!-- Connection lines -->
+  <line x1="350" y1="300" x2="570" y2="155" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="320" y1="510" x2="350" y2="530" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="450" y1="510" x2="450" y2="530" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="580" y1="510" x2="550" y2="530" stroke="#2c3e50" stroke-width="2"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Flow indicators -->
+  <text x="460" y="240" text-anchor="middle" font-size="12" fill="#2c3e50" font-weight="bold">Keyframes</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It combines top-down keyframe planning with bottom-up video synthesis for longer narratives">
+                        <div class="quiz-question">1. What is the main innovation of Captain Cinema compared to previous text-to-video models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses higher resolution video generation">It uses higher resolution video generation</div><div class="quiz-choice" data-value="It combines top-down keyframe planning with bottom-up video synthesis for longer narratives">It combines top-down keyframe planning with bottom-up video synthesis for longer narratives</div><div class="quiz-choice" data-value="It generates videos faster than previous models">It generates videos faster than previous models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To compress and manage long-context visual memory efficiently">
+                        <div class="quiz-question">2. What is the purpose of the GoldenMem feature in Captain Cinema?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To compress and manage long-context visual memory efficiently">To compress and manage long-context visual memory efficiently</div><div class="quiz-choice" data-value="To improve the video rendering quality">To improve the video rendering quality</div><div class="quiz-choice" data-value="To generate better audio for the videos">To generate better audio for the videos</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Risk of hyper-realistic misinformation">
+                        <div class="quiz-question">3. What potential ethical concern about this technology is mentioned in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High energy consumption">High energy consumption</div><div class="quiz-choice" data-value="Privacy violations">Privacy violations</div><div class="quiz-choice" data-value="Risk of hyper-realistic misinformation">Risk of hyper-realistic misinformation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>TTS-VAR: A Test-Time Scaling Framework for Visual Auto-Regressive
+  Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-24</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.18537" target="_blank">http://arxiv.org/pdf/2507.18537</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Test-time scaling framework for Visual Auto-Regressive (VAR) image generation models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on test-time scaling in diffusion models and LLMs, proposes the first scaling framework specifically designed for VAR models' coarse-to-fine generation process.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> How to improve image generation quality in VAR models without additional training or substantial computational costs.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements adaptive descending batch sizes, clustering-based diversity search for early scales, and resampling-based potential selection for late scales.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 8.7% improvement in GenEval score (0.69→0.75) on the Infinity model, with consistent improvements across multiple evaluation metrics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>TTS-VAR: A Test-Time Scaling Framework for Visual Auto-Regressive
+  Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4dabf7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#228be6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#51cf66;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#37b24d;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff922b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fd7e14;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9775fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7950f2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">TTS-VAR Framework Workflow</text>
+  
+  <!-- Input -->
+  <rect x="50" y="80" width="120" height="60" rx="10" fill="url(#blueGrad)" stroke="#1971c2" stroke-width="2"/>
+  <text x="110" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Text Prompt</text>
+  <text x="110" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Input</text>
+  
+  <!-- VAR Model Base -->
+  <rect x="220" y="80" width="140" height="60" rx="10" fill="url(#greenGrad)" stroke="#37b24d" stroke-width="2"/>
+  <text x="290" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">VAR Model</text>
+  <text x="290" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Multi-scale Generation</text>
+  
+  <!-- Core Framework Box -->
+  <rect x="80" y="180" width="840" height="480" rx="15" fill="#fff" stroke="#495057" stroke-width="3" stroke-dasharray="5,5"/>
+  <text x="500" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#495057">TTS-VAR Framework</text>
+  
+  <!-- Adaptive Batch Sampling -->
+  <rect x="120" y="240" width="180" height="80" rx="10" fill="url(#orangeGrad)" stroke="#fd7e14" stroke-width="2"/>
+  <text x="210" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Adaptive Batch</text>
+  <text x="210" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Sampling</text>
+  <text x="210" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Descending batch sizes</text>
+  <text x="210" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">[8,8,6,6,6,4,2,2,2,1,1,1,1]</text>
+  
+  <!-- Early Scales Processing -->
+  <rect x="120" y="360" width="360" height="120" rx="10" fill="url(#purpleGrad)" stroke="#7950f2" stroke-width="2"/>
+  <text x="300" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Early Scales (Coarse)</text>
+  
+  <!-- Clustering component -->
+  <rect x="140" y="400" width="150" height="70" rx="8" fill="#fff" stroke="#7950f2" stroke-width="2"/>
+  <text x="215" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#7950f2">Clustering-based</text>
+  <text x="215" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#7950f2">Diversity Search</text>
+  <text x="215" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#7950f2">DINOv2 Features</text>
+  <text x="215" y="462" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#7950f2">K-Means++ Clustering</text>
+  
+  <!-- Feature extraction visualization -->
+  <rect x="310" y="400" width="150" height="70" rx="8" fill="#f8f9fa" stroke="#868e96" stroke-width="1"/>
+  <text x="385" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#495057">Structural Information</text>
+  <text x="385" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#495057">Extraction</text>
+  <circle cx="360" cy="450" r="4" fill="#ff6b6b"/>
+  <circle cx="375" cy="455" r="4" fill="#4ecdc4"/>
+  <circle cx="390" cy="450" r="4" fill="#45b7d1"/>
+  <circle cx="405" cy="455" r="4" fill="#96ceb4"/>
+  
+  <!-- Late Scales Processing -->
+  <rect x="520" y="360" width="360" height="120" rx="10" fill="url(#greenGrad)" stroke="#37b24d" stroke-width="2"/>
+  <text x="700" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Late Scales (Fine)</text>
+  
+  <!-- Resampling component -->
+  <rect x="540" y="400" width="150" height="70" rx="8" fill="#fff" stroke="#37b24d" stroke-width="2"/>
+  <text x="615" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#37b24d">Resampling-based</text>
+  <text x="615" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#37b24d">Potential Selection</text>
+  <text x="615" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#37b24d">Reward Functions</text>
+  <text x="615" y="462" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#37b24d">ImageReward Scoring</text>
+  
+  <!-- Potential scoring visualization -->
+  <rect x="710" y="400" width="150" height="70" rx="8" fill="#f8f9fa" stroke="#868e96" stroke-width="1"/>
+  <text x="785" y="415" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#495057">Potential Scores</text>
+  <text x="785" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#495057">VALUE, MAX, SUM, DIFF</text>
+  
+  <!-- Score bars -->
+  <rect x="720" y="440" width="30" height="20" fill="#51cf66"/>
+  <rect x="755" y="445" width="25" height="15" fill="#74c0fc"/>
+  <rect x="785" y="450" width="20" height="10" fill="#ffa94d"/>
+  <rect x="810" y="448" width="15" height="12" fill="#da77f2"/>
+  
+  <!-- Scale progression visualization -->
+  <rect x="120" y="520" width="760" height="80" rx="10" fill="#f8f9fa" stroke="#dee2e6" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#495057">Multi-Scale Generation Process</text>
+  
+  <!-- Scale boxes -->
+  <rect x="140" y="555" width="40" height="30" rx="5" fill="#e03131"/>
+  <text x="160" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">S1</text>
+  
+  <rect x="200" y="555" width="40" height="30" rx="5" fill="#fd7e14"/>
+  <text x="220" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">S3</text>
+  
+  <rect x="260" y="555" width="40" height="30" rx="5" fill="#fab005"/>
+  <text x="280" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">S5</text>
+  
+  <text x="330" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#495057">...</text>
+  
+  <rect x="380" y="555" width="40" height="30" rx="5" fill="#51cf66"/>
+  <text x="400" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">S6</text>
+  
+  <rect x="440" y="555" width="40" height="30" rx="5" fill="#339af0"/>
+  <text x="460" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">S9</text>
+  
+  <text x="510" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#495057">...</text>
+  
+  <rect x="560" y="555" width="40" height="30" rx="5" fill="#7950f2"/>
+  <text x="580" y="573" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">S12</text>
+  
+  <!-- Labels for phases -->
+  <text x="200" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-style="italic" fill="#7c4dff">Clustering Phase</text>
+  <text x="480" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-style="italic" fill="#00c853">Resampling Phase</text>
+  
+  <!-- Output -->
+  <rect x="400" y="700" width="200" height="60" rx="10" fill="url(#blueGrad)" stroke="#1971c2" stroke-width="2"/>
+  <text x="500" y="725" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">High-Quality Images</text>
+  <text x="500" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">GenEval: 0.69 → 0.75</text>
+  <text x="500" y="752" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">8.7% Improvement</text>
+  
+  <!-- Connection lines -->
+  <line x1="170" y1="110" x2="220" y2="110" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="290" y1="140" x2="290" y2="180" stroke="#495057" stroke-width="2"/>
+  <line x1="210" y1="320" x2="210" y2="360" stroke="#495057" stroke-width="2"/>
+  <line x1="700" y1="320" x2="700" y2="360" stroke="#495057" stroke-width="2"/>
+  <line x1="500" y1="600" x2="500" y2="700" stroke="#495057" stroke-width="2"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+  </defs>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Early-scale tokens in VAR cannot be refined once generated">
+                        <div class="quiz-question">1. What is the main challenge in applying test-time scaling to VAR models compared to diffusion models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="VAR models require more computational resources">VAR models require more computational resources</div><div class="quiz-choice" data-value="Early-scale tokens in VAR cannot be refined once generated">Early-scale tokens in VAR cannot be refined once generated</div><div class="quiz-choice" data-value="VAR models have lower quality outputs">VAR models have lower quality outputs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Because early-scale rewards don't accurately predict final image quality">
+                        <div class="quiz-question">2. Why does TTS-VAR use clustering-based diversity search in early scales instead of reward-based selection?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce computational costs">To reduce computational costs</div><div class="quiz-choice" data-value="Because clustering is more accurate than rewards">Because clustering is more accurate than rewards</div><div class="quiz-choice" data-value="Because early-scale rewards don't accurately predict final image quality">Because early-scale rewards don't accurately predict final image quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Uses larger batches in early scales and decreases them in later scales">
+                        <div class="quiz-question">3. What unique feature of the batch size schedule does TTS-VAR implement?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Uses fixed batch sizes throughout generation">Uses fixed batch sizes throughout generation</div><div class="quiz-choice" data-value="Increases batch sizes progressively">Increases batch sizes progressively</div><div class="quiz-choice" data-value="Uses larger batches in early scales and decreases them in later scales">Uses larger batches in early scales and decreases them in later scales</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
