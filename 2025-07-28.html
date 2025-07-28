@@ -1,0 +1,1073 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-28 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-28 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/robots.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>The Invisible Leash: Why RLVR May Not Escape Its Origin</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.14843" target="_blank">http://arxiv.org/pdf/2507.14843</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper examines the limitations of Reinforcement Learning with Verifiable Rewards (RLVR) in large language models, specifically focusing on reasoning capabilities and model behavior.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on recent advances in large reasoning models using RLVR, the paper proposes a new theoretical framework showing that RLVR is constrained by the base model's support and operates as a conservative reweighting mechanism.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper investigates whether RLVR truly expands a model's reasoning capabilities or merely amplifies existing high-reward outputs from the base model.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors conduct theoretical analysis and empirical experiments across various reasoning tasks, examining empirical support dynamics, entropy metrics, and performance on mathematical and non-mathematical reasoning benchmarks.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results show that while RLVR improves pass@1 accuracy, it tends to shrink rather than expand the model's empirical support, with entropy reduction leading to narrower solution spaces and potentially missing valid solutions accessible to the base model.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>The Invisible Leash: Why RLVR May Not Escape Its Origin</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    The Invisible Leash: RLVR Workflow Analysis
+  </text>
+  
+  <!-- Main workflow boxes -->
+  
+  <!-- Base Model -->
+  <rect x="50" y="80" width="150" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Base Model</text>
+  <text x="125" y="135" text-anchor="middle" font-size="10" fill="white">q(y|x)</text>
+  
+  <!-- RLVR Training -->
+  <rect x="250" y="80" width="150" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="325" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="white">RLVR Training</text>
+  <text x="325" y="125" text-anchor="middle" font-size="10" fill="white">Verifiable Rewards</text>
+  <text x="325" y="140" text-anchor="middle" font-size="10" fill="white">R(x,y) ∈ {0,1}</text>
+  
+  <!-- RLVR Model -->
+  <rect x="450" y="80" width="150" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="525" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="white">RLVR Model</text>
+  <text x="525" y="135" text-anchor="middle" font-size="10" fill="white">π_θ(y|x)</text>
+  
+  <!-- Theoretical Analysis Section -->
+  <rect x="50" y="200" width="280" height="150" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="190" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Theoretical Analysis</text>
+  
+  <rect x="70" y="240" width="110" height="40" rx="5" fill="#f1c40f"/>
+  <text x="125" y="255" text-anchor="middle" font-size="10" font-weight="bold">Support</text>
+  <text x="125" y="270" text-anchor="middle" font-size="10" font-weight="bold">Preservation</text>
+  
+  <rect x="200" y="240" width="110" height="40" rx="5" fill="#f1c40f"/>
+  <text x="255" y="255" text-anchor="middle" font-size="10" font-weight="bold">Conservative</text>
+  <text x="255" y="270" text-anchor="middle" font-size="10" font-weight="bold">Updates</text>
+  
+  <rect x="135" y="300" width="110" height="40" rx="5" fill="#f1c40f"/>
+  <text x="190" y="315" text-anchor="middle" font-size="10" font-weight="bold">Entropy-Reward</text>
+  <text x="190" y="330" text-anchor="middle" font-size="10" font-weight="bold">Tradeoff</text>
+  
+  <!-- Empirical Analysis Section -->
+  <rect x="370" y="200" width="280" height="150" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="510" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Empirical Analysis</text>
+  
+  <rect x="390" y="240" width="80" height="35" rx="5" fill="#2ecc71"/>
+  <text x="430" y="255" text-anchor="middle" font-size="9" font-weight="bold">Support</text>
+  <text x="430" y="267" text-anchor="middle" font-size="9" font-weight="bold">Preservation</text>
+  
+  <rect x="480" y="240" width="80" height="35" rx="5" fill="#2ecc71"/>
+  <text x="520" y="255" text-anchor="middle" font-size="9" font-weight="bold">Support</text>
+  <text x="520" y="267" text-anchor="middle" font-size="9" font-weight="bold">Shrinkage</text>
+  
+  <rect x="570" y="240" width="80" height="35" rx="5" fill="#2ecc71"/>
+  <text x="610" y="255" text-anchor="middle" font-size="9" font-weight="bold">Support</text>
+  <text x="610" y="267" text-anchor="middle" font-size="9" font-weight="bold">Expansion</text>
+  
+  <rect x="435" y="290" width="100" height="35" rx="5" fill="#2ecc71"/>
+  <text x="485" y="305" text-anchor="middle" font-size="9" font-weight="bold">Entropy Dynamics</text>
+  <text x="485" y="317" text-anchor="middle" font-size="9" font-weight="bold">Analysis</text>
+  
+  <!-- Results Section -->
+  <rect x="700" y="80" width="250" height="270" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="825" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Findings</text>
+  
+  <rect x="720" y="130" width="210" height="30" rx="5" fill="#95a5a6"/>
+  <text x="825" y="150" text-anchor="middle" font-size="10" font-weight="bold">Improved pass@1 accuracy</text>
+  
+  <rect x="720" y="170" width="210" height="30" rx="5" fill="#95a5a6"/>
+  <text x="825" y="190" text-anchor="middle" font-size="10" font-weight="bold">Shrinkage > Expansion</text>
+  
+  <rect x="720" y="210" width="210" height="30" rx="5" fill="#95a5a6"/>
+  <text x="825" y="230" text-anchor="middle" font-size="10" font-weight="bold">Answer-level entropy ↓</text>
+  
+  <rect x="720" y="250" width="210" height="30" rx="5" fill="#95a5a6"/>
+  <text x="825" y="270" text-anchor="middle" font-size="10" font-weight="bold">Token-level entropy varies</text>
+  
+  <rect x="720" y="290" width="210" height="40" rx="5" fill="#e67e22"/>
+  <text x="825" y="305" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Conservative reweighting</text>
+  <text x="825" y="320" text-anchor="middle" font-size="10" font-weight="bold" fill="white">mechanism</text>
+  
+  <!-- Experimental Setup -->
+  <rect x="50" y="400" width="600" height="120" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="350" y="430" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Experimental Setup</text>
+  
+  <rect x="70" y="450" width="120" height="30" rx="5" fill="#1abc9c"/>
+  <text x="130" y="470" text-anchor="middle" font-size="10" font-weight="bold">Math Tasks</text>
+  
+  <rect x="210" y="450" width="120" height="30" rx="5" fill="#1abc9c"/>
+  <text x="270" y="470" text-anchor="middle" font-size="10" font-weight="bold">Reasoning Tasks</text>
+  
+  <rect x="350" y="450" width="120" height="30" rx="5" fill="#1abc9c"/>
+  <text x="410" y="470" text-anchor="middle" font-size="10" font-weight="bold">ProRL vs Base</text>
+  
+  <rect x="490" y="450" width="120" height="30" rx="5" fill="#1abc9c"/>
+  <text x="550" y="470" text-anchor="middle" font-size="10" font-weight="bold">High k sampling</text>
+  
+  <text x="350" y="505" text-anchor="middle" font-size="10" fill="white">k ∈ {1024, 2048, 4096, 8192, 16384}</text>
+  
+  <!-- Conclusions -->
+  <rect x="50" y="550" width="900" height="100" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="500" y="580" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Conclusions</text>
+  
+  <text x="500" y="605" text-anchor="middle" font-size="12" fill="white">RLVR acts as conservative reweighting mechanism within base model support</text>
+  <text x="500" y="625" text-anchor="middle" font-size="12" fill="white">Breaking the "invisible leash" requires explicit exploration mechanisms</text>
+  
+  <!-- Future Directions -->
+  <rect x="700" y="400" width="250" height="120" rx="10" fill="#d35400" stroke="#ba4a00" stroke-width="2"/>
+  <text x="825" y="430" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Future Directions</text>
+  
+  <rect x="720" y="450" width="210" height="25" rx="5" fill="#e67e22"/>
+  <text x="825" y="467" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Explicit exploration</text>
+  
+  <rect x="720" y="485" width="210" height="25" rx="5" fill="#e67e22"/>
+  <text x="825" y="502" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Hybrid strategies</text>
+  
+  <!-- Mathematical formulas -->
+  <text x="190" y="390" text-anchor="middle" font-size="10" fill="#2c3e50">supp(π_θ) ⊆ supp(q)</text>
+  <text x="510" y="390" text-anchor="middle" font-size="10" fill="#2c3e50">H[π_θ] ≤ H[q]</text>
+  
+  <!-- Key metrics visualization -->
+  <circle cx="80" cy="700" r="25" fill="#e74c3c"/>
+  <text x="80" y="705" text-anchor="middle" font-size="10" font-weight="bold" fill="white">pass@1 ↑</text>
+  
+  <circle cx="200" cy="700" r="25" fill="#f39c12"/>
+  <text x="200" y="705" text-anchor="middle" font-size="10" font-weight="bold">pass@k ↓</text>
+  
+  <circle cx="320" cy="700" r="25" fill="#27ae60"/>
+  <text x="320" y="705" text-anchor="middle" font-size="8" font-weight="bold" fill="white">Precision ↑</text>
+  
+  <circle cx="440" cy="700" r="25" fill="#8e44ad"/>
+  <text x="440" y="705" text-anchor="middle" font-size="8" font-weight="bold" fill="white">Diversity ↓</text>
+  
+  <!-- Legend -->
+  <rect x="750" y="680" width="200" height="80" rx="5" fill="#ecf0f1" stroke="#bdc3c7"/>
+  <text x="850" y="700" text-anchor="middle" font-size="12" font-weight="bold">Legend</text>
+  <circle cx="770" cy="720" r="8" fill="#e74c3c"/>
+  <text x="790" y="725" font-size="10">Improvement</text>
+  <circle cx="770" cy="740" r="8" fill="#f39c12"/>
+  <text x="790" y="745" font-size="10">Degradation</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Precision versus exploration diversity">
+                        <div class="quiz-question">1. What is the main trade-off identified in RLVR according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Speed versus accuracy">Speed versus accuracy</div><div class="quiz-choice" data-value="Precision versus exploration diversity">Precision versus exploration diversity</div><div class="quiz-choice" data-value="Model size versus performance">Model size versus performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Token-level entropy sometimes increased while answer-level entropy consistently declined">
+                        <div class="quiz-question">2. When comparing token-level entropy and answer-level entropy in RLVR models, what interesting phenomenon was observed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Both types of entropy always decreased together">Both types of entropy always decreased together</div><div class="quiz-choice" data-value="Token-level entropy sometimes increased while answer-level entropy consistently declined">Token-level entropy sometimes increased while answer-level entropy consistently declined</div><div class="quiz-choice" data-value="Both types of entropy remained constant throughout training">Both types of entropy remained constant throughout training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Because it cannot sample solutions with zero initial probability from the base model">
+                        <div class="quiz-question">3. According to the paper's theoretical framework, why can't RLVR discover completely new solutions?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Because the model is too small to generate new solutions">Because the model is too small to generate new solutions</div><div class="quiz-choice" data-value="Because it cannot sample solutions with zero initial probability from the base model">Because it cannot sample solutions with zero initial probability from the base model</div><div class="quiz-choice" data-value="Because the training data is insufficient">Because the training data is insufficient</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Pixels, Patterns, but No Poetry: To See The World like Humans</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-21</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.16863" target="_blank">http://arxiv.org/pdf/2507.16863</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on evaluating and testing the visual perception capabilities of Multimodal Large Language Models (MLLMs) through a new benchmark called Turing Eye Test (TET).</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research focused on reasoning capabilities of MLLMs, while this paper proposes a novel approach by shifting focus to testing fundamental visual perception abilities through specialized perceptual tasks.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses whether MLLMs can truly perceive visual information like humans do, revealing a fundamental gap between machine and human perception capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created four diagnostic tasks (HiddenText, 3DCaptcha, ColorBlind, and ChineseLigatures) and evaluated 15 state-of-the-art MLLMs using Pass@1 and Pass@K metrics, along with analyzing model behavior through Grad-CAM visualization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Results showed catastrophic failures of current MLLMs on these perceptual tasks, with most models achieving near-zero success rates, while fine-tuning the vision tower enabled rapid adaptation, suggesting the limitation lies in visual perception rather than reasoning capabilities.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Pixels, Patterns, but No Poetry: To See The World like Humans</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    Turing Eye Test (TET) Methodology Flow
+  </text>
+  
+  <!-- Dataset Creation Section -->
+  <rect x="50" y="80" width="200" height="150" rx="15" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Dataset Creation</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#34495e">Four Specialized Tasks:</text>
+  <text x="150" y="145" text-anchor="middle" font-size="11" fill="#7f8c8d">• HiddenText (150 images)</text>
+  <text x="150" y="160" text-anchor="middle" font-size="11" fill="#7f8c8d">• 3DCaptcha (150 images)</text>
+  <text x="150" y="175" text-anchor="middle" font-size="11" fill="#7f8c8d">• ColorBlind (150 images)</text>
+  <text x="150" y="190" text-anchor="middle" font-size="11" fill="#7f8c8d">• ChineseLigatures (40 phrases)</text>
+  <text x="150" y="210" text-anchor="middle" font-size="11" fill="#e74c3c">Synthetic visual challenges</text>
+  
+  <!-- Model Evaluation Section -->
+  <rect x="300" y="80" width="200" height="150" rx="15" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Model Evaluation</text>
+  <text x="400" y="125" text-anchor="middle" font-size="12" fill="#34495e">15 State-of-the-art MLLMs</text>
+  <text x="400" y="145" text-anchor="middle" font-size="11" fill="#7f8c8d">• Unified models (Show-o2, Bagel)</text>
+  <text x="400" y="160" text-anchor="middle" font-size="11" fill="#7f8c8d">• API models (Claude, Gemini, o1)</text>
+  <text x="400" y="175" text-anchor="middle" font-size="11" fill="#7f8c8d">• Open-source (Qwen, InternVL)</text>
+  <text x="400" y="195" text-anchor="middle" font-size="12" font-weight="bold" fill="#e74c3c">Metrics: Pass@1, Pass@32</text>
+  <text x="400" y="210" text-anchor="middle" font-size="11" fill="#e74c3c">Temperature: 0.3, Max tokens: 16384</text>
+  
+  <!-- Results Analysis Section -->
+  <rect x="550" y="80" width="200" height="150" rx="15" fill="#eef7ff" stroke="#3498db" stroke-width="2"/>
+  <text x="650" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Results Analysis</text>
+  <text x="650" y="125" text-anchor="middle" font-size="12" fill="#34495e">Catastrophic Failures</text>
+  <text x="650" y="145" text-anchor="middle" font-size="11" fill="#e74c3c">Most models: 0% Pass@1</text>
+  <text x="650" y="160" text-anchor="middle" font-size="11" fill="#e74c3c">Peak improvement: &lt;4%</text>
+  <text x="650" y="175" text-anchor="middle" font-size="11" fill="#7f8c8d">Minimal Pass@K variance</text>
+  <text x="650" y="195" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Vision Perception</text>
+  <text x="650" y="210" text-anchor="middle" font-size="11" fill="#2c3e50">Bottleneck Identified</text>
+  
+  <!-- Grad-CAM Analysis Section -->
+  <rect x="50" y="280" width="200" height="150" rx="15" fill="#f0f8ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="150" y="305" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Grad-CAM Analysis</text>
+  <text x="150" y="325" text-anchor="middle" font-size="12" fill="#34495e">Attention Visualization</text>
+  <text x="150" y="345" text-anchor="middle" font-size="11" fill="#7f8c8d">• Vision Encoder (ViT)</text>
+  <text x="150" y="360" text-anchor="middle" font-size="11" fill="#7f8c8d">• Language Backbone (LLM)</text>
+  <text x="150" y="380" text-anchor="middle" font-size="12" font-weight="bold" fill="#e74c3c">Findings:</text>
+  <text x="150" y="395" text-anchor="middle" font-size="11" fill="#e74c3c">Failed to locate target regions</text>
+  <text x="150" y="410" text-anchor="middle" font-size="11" fill="#e74c3c">Attention scattered incorrectly</text>
+  
+  <!-- Supervised Fine-tuning Section -->
+  <rect x="300" y="280" width="200" height="150" rx="15" fill="#fff5f5" stroke="#e74c3c" stroke-width="2"/>
+  <text x="400" y="305" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Supervised Fine-tuning</text>
+  <text x="400" y="325" text-anchor="middle" font-size="12" fill="#34495e">Five Training Configurations:</text>
+  <text x="400" y="345" text-anchor="middle" font-size="11" fill="#7f8c8d">• Full parameters</text>
+  <text x="400" y="360" text-anchor="middle" font-size="11" fill="#7f8c8d">• Vision encoder only</text>
+  <text x="400" y="375" text-anchor="middle" font-size="11" fill="#7f8c8d">• Vision + adapter</text>
+  <text x="400" y="390" text-anchor="middle" font-size="11" fill="#7f8c8d">• Language backbone only</text>
+  <text x="400" y="405" text-anchor="middle" font-size="11" fill="#7f8c8d">• Adapter only</text>
+  <text x="400" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">Vision tuning essential!</text>
+  
+  <!-- In-Context Learning Section -->
+  <rect x="550" y="280" width="200" height="150" rx="15" fill="#f8fff8" stroke="#27ae60" stroke-width="2"/>
+  <text x="650" y="305" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">In-Context Learning</text>
+  <text x="650" y="325" text-anchor="middle" font-size="12" fill="#34495e">3-Example Demonstrations</text>
+  <text x="650" y="345" text-anchor="middle" font-size="11" fill="#7f8c8d">Same-domain exemplars</text>
+  <text x="650" y="365" text-anchor="middle" font-size="11" fill="#7f8c8d">Context augmentation</text>
+  <text x="650" y="385" text-anchor="middle" font-size="12" font-weight="bold" fill="#e74c3c">Result:</text>
+  <text x="650" y="400" text-anchor="middle" font-size="11" fill="#e74c3c">Virtually no improvement</text>
+  <text x="650" y="415" text-anchor="middle" font-size="11" fill="#e74c3c">Knowledge ≠ Perception</text>
+  
+  <!-- Image Processing Analysis Section -->
+  <rect x="800" y="280" width="150" height="150" rx="15" fill="#fffbf0" stroke="#f39c12" stroke-width="2"/>
+  <text x="875" y="305" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Image Processing</text>
+  <text x="875" y="325" text-anchor="middle" font-size="12" fill="#34495e">Resolution Analysis</text>
+  <text x="875" y="345" text-anchor="middle" font-size="11" fill="#7f8c8d">• Downsampling</text>
+  <text x="875" y="360" text-anchor="middle" font-size="11" fill="#7f8c8d">• Blurring effects</text>
+  <text x="875" y="380" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">Finding:</text>
+  <text x="875" y="395" text-anchor="middle" font-size="11" fill="#27ae60">Downsampling helps</text>
+  <text x="875" y="410" text-anchor="middle" font-size="11" fill="#27ae60">Vision patch limitation</text>
+  
+  <!-- Key Insights Section -->
+  <rect x="200" y="480" width="600" height="120" rx="15" fill="#f5f5f5" stroke="#34495e" stroke-width="3"/>
+  <text x="500" y="510" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Key Insights</text>
+  
+  <circle cx="250" cy="540" r="8" fill="#e74c3c"/>
+  <text x="270" y="545" font-size="12" fill="#2c3e50">Vision tower generalization is the bottleneck, not language reasoning</text>
+  
+  <circle cx="250" cy="565" r="8" fill="#3498db"/>
+  <text x="270" y="570" font-size="12" fill="#2c3e50">Fine-tuning vision encoder enables rapid adaptation to perceptual tasks</text>
+  
+  <circle cx="250" cy="590" r="8" fill="#27ae60"/>
+  <text x="270" y="595" font-size="12" fill="#2c3e50">Current MLLMs lack human-like visual perception capabilities</text>
+  
+  <!-- Conclusion Section -->
+  <rect x="150" y="640" width="700" height="100" rx="15" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  <text x="500" y="670" text-anchor="middle" font-size="18" font-weight="bold" fill="#ecf0f1">Conclusion</text>
+  <text x="500" y="695" text-anchor="middle" font-size="14" fill="#bdc3c7">TET reveals fundamental visual perception limitations in current MLLMs</text>
+  <text x="500" y="715" text-anchor="middle" font-size="14" fill="#bdc3c7">Future work: Enhanced visual generalization methods and full TET benchmark</text>
+  
+  <!-- Connecting lines with subtle styling -->
+  <line x1="150" y1="230" x2="150" y2="280" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="400" y1="230" x2="400" y2="280" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="650" y1="230" x2="650" y2="280" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="500" y1="430" x2="500" y2="480" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="500" y1="600" x2="500" y2="640" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The limitation lies in the vision tower's perception capabilities rather than reasoning">
+                        <div class="quiz-question">1. What is the main insight revealed by fine-tuning experiments in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="MLLMs lack sufficient training data for visual tasks">MLLMs lack sufficient training data for visual tasks</div><div class="quiz-choice" data-value="The limitation lies in the vision tower's perception capabilities rather than reasoning">The limitation lies in the vision tower's perception capabilities rather than reasoning</div><div class="quiz-choice" data-value="The language backbone needs more parameters to improve performance">The language backbone needs more parameters to improve performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Performance improved as it simplified the character patterns">
+                        <div class="quiz-question">2. In the HiddenText experiment, what happened when images were downsampled?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Performance got worse due to loss of detail">Performance got worse due to loss of detail</div><div class="quiz-choice" data-value="Performance improved as it simplified the character patterns">Performance improved as it simplified the character patterns</div><div class="quiz-choice" data-value="There was no significant change in performance">There was no significant change in performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It focuses on testing visual perception rather than reasoning capabilities">
+                        <div class="quiz-question">3. What unique aspect differentiates TET from previous MLLM benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It focuses on testing visual perception rather than reasoning capabilities">It focuses on testing visual perception rather than reasoning capabilities</div><div class="quiz-choice" data-value="It uses a larger dataset than previous benchmarks">It uses a larger dataset than previous benchmarks</div><div class="quiz-choice" data-value="It only tests Chinese language understanding">It only tests Chinese language understanding</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>nablaNABLA: Neighborhood Adaptive Block-Level Attention</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.13546" target="_blank">http://arxiv.org/pdf/2507.13546</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Video generation using transformer models, specifically focusing on optimizing attention mechanisms in video diffusion transformers.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in sparse attention mechanisms and Sliding Tile Attention (STA), proposes a novel adaptive approach called NABLA that dynamically determines attention patterns rather than using fixed patterns.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the quadratic computational complexity of full attention mechanisms in video generation transformers, which becomes a bottleneck for high-resolution and long-duration videos.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a Neighborhood Adaptive Block-Level Attention mechanism that uses downsampling and thresholding to dynamically select important attention blocks, combined with STA for optimal performance.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 2.7× faster training and inference compared to baseline models while maintaining equivalent quality metrics (CLIP score, VBench score, human evaluation), with successful validation through both objective metrics and human evaluation studies.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>nablaNABLA: Neighborhood Adaptive Block-Level Attention</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">NABLA: Neighborhood Adaptive Block-Level Attention Workflow</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="80" width="180" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="140" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Video Input</text>
+  <text x="140" y="125" text-anchor="middle" font-size="12" fill="white">T×H×W×D</text>
+  
+  <!-- Token Reordering -->
+  <rect x="280" y="80" width="180" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="370" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Token Reordering</text>
+  <text x="370" y="120" text-anchor="middle" font-size="12" fill="white">Fractal Flattening</text>
+  <text x="370" y="135" text-anchor="middle" font-size="12" fill="white">Patch Size P×P</text>
+  
+  <!-- Q, K, V Generation -->
+  <rect x="50" y="180" width="120" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="110" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Q = XW_Q</text>
+  
+  <rect x="190" y="180" width="120" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="250" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">K = XW_K</text>
+  
+  <rect x="330" y="180" width="120" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="390" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="white">V = XW_V</text>
+  
+  <!-- NABLA Core Algorithm -->
+  <rect x="500" y="80" width="450" height="220" rx="15" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+  <text x="725" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">NABLA Mask Computation</text>
+  
+  <!-- Step 1: Downsampling -->
+  <rect x="520" y="120" width="200" height="40" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="620" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">1. Block Averaging</text>
+  <text x="620" y="155" text-anchor="middle" font-size="10" fill="white">Q_a, K_a ∈ R^(h×S/N×D)</text>
+  
+  <!-- Step 2: Attention Computation -->
+  <rect x="740" y="120" width="190" height="40" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="835" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">2. Reduced Attention</text>
+  <text x="835" y="155" text-anchor="middle" font-size="10" fill="white">A = softmax(Q_a K_a^T/√D)</text>
+  
+  <!-- Step 3: CDF Thresholding -->
+  <rect x="520" y="180" width="200" height="40" rx="5" fill="#16a085" stroke="#1abc9c" stroke-width="2"/>
+  <text x="620" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">3. CDF Computation</text>
+  <text x="620" y="215" text-anchor="middle" font-size="10" fill="white">vals, order = sort(A)</text>
+  
+  <!-- Step 4: Binarization -->
+  <rect x="740" y="180" width="190" height="40" rx="5" fill="#16a085" stroke="#1abc9c" stroke-width="2"/>
+  <text x="835" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">4. Binarization</text>
+  <text x="835" y="215" text-anchor="middle" font-size="10" fill="white">M = cumsum(vals) ≥ 1-thr</text>
+  
+  <!-- Step 5: Mask Generation -->
+  <rect x="630" y="240" width="190" height="40" rx="5" fill="#8e44ad" stroke="#9b59b6" stroke-width="2"/>
+  <text x="725" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="white">5. Sparse Mask M_∇</text>
+  <text x="725" y="275" text-anchor="middle" font-size="10" fill="white">reorder(M, order)</text>
+  
+  <!-- STA Integration -->
+  <rect x="50" y="350" width="200" height="80" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="150" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="white">STA Mask</text>
+  <text x="150" y="395" text-anchor="middle" font-size="12" fill="white">Sliding Tile Attention</text>
+  <text x="150" y="410" text-anchor="middle" font-size="12" fill="white">Window: (W_T, W_H, W_W)</text>
+  <text x="150" y="425" text-anchor="middle" font-size="12" fill="white">M_STA</text>
+  
+  <!-- Mask Combination -->
+  <rect x="300" y="350" width="200" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="400" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Mask Combination</text>
+  <text x="400" y="395" text-anchor="middle" font-size="12" fill="white">M = M_∇ ∨ M_STA</text>
+  <text x="400" y="415" text-anchor="middle" font-size="12" fill="white">Logical OR Operation</text>
+  
+  <!-- Sparse Attention -->
+  <rect x="550" y="350" width="200" height="80" rx="10" fill="#2980b9" stroke="#3498db" stroke-width="2"/>
+  <text x="650" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Sparse Attention</text>
+  <text x="650" y="395" text-anchor="middle" font-size="12" fill="white">FlexAttention(Q, K, V, M)</text>
+  <text x="650" y="415" text-anchor="middle" font-size="12" fill="white">PyTorch Implementation</text>
+  
+  <!-- Output -->
+  <rect x="800" y="350" width="150" height="80" rx="10" fill="#8e44ad" stroke="#9b59b6" stroke-width="2"/>
+  <text x="875" y="380" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Output</text>
+  <text x="875" y="400" text-anchor="middle" font-size="12" fill="white">Sparse Attention</text>
+  <text x="875" y="415" text-anchor="middle" font-size="12" fill="white">Result</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="50" y="480" width="900" height="120" rx="15" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+  <text x="500" y="505" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Performance Results</text>
+  
+  <rect x="80" y="520" width="180" height="60" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="170" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Speed Improvement</text>
+  <text x="170" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="white">2.7× Faster</text>
+  
+  <rect x="280" y="520" width="180" height="60" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="370" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Sparsity Level</text>
+  <text x="370" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="white">80-92%</text>
+  
+  <rect x="480" y="520" width="180" height="60" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="570" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Quality Maintained</text>
+  <text x="570" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="white">CLIP/VBench</text>
+  
+  <rect x="680" y="520" width="180" height="60" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="770" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Training Support</text>
+  <text x="770" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="white">1.46× Speedup</text>
+  
+  <!-- Key Features -->
+  <rect x="50" y="650" width="900" height="120" rx="15" fill="#f8f9fa" stroke="#34495e" stroke-width="3"/>
+  <text x="500" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Features</text>
+  
+  <circle cx="120" cy="710" r="8" fill="#27ae60"/>
+  <text x="140" y="715" font-size="12" fill="#2c3e50">Dynamic threshold selection via CDF</text>
+  
+  <circle cx="120" cy="730" r="8" fill="#3498db"/>
+  <text x="140" y="735" font-size="12" fill="#2c3e50">Hardware-agnostic FlexAttention integration</text>
+  
+  <circle cx="500" cy="710" r="8" fill="#e74c3c"/>
+  <text x="520" y="715" font-size="12" fill="#2c3e50">Adaptive sparsity without custom CUDA kernels</text>
+  
+  <circle cx="500" cy="730" r="8" fill="#f39c12"/>
+  <text x="520" y="735" font-size="12" fill="#2c3e50">Complementary with STA for optimal quality</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 230 110 Q 255 110 280 110" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 370 140 Q 370 160 250 180" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 250 230 Q 400 250 500 250" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 725 300 Q 725 325 400 350" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 390 Q 525 390 550 390" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 750 390 Q 775 390 800 390" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It dynamically adapts attention patterns based on content">
+                        <div class="quiz-question">1. What is the main innovation of NABLA compared to previous sparse attention approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses custom CUDA kernels for faster computation">It uses custom CUDA kernels for faster computation</div><div class="quiz-choice" data-value="It dynamically adapts attention patterns based on content">It dynamically adapts attention patterns based on content</div><div class="quiz-choice" data-value="It reduces the input resolution to save memory">It reduces the input resolution to save memory</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="2.7x faster than baseline">
+                        <div class="quiz-question">2. What speed improvement did NABLA achieve while maintaining quality metrics?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.5x faster than baseline">1.5x faster than baseline</div><div class="quiz-choice" data-value="2.7x faster than baseline">2.7x faster than baseline</div><div class="quiz-choice" data-value="4x faster than baseline">4x faster than baseline</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It helped mitigate boundary artifacts while maintaining efficiency">
+                        <div class="quiz-question">3. When combining NABLA with STA (Sliding Tile Attention), what was the main benefit?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It reduced computational costs by 95%">It reduced computational costs by 95%</div><div class="quiz-choice" data-value="It improved the visual quality metrics significantly">It improved the visual quality metrics significantly</div><div class="quiz-choice" data-value="It helped mitigate boundary artifacts while maintaining efficiency">It helped mitigate boundary artifacts while maintaining efficiency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
