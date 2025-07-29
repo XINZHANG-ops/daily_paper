@@ -1,0 +1,1083 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-29 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-29 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>ARC-Hunyuan-Video-7B: Structured Video Comprehension of Real-World
+  Shorts</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-28</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.20939" target="_blank">http://arxiv.org/pdf/2507.20939</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A multimodal model (ARC-Hunyuan-Video-7B) for comprehensive understanding of real-world short videos, focusing on video comprehension and analysis.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Hunyuan-7B vision-language model, introduces new features like audio-visual synchronization and timestamp overlay mechanism for temporal awareness, moving beyond traditional video-only or general-purpose multimodal models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the challenge of understanding complex real-world short videos with dense visual elements, high-information audio, and rapid pacing that focuses on emotional expression and viewpoint delivery.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Employs a multi-stage training approach including pre-training on millions of videos using an automated annotation pipeline, instruction fine-tuning, cold start initialization, reinforcement learning post-training, and final instruction fine-tuning using high-quality human-annotated data.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance on ShortVid-Bench (74.3% accuracy), outperforms baselines in temporal video grounding tasks, and demonstrates strong versatility in downstream applications with significant improvements in user engagement metrics.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ARC-Hunyuan-Video-7B: Structured Video Comprehension of Real-World
+  Shorts</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dataGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#45a049;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="modelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="trainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F57C00;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="evalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#7B1FA2;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    ARC-Hunyuan-Video-7B Methodology Flow
+  </text>
+  
+  <!-- Data Preparation Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="url(#dataGrad)" stroke="#2e7d32" stroke-width="2"/>
+  <text x="150" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Data Preparation</text>
+  <text x="150" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• 4.5M short videos</text>
+  <text x="150" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Automated annotation</text>
+  <text x="150" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Bootstrapped pipeline</text>
+  <text x="150" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• ASR + MLLM + LLM</text>
+  <text x="150" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Chain-of-Thought</text>
+  
+  <!-- Model Architecture Section -->
+  <rect x="300" y="60" width="200" height="120" rx="10" fill="url(#modelGrad)" stroke="#1565C0" stroke-width="2"/>
+  <text x="400" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Model Architecture</text>
+  <text x="400" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Hunyuan-7B VLM base</text>
+  <text x="400" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Audio encoder (Whisper)</text>
+  <text x="400" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Visual-audio sync</text>
+  <text x="400" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Timestamp overlay</text>
+  <text x="400" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• MLP projection</text>
+  
+  <!-- Pre-training Section -->
+  <rect x="550" y="60" width="180" height="120" rx="10" fill="url(#trainGrad)" stroke="#E65100" stroke-width="2"/>
+  <text x="640" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Pre-training</text>
+  <text x="640" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Stage 1: ASR warm-up</text>
+  <text x="640" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Stage 2: Multimodal</text>
+  <text x="640" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Video description</text>
+  <text x="640" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Temporal grounding</text>
+  <text x="640" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Multi-granular caption</text>
+  
+  <!-- Post-training Pipeline -->
+  <rect x="80" y="220" width="140" height="80" rx="8" fill="#E3F2FD" stroke="#1976D2" stroke-width="2"/>
+  <text x="150" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1976D2">Stage 1</text>
+  <text x="150" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1976D2">Instruction</text>
+  <text x="150" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1976D2">Fine-tuning</text>
+  <text x="150" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1976D2">460K QA + 70K MCQ</text>
+  
+  <rect x="240" y="220" width="140" height="80" rx="8" fill="#FFF3E0" stroke="#F57C00" stroke-width="2"/>
+  <text x="310" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#F57C00">Stage 2</text>
+  <text x="310" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#F57C00">Cold Start</text>
+  <text x="310" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#F57C00">CoT Reasoning</text>
+  <text x="310" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#F57C00">146K samples</text>
+  
+  <rect x="400" y="220" width="140" height="80" rx="8" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2"/>
+  <text x="470" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#7B1FA2">Stage 3</text>
+  <text x="470" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7B1FA2">RL with GRPO</text>
+  <text x="470" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7B1FA2">Verifiable tasks</text>
+  <text x="470" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#7B1FA2">MCQ + Grounding</text>
+  
+  <rect x="560" y="220" width="140" height="80" rx="8" fill="#E8F5E8" stroke="#2E7D32" stroke-width="2"/>
+  <text x="630" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E7D32">Stage 4</text>
+  <text x="630" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2E7D32">Final Instruction</text>
+  <text x="630" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2E7D32">Fine-tuning</text>
+  <text x="630" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2E7D32">25K human + 150K gen</text>
+  
+  <!-- Post-training Title -->
+  <text x="400" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333">Post-training Pipeline</text>
+  
+  <!-- Capabilities Section -->
+  <rect x="80" y="340" width="280" height="100" rx="10" fill="#FFEBEE" stroke="#D32F2F" stroke-width="2"/>
+  <text x="220" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#D32F2F">Model Capabilities</text>
+  <text x="220" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#D32F2F">• Multi-granularity timestamped captioning</text>
+  <text x="220" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#D32F2F">• Video summarization</text>
+  <text x="220" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#D32F2F">• Open-ended QA</text>
+  <text x="220" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#D32F2F">• Temporal grounding</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="400" y="340" width="280" height="100" rx="10" fill="url(#evalGrad)" stroke="#4A148C" stroke-width="2"/>
+  <text x="540" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Evaluation</text>
+  <text x="540" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• ShortVid-Bench (74.3%)</text>
+  <text x="540" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Temporal grounding (54.8% Charades)</text>
+  <text x="540" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• General video understanding</text>
+  <text x="540" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Real-world deployment success</text>
+  
+  <!-- Applications Section -->
+  <rect x="150" y="480" width="180" height="80" rx="10" fill="#E1F5FE" stroke="#0277BD" stroke-width="2"/>
+  <text x="240" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0277BD">Applications</text>
+  <text x="240" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#0277BD">• Brief Summary (Search)</text>
+  <text x="240" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#0277BD">• Detailed Summary (Tagging)</text>
+  <text x="240" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#0277BD">• Extended Browsing (Rec)</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="400" y="480" width="250" height="80" rx="10" fill="#FFF8E1" stroke="#FF8F00" stroke-width="2"/>
+  <text x="525" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#FF8F00">Key Innovations</text>
+  <text x="525" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#FF8F00">• Timestamp overlay mechanism</text>
+  <text x="525" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#FF8F00">• Fine-grained visual-audio sync</text>
+  <text x="525" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#FF8F00">• RL on verifiable tasks</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 250 120 Q 275 120 300 120" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 120 Q 525 120 550 120" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 640 180 Q 640 200 400 200" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 300 Q 400 320 400 340" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 440 Q 400 460 400 480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Performance highlights -->
+  <circle cx="750" cy="400" r="60" fill="#4CAF50" opacity="0.8"/>
+  <text x="750" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Performance</text>
+  <text x="750" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">10s inference</text>
+  <text x="750" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">for 1min video</text>
+  
+  <!-- Efficiency note -->
+  <rect x="700" y="480" width="120" height="60" rx="8" fill="#FFCDD2" stroke="#F44336" stroke-width="1"/>
+  <text x="760" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#D32F2F">Efficiency</text>
+  <text x="760" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#D32F2F">H20 GPU</text>
+  <text x="760" y="528" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#D32F2F">vLLM accelerated</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Directly overlaying timestamps onto video frames">
+                        <div class="quiz-question">1. What is the key innovation in how ARC-Hunyuan-Video-7B handles temporal information in videos?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using advanced AI algorithms to predict video timestamps">Using advanced AI algorithms to predict video timestamps</div><div class="quiz-choice" data-value="Directly overlaying timestamps onto video frames">Directly overlaying timestamps onto video frames</div><div class="quiz-choice" data-value="Storing temporal data in a separate metadata layer">Storing temporal data in a separate metadata layer</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Training on objective tasks with RL first improves subjective understanding">
+                        <div class="quiz-question">2. What unique finding did the researchers discover about training the model for subjective understanding?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using only human-annotated data gives best results">Using only human-annotated data gives best results</div><div class="quiz-choice" data-value="Combining multiple types of training data is most effective">Combining multiple types of training data is most effective</div><div class="quiz-choice" data-value="Training on objective tasks with RL first improves subjective understanding">Training on objective tasks with RL first improves subjective understanding</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Video landing page consumption time increased by 5.11%">
+                        <div class="quiz-question">3. What was the practical impact of implementing the model's Brief Summary feature in video retrieval?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Video landing page consumption time increased by 5.11%">Video landing page consumption time increased by 5.11%</div><div class="quiz-choice" data-value="Overall user engagement decreased by 3%">Overall user engagement decreased by 3%</div><div class="quiz-choice" data-value="Processing time increased by 15%">Processing time increased by 15%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Rep-MTL: Unleashing the Power of Representation-level Task Saliency for
+  Multi-Task Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-28</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.21049" target="_blank">http://arxiv.org/pdf/2507.21049</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Multi-task learning optimization in computer vision, focusing on improving how neural networks learn multiple related tasks simultaneously.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing multi-task optimization methods that focus on loss scaling and gradient manipulation; proposes a novel representation-level approach that examines task interactions in the shared feature space.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of negative transfer in multi-task learning, where optimizing one task can harm the performance of others, while also aiming to better exploit positive complementarity between tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces Rep-MTL with two components: Task-specific Saliency Regulation (TSR) to preserve task-specific patterns through entropy-based regularization, and Cross-task Saliency Alignment (CSA) to promote beneficial information sharing through contrastive learning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves competitive performance gains on four challenging benchmarks (NYUv2, Cityscapes, Office-31, Office-Home), with faster training than most gradient manipulation methods (~26% faster than Nash-MTL), while maintaining effectiveness across different hyperparameter settings.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Rep-MTL: Unleashing the Power of Representation-level Task Saliency for
+  Multi-Task Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Rep-MTL: Representation-level Task Saliency for Multi-Task Learning</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="70" width="120" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="110" y="95" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Input Image</text>
+  <text x="110" y="110" text-anchor="middle" font-size="10" fill="white">X ∈ R³×H×W</text>
+  
+  <!-- Shared Backbone -->
+  <rect x="220" y="70" width="140" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="290" y="95" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Shared Backbone</text>
+  <text x="290" y="110" text-anchor="middle" font-size="10" fill="white">E_θs(·)</text>
+  
+  <!-- Shared Representation -->
+  <rect x="410" y="70" width="140" height="60" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="480" y="90" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Shared Representation</text>
+  <text x="480" y="105" text-anchor="middle" font-size="10" fill="white">Z ∈ R^C×H'×W'</text>
+  <text x="480" y="120" text-anchor="middle" font-size="10" fill="white">Z = E_θs(X)</text>
+  
+  <!-- Task Heads -->
+  <rect x="600" y="40" width="100" height="40" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="650" y="60" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Task Head 1</text>
+  <text x="650" y="70" text-anchor="middle" font-size="8" fill="white">H_θ1(·)</text>
+  
+  <rect x="600" y="90" width="100" height="40" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="650" y="110" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Task Head 2</text>
+  <text x="650" y="120" text-anchor="middle" font-size="8" fill="white">H_θ2(·)</text>
+  
+  <rect x="600" y="140" width="100" height="40" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="650" y="160" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Task Head T</text>
+  <text x="650" y="170" text-anchor="middle" font-size="8" fill="white">H_θT(·)</text>
+  
+  <!-- Task Saliency Computation -->
+  <rect x="750" y="70" width="120" height="60" rx="10" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="810" y="90" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Task Saliency</text>
+  <text x="810" y="105" text-anchor="middle" font-size="9" fill="white">S_t = ∇_Z L_t</text>
+  <text x="810" y="120" text-anchor="middle" font-size="9" fill="white">t = 1,...,T</text>
+  
+  <!-- TSR Module -->
+  <rect x="100" y="220" width="180" height="120" rx="15" fill="#e8f5e8" stroke="#27ae60" stroke-width="3"/>
+  <text x="190" y="245" text-anchor="middle" font-size="14" fill="#27ae60" font-weight="bold">Task-specific Saliency</text>
+  <text x="190" y="260" text-anchor="middle" font-size="14" fill="#27ae60" font-weight="bold">Regulation (TSR)</text>
+  
+  <text x="190" y="285" text-anchor="middle" font-size="11" fill="#2c3e50">Channel-wise Aggregation:</text>
+  <text x="190" y="300" text-anchor="middle" font-size="10" fill="#2c3e50">Ŝ_t = (1/|C|) Σ_c S_{t,b,c,h,w}</text>
+  
+  <text x="190" y="315" text-anchor="middle" font-size="11" fill="#2c3e50">Entropy-based Regulation:</text>
+  <text x="190" y="330" text-anchor="middle" font-size="10" fill="#2c3e50">L_tsr = -Σ_t P_{i,t} log P_{i,t}</text>
+  
+  <!-- CSA Module -->
+  <rect x="350" y="220" width="180" height="120" rx="15" fill="#fff3cd" stroke="#ffc107" stroke-width="3"/>
+  <text x="440" y="245" text-anchor="middle" font-size="14" fill="#856404" font-weight="bold">Cross-task Saliency</text>
+  <text x="440" y="260" text-anchor="middle" font-size="14" fill="#856404" font-weight="bold">Alignment (CSA)</text>
+  
+  <text x="440" y="285" text-anchor="middle" font-size="11" fill="#2c3e50">Affinity Maps:</text>
+  <text x="440" y="300" text-anchor="middle" font-size="10" fill="#2c3e50">M_t = S_t S_t^T</text>
+  
+  <text x="440" y="315" text-anchor="middle" font-size="11" fill="#2c3e50">Contrastive Alignment:</text>
+  <text x="440" y="330" text-anchor="middle" font-size="10" fill="#2c3e50">L_csa with positive/negative pairs</text>
+  
+  <!-- Power Law Analysis -->
+  <rect x="600" y="220" width="180" height="120" rx="15" fill="#f8d7da" stroke="#dc3545" stroke-width="3"/>
+  <text x="690" y="245" text-anchor="middle" font-size="14" fill="#721c24" font-weight="bold">Power Law Analysis</text>
+  <text x="690" y="260" text-anchor="middle" font-size="14" fill="#721c24" font-weight="bold">Validation</text>
+  
+  <text x="690" y="285" text-anchor="middle" font-size="11" fill="#2c3e50">Backbone α ∈ [2,4]:</text>
+  <text x="690" y="300" text-anchor="middle" font-size="10" fill="#2c3e50">Cross-task sharing</text>
+  
+  <text x="690" y="315" text-anchor="middle" font-size="11" fill="#2c3e50">Decoder α balanced:</text>
+  <text x="690" y="330" text-anchor="middle" font-size="10" fill="#2c3e50">Task-specific learning</text>
+  
+  <!-- Joint Optimization -->
+  <rect x="300" y="380" width="300" height="80" rx="15" fill="#d1ecf1" stroke="#17a2b8" stroke-width="3"/>
+  <text x="450" y="405" text-anchor="middle" font-size="16" fill="#0c5460" font-weight="bold">Joint Optimization</text>
+  <text x="450" y="430" text-anchor="middle" font-size="12" fill="#2c3e50">L_Rep = Σ_t L_t + λ_tsr L_tsr + λ_csa L_csa</text>
+  <text x="450" y="445" text-anchor="middle" font-size="11" fill="#2c3e50">Regularization-based approach</text>
+  
+  <!-- Results Section -->
+  <rect x="100" y="500" width="200" height="80" rx="10" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="200" y="525" text-anchor="middle" font-size="14" fill="#155724" font-weight="bold">Scene Understanding</text>
+  <text x="200" y="545" text-anchor="middle" font-size="11" fill="#2c3e50">NYUv2: +1.70% ∆p_task</text>
+  <text x="200" y="560" text-anchor="middle" font-size="11" fill="#2c3e50">Cityscapes: +0.62% ∆p_task</text>
+  
+  <rect x="350" y="500" width="200" height="80" rx="10" fill="#cce5ff" stroke="#007bff" stroke-width="2"/>
+  <text x="450" y="525" text-anchor="middle" font-size="14" fill="#004085" font-weight="bold">Image Classification</text>
+  <text x="450" y="545" text-anchor="middle" font-size="11" fill="#2c3e50">Office-Home: +0.41% ∆p_task</text>
+  <text x="450" y="560" text-anchor="middle" font-size="11" fill="#2c3e50">Office-31: +1.31% ∆p_task</text>
+  
+  <!-- Key Benefits -->
+  <rect x="600" y="500" width="300" height="80" rx="10" fill="#f0f0f0" stroke="#6c757d" stroke-width="2"/>
+  <text x="750" y="525" text-anchor="middle" font-size="14" fill="#495057" font-weight="bold">Key Benefits</text>
+  <text x="750" y="545" text-anchor="middle" font-size="11" fill="#2c3e50">• Complementary to existing optimizers</text>
+  <text x="750" y="560" text-anchor="middle" font-size="11" fill="#2c3e50">• 26% faster than Nash-MTL</text>
+  
+  <!-- Connecting lines -->
+  <line x1="170" y1="100" x2="220" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="360" y1="100" x2="410" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="550" y1="100" x2="600" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="700" y1="100" x2="750" y2="100" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- From shared representation to modules -->
+  <line x1="480" y1="130" x2="190" y2="220" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="480" y1="130" x2="440" y2="220" stroke="#ffc107" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="810" y1="130" x2="690" y2="220" stroke="#dc3545" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- From modules to joint optimization -->
+  <line x1="190" y1="340" x2="350" y2="380" stroke="#17a2b8" stroke-width="2"/>
+  <line x1="440" y1="340" x2="450" y2="380" stroke="#17a2b8" stroke-width="2"/>
+  
+  <!-- From joint optimization to results -->
+  <line x1="400" y1="460" x2="200" y2="500" stroke="#28a745" stroke-width="2"/>
+  <line x1="450" y1="460" x2="450" y2="500" stroke="#007bff" stroke-width="2"/>
+  <line x1="500" y1="460" x2="750" y2="500" stroke="#6c757d" stroke-width="2"/>
+  
+  <!-- Method highlight -->
+  <text x="500" y="620" text-anchor="middle" font-size="14" fill="#2c3e50" font-weight="bold">Rep-MTL: Representation-centric Multi-Task Learning</text>
+  <text x="500" y="640" text-anchor="middle" font-size="12" fill="#2c3e50">Mitigates negative transfer while promoting inter-task complementarity</text>
+  
+  <!-- Legend -->
+  <rect x="50" y="680" width="900" height="100" rx="10" fill="#ffffff" stroke="#dee2e6" stroke-width="1"/>
+  <text x="500" y="700" text-anchor="middle" font-size="14" fill="#2c3e50" font-weight="bold">Method Overview</text>
+  <text x="100" y="720" font-size="11" fill="#2c3e50">• TSR: Preserves task-specific patterns via entropy regularization</text>
+  <text x="100" y="740" font-size="11" fill="#2c3e50">• CSA: Facilitates cross-task sharing through contrastive alignment</text>
+  <text x="100" y="760" font-size="11" fill="#2c3e50">• No optimizer modifications required - works as regularization</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It operates directly on the shared representation space">
+                        <div class="quiz-question">1. What is the main innovation of Rep-MTL compared to previous multi-task optimization approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It focuses on optimizer-level gradient manipulation">It focuses on optimizer-level gradient manipulation</div><div class="quiz-choice" data-value="It operates directly on the shared representation space">It operates directly on the shared representation space</div><div class="quiz-choice" data-value="It introduces new network architectures">It introduces new network architectures</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="About 26% faster">
+                        <div class="quiz-question">2. According to the experimental results, what is Rep-MTL's speed advantage compared to Nash-MTL?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="About 26% faster">About 26% faster</div><div class="quiz-choice" data-value="About 50% faster">About 50% faster</div><div class="quiz-choice" data-value="About 12% faster">About 12% faster</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Task-specific Saliency Regulation (TSR)">
+                        <div class="quiz-question">3. Which component of Rep-MTL is responsible for preserving task-specific learning patterns?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Cross-task Saliency Alignment (CSA)">Cross-task Saliency Alignment (CSA)</div><div class="quiz-choice" data-value="Task-specific Saliency Regulation (TSR)">Task-specific Saliency Regulation (TSR)</div><div class="quiz-choice" data-value="Gradient Manipulation Module">Gradient Manipulation Module</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>SmallThinker: A Family of Efficient Large Language Models Natively
+  Trained for Local Deployment</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-28</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.20984" target="_blank">http://arxiv.org/pdf/2507.20984</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of efficient large language models (SmallThinker) specifically designed for local deployment on resource-constrained devices.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on traditional approaches of compressing cloud-based models, but introduces a novel ground-up architecture designed specifically for local deployment constraints rather than post-hoc adaptation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The challenge of running powerful LLMs on local devices with limited computational power, memory, and storage, without compromising model performance.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a two-level sparse structure combining fine-grained Mixture-of-Experts with sparse feed-forward networks, pre-attention router for parameter prefetching, and NoPE-RoPE hybrid sparse attention mechanism for memory efficiency.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> SmallThinker models achieve 20+ tokens/s on consumer CPUs using minimal memory (1GB-8GB), outperforming larger models while matching or exceeding their performance on benchmarks like MMLU, with up to 86× speed improvement over comparable models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SmallThinker: A Family of Efficient Large Language Models Natively
+  Trained for Local Deployment</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">SmallThinker Methodology Flow</text>
+  
+  <!-- Data Construction Phase -->
+  <rect x="50" y="60" width="180" height="100" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="140" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#2980b9">Data Construction</text>
+  <text x="140" y="105" text-anchor="middle" font-size="10" fill="#2980b9">Open-Source Collection</text>
+  <text x="140" y="120" text-anchor="middle" font-size="10" fill="#2980b9">Synthetic Data (MGA)</text>
+  <text x="140" y="135" text-anchor="middle" font-size="10" fill="#2980b9">SFT-Style Data</text>
+  <text x="140" y="150" text-anchor="middle" font-size="10" fill="#2980b9">9T tokens (Web, Math, Code)</text>
+  
+  <!-- Model Architecture Design -->
+  <rect x="280" y="60" width="200" height="140" rx="10" fill="#fff2e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="380" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">Architecture Design</text>
+  <text x="380" y="105" text-anchor="middle" font-size="10" fill="#d35400">Fine-Grained MoE</text>
+  <text x="380" y="120" text-anchor="middle" font-size="10" fill="#d35400">Pre-Attention Router</text>
+  <text x="380" y="135" text-anchor="middle" font-size="10" fill="#d35400">Sparse ReGLU FFN</text>
+  <text x="380" y="150" text-anchor="middle" font-size="10" fill="#d35400">NoPE-RoPE Hybrid</text>
+  <text x="380" y="165" text-anchor="middle" font-size="10" fill="#d35400">DP-Groups Load Balance</text>
+  <text x="380" y="180" text-anchor="middle" font-size="10" fill="#d35400">4B-A0.6B & 21B-A3B</text>
+  
+  <!-- Pre-Training -->
+  <rect x="520" y="60" width="180" height="120" rx="10" fill="#e8f8f5" stroke="#27ae60" stroke-width="2"/>
+  <text x="610" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#229954">Pre-Training</text>
+  <text x="610" y="105" text-anchor="middle" font-size="10" fill="#229954">3-Stage Curriculum</text>
+  <text x="610" y="120" text-anchor="middle" font-size="10" fill="#229954">2.5T tokens (4B)</text>
+  <text x="610" y="135" text-anchor="middle" font-size="10" fill="#229954">7.2T tokens (21B)</text>
+  <text x="610" y="150" text-anchor="middle" font-size="10" fill="#229954">Long Context Extension</text>
+  <text x="610" y="165" text-anchor="middle" font-size="10" fill="#229954">RoPE Base Adjustment</text>
+  
+  <!-- Post-Training -->
+  <rect x="740" y="60" width="180" height="120" rx="10" fill="#fdf2e9" stroke="#8e44ad" stroke-width="2"/>
+  <text x="830" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#7d3c98">Post-Training</text>
+  <text x="830" y="105" text-anchor="middle" font-size="10" fill="#7d3c98">Supervised Fine-Tuning</text>
+  <text x="830" y="120" text-anchor="middle" font-size="10" fill="#7d3c98">Knowledge-Intensive QA</text>
+  <text x="830" y="135" text-anchor="middle" font-size="10" fill="#7d3c98">Math & Code Data</text>
+  <text x="830" y="150" text-anchor="middle" font-size="10" fill="#7d3c98">Model Merging</text>
+  <text x="830" y="165" text-anchor="middle" font-size="10" fill="#7d3c98">Linear Interpolation</text>
+  
+  <!-- Inference Framework -->
+  <rect x="150" y="220" width="700" height="80" rx="10" fill="#f4f3ff" stroke="#6c5ce7" stroke-width="2"/>
+  <text x="500" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#5f3dc4">Inference Framework for Local Deployment</text>
+  
+  <!-- Memory Efficiency -->
+  <rect x="80" y="320" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="180" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="#2980b9">Memory Efficiency</text>
+  <text x="180" y="365" text-anchor="middle" font-size="10" fill="#2980b9">Expert Offloading</text>
+  <text x="180" y="380" text-anchor="middle" font-size="10" fill="#2980b9">LRU Cache Policy</text>
+  <text x="180" y="395" text-anchor="middle" font-size="10" fill="#2980b9">Prefetching Pipeline</text>
+  <text x="180" y="410" text-anchor="middle" font-size="10" fill="#2980b9">I/O Overlap</text>
+  <text x="180" y="425" text-anchor="middle" font-size="10" fill="#2980b9">SSD Storage</text>
+  
+  <!-- Sparse Inference -->
+  <rect x="310" y="320" width="200" height="120" rx="10" fill="#fff2e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="410" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">Sparse Inference</text>
+  <text x="410" y="365" text-anchor="middle" font-size="10" fill="#d35400">ReGLU Sparsity</text>
+  <text x="410" y="380" text-anchor="middle" font-size="10" fill="#d35400">Selective Computation</text>
+  <text x="410" y="395" text-anchor="middle" font-size="10" fill="#d35400">SIMD Vectorization</text>
+  <text x="410" y="410" text-anchor="middle" font-size="10" fill="#d35400">LM Head Predictor</text>
+  <text x="410" y="425" text-anchor="middle" font-size="10" fill="#d35400">60% Neuron Sparsity</text>
+  
+  <!-- Expert Specialization -->
+  <rect x="540" y="320" width="200" height="120" rx="10" fill="#e8f8f5" stroke="#27ae60" stroke-width="2"/>
+  <text x="640" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="#229954">Expert Specialization</text>
+  <text x="640" y="365" text-anchor="middle" font-size="10" fill="#229954">Task-Specific Experts</text>
+  <text x="640" y="380" text-anchor="middle" font-size="10" fill="#229954">Hot/Cold Expert Cache</text>
+  <text x="640" y="395" text-anchor="middle" font-size="10" fill="#229954">Activation Patterns</text>
+  <text x="640" y="410" text-anchor="middle" font-size="10" fill="#229954">70-80% Low Activity</text>
+  <text x="640" y="425" text-anchor="middle" font-size="10" fill="#229954">20-30% High Activity</text>
+  
+  <!-- Performance Optimization -->
+  <rect x="770" y="320" width="180" height="120" rx="10" fill="#fdf2e9" stroke="#8e44ad" stroke-width="2"/>
+  <text x="860" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="#7d3c98">Performance</text>
+  <text x="860" y="365" text-anchor="middle" font-size="10" fill="#7d3c98">Q4_0 Quantization</text>
+  <text x="860" y="380" text-anchor="middle" font-size="10" fill="#7d3c98">CPU-Only Inference</text>
+  <text x="860" y="395" text-anchor="middle" font-size="10" fill="#7d3c98">20+ tokens/s</text>
+  <text x="860" y="410" text-anchor="middle" font-size="10" fill="#7d3c98">1GB / 8GB Memory</text>
+  <text x="860" y="425" text-anchor="middle" font-size="10" fill="#7d3c98">PowerInfer Framework</text>
+  
+  <!-- Results -->
+  <rect x="200" y="480" width="600" height="100" rx="10" fill="#f8f9fa" stroke="#34495e" stroke-width="3"/>
+  <text x="500" y="510" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Results & Achievements</text>
+  <text x="500" y="530" text-anchor="middle" font-size="11" fill="#34495e">SOTA Performance: Outperforms larger models on MMLU, MATH, HumanEval</text>
+  <text x="500" y="545" text-anchor="middle" font-size="11" fill="#34495e">Local Deployment: 20+ tokens/s on consumer CPUs without GPU</text>
+  <text x="500" y="560" text-anchor="middle" font-size="11" fill="#34495e">Memory Efficient: 1GB (4B) and 8GB (21B) memory consumption</text>
+  <text x="500" y="575" text-anchor="middle" font-size="11" fill="#34495e">Speed Improvement: Up to 86× faster than comparable models</text>
+  
+  <!-- Key Innovation Highlights -->
+  <circle cx="100" cy="650" r="8" fill="#e74c3c"/>
+  <text x="120" y="655" font-size="11" fill="#c0392b">Novel: Pre-attention router for I/O latency hiding</text>
+  
+  <circle cx="100" cy="680" r="8" fill="#f39c12"/>
+  <text x="120" y="685" font-size="11" fill="#d68910">Innovation: Two-level sparsity (MoE + ReGLU)</text>
+  
+  <circle cx="100" cy="710" r="8" fill="#27ae60"/>
+  <text x="120" y="715" font-size="11" fill="#229954">Breakthrough: Native design for local constraints</text>
+  
+  <circle cx="100" cy="740" r="8" fill="#8e44ad"/>
+  <text x="120" y="745" font-size="11" fill="#7d3c98">Achievement: GPU-free inference with SOTA accuracy</text>
+  
+  <!-- Flow connectors (simplified lines) -->
+  <line x1="230" y1="130" x2="280" y2="130" stroke="#95a5a6" stroke-width="2"/>
+  <line x1="480" y1="130" x2="520" y2="130" stroke="#95a5a6" stroke-width="2"/>
+  <line x1="700" y1="130" x2="740" y2="130" stroke="#95a5a6" stroke-width="2"/>
+  <line x1="500" y1="180" x2="500" y2="220" stroke="#95a5a6" stroke-width="2"/>
+  <line x1="500" y1="300" x2="500" y2="320" stroke="#95a5a6" stroke-width="2"/>
+  <line x1="500" y1="440" x2="500" y2="480" stroke="#95a5a6" stroke-width="2"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It is designed from ground up specifically for local device constraints">
+                        <div class="quiz-question">1. What is the primary innovation that distinguishes SmallThinker from traditional approaches to local LLM deployment?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses post-hoc compression of existing cloud models">It uses post-hoc compression of existing cloud models</div><div class="quiz-choice" data-value="It is designed from ground up specifically for local device constraints">It is designed from ground up specifically for local device constraints</div><div class="quiz-choice" data-value="It relies solely on GPU acceleration for performance">It relies solely on GPU acceleration for performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="1GB">
+                        <div class="quiz-question">2. How much memory does SmallThinker-4B-A0.6B require while achieving 20+ tokens/s inference speed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="8GB">8GB</div><div class="quiz-choice" data-value="4GB">4GB</div><div class="quiz-choice" data-value="1GB">1GB</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Pre-attention router for parameter prefetching">
+                        <div class="quiz-question">3. Which novel architectural feature helps SmallThinker hide storage latency during inference?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Pre-attention router for parameter prefetching">Pre-attention router for parameter prefetching</div><div class="quiz-choice" data-value="NoPE-RoPE hybrid attention mechanism">NoPE-RoPE hybrid attention mechanism</div><div class="quiz-choice" data-value="ReGLU activation function">ReGLU activation function</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
