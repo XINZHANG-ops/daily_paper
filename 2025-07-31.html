@@ -1,0 +1,1079 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-07-31 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-07-31 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>ScreenCoder: Advancing Visual-to-Code Generation for Front-End
+  Automation via Modular Multimodal Agents</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.22827" target="_blank">http://arxiv.org/pdf/2507.22827</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Automating the conversion of UI designs into front-end code using vision-language models and multi-agent systems.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous vision-language models and UI-to-code generation research, proposing a novel modular multi-agent framework that decomposes the task into grounding, planning, and generation stages.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the limitations of existing text-based and vision-based code generation systems that struggle with capturing spatial layouts and visual design intent in UI development.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a three-stage pipeline with a grounding agent for UI component detection, a planning agent for hierarchical layout construction, and a generation agent for HTML/CSS code synthesis, plus dual-stage post-training of vision-language models.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance across five metrics (block match, text similarity, position alignment, color consistency, and CLIP similarity), outperforming existing open-source models and competing with proprietary systems.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ScreenCoder: Advancing Visual-to-Code Generation for Front-End
+  Automation via Modular Multimodal Agents</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">ScreenCoder: Modular Multimodal Agents Framework</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="80" width="150" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Input</text>
+  <text x="125" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">UI Screenshots</text>
+  <text x="125" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Design Sketches</text>
+  
+  <!-- Stage 1: Grounding Agent -->
+  <rect x="250" y="80" width="180" height="120" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="340" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Grounding Agent</text>
+  <text x="340" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Vision-Language Model</text>
+  <text x="340" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Component Detection</text>
+  <text x="340" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Semantic Labeling</text>
+  <text x="340" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Output: Bounding boxes + Labels</text>
+  <text x="340" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">(sidebar, header, navigation, content)</text>
+  
+  <!-- Stage 2: Planning Agent -->
+  <rect x="480" y="80" width="180" height="120" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="570" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Planning Agent</text>
+  <text x="570" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Hierarchical Layout Tree</text>
+  <text x="570" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">CSS Grid-based Design</text>
+  <text x="570" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Spatial Heuristics</text>
+  <text x="570" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Output: Layout Tree T</text>
+  <text x="570" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">with grid configurations</text>
+  
+  <!-- Stage 3: Generation Agent -->
+  <rect x="710" y="80" width="180" height="120" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="800" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Generation Agent</text>
+  <text x="800" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Adaptive Prompt-based</text>
+  <text x="800" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">HTML/CSS Synthesis</text>
+  <text x="800" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Interactive Design Support</text>
+  <text x="800" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Output: HTML/CSS Code</text>
+  <text x="800" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">with placeholders</text>
+  
+  <!-- Placeholder Mapping -->
+  <rect x="400" y="240" width="200" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="500" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Placeholder Mapping</text>
+  <text x="500" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">UI Element Detection (UIED)</text>
+  <text x="500" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Image Restoration</text>
+  
+  <!-- Data Engine Section -->
+  <rect x="50" y="360" width="900" height="200" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="3"/>
+  <text x="500" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2c3e50">Scalable Data Engine for VLM Enhancement</text>
+  
+  <!-- Dataset Generation -->
+  <rect x="80" y="410" width="180" height="100" rx="8" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="170" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Dataset Generation</text>
+  <text x="170" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">50K UI-Code Pairs</text>
+  <text x="170" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Diverse Domains</text>
+  <text x="170" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Real-world Sources</text>
+  
+  <!-- Cold-start SFT -->
+  <rect x="300" y="410" width="180" height="100" rx="8" fill="#d35400" stroke="#ba4a00" stroke-width="2"/>
+  <text x="390" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Cold-start SFT</text>
+  <text x="390" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Supervised Fine-tuning</text>
+  <text x="390" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Qwen2.5-VL</text>
+  <text x="390" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Autoregressive Training</text>
+  
+  <!-- Reinforcement Learning -->
+  <rect x="520" y="410" width="180" height="100" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="610" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Reinforcement Learning</text>
+  <text x="610" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">GRPO Optimization</text>
+  <text x="610" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Multi-reward System</text>
+  <text x="610" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Visual-Semantic Alignment</text>
+  
+  <!-- Enhanced VLM -->
+  <rect x="740" y="410" width="180" height="100" rx="8" fill="#2980b9" stroke="#21618c" stroke-width="2"/>
+  <text x="830" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Enhanced VLM</text>
+  <text x="830" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Improved UI Understanding</text>
+  <text x="830" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Better Code Quality</text>
+  <text x="830" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">State-of-the-art Performance</text>
+  
+  <!-- Evaluation Metrics -->
+  <rect x="200" y="620" width="600" height="120" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="500" y="645" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Evaluation Metrics</text>
+  
+  <circle cx="280" cy="680" r="25" fill="#e74c3c"/>
+  <text x="280" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Block Match</text>
+  
+  <circle cx="380" cy="680" r="25" fill="#f39c12"/>
+  <text x="380" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Text Similarity</text>
+  
+  <circle cx="480" cy="680" r="25" fill="#27ae60"/>
+  <text x="480" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Position</text>
+  
+  <circle cx="580" cy="680" r="25" fill="#9b59b6"/>
+  <text x="580" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Color</text>
+  
+  <circle cx="680" cy="680" r="25" fill="#16a085"/>
+  <text x="680" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">CLIP</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 200 120 Q 225 120 250 120" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <path d="M 430 120 Q 455 120 480 120" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <path d="M 660 120 Q 685 120 710 120" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <path d="M 800 200 Q 800 220 500 240" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <path d="M 500 320 Q 500 340 170 410" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <path d="M 260 460 Q 280 460 300 460" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <path d="M 480 460 Q 500 460 520 460" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <path d="M 700 460 Q 720 460 740 460" fill="none" stroke="#34495e" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="They require extremely long and verbose prompts to capture spatial relationships">
+                        <div class="quiz-question">1. What is the main limitation of existing text-based UI-to-code generation systems that ScreenCoder aims to address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They are too slow in processing user inputs">They are too slow in processing user inputs</div><div class="quiz-choice" data-value="They require extremely long and verbose prompts to capture spatial relationships">They require extremely long and verbose prompts to capture spatial relationships</div><div class="quiz-choice" data-value="They can only work with simple layouts">They can only work with simple layouts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The Planning Agent">
+                        <div class="quiz-question">2. Which stage in ScreenCoder's pipeline is responsible for organizing UI components into a hierarchical structure?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The Grounding Agent">The Grounding Agent</div><div class="quiz-choice" data-value="The Planning Agent">The Planning Agent</div><div class="quiz-choice" data-value="The Generation Agent">The Generation Agent</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By functioning as a data engine to generate large-scale image-code pairs">
+                        <div class="quiz-question">3. How does ScreenCoder improve the training of vision-language models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using transfer learning from existing code repositories">By using transfer learning from existing code repositories</div><div class="quiz-choice" data-value="By creating synthetic UI designs randomly">By creating synthetic UI designs randomly</div><div class="quiz-choice" data-value="By functioning as a data engine to generate large-scale image-code pairs">By functioning as a data engine to generate large-scale image-code pairs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>VL-Cogito: Progressive Curriculum Reinforcement Learning for Advanced
+  Multimodal Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.22607" target="_blank">http://arxiv.org/pdf/2507.22607</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on multimodal reasoning in AI, specifically developing a reinforcement learning approach to improve visual-language models' reasoning capabilities across diverse tasks.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> It builds on previous reinforcement learning work in language models and extends it to multimodal reasoning, proposing a novel progressive curriculum learning framework with dynamic length rewards.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of unstable performance of multimodal models across different domains and difficulty levels of reasoning tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed PCuRL (Progressive Curriculum Reinforcement Learning) framework with two key components: online difficulty soft weighting for curriculum learning and dynamic length reward mechanism to adapt reasoning path lengths.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> VL-Cogito achieved state-of-the-art or highly competitive performance across multiple multimodal benchmarks spanning mathematics, science, logic and general understanding domains, demonstrating consistent improvements without requiring cold-start initialization.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VL-Cogito: Progressive Curriculum Reinforcement Learning for Advanced
+  Multimodal Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">VL-Cogito: Progressive Curriculum Reinforcement Learning</text>
+  
+  <!-- Data Curation Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4f8" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Curation</text>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#34495e">23 Datasets</text>
+  <text x="150" y="120" text-anchor="middle" font-size="11" fill="#34495e">6 Task Categories</text>
+  <text x="150" y="135" text-anchor="middle" font-size="11" fill="#34495e">Open-ended Format</text>
+  <text x="150" y="150" text-anchor="middle" font-size="11" fill="#34495e">Difficulty Sampling</text>
+  <text x="150" y="165" text-anchor="middle" font-size="11" fill="#34495e">(>50% accuracy filter)</text>
+  
+  <!-- PCuRL Framework Main Box -->
+  <rect x="100" y="220" width="800" height="450" rx="15" fill="#fff" stroke="#8e44ad" stroke-width="3"/>
+  <text x="500" y="245" text-anchor="middle" font-size="18" font-weight="bold" fill="#8e44ad">Progressive Curriculum Reinforcement Learning (PCuRL)</text>
+  
+  <!-- Three Stages -->
+  <!-- Easy Stage -->
+  <rect x="130" y="280" width="200" height="160" rx="10" fill="#d5f4e6" stroke="#27ae60" stroke-width="2"/>
+  <text x="230" y="305" text-anchor="middle" font-size="14" font-weight="bold" fill="#27ae60">Easy Stage</text>
+  <text x="230" y="325" text-anchor="middle" font-size="12" fill="#2c3e50">100 steps</text>
+  <text x="230" y="345" text-anchor="middle" font-size="11" fill="#2c3e50">ODSW Easy</text>
+  <text x="230" y="360" text-anchor="middle" font-size="11" fill="#2c3e50">Focus on simple tasks</text>
+  <text x="230" y="375" text-anchor="middle" font-size="11" fill="#2c3e50">Accuracy + Format</text>
+  <text x="230" y="390" text-anchor="middle" font-size="11" fill="#2c3e50">Rewards</text>
+  <text x="230" y="415" text-anchor="middle" font-size="10" fill="#7f8c8d">Stable foundation</text>
+  <text x="230" y="430" text-anchor="middle" font-size="10" fill="#7f8c8d">building</text>
+  
+  <!-- Medium Stage -->
+  <rect x="400" y="280" width="200" height="160" rx="10" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="500" y="305" text-anchor="middle" font-size="14" font-weight="bold" fill="#f39c12">Medium Stage</text>
+  <text x="500" y="325" text-anchor="middle" font-size="12" fill="#2c3e50">100 steps</text>
+  <text x="500" y="345" text-anchor="middle" font-size="11" fill="#2c3e50">ODSW Medium</text>
+  <text x="500" y="360" text-anchor="middle" font-size="11" fill="#2c3e50">Moderate difficulty</text>
+  <text x="500" y="375" text-anchor="middle" font-size="11" fill="#2c3e50">Accuracy + Format</text>
+  <text x="500" y="390" text-anchor="middle" font-size="11" fill="#2c3e50">Rewards</text>
+  <text x="500" y="415" text-anchor="middle" font-size="10" fill="#7f8c8d">Progressive</text>
+  <text x="500" y="430" text-anchor="middle" font-size="10" fill="#7f8c8d">enhancement</text>
+  
+  <!-- Hard Stage -->
+  <rect x="670" y="280" width="200" height="160" rx="10" fill="#fadbd8" stroke="#e74c3c" stroke-width="2"/>
+  <text x="770" y="305" text-anchor="middle" font-size="14" font-weight="bold" fill="#e74c3c">Hard Stage</text>
+  <text x="770" y="325" text-anchor="middle" font-size="12" fill="#2c3e50">~200 steps (1 epoch)</text>
+  <text x="770" y="345" text-anchor="middle" font-size="11" fill="#2c3e50">ODSW Hard</text>
+  <text x="770" y="360" text-anchor="middle" font-size="11" fill="#2c3e50">Complex tasks</text>
+  <text x="770" y="375" text-anchor="middle" font-size="11" fill="#2c3e50">Accuracy + Format</text>
+  <text x="770" y="390" text-anchor="middle" font-size="11" fill="#2c3e50">+ Dynamic Length</text>
+  <text x="770" y="415" text-anchor="middle" font-size="10" fill="#7f8c8d">Deep reasoning</text>
+  <text x="770" y="430" text-anchor="middle" font-size="10" fill="#7f8c8d">capability</text>
+  
+  <!-- ODSW Component -->
+  <rect x="130" y="470" width="350" height="100" rx="8" fill="#ebf3fd" stroke="#3498db" stroke-width="2"/>
+  <text x="305" y="490" text-anchor="middle" font-size="13" font-weight="bold" fill="#3498db">Online Difficulty Soft Weighting (ODSW)</text>
+  <text x="305" y="510" text-anchor="middle" font-size="11" fill="#2c3e50">Dynamic weight adjustment based on rollout accuracy</text>
+  <text x="305" y="525" text-anchor="middle" font-size="11" fill="#2c3e50">Sine + constant function F(Acc)</text>
+  <text x="305" y="540" text-anchor="middle" font-size="11" fill="#2c3e50">Emphasizes optimal learnability (Acc ≈ 0.5)</text>
+  <text x="305" y="555" text-anchor="middle" font-size="11" fill="#2c3e50">Smooth transition between difficulty levels</text>
+  
+  <!-- DyLR Component -->
+  <rect x="520" y="470" width="350" height="100" rx="8" fill="#f0e6ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="695" y="490" text-anchor="middle" font-size="13" font-weight="bold" fill="#9b59b6">Dynamic Length Reward (DyLR)</text>
+  <text x="695" y="510" text-anchor="middle" font-size="11" fill="#2c3e50">Adaptive reasoning length based on task complexity</text>
+  <text x="695" y="525" text-anchor="middle" font-size="11" fill="#2c3e50">Target length = avg length of correct responses</text>
+  <text x="695" y="540" text-anchor="middle" font-size="11" fill="#2c3e50">Cosine function for length reward calculation</text>
+  <text x="695" y="555" text-anchor="middle" font-size="11" fill="#2c3e50">Balances efficiency with reasoning depth</text>
+  
+  <!-- GRPO Foundation -->
+  <rect x="150" y="600" width="700" height="50" rx="8" fill="#f8f9fa" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="625" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Group Relative Policy Optimization (GRPO) Foundation</text>
+  <text x="500" y="640" text-anchor="middle" font-size="11" fill="#34495e">Advantage estimation within response groups | Clipped surrogate objective</text>
+  
+  <!-- Output -->
+  <rect x="400" y="700" width="200" height="60" rx="10" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="500" y="725" text-anchor="middle" font-size="14" font-weight="bold" fill="#28a745">VL-Cogito Model</text>
+  <text x="500" y="745" text-anchor="middle" font-size="11" fill="#2c3e50">Enhanced multimodal</text>
+  <text x="500" y="755" text-anchor="middle" font-size="11" fill="#2c3e50">reasoning capabilities</text>
+  
+  <!-- Flow indicators -->
+  <path d="M 150 180 L 150 220" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 330 360 L 400 360" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 600 360 L 670 360" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 670 L 500 700" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Innovation Highlights -->
+  <circle cx="80" cy="520" r="8" fill="#e74c3c"/>
+  <text x="95" y="525" font-size="10" fill="#e74c3c" font-weight="bold">Key Innovation 1</text>
+  
+  <circle cx="480" cy="520" r="8" fill="#9b59b6"/>
+  <text x="495" y="525" font-size="10" fill="#9b59b6" font-weight="bold">Key Innovation 2</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Its dynamic length reward mechanism that adapts to task complexity">
+                        <div class="quiz-question">1. What is the main innovation of the PCuRL framework that distinguishes it from previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Its use of binary weighting for task difficulty">Its use of binary weighting for task difficulty</div><div class="quiz-choice" data-value="Its dynamic length reward mechanism that adapts to task complexity">Its dynamic length reward mechanism that adapts to task complexity</div><div class="quiz-choice" data-value="Its requirement for cold-start initialization">Its requirement for cold-start initialization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To allow free exploration in early stages while strengthening complex reasoning capabilities later">
+                        <div class="quiz-question">2. Why did the authors introduce the dynamic length reward only in the hard stage of curriculum learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To save computational resources in earlier stages">To save computational resources in earlier stages</div><div class="quiz-choice" data-value="Because it wasn't necessary for simpler tasks">Because it wasn't necessary for simpler tasks</div><div class="quiz-choice" data-value="To allow free exploration in early stages while strengthening complex reasoning capabilities later">To allow free exploration in early stages while strengthening complex reasoning capabilities later</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It achieves superior performance without requiring cold-start warm-up">
+                        <div class="quiz-question">3. What unique feature of VL-Cogito's training process sets it apart from competing models like R1-VL and OpenVLThinker?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It achieves superior performance without requiring cold-start warm-up">It achieves superior performance without requiring cold-start warm-up</div><div class="quiz-choice" data-value="It uses a much larger training dataset">It uses a much larger training dataset</div><div class="quiz-choice" data-value="It requires more computational resources">It requires more computational resources</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>ChemDFM-R: An Chemical Reasoner LLM Enhanced with Atomized Chemical
+  Knowledge</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-29</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.21990" target="_blank">http://arxiv.org/pdf/2507.21990</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents ChemDFM-R, a chemical reasoner large language model enhanced with atomized chemical knowledge, in the domain of chemistry and artificial intelligence.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in general domain reasoning LLMs and chemical LLMs, it proposes incorporating atomized functional group knowledge and developing chemical-specific reasoning capabilities through a novel training pipeline.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitations of current LLMs in chemistry: shallow domain understanding and limited reasoning capabilities that hinder reliable practical applications.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method involves: 1) Constructing a functional group-centric pretraining corpus (ChemFG), 2) Domain pretraining and instruction tuning, 3) Mix-sourced distillation combining expert knowledge with general reasoning skills, 4) Domain-specific reinforcement learning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> ChemDFM-R achieved state-of-the-art performance on chemical benchmarks while providing interpretable rationales. It demonstrated strong chemical reasoning capabilities and enabled reliable human-AI collaboration in chemistry research scenarios.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ChemDFM-R: An Chemical Reasoner LLM Enhanced with Atomized Chemical
+  Knowledge</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">ChemDFM-R: Chemical Reasoner LLM with Atomized Knowledge</text>
+  
+  <!-- Phase 1: Data Construction -->
+  <rect x="50" y="60" width="280" height="180" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="190" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9">Phase 1: ChemFG Dataset Construction</text>
+  
+  <!-- Raw Data Collection -->
+  <rect x="70" y="100" width="240" height="40" fill="#d4eff7" stroke="#2980b9" rx="5"/>
+  <text x="190" y="125" text-anchor="middle" font-size="11" fill="#2c3e50">Raw Data Collection (101B tokens)</text>
+  
+  <!-- Data sources -->
+  <rect x="80" y="150" width="60" height="25" fill="#a8d8ea" rx="3"/>
+  <text x="110" y="167" text-anchor="middle" font-size="10" fill="#2c3e50">Literature</text>
+  <text x="110" y="180" text-anchor="middle" font-size="9" fill="#2c3e50">12M papers</text>
+  
+  <rect x="150" y="150" width="60" height="25" fill="#a8d8ea" rx="3"/>
+  <text x="180" y="167" text-anchor="middle" font-size="10" fill="#2c3e50">Molecules</text>
+  <text x="180" y="180" text-anchor="middle" font-size="9" fill="#2c3e50">30M compounds</text>
+  
+  <rect x="220" y="150" width="60" height="25" fill="#a8d8ea" rx="3"/>
+  <text x="250" y="167" text-anchor="middle" font-size="10" fill="#2c3e50">Reactions</text>
+  <text x="250" y="180" text-anchor="middle" font-size="9" fill="#2c3e50">7M reactions</text>
+  
+  <!-- Functional Group Identification -->
+  <rect x="70" y="195" width="240" height="35" fill="#ffeaa7" stroke="#f39c12" rx="5"/>
+  <text x="190" y="215" text-anchor="middle" font-size="11" fill="#2c3e50">Functional Group Identification Toolkit</text>
+  <text x="190" y="225" text-anchor="middle" font-size="9" fill="#2c3e50">241 functional groups identified</text>
+  
+  <!-- Phase 2: Knowledge Enhancement -->
+  <rect x="360" y="60" width="280" height="180" fill="#f0f8e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="500" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#27ae60">Phase 2: Atomized Knowledge Enhancement</text>
+  
+  <!-- Domain Pre-training -->
+  <rect x="380" y="100" width="240" height="35" fill="#d5f4e6" stroke="#27ae60" rx="5"/>
+  <text x="500" y="120" text-anchor="middle" font-size="11" fill="#2c3e50">Domain Pre-training on ChemFG</text>
+  <text x="500" y="130" text-anchor="middle" font-size="9" fill="#2c3e50">Base: Qwen2.5-14B</text>
+  
+  <!-- Instruction Tuning -->
+  <rect x="380" y="145" width="240" height="40" fill="#d5f4e6" stroke="#27ae60" rx="5"/>
+  <text x="500" y="165" text-anchor="middle" font-size="11" fill="#2c3e50">Instruction Tuning</text>
+  <text x="500" y="175" text-anchor="middle" font-size="9" fill="#2c3e50">Chemical + General tasks (1:2 ratio)</text>
+  
+  <!-- Result ChemDFM-I -->
+  <rect x="400" y="195" width="200" height="35" fill="#a8e6cf" stroke="#27ae60" rx="5"/>
+  <text x="500" y="215" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">ChemDFM-I Model</text>
+  
+  <!-- Phase 3: Reasoning Enhancement -->
+  <rect x="670" y="60" width="280" height="180" fill="#fef2e8" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="810" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#e67e22">Phase 3: Chemical Rationale Learning</text>
+  
+  <!-- Mix-sourced Distillation -->
+  <rect x="690" y="100" width="240" height="50" fill="#fde2c4" stroke="#e67e22" rx="5"/>
+  <text x="810" y="118" text-anchor="middle" font-size="11" fill="#2c3e50">Mix-sourced Distillation</text>
+  <text x="810" y="130" text-anchor="middle" font-size="9" fill="#2c3e50">70% Direct + 22% Pseudo CoT + 8% Teacher</text>
+  <text x="810" y="142" text-anchor="middle" font-size="9" fill="#2c3e50">Teachers: DeepSeek-R1, o3-mini</text>
+  
+  <!-- Reinforcement Learning -->
+  <rect x="690" y="160" width="240" height="35" fill="#fde2c4" stroke="#e67e22" rx="5"/>
+  <text x="810" y="180" text-anchor="middle" font-size="11" fill="#2c3e50">Reinforcement Learning (DAPO)</text>
+  <text x="810" y="190" text-anchor="middle" font-size="9" fill="#2c3e50">Format + Accuracy Rewards</text>
+  
+  <!-- Final Result -->
+  <rect x="710" y="205" width="200" height="35" fill="#f8b500" stroke="#e67e22" rx="5"/>
+  <text x="810" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">ChemDFM-R Model</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="50" y="280" width="900" height="140" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2" rx="10"/>
+  <text x="500" y="305" text-anchor="middle" font-size="16" font-weight="bold" fill="#7c3aed">Evaluation Results</text>
+  
+  <!-- Benchmark Results -->
+  <rect x="80" y="320" width="200" height="80" fill="#e9d5ff" stroke="#8b5cf6" rx="5"/>
+  <text x="180" y="340" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Benchmark Performance</text>
+  <text x="180" y="355" text-anchor="middle" font-size="10" fill="#2c3e50">SciKnowEval: 0.70</text>
+  <text x="180" y="370" text-anchor="middle" font-size="10" fill="#2c3e50">ChemEval: 0.78</text>
+  <text x="180" y="385" text-anchor="middle" font-size="10" fill="#2c3e50">Outperforms GPT-4o, DeepSeek-R1</text>
+  
+  <!-- Rationale Quality -->
+  <rect x="300" y="320" width="200" height="80" fill="#e9d5ff" stroke="#8b5cf6" rx="5"/>
+  <text x="400" y="340" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Rationale Analysis</text>
+  <text x="400" y="355" text-anchor="middle" font-size="10" fill="#2c3e50">67% high quality rationales</text>
+  <text x="400" y="370" text-anchor="middle" font-size="10" fill="#2c3e50">23% minor flaws</text>
+  <text x="400" y="385" text-anchor="middle" font-size="10" fill="#2c3e50">10% substantial issues</text>
+  
+  <!-- Human-AI Collaboration -->
+  <rect x="520" y="320" width="200" height="80" fill="#e9d5ff" stroke="#8b5cf6" rx="5"/>
+  <text x="620" y="340" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Human-AI Collaboration</text>
+  <text x="620" y="355" text-anchor="middle" font-size="10" fill="#2c3e50">Enhanced reliability</text>
+  <text x="620" y="370" text-anchor="middle" font-size="10" fill="#2c3e50">Transparent reasoning</text>
+  <text x="620" y="385" text-anchor="middle" font-size="10" fill="#2c3e50">Error detection capability</text>
+  
+  <!-- Key Innovations -->
+  <rect x="740" y="320" width="180" height="80" fill="#e9d5ff" stroke="#8b5cf6" rx="5"/>
+  <text x="830" y="340" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Key Innovations</text>
+  <text x="830" y="355" text-anchor="middle" font-size="10" fill="#2c3e50">Functional group toolkit</text>
+  <text x="830" y="370" text-anchor="middle" font-size="10" fill="#2c3e50">Mix-sourced distillation</text>
+  <text x="830" y="385" text-anchor="middle" font-size="10" fill="#2c3e50">Chemical reasoning focus</text>
+  
+  <!-- Method Details -->
+  <rect x="50" y="450" width="900" height="320" fill="#fefefe" stroke="#34495e" stroke-width="2" rx="10"/>
+  <text x="500" y="475" text-anchor="middle" font-size="16" font-weight="bold" fill="#34495e">Technical Methodology</text>
+  
+  <!-- Data Processing Pipeline -->
+  <rect x="80" y="500" width="250" height="120" fill="#ecf0f1" stroke="#95a5a6" rx="5"/>
+  <text x="205" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Data Processing</text>
+  <text x="205" y="540" text-anchor="middle" font-size="10" fill="#2c3e50">• Literature: 79B tokens</text>
+  <text x="205" y="555" text-anchor="middle" font-size="10" fill="#2c3e50">• Molecules: 30M with properties</text>
+  <text x="205" y="570" text-anchor="middle" font-size="10" fill="#2c3e50">• Reactions: 7M with changes</text>
+  <text x="205" y="585" text-anchor="middle" font-size="10" fill="#2c3e50">• FG annotation: >90% accuracy</text>
+  <text x="205" y="600" text-anchor="middle" font-size="10" fill="#2c3e50">• Quality control by experts</text>
+  
+  <!-- Training Strategy -->
+  <rect x="350" y="500" width="250" height="120" fill="#ecf0f1" stroke="#95a5a6" rx="5"/>
+  <text x="475" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Training Strategy</text>
+  <text x="475" y="540" text-anchor="middle" font-size="10" fill="#2c3e50">• Domain pre-training: ChemFG</text>
+  <text x="475" y="555" text-anchor="middle" font-size="10" fill="#2c3e50">• Instruction tuning: diverse tasks</text>
+  <text x="475" y="570" text-anchor="middle" font-size="10" fill="#2c3e50">• Distillation: 3-source mixing</text>
+  <text x="475" y="585" text-anchor="middle" font-size="10" fill="#2c3e50">• RL: DAPO algorithm</text>
+  <text x="475" y="600" text-anchor="middle" font-size="10" fill="#2c3e50">• Chemical/General: 1:2 ratio</text>
+  
+  <!-- Evaluation Framework -->
+  <rect x="620" y="500" width="250" height="120" fill="#ecf0f1" stroke="#95a5a6" rx="5"/>
+  <text x="745" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Evaluation Framework</text>
+  <text x="745" y="540" text-anchor="middle" font-size="10" fill="#2c3e50">• Text-centric tasks</text>
+  <text x="745" y="555" text-anchor="middle" font-size="10" fill="#2c3e50">• Molecule-centric tasks</text>
+  <text x="745" y="570" text-anchor="middle" font-size="10" fill="#2c3e50">• Reaction-centric tasks</text>
+  <text x="745" y="585" text-anchor="middle" font-size="10" fill="#2c3e50">• Rationale quality analysis</text>
+  <text x="745" y="600" text-anchor="middle" font-size="10" fill="#2c3e50">• Human collaboration study</text>
+  
+  <!-- Functional Group Categories -->
+  <rect x="80" y="640" width="790" height="100" fill="#f8f9fa" stroke="#6c757d" rx="5"/>
+  <text x="475" y="660" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Functional Group Categories (241 total)</text>
+  
+  <rect x="100" y="675" width="100" height="20" fill="#ff6b6b" rx="3"/>
+  <text x="150" y="688" text-anchor="middle" font-size="9" fill="white">Nitrogen (62)</text>
+  
+  <rect x="210" y="675" width="100" height="20" fill="#4ecdc4" rx="3"/>
+  <text x="260" y="688" text-anchor="middle" font-size="9" fill="white">Oxygen (36)</text>
+  
+  <rect x="320" y="675" width="100" height="20" fill="#45b7d1" rx="3"/>
+  <text x="370" y="688" text-anchor="middle" font-size="9" fill="white">Sulfur (85)</text>
+  
+  <rect x="430" y="675" width="100" height="20" fill="#f9ca24" rx="3"/>
+  <text x="480" y="688" text-anchor="middle" font-size="9" fill="black">Halogen (14)</text>
+  
+  <rect x="540" y="675" width="100" height="20" fill="#6c5ce7" rx="3"/>
+  <text x="590" y="688" text-anchor="middle" font-size="9" fill="white">Phosphorus (17)</text>
+  
+  <rect x="650" y="675" width="100" height="20" fill="#a29bfe" rx="3"/>
+  <text x="700" y="688" text-anchor="middle" font-size="9" fill="white">Others (27)</text>
+  
+  <text x="475" y="715" text-anchor="middle" font-size="10" fill="#2c3e50">Covers hydrocarbon, boron, silicon, organometallic, and aromatic groups</text>
+  <text x="475" y="730" text-anchor="middle" font-size="10" fill="#2c3e50">Enables precise molecular analysis and reaction mechanism understanding</text>
+  
+  <!-- Flow connections (simplified lines) -->
+  <line x1="330" y1="150" x2="360" y2="150" stroke="#34495e" stroke-width="2"/>
+  <line x1="640" y1="150" x2="670" y2="150" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="240" x2="500" y2="280" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Legend -->
+  <rect x="50" y="760" width="900" height="30" fill="#2c3e50" rx="5"/>
+  <text x="500" y="780" text-anchor="middle" font-size="12" fill="white">ChemDFM-R: First Chemical Reasoner LLM with Atomized Knowledge and Transparent Reasoning</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Incorporating atomized functional group knowledge">
+                        <div class="quiz-question">1. What is the key innovation in ChemDFM-R's training data compared to previous chemical LLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a larger volume of chemical literature">Using a larger volume of chemical literature</div><div class="quiz-choice" data-value="Incorporating atomized functional group knowledge">Incorporating atomized functional group knowledge</div><div class="quiz-choice" data-value="Including more chemical reaction examples">Including more chemical reaction examples</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By providing interpretable reasoning chains">
+                        <div class="quiz-question">2. How does ChemDFM-R improve the reliability of human-AI collaboration?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By generating more accurate predictions">By generating more accurate predictions</div><div class="quiz-choice" data-value="By providing interpretable reasoning chains">By providing interpretable reasoning chains</div><div class="quiz-choice" data-value="By having a larger knowledge base">By having a larger knowledge base</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Combining expert knowledge with general reasoning capabilities">
+                        <div class="quiz-question">3. What unique approach does ChemDFM-R take in its distillation process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using only expert-curated knowledge">Using only expert-curated knowledge</div><div class="quiz-choice" data-value="Relying solely on general domain reasoning skills">Relying solely on general domain reasoning skills</div><div class="quiz-choice" data-value="Combining expert knowledge with general reasoning capabilities">Combining expert knowledge with general reasoning capabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
