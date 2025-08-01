@@ -1,0 +1,1150 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-08-01 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-08-01 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Seed-Prover: Deep and Broad Reasoning for Automated Theorem Proving</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-31</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.23726" target="_blank">http://arxiv.org/pdf/2507.23726</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Automated theorem proving using large language models, focusing on solving complex mathematical problems including International Mathematical Olympiad (IMO) challenges.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous LLM theorem provers and AlphaGeometry, introduces new "lemma-style" proving approach and integrates formal verification with Lean programming language, moving beyond natural language proofs.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of automated mathematical reasoning and theorem proving, particularly for complex IMO-level problems, which current LLMs struggle with due to lack of clear supervision signals in natural language proofs.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements two systems: Seed-Prover (using lemma-style whole-proof reasoning with three-tiered inference strategies) and Seed-Geometry (specialized geometry engine), both leveraging reinforcement learning and formal verification through Lean.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved impressive results including proving 5/6 IMO 2025 problems, 78.1% of past IMO problems, 99.6% on MiniF2F test set, and outperforming previous state-of-the-art systems across multiple benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Seed-Prover: Deep and Broad Reasoning for Automated Theorem Proving</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Seed-Prover Workflow</text>
+  
+  <!-- Seed-Geometry Section -->
+  <rect x="50" y="60" width="280" height="320" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="190" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">Seed-Geometry</text>
+  
+  <!-- Geometry Components -->
+  <rect x="70" y="100" width="240" height="40" fill="#3498db" rx="5"/>
+  <text x="190" y="125" text-anchor="middle" font-size="12" fill="white">Extended DSL (Ruler-Compass)</text>
+  
+  <rect x="70" y="150" width="240" height="40" fill="#5dade2" rx="5"/>
+  <text x="190" y="175" text-anchor="middle" font-size="12" fill="white">C++ Reasoning Engine (100x faster)</text>
+  
+  <rect x="70" y="200" width="240" height="40" fill="#85c1e9" rx="5"/>
+  <text x="190" y="225" text-anchor="middle" font-size="12" fill="white">Seed LLM Policy Model</text>
+  
+  <rect x="70" y="250" width="240" height="40" fill="#aed6f1" rx="5"/>
+  <text x="190" y="275" text-anchor="middle" font-size="12" fill="white">Beam Search (Distributed)</text>
+  
+  <rect x="70" y="300" width="240" height="40" fill="#d6eaf8" rx="5"/>
+  <text x="190" y="325" text-anchor="middle" font-size="12" fill="black">230M Geometry Problems</text>
+  
+  <!-- Seed-Prover Main Section -->
+  <rect x="380" y="60" width="400" height="500" fill="#fef9e7" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="580" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#d68910">Seed-Prover Core</text>
+  
+  <!-- Lemma-Style Proving -->
+  <rect x="400" y="100" width="360" height="60" fill="#f39c12" rx="5"/>
+  <text x="580" y="125" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Lemma-Style Proving</text>
+  <text x="580" y="145" text-anchor="middle" font-size="11" fill="white">Generate lemmas before main theorem</text>
+  
+  <!-- Conjecture Proposing -->
+  <rect x="400" y="170" width="170" height="50" fill="#f7dc6f" rx="5"/>
+  <text x="485" y="190" text-anchor="middle" font-size="12" fill="black">Conjecture</text>
+  <text x="485" y="205" text-anchor="middle" font-size="12" fill="black">Proposing</text>
+  
+  <!-- Iterative Refinement -->
+  <rect x="590" y="170" width="170" height="50" fill="#f8c471" rx="5"/>
+  <text x="675" y="190" text-anchor="middle" font-size="12" fill="black">Iterative</text>
+  <text x="675" y="205" text-anchor="middle" font-size="12" fill="black">Refinement</text>
+  
+  <!-- Training Section -->
+  <rect x="400" y="240" width="360" height="50" fill="#dc7633" rx="5"/>
+  <text x="580" y="260" text-anchor="middle" font-size="12" fill="white">Multi-stage RL Training (VAPO)</text>
+  <text x="580" y="275" text-anchor="middle" font-size="11" fill="white">Diverse prompting with Lean feedback</text>
+  
+  <!-- Test-Time Scaling -->
+  <rect x="400" y="310" width="360" height="40" fill="#e67e22" rx="5"/>
+  <text x="580" y="335" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Three-Tier Test-Time Scaling</text>
+  
+  <!-- Light Setting -->
+  <rect x="400" y="360" width="110" height="80" fill="#58d68d" rx="5"/>
+  <text x="455" y="380" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Light</text>
+  <text x="455" y="395" text-anchor="middle" font-size="10" fill="white">8-16 refinements</text>
+  <text x="455" y="410" text-anchor="middle" font-size="10" fill="white">Pass@64-256</text>
+  <text x="455" y="425" text-anchor="middle" font-size="10" fill="white">1-2 hours</text>
+  
+  <!-- Medium Setting -->
+  <rect x="525" y="360" width="110" height="80" fill="#f4d03f" rx="5"/>
+  <text x="580" y="380" text-anchor="middle" font-size="12" fill="black" font-weight="bold">Medium</text>
+  <text x="580" y="395" text-anchor="middle" font-size="10" fill="black">Outer + Inner</text>
+  <text x="580" y="410" text-anchor="middle" font-size="10" fill="black">Refinement</text>
+  <text x="580" y="425" text-anchor="middle" font-size="10" fill="black">Complex proofs</text>
+  
+  <!-- Heavy Setting -->
+  <rect x="650" y="360" width="110" height="80" fill="#ec7063" rx="5"/>
+  <text x="705" y="380" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Heavy</text>
+  <text x="705" y="395" text-anchor="middle" font-size="10" fill="white">5000 conjectures</text>
+  <text x="705" y="410" text-anchor="middle" font-size="10" fill="white">Lemma pool</text>
+  <text x="705" y="425" text-anchor="middle" font-size="10" fill="white">Days thinking</text>
+  
+  <!-- Lean Compiler Integration -->
+  <rect x="400" y="460" width="360" height="40" fill="#8e44ad" rx="5"/>
+  <text x="580" y="485" text-anchor="middle" font-size="12" fill="white">Lean Compiler Feedback & Verification</text>
+  
+  <!-- Lemma Pool -->
+  <rect x="400" y="510" width="170" height="40" fill="#a569bd" rx="5"/>
+  <text x="485" y="535" text-anchor="middle" font-size="12" fill="white">Lemma Pool</text>
+  
+  <!-- Self-Summarization -->
+  <rect x="590" y="510" width="170" height="40" fill="#bb8fce" rx="5"/>
+  <text x="675" y="535" text-anchor="middle" font-size="12" fill="white">Self-Summarization</text>
+  
+  <!-- Results Section -->
+  <rect x="830" y="60" width="320" height="420" fill="#e8f6f3" stroke="#16a085" stroke-width="2" rx="10"/>
+  <text x="990" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#138d75">Performance Results</text>
+  
+  <!-- IMO Results -->
+  <rect x="850" y="100" width="280" height="40" fill="#16a085" rx="5"/>
+  <text x="990" y="125" text-anchor="middle" font-size="12" fill="white">IMO 2025: 5/6 problems solved</text>
+  
+  <!-- Past IMO -->
+  <rect x="850" y="150" width="280" height="40" fill="#48c9b0" rx="5"/>
+  <text x="990" y="175" text-anchor="middle" font-size="12" fill="white">Past IMO: 78.1% (121/155)</text>
+  
+  <!-- MiniF2F -->
+  <rect x="850" y="200" width="280" height="40" fill="#76d7c4" rx="5"/>
+  <text x="990" y="225" text-anchor="middle" font-size="12" fill="black">MiniF2F: 99.6% (Saturated)</text>
+  
+  <!-- PutnamBench -->
+  <rect x="850" y="250" width="280" height="40" fill="#a3e4d7" rx="5"/>
+  <text x="990" y="275" text-anchor="middle" font-size="12" fill="black">PutnamBench: 331/657 (50%+)</text>
+  
+  <!-- Geometry Results -->
+  <rect x="850" y="300" width="280" height="40" fill="#d0ece7" rx="5"/>
+  <text x="990" y="325" text-anchor="middle" font-size="12" fill="black">IMO-AG-50: 43/50 (vs AG2: 42)</text>
+  
+  <!-- CombiBench -->
+  <rect x="850" y="350" width="280" height="40" fill="#d5f4e6" rx="5"/>
+  <text x="990" y="375" text-anchor="middle" font-size="12" fill="black">CombiBench: 30% (vs 10%)</text>
+  
+  <!-- MiniCTX -->
+  <rect x="850" y="400" width="280" height="40" fill="#eafaf1" rx="5"/>
+  <text x="990" y="425" text-anchor="middle" font-size="12" fill="black">MiniCTX-v2: 81.8% (vs 44.3%)</text>
+  
+  <!-- Process Flow -->
+  <rect x="50" y="600" width="1100" height="200" fill="#fdfefe" stroke="#34495e" stroke-width="2" rx="10"/>
+  <text x="600" y="625" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Iterative Proof Process</text>
+  
+  <!-- Flow Steps -->
+  <circle cx="120" cy="680" r="30" fill="#3498db"/>
+  <text x="120" y="685" text-anchor="middle" font-size="11" fill="white">Problem</text>
+  
+  <circle cx="250" cy="680" r="30" fill="#e74c3c"/>
+  <text x="250" y="685" text-anchor="middle" font-size="10" fill="white">Generate</text>
+  
+  <circle cx="380" cy="680" r="30" fill="#f39c12"/>
+  <text x="380" y="685" text-anchor="middle" font-size="10" fill="white">Lean Check</text>
+  
+  <circle cx="510" cy="680" r="30" fill="#9b59b6"/>
+  <text x="510" y="685" text-anchor="middle" font-size="10" fill="white">Feedback</text>
+  
+  <circle cx="640" cy="680" r="30" fill="#1abc9c"/>
+  <text x="640" y="685" text-anchor="middle" font-size="10" fill="white">Refine</text>
+  
+  <circle cx="770" cy="680" r="30" fill="#27ae60"/>
+  <text x="770" y="685" text-anchor="middle" font-size="10" fill="white">Success</text>
+  
+  <!-- Curved connections between circles -->
+  <path d="M 150 680 Q 200 660 220 680" stroke="#34495e" stroke-width="3" fill="none"/>
+  <path d="M 280 680 Q 330 660 350 680" stroke="#34495e" stroke-width="3" fill="none"/>
+  <path d="M 410 680 Q 460 660 480 680" stroke="#34495e" stroke-width="3" fill="none"/>
+  <path d="M 540 680 Q 590 660 610 680" stroke="#34495e" stroke-width="3" fill="none"/>
+  <path d="M 670 680 Q 720 660 740 680" stroke="#34495e" stroke-width="3" fill="none"/>
+  
+  <!-- Feedback loop -->
+  <path d="M 640 710 Q 380 750 250 710" stroke="#e74c3c" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  <text x="445" y="745" text-anchor="middle" font-size="10" fill="#e74c3c">Iterative Refinement Loop</text>
+  
+  <!-- Integration connections -->
+  <path d="M 190 350 Q 300 400 400 300" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <text x="300" y="380" text-anchor="middle" font-size="10" fill="#7f8c8d" transform="rotate(-30 300 380)">Geometry Integration</text>
+  
+  <path d="M 780 300 Q 850 400 600 580" stroke="#7f8c8d" stroke-width="2" fill="none"/>
+  <text x="750" y="450" text-anchor="middle" font-size="10" fill="#7f8c8d" transform="rotate(45 750 450)">Results Feed</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Implementing lemma-style whole-proof reasoning with iterative refinement">
+                        <div class="quiz-question">1. What is the key innovation in Seed-Prover's approach to theorem proving compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using natural language processing exclusively">Using natural language processing exclusively</div><div class="quiz-choice" data-value="Implementing lemma-style whole-proof reasoning with iterative refinement">Implementing lemma-style whole-proof reasoning with iterative refinement</div><div class="quiz-choice" data-value="Focusing only on geometry problems">Focusing only on geometry problems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Proved 4 out of 6 during competition, reaching 5/6 post-competition">
+                        <div class="quiz-question">2. In the IMO 2025 competition, how did Seed-Prover and Seed-Geometry collectively perform?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Proved 3 out of 6 problems during competition">Proved 3 out of 6 problems during competition</div><div class="quiz-choice" data-value="Proved 5 out of 6 problems during competition">Proved 5 out of 6 problems during competition</div><div class="quiz-choice" data-value="Proved 4 out of 6 during competition, reaching 5/6 post-competition">Proved 4 out of 6 during competition, reaching 5/6 post-competition</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It implements a C++ backend that's 100x faster than previous Python implementations">
+                        <div class="quiz-question">3. What unique feature does Seed-Geometry implement to handle geometry problems more efficiently?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses only natural language processing">It uses only natural language processing</div><div class="quiz-choice" data-value="It relies solely on manual proof verification">It relies solely on manual proof verification</div><div class="quiz-choice" data-value="It implements a C++ backend that's 100x faster than previous Python implementations">It implements a C++ backend that's 100x faster than previous Python implementations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>villa-X: Enhancing Latent Action Modeling in Vision-Language-Action
+  Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-31</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.23682" target="_blank">http://arxiv.org/pdf/2507.23682</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Vision-Language-Action (VLA) models for robotic manipulation, specifically focusing on enhancing latent action modeling to improve robot control policies.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous VLA models and latent action learning approaches (LAPA, GR00T, IGOR), introduces a novel framework called villa-X that improves both latent action learning and its integration into VLA pre-training through proprioceptive supervision and joint diffusion modeling.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The challenge of developing generalizable robot manipulation policies that can effectively learn from both robot data and human videos while bridging the gap between high-level visual-language instructions and low-level robot controls.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a two-component system: (1) a Latent Action Model with proprioceptive supervision for better action representation, and (2) an Actor module that jointly models latent and robot actions through diffusion processes, using a pre-trained vision-language model.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves superior performance compared to existing baselines on both simulated environments (SIMPLER and LIBERO benchmarks) and real-world robotic tasks, demonstrating improved success rates across various manipulation tasks and better generalization capabilities.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>villa-X: Enhancing Latent Action Modeling in Vision-Language-Action
+  Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">villa-X: Vision-Language-Latent-Action Framework</text>
+  
+  <!-- Stage 1: LAM Training -->
+  <rect x="50" y="70" width="280" height="200" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="190" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stage 1: LAM Training</text>
+  
+  <!-- Input Data -->
+  <rect x="70" y="110" width="100" height="40" rx="5" fill="#fff3cd" stroke="#f39c12"/>
+  <text x="120" y="135" text-anchor="middle" font-size="10" fill="#2c3e50">Video Frames</text>
+  
+  <rect x="210" y="110" width="100" height="40" rx="5" fill="#fff3cd" stroke="#f39c12"/>
+  <text x="260" y="135" text-anchor="middle" font-size="10" fill="#2c3e50">Robot Data</text>
+  
+  <!-- IDM -->
+  <rect x="70" y="170" width="80" height="30" rx="5" fill="#d4edda" stroke="#28a745"/>
+  <text x="110" y="190" text-anchor="middle" font-size="10" fill="#2c3e50">IDM</text>
+  
+  <!-- Vector Quantization -->
+  <rect x="160" y="170" width="80" height="30" rx="5" fill="#d4edda" stroke="#28a745"/>
+  <text x="200" y="190" text-anchor="middle" font-size="10" fill="#2c3e50">VQ</text>
+  
+  <!-- FDM -->
+  <rect x="70" y="220" width="80" height="30" rx="5" fill="#f8d7da" stroke="#dc3545"/>
+  <text x="110" y="240" text-anchor="middle" font-size="10" fill="#2c3e50">FDM</text>
+  
+  <!-- Proprio FDM -->
+  <rect x="160" y="220" width="80" height="30" rx="5" fill="#f8d7da" stroke="#dc3545"/>
+  <text x="200" y="240" text-anchor="middle" font-size="10" fill="#2c3e50">Proprio FDM</text>
+  
+  <!-- Stage 2: ACT Training -->
+  <rect x="360" y="70" width="280" height="200" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="500" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stage 2: ACT Training</text>
+  
+  <!-- VLM -->
+  <rect x="380" y="110" width="80" height="40" rx="5" fill="#e1f5fe" stroke="#03a9f4"/>
+  <text x="420" y="135" text-anchor="middle" font-size="10" fill="#2c3e50">VLM</text>
+  
+  <!-- ACT-Latent -->
+  <rect x="480" y="110" width="80" height="40" rx="5" fill="#e8f5e8" stroke="#4caf50"/>
+  <text x="520" y="135" text-anchor="middle" font-size="10" fill="#2c3e50">ACT-Latent</text>
+  
+  <!-- ACT-Robot -->
+  <rect x="380" y="170" width="80" height="40" rx="5" fill="#fff3e0" stroke="#ff9800"/>
+  <text x="420" y="195" text-anchor="middle" font-size="10" fill="#2c3e50">ACT-Robot</text>
+  
+  <!-- Joint Diffusion -->
+  <rect x="480" y="170" width="80" height="40" rx="5" fill="#fce4ec" stroke="#e91e63"/>
+  <text x="520" y="195" text-anchor="middle" font-size="10" fill="#2c3e50">Joint Diffusion</text>
+  
+  <!-- Cross Attention -->
+  <ellipse cx="500" cy="230" rx="40" ry="15" fill="#f3e5f5" stroke="#9c27b0"/>
+  <text x="500" y="235" text-anchor="middle" font-size="9" fill="#2c3e50">Cross Attention</text>
+  
+  <!-- Stage 3: Finetuning -->
+  <rect x="670" y="70" width="280" height="200" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="810" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stage 3: Finetuning</text>
+  
+  <!-- Target Embodiment -->
+  <rect x="690" y="110" width="100" height="40" rx="5" fill="#fff3cd" stroke="#f39c12"/>
+  <text x="740" y="135" text-anchor="middle" font-size="10" fill="#2c3e50">Target Data</text>
+  
+  <!-- Embodiment Context -->
+  <rect x="820" y="110" width="100" height="40" rx="5" fill="#d1ecf1" stroke="#17a2b8"/>
+  <text x="870" y="135" text-anchor="middle" font-size="10" fill="#2c3e50">Embodiment Context</text>
+  
+  <!-- Policy Output -->
+  <rect x="740" y="170" width="100" height="40" rx="5" fill="#d4edda" stroke="#28a745"/>
+  <text x="790" y="195" text-anchor="middle" font-size="10" fill="#2c3e50">Robot Policy</text>
+  
+  <!-- Key Components Section -->
+  <text x="50" y="320" font-size="16" font-weight="bold" fill="#2c3e50">Key Components & Innovations</text>
+  
+  <!-- Component 1: Proprio FDM -->
+  <rect x="50" y="340" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Proprio FDM</text>
+  <text x="60" y="380" font-size="10" fill="#2c3e50">• Predicts future robot states</text>
+  <text x="60" y="395" font-size="10" fill="#2c3e50">• Aligns latent actions with</text>
+  <text x="60" y="410" font-size="10" fill="#2c3e50">  physical dynamics</text>
+  <text x="60" y="425" font-size="10" fill="#2c3e50">• Grounds actions in robot</text>
+  <text x="60" y="440" font-size="10" fill="#2c3e50">  behavior</text>
+  
+  <!-- Component 2: Joint Diffusion -->
+  <rect x="270" y="340" width="200" height="120" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="370" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Joint Diffusion</text>
+  <text x="280" y="380" font-size="10" fill="#2c3e50">• Models latent & robot actions</text>
+  <text x="280" y="395" font-size="10" fill="#2c3e50">• Conditions robot actions on</text>
+  <text x="280" y="410" font-size="10" fill="#2c3e50">  latent actions</text>
+  <text x="280" y="425" font-size="10" fill="#2c3e50">• Enables structured transfer</text>
+  
+  <!-- Component 3: Hierarchical Design -->
+  <rect x="490" y="340" width="200" height="120" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="590" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Hierarchical Design</text>
+  <text x="500" y="380" font-size="10" fill="#2c3e50">• Latent actions as mid-level</text>
+  <text x="500" y="395" font-size="10" fill="#2c3e50">  bridge</text>
+  <text x="500" y="410" font-size="10" fill="#2c3e50">• Sequence planning at both</text>
+  <text x="500" y="425" font-size="10" fill="#2c3e50">  latent & robot levels</text>
+  
+  <!-- Data Flow -->
+  <text x="50" y="510" font-size="16" font-weight="bold" fill="#2c3e50">Data Sources & Evaluation</text>
+  
+  <!-- Training Data -->
+  <rect x="50" y="530" width="150" height="100" rx="10" fill="#fff3cd" stroke="#f39c12" stroke-width="2"/>
+  <text x="125" y="550" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Training Data</text>
+  <text x="60" y="570" font-size="10" fill="#2c3e50">• OpenX Robot Data</text>
+  <text x="60" y="585" font-size="10" fill="#2c3e50">• Ego4D Human Videos</text>
+  <text x="60" y="600" font-size="10" fill="#2c3e50">• Something-Something V2</text>
+  <text x="60" y="615" font-size="10" fill="#2c3e50">• Bridge V2, EPIC-KITCHENS</text>
+  
+  <!-- Simulation -->
+  <rect x="220" y="530" width="150" height="100" rx="10" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2"/>
+  <text x="295" y="550" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Simulation</text>
+  <text x="230" y="570" font-size="10" fill="#2c3e50">• SIMPLER Benchmark</text>
+  <text x="230" y="585" font-size="10" fill="#2c3e50">• LIBERO Tasks</text>
+  <text x="230" y="600" font-size="10" fill="#2c3e50">• Google Robot Platform</text>
+  <text x="230" y="615" font-size="10" fill="#2c3e50">• WidowX Platform</text>
+  
+  <!-- Real World -->
+  <rect x="390" y="530" width="150" height="100" rx="10" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="465" y="550" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Real World</text>
+  <text x="400" y="570" font-size="10" fill="#2c3e50">• Realman Robot Arm</text>
+  <text x="400" y="585" font-size="10" fill="#2c3e50">• Xarm + Xhand</text>
+  <text x="400" y="600" font-size="10" fill="#2c3e50">• Gripper Manipulation</text>
+  <text x="400" y="615" font-size="10" fill="#2c3e50">• Dexterous Hand Tasks</text>
+  
+  <!-- Results -->
+  <rect x="560" y="530" width="150" height="100" rx="10" fill="#f8d7da" stroke="#dc3545" stroke-width="2"/>
+  <text x="635" y="550" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Results</text>
+  <text x="570" y="570" font-size="10" fill="#2c3e50">• Superior performance</text>
+  <text x="570" y="585" font-size="10" fill="#2c3e50">• Better generalization</text>
+  <text x="570" y="600" font-size="10" fill="#2c3e50">• Cross-embodiment</text>
+  <text x="570" y="615" font-size="10" fill="#2c3e50">  transfer</text>
+  
+  <!-- Technical Details -->
+  <rect x="730" y="530" width="220" height="100" rx="10" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2"/>
+  <text x="840" y="550" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Technical Details</text>
+  <text x="740" y="570" font-size="10" fill="#2c3e50">• PaliGemma VLM backbone</text>
+  <text x="740" y="585" font-size="10" fill="#2c3e50">• Flow matching for diffusion</text>
+  <text x="740" y="600" font-size="10" fill="#2c3e50">• Attention masking strategy</text>
+  <text x="740" y="615" font-size="10" fill="#2c3e50">• Embodiment context embedding</text>
+  
+  <!-- Process Flow Indicators -->
+  <path d="M 330 170 L 360 170" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 640 170 L 670 170" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Bottom note -->
+  <text x="500" y="770" text-anchor="middle" font-size="12" font-style="italic" fill="#666">villa-X: Enhanced latent action modeling for generalizable robot manipulation policies</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Adding proprioceptive supervision through a Forward Dynamics Model">
+                        <div class="quiz-question">1. What is the key innovation in villa-X's Latent Action Model compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using larger neural networks for action prediction">Using larger neural networks for action prediction</div><div class="quiz-choice" data-value="Adding proprioceptive supervision through a Forward Dynamics Model">Adding proprioceptive supervision through a Forward Dynamics Model</div><div class="quiz-choice" data-value="Increasing the size of the training dataset">Increasing the size of the training dataset</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Through joint diffusion modeling with conditional attention">
+                        <div class="quiz-question">2. How does villa-X handle the transfer between latent actions and robot actions?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Through simple weight initialization">Through simple weight initialization</div><div class="quiz-choice" data-value="By treating them as independent processes">By treating them as independent processes</div><div class="quiz-choice" data-value="Through joint diffusion modeling with conditional attention">Through joint diffusion modeling with conditional attention</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Randomly masking 50% of latent action tokens and applying attention dropout">
+                        <div class="quiz-question">3. What unique training strategy does villa-X use to prevent over-reliance on latent actions?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Randomly masking 50% of latent action tokens and applying attention dropout">Randomly masking 50% of latent action tokens and applying attention dropout</div><div class="quiz-choice" data-value="Using a larger batch size during training">Using a larger batch size during training</div><div class="quiz-choice" data-value="Adding more regularization layers">Adding more regularization layers</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>C3: A Bilingual Benchmark for Spoken Dialogue Models Exploring
+  Challenges in Complex Conversations</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-07-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2507.22968" target="_blank">http://arxiv.org/pdf/2507.22968</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents C3, a bilingual benchmark dataset for evaluating Spoken Dialogue Models' (SDMs) ability to handle complex conversations in both English and Chinese.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research on SDM benchmarks that focused mainly on single-language evaluation, this paper proposes a new comprehensive benchmark that includes phonological ambiguity, semantic ambiguity, omission, coreference, and multi-turn interaction phenomena.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of comprehensive evaluation methods for understanding SDMs' effectiveness in handling complex conversational challenges, particularly in bilingual contexts.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created a dataset of 1,079 instances comprising five phenomena categories, developed an LLM-based evaluation method, and tested six popular SDMs across different languages and conversational complexities.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The evaluation revealed that SDMs perform differently across languages and phenomena, with English generally being easier than Chinese, semantic ambiguity being particularly challenging in Chinese, and omission being the most difficult context-dependency phenomenon to handle.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>C3: A Bilingual Benchmark for Spoken Dialogue Models Exploring
+  Challenges in Complex Conversations</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    C3 Benchmark: Methodology Workflow
+  </text>
+  
+  <!-- Phase 1: Literature Review & Statistical Analysis -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Literature Review &</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Statistical Analysis</text>
+  <text x="150" y="125" text-anchor="middle" font-size="10" fill="white">(CABank, MagicData-RAMC)</text>
+  
+  <!-- Phase 2: Identify 5 Phenomena -->
+  <rect x="300" y="60" width="180" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Identify Complex</text>
+  <text x="390" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Phenomena</text>
+  <text x="390" y="125" text-anchor="middle" font-size="10" fill="white">(5 key challenges)</text>
+  
+  <!-- Phase 3: Data Collection -->
+  <rect x="520" y="60" width="180" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="610" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Real-world Data</text>
+  <text x="610" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Collection</text>
+  <text x="610" y="125" text-anchor="middle" font-size="10" fill="white">(Web sources & datasets)</text>
+  
+  <!-- Phase 4: Dataset Construction -->
+  <rect x="750" y="60" width="180" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="840" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Dataset Construction</text>
+  <text x="840" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="white">& Quality Control</text>
+  <text x="840" y="125" text-anchor="middle" font-size="10" fill="white">(1,079 instances)</text>
+  
+  <!-- Five Phenomena Boxes -->
+  <g transform="translate(100, 200)">
+    <!-- Phonological Ambiguity -->
+    <rect x="0" y="0" width="150" height="100" rx="8" fill="#ff6b6b" stroke="#e74c3c" stroke-width="2"/>
+    <text x="75" y="25" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Phonological</text>
+    <text x="75" y="40" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Ambiguity</text>
+    <text x="75" y="60" text-anchor="middle" font-size="9" fill="white">• Heterograph</text>
+    <text x="75" y="75" text-anchor="middle" font-size="9" fill="white">• Heteronym</text>
+    <text x="75" y="90" text-anchor="middle" font-size="9" fill="white">• Stress/Intonation</text>
+    
+    <!-- Semantic Ambiguity -->
+    <rect x="170" y="0" width="150" height="100" rx="8" fill="#4ecdc4" stroke="#26a69a" stroke-width="2"/>
+    <text x="245" y="25" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Semantic</text>
+    <text x="245" y="40" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Ambiguity</text>
+    <text x="245" y="60" text-anchor="middle" font-size="9" fill="white">• Lexical</text>
+    <text x="245" y="75" text-anchor="middle" font-size="9" fill="white">• Syntactic</text>
+    
+    <!-- Omission -->
+    <rect x="340" y="0" width="150" height="100" rx="8" fill="#45b7d1" stroke="#3498db" stroke-width="2"/>
+    <text x="415" y="30" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Omission</text>
+    <text x="415" y="55" text-anchor="middle" font-size="9" fill="white">• Detection</text>
+    <text x="415" y="70" text-anchor="middle" font-size="9" fill="white">• Completion</text>
+    
+    <!-- Coreference -->
+    <rect x="510" y="0" width="150" height="100" rx="8" fill="#96ceb4" stroke="#27ae60" stroke-width="2"/>
+    <text x="585" y="30" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Coreference</text>
+    <text x="585" y="55" text-anchor="middle" font-size="9" fill="white">• Detection</text>
+    <text x="585" y="70" text-anchor="middle" font-size="9" fill="white">• Resolution</text>
+    
+    <!-- Multi-turn Interaction -->
+    <rect x="680" y="0" width="150" height="100" rx="8" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2"/>
+    <text x="755" y="25" text-anchor="middle" font-size="11" font-weight="bold" fill="#2d3436">Multi-turn</text>
+    <text x="755" y="40" text-anchor="middle" font-size="11" font-weight="bold" fill="#2d3436">Interaction</text>
+    <text x="755" y="60" text-anchor="middle" font-size="9" fill="#2d3436">• History tracking</text>
+    <text x="755" y="75" text-anchor="middle" font-size="9" fill="#2d3436">• Context memory</text>
+  </g>
+  
+  <!-- Dataset Categories -->
+  <g transform="translate(200, 350)">
+    <!-- Cam-data -->
+    <rect x="0" y="0" width="200" height="70" rx="8" fill="#e17055" stroke="#d63031" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Cam-data</text>
+    <text x="100" y="45" text-anchor="middle" font-size="11" fill="white">Ambiguity Evaluation</text>
+    <text x="100" y="60" text-anchor="middle" font-size="10" fill="white">(Phonological + Semantic)</text>
+    
+    <!-- Ccon-data -->
+    <rect x="250" y="0" width="200" height="70" rx="8" fill="#00b894" stroke="#00a085" stroke-width="2"/>
+    <text x="350" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Ccon-data</text>
+    <text x="350" y="45" text-anchor="middle" font-size="11" fill="white">Context-dependency</text>
+    <text x="350" y="60" text-anchor="middle" font-size="10" fill="white">(Omission + Coreference + Multi-turn)</text>
+  </g>
+  
+  <!-- Speech Processing -->
+  <rect x="150" y="460" width="180" height="60" rx="8" fill="#6c5ce7" stroke="#5f3dc4" stroke-width="2"/>
+  <text x="240" y="485" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Speech Processing</text>
+  <text x="240" y="505" text-anchor="middle" font-size="10" fill="white">TTS Generation + Manual Check</text>
+  
+  <!-- Bilingual Support -->
+  <rect x="370" y="460" width="180" height="60" rx="8" fill="#fd79a8" stroke="#e84393" stroke-width="2"/>
+  <text x="460" y="485" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Bilingual Support</text>
+  <text x="460" y="505" text-anchor="middle" font-size="10" fill="white">English + Chinese</text>
+  
+  <!-- Evaluation Method -->
+  <rect x="590" y="460" width="180" height="60" rx="8" fill="#00cec9" stroke="#00b894" stroke-width="2"/>
+  <text x="680" y="485" text-anchor="middle" font-size="12" font-weight="bold" fill="white">LLM-based Evaluation</text>
+  <text x="680" y="505" text-anchor="middle" font-size="10" fill="white">GPT-4o + DeepSeek-R1</text>
+  
+  <!-- SDM Testing -->
+  <rect x="300" y="560" width="400" height="80" rx="10" fill="#2d3436" stroke="#636e72" stroke-width="2"/>
+  <text x="500" y="585" text-anchor="middle" font-size="14" font-weight="bold" fill="white">SDM Performance Testing</text>
+  <text x="500" y="605" text-anchor="middle" font-size="11" fill="white">6 End-to-end Models Evaluated</text>
+  <text x="500" y="625" text-anchor="middle" font-size="10" fill="white">GPT-4o-Audio, Qwen2.5-Omni, MooER-Omni, etc.</text>
+  
+  <!-- Key Findings -->
+  <g transform="translate(100, 680)">
+    <rect x="0" y="0" width="250" height="60" rx="8" fill="#fdcb6e" stroke="#e17055" stroke-width="2"/>
+    <text x="125" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#2d3436">Finding 1</text>
+    <text x="125" y="35" text-anchor="middle" font-size="9" fill="#2d3436">Ambiguity is most difficult</text>
+    <text x="125" y="50" text-anchor="middle" font-size="9" fill="#2d3436">especially semantic in Chinese</text>
+    
+    <rect x="270" y="0" width="250" height="60" rx="8" fill="#81ecec" stroke="#00cec9" stroke-width="2"/>
+    <text x="395" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#2d3436">Finding 2</text>
+    <text x="395" y="35" text-anchor="middle" font-size="9" fill="#2d3436">Omission is hardest in</text>
+    <text x="395" y="50" text-anchor="middle" font-size="9" fill="#2d3436">context-dependency</text>
+    
+    <rect x="540" y="0" width="250" height="60" rx="8" fill="#fab1a0" stroke="#e17055" stroke-width="2"/>
+    <text x="665" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#2d3436">Finding 3</text>
+    <text x="665" y="35" text-anchor="middle" font-size="9" fill="#2d3436">Chinese dialogues more</text>
+    <text x="665" y="50" text-anchor="middle" font-size="9" fill="#2d3436">challenging than English</text>
+  </g>
+  
+  <!-- Connecting lines with subtle styling -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+  <line x1="480" y1="100" x2="520" y2="100" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+  <line x1="700" y1="100" x2="750" y2="100" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+  
+  <line x1="500" y1="140" x2="500" y2="200" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+  <line x1="400" y1="300" x2="400" y2="350" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+  <line x1="400" y1="420" x2="400" y2="460" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+  <line x1="500" y1="520" x2="500" y2="560" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+  <line x1="500" y1="640" x2="500" y2="680" stroke="#7f8c8d" stroke-width="2" opacity="0.7"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Omission handling">
+                        <div class="quiz-question">1. What is the most challenging type of context-dependency phenomenon for SDMs according to the paper's findings?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Coreference resolution">Coreference resolution</div><div class="quiz-choice" data-value="Omission handling">Omission handling</div><div class="quiz-choice" data-value="Multi-turn interaction">Multi-turn interaction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="1,079 instances">
+                        <div class="quiz-question">2. How many total instances are included in the C3 benchmark dataset?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1,079 instances">1,079 instances</div><div class="quiz-choice" data-value="1,586 instances">1,586 instances</div><div class="quiz-choice" data-value="2,000 instances">2,000 instances</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Semantic ambiguity">
+                        <div class="quiz-question">3. Which phenomenon showed the most significant performance gap between Chinese and English language processing?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Phonological ambiguity">Phonological ambiguity</div><div class="quiz-choice" data-value="Semantic ambiguity">Semantic ambiguity</div><div class="quiz-choice" data-value="Multi-turn interaction">Multi-turn interaction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
