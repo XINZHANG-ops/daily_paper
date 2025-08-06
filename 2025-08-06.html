@@ -1,0 +1,1147 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-08-06 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-08-06 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>LongVie: Multimodal-Guided Controllable Ultra-Long Video Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.03694" target="_blank">http://arxiv.org/pdf/2508.03694</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Ultra-long controllable video generation using multimodal guidance in computer vision and deep learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing short video generation models like CogVideoX and ControlNet, proposing new techniques for long-form generation including unified noise initialization and global control signal normalization.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Current video generation models struggle with temporal inconsistency and visual degradation when generating longer videos (up to one minute).</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Developed LongVie framework using multimodal control (dense depth maps and sparse keypoints), global normalization, unified noise initialization, and degradation-aware training to generate long videos autoregressively.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art performance on their new LongVGenBench dataset of 100 high-resolution videos, demonstrating superior long-range controllability, consistency, and visual quality compared to baselines.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LongVie: Multimodal-Guided Controllable Ultra-Long Video Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">LongVie: Multimodal-Guided Controllable Ultra-Long Video Generation</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#1976d2">Input Image</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="#1976d2">& Text Prompt</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="#1976d2">& Control Signals</text>
+  
+  <!-- Control Signal Processing -->
+  <rect x="300" y="60" width="150" height="60" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="375" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#f57c00">Global Normalization</text>
+  <text x="375" y="95" text-anchor="middle" font-size="9" fill="#f57c00">for Control Signals</text>
+  <text x="375" y="110" text-anchor="middle" font-size="9" fill="#f57c00">(5th-95th percentile)</text>
+  
+  <!-- Dense Control Branch -->
+  <rect x="50" y="180" width="140" height="50" rx="8" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="120" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="#4caf50">Dense Control</text>
+  <text x="120" y="215" text-anchor="middle" font-size="9" fill="#4caf50">(Depth Maps)</text>
+  
+  <!-- Sparse Control Branch -->
+  <rect x="210" y="180" width="140" height="50" rx="8" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="280" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="#e91e63">Sparse Control</text>
+  <text x="280" y="215" text-anchor="middle" font-size="9" fill="#e91e63">(Point Maps)</text>
+  
+  <!-- Multi-Modal Control DiT -->
+  <rect x="400" y="160" width="180" height="90" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="490" y="185" text-anchor="middle" font-size="12" font-weight="bold" fill="#9c27b0">Multi-Modal Control DiT</text>
+  <text x="490" y="200" text-anchor="middle" font-size="9" fill="#9c27b0">Dense Block + Sparse Block</text>
+  <text x="490" y="215" text-anchor="middle" font-size="9" fill="#9c27b0">with Zero Linear Fusion</text>
+  <text x="490" y="230" text-anchor="middle" font-size="9" fill="#9c27b0">(18 copied DiT blocks)</text>
+  
+  <!-- Degradation-Aware Training -->
+  <rect x="620" y="160" width="160" height="70" rx="8" fill="#fff8e1" stroke="#ffc107" stroke-width="2"/>
+  <text x="700" y="180" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffc107">Degradation-Aware</text>
+  <text x="700" y="195" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffc107">Training</text>
+  <text x="700" y="210" text-anchor="middle" font-size="9" fill="#ffc107">Feature & Data Level</text>
+  <text x="700" y="220" text-anchor="middle" font-size="9" fill="#ffc107">Modal Balance</text>
+  
+  <!-- Unified Noise Initialization -->
+  <rect x="400" y="280" width="180" height="50" rx="8" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2"/>
+  <text x="490" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#03a9f4">Unified Noise</text>
+  <text x="490" y="315" text-anchor="middle" font-size="11" font-weight="bold" fill="#03a9f4">Initialization</text>
+  
+  <!-- Autoregressive Generation -->
+  <rect x="200" y="370" width="600" height="80" rx="10" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="500" y="395" text-anchor="middle" font-size="14" font-weight="bold" fill="#3f51b5">Autoregressive Generation Process</text>
+  
+  <!-- Video Clips -->
+  <rect x="220" y="410" width="80" height="25" rx="5" fill="#c8e6c9" stroke="#4caf50" stroke-width="1"/>
+  <text x="260" y="425" text-anchor="middle" font-size="9" fill="#4caf50">Clip 1</text>
+  
+  <rect x="320" y="410" width="80" height="25" rx="5" fill="#c8e6c9" stroke="#4caf50" stroke-width="1"/>
+  <text x="360" y="425" text-anchor="middle" font-size="9" fill="#4caf50">Clip 2</text>
+  
+  <rect x="420" y="410" width="80" height="25" rx="5" fill="#c8e6c9" stroke="#4caf50" stroke-width="1"/>
+  <text x="460" y="425" text-anchor="middle" font-size="9" fill="#4caf50">Clip 3</text>
+  
+  <text x="520" y="425" text-anchor="middle" font-size="12" fill="#3f51b5">...</text>
+  
+  <rect x="580" y="410" width="80" height="25" rx="5" fill="#c8e6c9" stroke="#4caf50" stroke-width="1"/>
+  <text x="620" y="425" text-anchor="middle" font-size="9" fill="#4caf50">Clip N</text>
+  
+  <text x="720" y="425" text-anchor="middle" font-size="10" fill="#3f51b5">(Up to 1 minute)</text>
+  
+  <!-- Output Section -->
+  <rect x="350" y="500" width="300" height="60" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="500" y="525" text-anchor="middle" font-size="14" font-weight="bold" fill="#4caf50">Ultra-Long Controllable Video</text>
+  <text x="500" y="545" text-anchor="middle" font-size="11" fill="#4caf50">Temporally Consistent & High Quality</text>
+  
+  <!-- Applications -->
+  <rect x="100" y="600" width="120" height="50" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="160" y="620" text-anchor="middle" font-size="10" font-weight="bold" fill="#ff9800">Video Editing</text>
+  <text x="160" y="635" text-anchor="middle" font-size="9" fill="#ff9800">Long-range editing</text>
+  
+  <rect x="250" y="600" width="120" height="50" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="310" y="620" text-anchor="middle" font-size="10" font-weight="bold" fill="#ff9800">Motion Transfer</text>
+  <text x="310" y="635" text-anchor="middle" font-size="9" fill="#ff9800">Scene transfer</text>
+  
+  <rect x="400" y="600" width="120" height="50" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="460" y="620" text-anchor="middle" font-size="10" font-weight="bold" fill="#ff9800">Mesh-to-Video</text>
+  <text x="460" y="635" text-anchor="middle" font-size="9" fill="#ff9800">3D animation</text>
+  
+  <!-- Key Innovations Box -->
+  <rect x="700" y="350" width="250" height="200" rx="10" fill="#f5f5f5" stroke="#666" stroke-width="2"/>
+  <text x="825" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">Key Innovations</text>
+  
+  <circle cx="720" cy="400" r="3" fill="#4caf50"/>
+  <text x="730" y="405" font-size="9" fill="#333">Global control normalization</text>
+  
+  <circle cx="720" cy="420" r="3" fill="#2196f3"/>
+  <text x="730" y="425" font-size="9" fill="#333">Unified noise initialization</text>
+  
+  <circle cx="720" cy="440" r="3" fill="#9c27b0"/>
+  <text x="730" y="445" font-size="9" fill="#333">Multi-modal control integration</text>
+  
+  <circle cx="720" cy="460" r="3" fill="#ff9800"/>
+  <text x="730" y="465" font-size="9" fill="#333">Degradation-aware training</text>
+  
+  <circle cx="720" cy="480" r="3" fill="#f44336"/>
+  <text x="730" y="485" font-size="9" fill="#333">Autoregressive framework</text>
+  
+  <circle cx="720" cy="500" r="3" fill="#795548"/>
+  <text x="730" y="505" font-size="9" fill="#333">LongVGenBench dataset</text>
+  
+  <!-- Evaluation -->
+  <rect x="50" y="700" width="900" height="50" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="500" y="720" text-anchor="middle" font-size="12" font-weight="bold" fill="#1976d2">Evaluation on LongVGenBench</text>
+  <text x="500" y="735" text-anchor="middle" font-size="10" fill="#1976d2">100 high-quality videos, 1+ minute each | VBench metrics: Consistency, Quality, Temporal Coherence</text>
+  
+  <!-- Flow connections (simplified lines without arrows) -->
+  <line x1="250" y1="100" x2="300" y2="90" stroke="#666" stroke-width="2"/>
+  <line x1="150" y1="140" x2="120" y2="180" stroke="#666" stroke-width="2"/>
+  <line x1="150" y1="140" x2="280" y2="180" stroke="#666" stroke-width="2"/>
+  <line x1="190" y1="205" x2="400" y2="205" stroke="#666" stroke-width="2"/>
+  <line x1="350" y1="205" x2="400" y2="205" stroke="#666" stroke-width="2"/>
+  <line x1="490" y1="250" x2="490" y2="280" stroke="#666" stroke-width="2"/>
+  <line x1="490" y1="330" x2="490" y2="370" stroke="#666" stroke-width="2"/>
+  <line x1="500" y1="450" x2="500" y2="500" stroke="#666" stroke-width="2"/>
+  <line x1="500" y1="560" x2="160" y2="600" stroke="#666" stroke-width="2"/>
+  <line x1="500" y1="560" x2="310" y2="600" stroke="#666" stroke-width="2"/>
+  <line x1="500" y1="560" x2="460" y2="600" stroke="#666" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses a unified noise initialization across all video segments">
+                        <div class="quiz-question">1. What is the main innovation in LongVie's approach to handling noise initialization compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It eliminates noise completely from the generation process">It eliminates noise completely from the generation process</div><div class="quiz-choice" data-value="It uses a unified noise initialization across all video segments">It uses a unified noise initialization across all video segments</div><div class="quiz-choice" data-value="It applies random noise independently to each frame">It applies random noise independently to each frame</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To balance detailed structure guidance with high-level semantic control">
+                        <div class="quiz-question">2. Why does LongVie use both dense (depth maps) and sparse (keypoints) control signals?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce computational costs during training">To reduce computational costs during training</div><div class="quiz-choice" data-value="To make the model more complex and sophisticated">To make the model more complex and sophisticated</div><div class="quiz-choice" data-value="To balance detailed structure guidance with high-level semantic control">To balance detailed structure guidance with high-level semantic control</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="45 minutes">
+                        <div class="quiz-question">3. What is the approximate time required by LongVie to generate a one-minute video at 480x720 resolution?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="5 minutes">5 minutes</div><div class="quiz-choice" data-value="45 minutes">45 minutes</div><div class="quiz-choice" data-value="2 hours">2 hours</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Skywork UniPic: Unified Autoregressive Modeling for Visual Understanding
+  and Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.03320" target="_blank">http://arxiv.org/pdf/2508.03320</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces Skywork UniPic, a unified autoregressive model for visual AI tasks including image understanding, text-to-image generation, and image editing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous fragmented approaches using separate models for different tasks, it proposes a novel unified architecture with decoupled visual encoding strategy using MAR for generation and SigLIP2 for understanding.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of creating a single, parameter-efficient architecture that can excel at multiple visual AI tasks while remaining deployable on commodity hardware.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method employs a 1.5B-parameter model with four core components: MAR encoder-decoder, SigLIP2 encoder, shared language model backbone, and MLP projection layers, trained through a progressive four-stage curriculum.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieves state-of-the-art performance across multiple benchmarks: 0.86 on GenEval, 85.5 on DPG-Bench, 5.83 on GEditBench-EN, and 3.49 on ImgEdit-Bench, while requiring only 15GB GPU memory for 1024×1024 image generation.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Skywork UniPic: Unified Autoregressive Modeling for Visual Understanding
+  and Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    Skywork UniPic: Unified Autoregressive Modeling Workflow
+  </text>
+  
+  <!-- Architecture Section -->
+  <rect x="50" y="60" width="900" height="120" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="500" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">
+    Model Architecture
+  </text>
+  
+  <!-- MAR Encoder -->
+  <rect x="80" y="100" width="150" height="60" fill="#ff6b6b" stroke="#c0392b" stroke-width="2" rx="8"/>
+  <text x="155" y="125" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MAR Encoder</text>
+  <text x="155" y="140" text-anchor="middle" font-size="10" fill="white">(Generation)</text>
+  <text x="155" y="155" text-anchor="middle" font-size="10" fill="white">1B params</text>
+  
+  <!-- SigLIP2 Encoder -->
+  <rect x="250" y="100" width="150" height="60" fill="#4ecdc4" stroke="#16a085" stroke-width="2" rx="8"/>
+  <text x="325" y="125" text-anchor="middle" font-size="12" font-weight="bold" fill="white">SigLIP2 Encoder</text>
+  <text x="325" y="140" text-anchor="middle" font-size="10" fill="white">(Understanding)</text>
+  <text x="325" y="155" text-anchor="middle" font-size="10" fill="white">400M params</text>
+  
+  <!-- LLM Backbone -->
+  <rect x="420" y="100" width="150" height="60" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="8"/>
+  <text x="495" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Qwen2.5-1.5B</text>
+  <text x="495" y="135" text-anchor="middle" font-size="10" fill="white">LLM Backbone</text>
+  <text x="495" y="150" text-anchor="middle" font-size="10" fill="white">Shared Processing</text>
+  
+  <!-- MAR Decoder -->
+  <rect x="590" y="100" width="150" height="60" fill="#f39c12" stroke="#e67e22" stroke-width="2" rx="8"/>
+  <text x="665" y="125" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MAR Decoder</text>
+  <text x="665" y="140" text-anchor="middle" font-size="10" fill="white">(Image Gen)</text>
+  <text x="665" y="155" text-anchor="middle" font-size="10" fill="white">1B params</text>
+  
+  <!-- MLP Projections -->
+  <rect x="760" y="100" width="120" height="60" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="8"/>
+  <text x="820" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MLP</text>
+  <text x="820" y="135" text-anchor="middle" font-size="10" fill="white">Projection</text>
+  <text x="820" y="150" text-anchor="middle" font-size="10" fill="white">Layers</text>
+  
+  <!-- Training Pipeline Section -->
+  <rect x="50" y="200" width="900" height="300" fill="#fff5f5" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="500" y="225" text-anchor="middle" font-size="18" font-weight="bold" fill="#c0392b">
+    Four-Stage Progressive Training Pipeline
+  </text>
+  
+  <!-- Stage 1 -->
+  <rect x="80" y="250" width="180" height="100" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="8"/>
+  <text x="170" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Stage 1: MAR PT</text>
+  <text x="170" y="295" text-anchor="middle" font-size="11" fill="white">Foundation Generation</text>
+  <text x="170" y="310" text-anchor="middle" font-size="11" fill="white">800 epochs</text>
+  <text x="170" y="325" text-anchor="middle" font-size="11" fill="white">130M samples</text>
+  <text x="170" y="340" text-anchor="middle" font-size="11" fill="white">512×512 resolution</text>
+  
+  <!-- Stage 2 -->
+  <rect x="280" y="250" width="180" height="100" fill="#27ae60" stroke="#229954" stroke-width="2" rx="8"/>
+  <text x="370" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Stage 2: Alignment</text>
+  <text x="370" y="295" text-anchor="middle" font-size="11" fill="white">MAR-LLM Bridge</text>
+  <text x="370" y="310" text-anchor="middle" font-size="11" fill="white">3 epochs</text>
+  <text x="370" y="325" text-anchor="middle" font-size="11" fill="white">Frozen LLM</text>
+  <text x="370" y="340" text-anchor="middle" font-size="11" fill="white">1024×1024 gen</text>
+  
+  <!-- Stage 3 -->
+  <rect x="480" y="250" width="180" height="100" fill="#e67e22" stroke="#d35400" stroke-width="2" rx="8"/>
+  <text x="570" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Stage 3: Joint CT</text>
+  <text x="570" y="295" text-anchor="middle" font-size="11" fill="white">Multi-task Training</text>
+  <text x="570" y="310" text-anchor="middle" font-size="11" fill="white">3 epochs</text>
+  <text x="570" y="325" text-anchor="middle" font-size="11" fill="white">λGen=1, λUnd=0.01</text>
+  <text x="570" y="340" text-anchor="middle" font-size="11" fill="white">Unfrozen LLM</text>
+  
+  <!-- Stage 4 -->
+  <rect x="680" y="250" width="180" height="100" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="8"/>
+  <text x="770" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Stage 4: SFT</text>
+  <text x="770" y="295" text-anchor="middle" font-size="11" fill="white">Fine-tuning</text>
+  <text x="770" y="310" text-anchor="middle" font-size="11" fill="white">2 epochs</text>
+  <text x="770" y="325" text-anchor="middle" font-size="11" fill="white">3M samples</text>
+  <text x="770" y="340" text-anchor="middle" font-size="11" fill="white">Reward filtering</text>
+  
+  <!-- Data Quality Section -->
+  <rect x="50" y="370" width="420" height="110" fill="#f0f8ff" stroke="#3498db" stroke-width="2" rx="8"/>
+  <text x="260" y="395" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">
+    Data Quality Assurance
+  </text>
+  
+  <rect x="80" y="410" width="160" height="55" fill="#1abc9c" stroke="#16a085" stroke-width="2" rx="6"/>
+  <text x="160" y="430" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Skywork-ImgReward</text>
+  <text x="160" y="445" text-anchor="middle" font-size="10" fill="white">GRPO Training</text>
+  <text x="160" y="458" text-anchor="middle" font-size="10" fill="white">Visual Quality</text>
+  
+  <rect x="260" y="410" width="160" height="55" fill="#e74c3c" stroke="#c0392b" stroke-width="2" rx="6"/>
+  <text x="340" y="430" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Skywork-EditReward</text>
+  <text x="340" y="445" text-anchor="middle" font-size="10" fill="white">SFT Training</text>
+  <text x="340" y="458" text-anchor="middle" font-size="10" fill="white">Edit Accuracy</text>
+  
+  <!-- Tasks Section -->
+  <rect x="490" y="370" width="460" height="110" fill="#fff8dc" stroke="#f39c12" stroke-width="2" rx="8"/>
+  <text x="720" y="395" text-anchor="middle" font-size="16" font-weight="bold" fill="#e67e22">
+    Unified Task Capabilities
+  </text>
+  
+  <rect x="520" y="410" width="120" height="25" fill="#ff6b6b" stroke="#c0392b" stroke-width="1" rx="4"/>
+  <text x="580" y="427" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Image Generation</text>
+  
+  <rect x="650" y="410" width="120" height="25" fill="#4ecdc4" stroke="#16a085" stroke-width="1" rx="4"/>
+  <text x="710" y="427" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Understanding</text>
+  
+  <rect x="780" y="410" width="120" height="25" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" rx="4"/>
+  <text x="840" y="427" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Image Editing</text>
+  
+  <text x="720" y="455" text-anchor="middle" font-size="12" fill="#d35400">
+    Single 1.5B Parameter Framework
+  </text>
+  <text x="720" y="470" text-anchor="middle" font-size="11" fill="#d35400">
+    No task-specific adapters required
+  </text>
+  
+  <!-- Results Section -->
+  <rect x="50" y="500" width="900" height="120" fill="#f5f5f5" stroke="#34495e" stroke-width="2" rx="10"/>
+  <text x="500" y="525" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    Performance Results
+  </text>
+  
+  <rect x="80" y="540" width="140" height="60" fill="#2ecc71" stroke="#27ae60" stroke-width="2" rx="6"/>
+  <text x="150" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="white">GenEval</text>
+  <text x="150" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">0.86</text>
+  <text x="150" y="590" text-anchor="middle" font-size="10" fill="white">Compositional</text>
+  
+  <rect x="240" y="540" width="140" height="60" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="6"/>
+  <text x="310" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="white">DPG-Bench</text>
+  <text x="310" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">85.5</text>
+  <text x="310" y="590" text-anchor="middle" font-size="10" fill="white">Complex Gen</text>
+  
+  <rect x="400" y="540" width="140" height="60" fill="#e67e22" stroke="#d35400" stroke-width="2" rx="6"/>
+  <text x="470" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="white">GEdit-Bench</text>
+  <text x="470" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">5.83</text>
+  <text x="470" y="590" text-anchor="middle" font-size="10" fill="white">Image Edit</text>
+  
+  <rect x="560" y="540" width="140" height="60" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="6"/>
+  <text x="630" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="white">ImgEdit-Bench</text>
+  <text x="630" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">3.49</text>
+  <text x="630" y="590" text-anchor="middle" font-size="10" fill="white">Multi-category</text>
+  
+  <rect x="720" y="540" width="140" height="60" fill="#e74c3c" stroke="#c0392b" stroke-width="2" rx="6"/>
+  <text x="790" y="555" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Efficiency</text>
+  <text x="790" y="570" text-anchor="middle" font-size="12" font-weight="bold" fill="white">1024×1024</text>
+  <text x="790" y="585" text-anchor="middle" font-size="10" fill="white">&lt;15GB GPU</text>
+  <text x="790" y="595" text-anchor="middle" font-size="10" fill="white">(RTX 4090)</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="50" y="640" width="900" height="80" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2" rx="8"/>
+  <text x="500" y="665" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">
+    Key Innovation: Decoupled Encoding Strategy
+  </text>
+  <text x="500" y="685" text-anchor="middle" font-size="13" fill="#34495e">
+    Separate encoders for generation (MAR) and understanding (SigLIP2) feeding shared autoregressive LLM
+  </text>
+  <text x="500" y="705" text-anchor="middle" font-size="13" fill="#34495e">
+    Resolves semantic-fidelity tension while enabling cross-task knowledge transfer
+  </text>
+  
+  <!-- Resolution indicators -->
+  <circle cx="170" cy="365" r="3" fill="#e74c3c"/>
+  <text x="175" y="370" font-size="9" fill="#c0392b">256²→512²</text>
+  
+  <circle cx="370" cy="365" r="3" fill="#e74c3c"/>
+  <text x="375" y="370" font-size="9" fill="#c0392b">512²→1024²</text>
+  
+  <circle cx="570" cy="365" r="3" fill="#e74c3c"/>
+  <text x="575" y="370" font-size="9" fill="#c0392b">1024² stable</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Decoupled encoding strategy with MAR for generation and SigLIP2 for understanding">
+                        <div class="quiz-question">1. What is the key innovation in Skywork UniPic's architecture that differentiates it from previous unified models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a single shared encoder for all tasks">Using a single shared encoder for all tasks</div><div class="quiz-choice" data-value="Decoupled encoding strategy with MAR for generation and SigLIP2 for understanding">Decoupled encoding strategy with MAR for generation and SigLIP2 for understanding</div><div class="quiz-choice" data-value="Multiple separate models connected through adapters">Multiple separate models connected through adapters</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Under 15 GB">
+                        <div class="quiz-question">2. How much GPU memory does Skywork UniPic require to generate 1024×1024 images?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Over 30 GB">Over 30 GB</div><div class="quiz-choice" data-value="Under 15 GB">Under 15 GB</div><div class="quiz-choice" data-value="Exactly 24 GB">Exactly 24 GB</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Image editing">
+                        <div class="quiz-question">3. Which capability emerges last during Skywork UniPic's progressive training stages?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Text-to-image generation">Text-to-image generation</div><div class="quiz-choice" data-value="Image understanding">Image understanding</div><div class="quiz-choice" data-value="Image editing">Image editing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>CompassVerifier: A Unified and Robust Verifier for LLMs Evaluation and
+  Outcome Reward</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.03686" target="_blank">http://arxiv.org/pdf/2508.03686</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents CompassVerifier, a unified verification model for evaluating large language model outputs and providing reward signals for reinforcement learning, in the domain of natural language processing and model evaluation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research using rule-based matching and LLM-based verification methods, the paper proposes a novel lightweight verifier model and comprehensive benchmark for systematic evaluation of verification capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of comprehensive benchmarks for evaluating verification capabilities across different LLMs and the limitations of existing verification approaches in handling complex edge cases and generalizing across domains.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed VerifierBench through multi-stage data collection and filtering, and created CompassVerifier using three key techniques: Complex Formula Augmentation, Error-Driven Adversarial Augmentation, and Generalizability Augmentation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> CompassVerifier achieved state-of-the-art performance across diverse domains and tasks, with the 32B model reaching 90.8% accuracy and 87.7% F1-score, significantly outperforming larger general LLMs and baseline verifier models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>CompassVerifier: A Unified and Robust Verifier for LLMs Evaluation and
+  Outcome Reward</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">CompassVerifier: Unified and Robust Verifier for LLMs</text>
+  
+  <!-- Main Pipeline Sections -->
+  
+  <!-- Section 1: VerifierBench Construction -->
+  <rect x="50" y="60" width="280" height="200" fill="#e8f4f8" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="190" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9">VerifierBench Construction</text>
+  
+  <!-- Data Collection -->
+  <rect x="70" y="100" width="240" height="40" fill="#3498db" rx="5"/>
+  <text x="190" y="125" text-anchor="middle" font-size="11" fill="white">Large-scale Data Collection</text>
+  <text x="190" y="140" text-anchor="middle" font-size="9" fill="#34495e">1M+ responses from 50+ models</text>
+  
+  <!-- Multi-stage Verification -->
+  <rect x="70" y="150" width="240" height="40" fill="#5dade2" rx="5"/>
+  <text x="190" y="175" text-anchor="middle" font-size="11" fill="white">Multi-stage Verification Pipeline</text>
+  
+  <!-- Human Annotation -->
+  <rect x="70" y="200" width="240" height="40" fill="#85c1e9" rx="5"/>
+  <text x="190" y="225" text-anchor="middle" font-size="11" fill="white">Human Annotation & Error Analysis</text>
+  
+  <!-- Section 2: CompassVerifier Training -->
+  <rect x="380" y="60" width="280" height="320" fill="#f0f8e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="520" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#27ae60">CompassVerifier Training</text>
+  
+  <!-- Base Training Data -->
+  <rect x="400" y="100" width="240" height="30" fill="#27ae60" rx="5"/>
+  <text x="520" y="120" text-anchor="middle" font-size="10" fill="white">Base Training Data (VerifierBench)</text>
+  
+  <!-- Augmentation Techniques -->
+  <rect x="400" y="140" width="240" height="40" fill="#58d68d" rx="5"/>
+  <text x="520" y="165" text-anchor="middle" font-size="11" fill="white">Complex Formula Augmentation</text>
+  
+  <rect x="400" y="190" width="240" height="40" fill="#82e0aa" rx="5"/>
+  <text x="520" y="215" text-anchor="middle" font-size="11" fill="white">Error-Driven Adversarial Augmentation</text>
+  
+  <rect x="400" y="240" width="240" height="40" fill="#abebc6" rx="5"/>
+  <text x="520" y="265" text-anchor="middle" font-size="11" fill="white">Generalizability Augmentation</text>
+  
+  <!-- Model Training -->
+  <rect x="400" y="290" width="240" height="40" fill="#d5f4e6" rx="5"/>
+  <text x="520" y="315" text-anchor="middle" font-size="11" fill="#2d5016">Fine-tuning on Qwen2.5 Series</text>
+  
+  <!-- Model Sizes -->
+  <rect x="400" y="340" width="240" height="25" fill="#e8f8f5" rx="5"/>
+  <text x="520" y="357" text-anchor="middle" font-size="10" fill="#196f3d">3B, 7B, 32B Parameter Models</text>
+  
+  <!-- Section 3: Applications -->
+  <rect x="720" y="60" width="230" height="200" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="835" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">Applications</text>
+  
+  <!-- Evaluation -->
+  <rect x="740" y="100" width="190" height="40" fill="#e67e22" rx="5"/>
+  <text x="835" y="125" text-anchor="middle" font-size="11" fill="white">LLM Evaluation</text>
+  
+  <!-- Reward Model -->
+  <rect x="740" y="150" width="190" height="40" fill="#f39c12" rx="5"/>
+  <text x="835" y="175" text-anchor="middle" font-size="11" fill="white">RL Reward Model</text>
+  
+  <!-- Multi-domain Support -->
+  <rect x="740" y="200" width="190" height="40" fill="#f8c471" rx="5"/>
+  <text x="835" y="225" text-anchor="middle" font-size="11" fill="white">Multi-domain Support</text>
+  
+  <!-- Key Features Section -->
+  <rect x="50" y="300" width="600" height="180" fill="#fdeef4" stroke="#8e44ad" stroke-width="2" rx="10"/>
+  <text x="350" y="320" text-anchor="middle" font-size="14" font-weight="bold" fill="#7d3c98">Key Features & Capabilities</text>
+  
+  <!-- Feature boxes -->
+  <rect x="70" y="340" width="170" height="60" fill="#bb8fce" rx="5"/>
+  <text x="155" y="365" text-anchor="middle" font-size="10" fill="white">Multi-answer Types</text>
+  <text x="155" y="380" text-anchor="middle" font-size="9" fill="white">Formulas, Sequences,</text>
+  <text x="155" y="395" text-anchor="middle" font-size="9" fill="white">Multi-choice, etc.</text>
+  
+  <rect x="260" y="340" width="170" height="60" fill="#a569bd" rx="5"/>
+  <text x="345" y="365" text-anchor="middle" font-size="10" fill="white">Robust Verification</text>
+  <text x="345" y="380" text-anchor="middle" font-size="9" fill="white">Handles edge cases &</text>
+  <text x="345" y="395" text-anchor="middle" font-size="9" fill="white">invalid responses</text>
+  
+  <rect x="450" y="340" width="170" height="60" fill="#9b59b6" rx="5"/>
+  <text x="535" y="365" text-anchor="middle" font-size="10" fill="white">Lightweight Design</text>
+  <text x="535" y="380" text-anchor="middle" font-size="9" fill="white">3B model outperforms</text>
+  <text x="535" y="395" text-anchor="middle" font-size="9" fill="white">larger general LLMs</text>
+  
+  <rect x="70" y="410" width="170" height="60" fill="#8e44ad" rx="5"/>
+  <text x="155" y="435" text-anchor="middle" font-size="10" fill="white">Cross-domain</text>
+  <text x="155" y="450" text-anchor="middle" font-size="9" fill="white">Math, Knowledge,</text>
+  <text x="155" y="465" text-anchor="middle" font-size="9" fill="white">Science, Reasoning</text>
+  
+  <rect x="260" y="410" width="170" height="60" fill="#7d3c98" rx="5"/>
+  <text x="345" y="435" text-anchor="middle" font-size="10" fill="white">Pattern Analysis</text>
+  <text x="345" y="450" text-anchor="middle" font-size="9" fill="white">30+ meta error</text>
+  <text x="345" y="465" text-anchor="middle" font-size="9" fill="white">patterns identified</text>
+  
+  <rect x="450" y="410" width="170" height="60" fill="#6c3483" rx="5"/>
+  <text x="535" y="435" text-anchor="middle" font-size="10" fill="white">SOTA Performance</text>
+  <text x="535" y="450" text-anchor="middle" font-size="9" fill="white">90.8% accuracy on</text>
+  <text x="535" y="465" text-anchor="middle" font-size="9" fill="white">VerifierBench</text>
+  
+  <!-- Results Section -->
+  <rect x="50" y="520" width="900" height="120" fill="#eaf2f8" stroke="#1b4f72" stroke-width="2" rx="10"/>
+  <text x="500" y="540" text-anchor="middle" font-size="14" font-weight="bold" fill="#1b4f72">Experimental Results</text>
+  
+  <rect x="80" y="560" width="200" height="30" fill="#3498db" rx="5"/>
+  <text x="180" y="580" text-anchor="middle" font-size="10" fill="white">VerifierBench Evaluation</text>
+  
+  <rect x="300" y="560" width="200" height="30" fill="#5dade2" rx="5"/>
+  <text x="400" y="580" text-anchor="middle" font-size="10" fill="white">Reward Model Performance</text>
+  
+  <rect x="520" y="560" width="200" height="30" fill="#85c1e9" rx="5"/>
+  <text x="620" y="580" text-anchor="middle" font-size="10" fill="white">Generalization Testing</text>
+  
+  <rect x="740" y="560" width="180" height="30" fill="#aed6f1" rx="5"/>
+  <text x="830" y="580" text-anchor="middle" font-size="10" fill="white">Ablation Studies</text>
+  
+  <!-- Performance metrics -->
+  <text x="180" y="610" text-anchor="middle" font-size="9" fill="#2c3e50">F1: 80.4% (3B) → 87.7% (32B)</text>
+  <text x="400" y="610" text-anchor="middle" font-size="9" fill="#2c3e50">+18.5 points on AIME 2024</text>
+  <text x="620" y="610" text-anchor="middle" font-size="9" fill="#2c3e50">Robust across prompts</text>
+  <text x="830" y="610" text-anchor="middle" font-size="9" fill="#2c3e50">+3.6% F1 with augmentation</text>
+  
+  <!-- Workflow connections -->
+  <path d="M 330 160 L 380 160" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 660 220 L 720 140" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 520 380 L 520 520" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Bottom summary -->
+  <rect x="100" y="680" width="800" height="80" fill="#f4f6f7" stroke="#85929e" stroke-width="1" rx="8"/>
+  <text x="500" y="705" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Contributions</text>
+  <text x="200" y="725" text-anchor="middle" font-size="10" fill="#34495e">VerifierBench:</text>
+  <text x="200" y="740" text-anchor="middle" font-size="9" fill="#34495e">Challenging benchmark</text>
+  
+  <text x="500" y="725" text-anchor="middle" font-size="10" fill="#34495e">CompassVerifier:</text>
+  <text x="500" y="740" text-anchor="middle" font-size="9" fill="#34495e">Robust verifier model</text>
+  
+  <text x="800" y="725" text-anchor="middle" font-size="10" fill="#34495e">Error Analysis:</text>
+  <text x="800" y="740" text-anchor="middle" font-size="9" fill="#34495e">Systematic patterns</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It combines three augmentation techniques for robust verification across domains">
+                        <div class="quiz-question">1. What is the main innovation of CompassVerifier compared to previous verification approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses rule-based pattern matching exclusively">It uses rule-based pattern matching exclusively</div><div class="quiz-choice" data-value="It combines three augmentation techniques for robust verification across domains">It combines three augmentation techniques for robust verification across domains</div><div class="quiz-choice" data-value="It relies solely on large language models for verification">It relies solely on large language models for verification</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It creates a separate category for invalid responses like truncated outputs or repetitive content">
+                        <div class="quiz-question">2. How does VerifierBench handle invalid responses in its evaluation framework?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It simply ignores them and only focuses on correct/incorrect classifications">It simply ignores them and only focuses on correct/incorrect classifications</div><div class="quiz-choice" data-value="It treats them as incorrect responses">It treats them as incorrect responses</div><div class="quiz-choice" data-value="It creates a separate category for invalid responses like truncated outputs or repetitive content">It creates a separate category for invalid responses like truncated outputs or repetitive content</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="An absolute F1-score improvement of 41.3%">
+                        <div class="quiz-question">3. What was the performance improvement when CompassVerifier-7B was compared to similarly-sized Qwen2.5-7B-Instruct?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="An absolute F1-score improvement of 41.3%">An absolute F1-score improvement of 41.3%</div><div class="quiz-choice" data-value="An absolute F1-score improvement of 25.5%">An absolute F1-score improvement of 25.5%</div><div class="quiz-choice" data-value="An absolute F1-score improvement of 15.8%">An absolute F1-score improvement of 15.8%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
