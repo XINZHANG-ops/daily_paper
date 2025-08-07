@@ -1,0 +1,1169 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-08-07 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-08-07 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>SEAgent: Self-Evolving Computer Use Agent with Autonomous Learning from
+  Experience</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-06</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.04700" target="_blank">http://arxiv.org/pdf/2508.04700</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents SEAgent, a self-evolving computer use agent framework that enables autonomous learning and adaptation to unfamiliar software environments through experience.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research in large vision-language models and computer use agents that relied heavily on human-labeled data, this paper proposes a novel framework allowing agents to learn autonomously through self-exploration and experiential learning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of enabling computer use agents to effectively learn and adapt to new and specialized software environments without requiring human annotations or supervision.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed a framework combining a World State Model for trajectory assessment, a Curriculum Generator for creating progressively challenging tasks, and a reinforcement learning approach using both adversarial imitation for failure actions and Group Relative Policy Optimization for successful ones.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The system achieved a significant improvement in success rate from 11.3% to 34.5% compared to the baseline UI-TARS model when tested across five professional software applications, with the specialist-to-generalist strategy outperforming both specialist and direct generalist approaches.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SEAgent: Self-Evolving Computer Use Agent with Autonomous Learning from
+  Experience</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    SEAgent: Self-Evolving Computer Use Agent Workflow
+  </text>
+  
+  <!-- Phase 1: Initialization -->
+  <rect x="50" y="70" width="180" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="140" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Initialization</text>
+  <text x="140" y="110" text-anchor="middle" font-size="11" fill="#34495e">GUI State Parsing</text>
+  <text x="140" y="125" text-anchor="middle" font-size="11" fill="#34495e">Initial Task Generation</text>
+  <text x="140" y="140" text-anchor="middle" font-size="11" fill="#34495e">Software Guidebook</text>
+  <text x="140" y="155" text-anchor="middle" font-size="11" fill="#34495e">Creation (U₀)</text>
+  <text x="140" y="175" text-anchor="middle" font-size="10" fill="#7f8c8d">World State Model +</text>
+  <text x="140" y="185" text-anchor="middle" font-size="10" fill="#7f8c8d">Curriculum Generator</text>
+  
+  <!-- Phase 2: Autonomous Exploration -->
+  <rect x="280" y="70" width="180" height="120" rx="10" fill="#fff2e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="370" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Autonomous</text>
+  <text x="370" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Exploration</text>
+  <text x="370" y="125" text-anchor="middle" font-size="11" fill="#34495e">Actor Model π executes</text>
+  <text x="370" y="140" text-anchor="middle" font-size="11" fill="#34495e">task instructions</text>
+  <text x="370" y="155" text-anchor="middle" font-size="11" fill="#34495e">Trial-and-error learning</text>
+  <text x="370" y="175" text-anchor="middle" font-size="10" fill="#7f8c8d">UI-TARS Base Model</text>
+  
+  <!-- Phase 3: World State Evaluation -->
+  <rect x="510" y="70" width="180" height="120" rx="10" fill="#f0e8ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="600" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">World State</text>
+  <text x="600" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Evaluation</text>
+  <text x="600" y="125" text-anchor="middle" font-size="11" fill="#34495e">Step-wise trajectory</text>
+  <text x="600" y="140" text-anchor="middle" font-size="11" fill="#34495e">assessment</text>
+  <text x="600" y="155" text-anchor="middle" font-size="11" fill="#34495e">Success/Failure labeling</text>
+  <text x="600" y="175" text-anchor="middle" font-size="10" fill="#7f8c8d">Qwen2.5-VL Fine-tuned</text>
+  
+  <!-- Phase 4: Curriculum Update -->
+  <rect x="740" y="70" width="180" height="120" rx="10" fill="#e8f8f0" stroke="#27ae60" stroke-width="2"/>
+  <text x="830" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Curriculum</text>
+  <text x="830" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Update</text>
+  <text x="830" y="125" text-anchor="middle" font-size="11" fill="#34495e">Generate challenging</text>
+  <text x="830" y="140" text-anchor="middle" font-size="11" fill="#34495e">tasks</text>
+  <text x="830" y="155" text-anchor="middle" font-size="11" fill="#34495e">Update guidebook</text>
+  <text x="830" y="175" text-anchor="middle" font-size="10" fill="#7f8c8d">Qwen2.5-72B</text>
+  
+  <!-- Phase 5: Policy Update -->
+  <rect x="280" y="240" width="440" height="120" rx="10" fill="#ffeaea" stroke="#e74c3c" stroke-width="2"/>
+  <text x="500" y="260" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Policy Update via Reinforcement Learning</text>
+  
+  <!-- GRPO Section -->
+  <rect x="300" y="280" width="180" height="70" rx="5" fill="#d5f4e6" stroke="#27ae60" stroke-width="1"/>
+  <text x="390" y="295" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">GRPO</text>
+  <text x="390" y="310" text-anchor="middle" font-size="10" fill="#34495e">Correct Actions (aᵀ)</text>
+  <text x="390" y="325" text-anchor="middle" font-size="10" fill="#34495e">Verifiable Rewards</text>
+  <text x="390" y="340" text-anchor="middle" font-size="10" fill="#34495e">Distance-based rewards</text>
+  
+  <!-- Adversarial Imitation Section -->
+  <rect x="520" y="280" width="180" height="70" rx="5" fill="#ffd6d6" stroke="#e74c3c" stroke-width="1"/>
+  <text x="610" y="295" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Adversarial Imitation</text>
+  <text x="610" y="310" text-anchor="middle" font-size="10" fill="#34495e">Failure Actions (aᶠ)</text>
+  <text x="610" y="325" text-anchor="middle" font-size="10" fill="#34495e">Negative KL Divergence</text>
+  <text x="610" y="340" text-anchor="middle" font-size="10" fill="#34495e">Learn from mistakes</text>
+  
+  <!-- Specialist to Generalist -->
+  <rect x="50" y="400" width="900" height="100" rx="10" fill="#f4f1ff" stroke="#6c5ce7" stroke-width="2"/>
+  <text x="500" y="425" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Specialist-to-Generalist Training Strategy</text>
+  
+  <rect x="80" y="445" width="160" height="45" rx="5" fill="#a8e6cf" stroke="#27ae60" stroke-width="1"/>
+  <text x="160" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Software Specialists</text>
+  <text x="160" y="480" text-anchor="middle" font-size="10" fill="#34495e">Individual training</text>
+  
+  <rect x="270" y="445" width="160" height="45" rx="5" fill="#ffd93d" stroke="#f39c12" stroke-width="1"/>
+  <text x="350" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Knowledge Distillation</text>
+  <text x="350" y="480" text-anchor="middle" font-size="10" fill="#34495e">SFT on trajectories</text>
+  
+  <rect x="460" y="445" width="160" height="45" rx="5" fill="#ff9ff3" stroke="#e84393" stroke-width="1"/>
+  <text x="540" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Multi-Software RL</text>
+  <text x="540" y="480" text-anchor="middle" font-size="10" fill="#34495e">Cross-domain training</text>
+  
+  <rect x="650" y="445" width="160" height="45" rx="5" fill="#74b9ff" stroke="#0984e3" stroke-width="1"/>
+  <text x="730" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Unified Generalist</text>
+  <text x="730" y="480" text-anchor="middle" font-size="10" fill="#34495e">Superior performance</text>
+  
+  <!-- Results -->
+  <rect x="50" y="540" width="900" height="80" rx="10" fill="#e8f5e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="500" y="565" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Performance Results</text>
+  <text x="200" y="585" text-anchor="middle" font-size="12" fill="#34495e">UI-TARS Baseline: 11.3%</text>
+  <text x="500" y="585" text-anchor="middle" font-size="12" fill="#34495e">SEAgent (Specialist): 32.2%</text>
+  <text x="800" y="585" text-anchor="middle" font-size="12" fill="#34495e">SEAgent (Generalist): 34.5%</text>
+  <text x="500" y="605" text-anchor="middle" font-size="14" font-weight="bold" fill="#27ae60">+23.2% Improvement in Success Rate</text>
+  
+  <!-- Key Components -->
+  <rect x="50" y="650" width="280" height="120" rx="10" fill="#fff5f5" stroke="#e17055" stroke-width="2"/>
+  <text x="190" y="675" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Components</text>
+  <text x="70" y="695" font-size="11" fill="#34495e">• World State Model (Qwen2.5-VL-7B)</text>
+  <text x="70" y="710" font-size="11" fill="#34495e">• Curriculum Generator (Qwen2.5-72B)</text>
+  <text x="70" y="725" font-size="11" fill="#34495e">• Actor Model (UI-TARS-7B-DPO)</text>
+  <text x="70" y="740" font-size="11" fill="#34495e">• Software Guidebook Memory</text>
+  <text x="70" y="755" font-size="11" fill="#34495e">• Step-wise Reward Signals</text>
+  
+  <!-- Software Environments -->
+  <rect x="370" y="650" width="280" height="120" rx="10" fill="#f0f8ff" stroke="#5dade2" stroke-width="2"/>
+  <text x="510" y="675" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Software Environments</text>
+  <text x="390" y="695" font-size="11" fill="#34495e">• VSCode (Development)</text>
+  <text x="390" y="710" font-size="11" fill="#34495e">• GIMP (Image Editing)</text>
+  <text x="390" y="725" font-size="11" fill="#34495e">• LibreOffice Impress (Presentation)</text>
+  <text x="390" y="740" font-size="11" fill="#34495e">• VLC (Media Player)</text>
+  <text x="390" y="755" font-size="11" fill="#34495e">• LibreOffice Writer (Document)</text>
+  
+  <!-- Innovation -->
+  <rect x="690" y="650" width="260" height="120" rx="10" fill="#fff9e6" stroke="#f39c12" stroke-width="2"/>
+  <text x="820" y="675" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Innovations</text>
+  <text x="710" y="695" font-size="11" fill="#34495e">• Autonomous exploration without</text>
+  <text x="710" y="708" font-size="11" fill="#34495e">  human supervision</text>
+  <text x="710" y="725" font-size="11" fill="#34495e">• Self-evolving curriculum learning</text>
+  <text x="710" y="740" font-size="11" fill="#34495e">• Experience-based policy update</text>
+  <text x="710" y="755" font-size="11" fill="#34495e">• Specialist-to-generalist strategy</text>
+  
+  <!-- Flow indicators -->
+  <path d="M 230 130 L 280 130" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 460 130 L 510 130" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 690 130 L 740 130" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 830 190 Q 950 220 950 300 Q 950 380 140 380 Q 140 220 140 190" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="5,5"/>
+  <path d="M 500 190 L 500 240" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Iteration indicator -->
+  <text x="950" y="340" text-anchor="middle" font-size="10" fill="#7f8c8d" transform="rotate(90 950 340)">Iterative Self-Evolution</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It learns autonomously through self-exploration without human supervision">
+                        <div class="quiz-question">1. What is the main innovation of SEAgent compared to previous computer use agents?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more sophisticated vision-language models">It uses more sophisticated vision-language models</div><div class="quiz-choice" data-value="It learns autonomously through self-exploration without human supervision">It learns autonomously through self-exploration without human supervision</div><div class="quiz-choice" data-value="It can only work with specialized software applications">It can only work with specialized software applications</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Train specialist agents first, then distill into a generalist model">
+                        <div class="quiz-question">2. In the specialist-to-generalist training strategy, what is the correct sequence of steps?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Train generalist model first, then specialize for each software">Train generalist model first, then specialize for each software</div><div class="quiz-choice" data-value="Train multiple generalist models and combine them together">Train multiple generalist models and combine them together</div><div class="quiz-choice" data-value="Train specialist agents first, then distill into a generalist model">Train specialist agents first, then distill into a generalist model</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Improved success rate from 11.3% to 34.5% across five software applications">
+                        <div class="quiz-question">3. What was the main performance improvement achieved by SEAgent?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Improved success rate from 11.3% to 34.5% across five software applications">Improved success rate from 11.3% to 34.5% across five software applications</div><div class="quiz-choice" data-value="Reduced training time by 50% compared to baseline models">Reduced training time by 50% compared to baseline models</div><div class="quiz-choice" data-value="Achieved 100% accuracy on simple computer tasks">Achieved 100% accuracy on simple computer tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Seed Diffusion: A Large-Scale Diffusion Language Model with High-Speed
+  Inference</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-04</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.02193" target="_blank">http://arxiv.org/pdf/2508.02193</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces Seed Diffusion Preview, a large-scale discrete-state diffusion language model for code generation with high-speed inference capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in discrete diffusion models and non-autoregressive generation, it proposes new techniques for balancing generation quality and speed while addressing the limitations of traditional token-by-token decoding.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenges of slow inference speed in language models while maintaining competitive performance, particularly addressing the inefficiencies in token-by-token generation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper employs a two-stage curriculum (TSC) for diffusion training, constrained-order diffusion training, on-policy diffusion learning, and block-level parallel sampling with system optimizations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieves 2,146 tokens/second inference speed on H20 GPUs while maintaining competitive performance across various code benchmarks, establishing new state-of-the-art on the speed-quality trade-off frontier.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Seed Diffusion: A Large-Scale Diffusion Language Model with High-Speed
+  Inference</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4ECDC4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#45B7D1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#96CEB4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFEAA7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DDA0DD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2C3E50">
+    Seed Diffusion: Methodology Flow
+  </text>
+  
+  <!-- Stage 1: TSC Two-Stage Curriculum -->
+  <rect x="50" y="70" width="200" height="120" rx="10" fill="url(#grad1)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="150" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    TSC: Two-Stage Curriculum
+  </text>
+  <text x="150" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Stage 1 (80%): Mask-based
+  </text>
+  <text x="150" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Forward Process
+  </text>
+  <text x="150" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Stage 2 (20%): Edit-based
+  </text>
+  <text x="150" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Forward Process
+  </text>
+  
+  <!-- Stage 2: Trajectory Space Tailoring -->
+  <rect x="300" y="70" width="200" height="120" rx="10" fill="url(#grad2)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="400" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Trajectory Space Tailoring
+  </text>
+  <text x="400" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Constrained-order diffusion
+  </text>
+  <text x="400" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    ELBO-based trajectory
+  </text>
+  <text x="400" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    selection and fine-tuning
+  </text>
+  
+  <!-- Stage 3: On-policy Learning -->
+  <rect x="550" y="70" width="200" height="120" rx="10" fill="url(#grad3)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="650" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    On-policy Diffusion Learning
+  </text>
+  <text x="650" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Minimize trajectory length
+  </text>
+  <text x="650" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    with verifier constraint
+  </text>
+  <text x="650" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Progressive surrogate loss
+  </text>
+  
+  <!-- Stage 4: Block-level Inference -->
+  <rect x="800" y="70" width="150" height="120" rx="10" fill="#E74C3C" stroke="#2C3E50" stroke-width="2"/>
+  <text x="875" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Block-level
+  </text>
+  <text x="875" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Inference
+  </text>
+  <text x="875" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    Semi-autoregressive
+  </text>
+  <text x="875" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    parallel sampling
+  </text>
+  <text x="875" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+    with KV-caching
+  </text>
+  
+  <!-- Mathematical Details Section -->
+  <rect x="50" y="230" width="450" height="150" rx="10" fill="#F8F9FA" stroke="#6C757D" stroke-width="2"/>
+  <text x="275" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2C3E50">
+    Key Mathematical Components
+  </text>
+  
+  <!-- Mask-based process -->
+  <text x="70" y="280" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#E74C3C">
+    Mask-based Process:
+  </text>
+  <text x="70" y="295" font-family="Arial, sans-serif" font-size="10" fill="#2C3E50">
+    q_mask(x_t|x_0) = ∏ q_mask(x_t[i]|x_0[i])
+  </text>
+  
+  <!-- Edit-based process -->
+  <text x="70" y="320" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#3498DB">
+    Edit-based Process:
+  </text>
+  <text x="70" y="335" font-family="Arial, sans-serif" font-size="10" fill="#2C3E50">
+    k_t = ⌊|x_0| · α_t⌋ (Levenshtein distance control)
+  </text>
+  
+  <!-- ELBO Loss -->
+  <text x="70" y="360" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#27AE60">
+    Combined Loss:
+  </text>
+  <text x="70" y="375" font-family="Arial, sans-serif" font-size="10" fill="#2C3E50">
+    L_diff(θ) = -E_q_edit,t log p_θ(x_0|x_t) - E_q_mask,t [weighted reconstruction]
+  </text>
+  
+  <!-- Performance Results Section -->
+  <rect x="550" y="230" width="400" height="150" rx="10" fill="#E8F5E8" stroke="#27AE60" stroke-width="2"/>
+  <text x="750" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2C3E50">
+    Performance Achievements
+  </text>
+  
+  <circle cx="580" cy="285" r="8" fill="#FF6B6B"/>
+  <text x="600" y="290" font-family="Arial, sans-serif" font-size="12" fill="#2C3E50">
+    Inference Speed: 2,146 tokens/s on H20 GPUs
+  </text>
+  
+  <circle cx="580" cy="310" r="8" fill="#4ECDC4"/>
+  <text x="600" y="315" font-family="Arial, sans-serif" font-size="12" fill="#2C3E50">
+    Competitive performance on code benchmarks
+  </text>
+  
+  <circle cx="580" cy="335" r="8" fill="#45B7D1"/>
+  <text x="600" y="340" font-family="Arial, sans-serif" font-size="12" fill="#2C3E50">
+    Superior speed-quality Pareto frontier
+  </text>
+  
+  <circle cx="580" cy="360" r="8" fill="#96CEB4"/>
+  <text x="600" y="365" font-family="Arial, sans-serif" font-size="12" fill="#2C3E50">
+    Strong performance on editing tasks
+  </text>
+  
+  <!-- Evaluation Benchmarks -->
+  <rect x="50" y="420" width="900" height="100" rx="10" fill="#FFF3CD" stroke="#FFC107" stroke-width="2"/>
+  <text x="500" y="445" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2C3E50">
+    Evaluation Benchmarks
+  </text>
+  
+  <rect x="80" y="460" width="100" height="40" rx="5" fill="#17A2B8" stroke="white" stroke-width="1"/>
+  <text x="130" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">HumanEval</text>
+  
+  <rect x="200" y="460" width="100" height="40" rx="5" fill="#28A745" stroke="white" stroke-width="1"/>
+  <text x="250" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">MBPP</text>
+  
+  <rect x="320" y="460" width="100" height="40" rx="5" fill="#DC3545" stroke="white" stroke-width="1"/>
+  <text x="370" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">BigCodeBench</text>
+  
+  <rect x="440" y="460" width="100" height="40" rx="5" fill="#6F42C1" stroke="white" stroke-width="1"/>
+  <text x="490" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">LiveCodeBench</text>
+  
+  <rect x="560" y="460" width="100" height="40" rx="5" fill="#FD7E14" stroke="white" stroke-width="1"/>
+  <text x="610" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">MBXP</text>
+  
+  <rect x="680" y="460" width="100" height="40" rx="5" fill="#20C997" stroke="white" stroke-width="1"/>
+  <text x="730" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">NCB</text>
+  
+  <rect x="800" y="460" width="120" height="40" rx="5" fill="#6C757D" stroke="white" stroke-width="1"/>
+  <text x="860" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Aider/CanItEdit</text>
+  
+  <!-- Infrastructure Optimization -->
+  <rect x="50" y="560" width="900" height="80" rx="10" fill="#E1F5FE" stroke="#03A9F4" stroke-width="2"/>
+  <text x="500" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2C3E50">
+    System Infrastructure Optimization
+  </text>
+  
+  <text x="500" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#2C3E50">
+    Specialized framework for diffusion sampling • Block size optimization • KV-caching implementation
+  </text>
+  <text x="500" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#2C3E50">
+    Balance between computation latency and token generation rate
+  </text>
+  
+  <!-- Key Innovation Highlights -->
+  <rect x="50" y="680" width="900" height="80" rx="10" fill="#F3E5F5" stroke="#9C27B0" stroke-width="2"/>
+  <text x="500" y="705" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2C3E50">
+    Key Innovations
+  </text>
+  
+  <text x="150" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    Two-stage curriculum
+  </text>
+  <text x="150" y="745" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    (mask + edit)
+  </text>
+  
+  <text x="350" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    Constrained-order
+  </text>
+  <text x="350" y="745" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    trajectory filtering
+  </text>
+  
+  <text x="550" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    On-policy learning
+  </text>
+  <text x="550" y="745" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    for speedup
+  </text>
+  
+  <text x="750" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    Block-level parallel
+  </text>
+  <text x="750" y="745" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">
+    inference
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Non-sequential, parallel generation through discrete diffusion">
+                        <div class="quiz-question">1. What is the main innovation that allows Seed Diffusion to achieve high-speed inference?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using larger GPU clusters">Using larger GPU clusters</div><div class="quiz-choice" data-value="Non-sequential, parallel generation through discrete diffusion">Non-sequential, parallel generation through discrete diffusion</div><div class="quiz-choice" data-value="Reducing the model size and parameters">Reducing the model size and parameters</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="80% mask-based, 20% edit-based">
+                        <div class="quiz-question">2. In the Two-Stage Curriculum (TSC) training, what is the ratio between mask-based and edit-based forward processes?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="50% mask-based, 50% edit-based">50% mask-based, 50% edit-based</div><div class="quiz-choice" data-value="90% mask-based, 10% edit-based">90% mask-based, 10% edit-based</div><div class="quiz-choice" data-value="80% mask-based, 20% edit-based">80% mask-based, 20% edit-based</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="2,146 tokens/s">
+                        <div class="quiz-question">3. What inference speed did Seed Diffusion Preview achieve on H20 GPUs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1,489 tokens/s">1,489 tokens/s</div><div class="quiz-choice" data-value="2,146 tokens/s">2,146 tokens/s</div><div class="quiz-choice" data-value="737 tokens/s">737 tokens/s</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Agent Lightning: Train ANY AI Agents with Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.03680" target="_blank">http://arxiv.org/pdf/2508.03680</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents Agent Lightning, a framework for applying Reinforcement Learning (RL) to train Large Language Models (LLMs) in any AI agent system.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous work focused on static, single-call RL tasks, while this paper proposes a novel framework that decouples agent execution from RL training to enable seamless integration with any existing agent.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of applying RL to complex AI agents, which currently lack mechanisms for automated optimization and struggle with reliability in real-world tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors formulate agent execution as a Markov Decision Process, introduce a unified data interface for RL training, and develop LightningRL algorithm with a Training-Agent Disaggregation architecture.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The framework demonstrated stable performance improvements across three different tasks (text-to-SQL, retrieval-augmented generation, and math QA) implemented with different agent frameworks (LangChain, OpenAI Agents SDK, and AutoGen).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Agent Lightning: Train ANY AI Agents with Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c3e50">Agent Lightning: Training Workflow</text>
+  
+  <!-- Main Components -->
+  
+  <!-- 1. Agent Execution -->
+  <rect x="50" y="80" width="180" height="100" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="140" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Agent Execution</text>
+  <text x="140" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">LangChain, OpenAI SDK,</text>
+  <text x="140" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">AutoGen, Custom</text>
+  <text x="140" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">ZERO code changes</text>
+  
+  <!-- 2. Data Collection -->
+  <rect x="280" y="80" width="180" height="100" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="370" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Data Collection</text>
+  <text x="370" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Unified Data Interface</text>
+  <text x="370" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">States, Calls, Rewards</text>
+  <text x="370" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">OpenTelemetry</text>
+  
+  <!-- 3. MDP Formulation -->
+  <rect x="510" y="80" width="180" height="100" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="600" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">MDP Formulation</text>
+  <text x="600" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">State: Agent Snapshot</text>
+  <text x="600" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Action: LLM Output</text>
+  <text x="600" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Reward: Task Quality</text>
+  
+  <!-- 4. Trajectory Decomposition -->
+  <rect x="740" y="80" width="180" height="100" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="830" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Trajectory</text>
+  <text x="830" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Decomposition</text>
+  <text x="830" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Extract Transitions</text>
+  <text x="830" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">(input, output, reward)</text>
+  
+  <!-- 5. LightningRL Algorithm -->
+  <rect x="280" y="250" width="220" height="120" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="390" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">LightningRL Algorithm</text>
+  <text x="390" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Hierarchical RL Approach</text>
+  
+  <!-- Credit Assignment Module -->
+  <rect x="300" y="310" width="80" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <text x="340" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Credit</text>
+  <text x="340" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Assignment</text>
+  
+  <!-- Token-level Optimization -->
+  <rect x="400" y="310" width="80" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <text x="440" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Token-level</text>
+  <text x="440" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Optimization</text>
+  
+  <!-- 6. Training-Agent Disaggregation -->
+  <rect x="550" y="250" width="220" height="120" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="660" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">Training-Agent</text>
+  <text x="660" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">Disaggregation</text>
+  
+  <!-- Lightning Server -->
+  <rect x="570" y="310" width="80" height="40" rx="5" fill="#5d6d7e" stroke="#34495e" stroke-width="1"/>
+  <text x="610" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Lightning</text>
+  <text x="610" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Server</text>
+  
+  <!-- Lightning Client -->
+  <rect x="670" y="310" width="80" height="40" rx="5" fill="#5d6d7e" stroke="#34495e" stroke-width="1"/>
+  <text x="710" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Lightning</text>
+  <text x="710" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Client</text>
+  
+  <!-- 7. Model Update -->
+  <rect x="200" y="430" width="180" height="80" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="290" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Model Update</text>
+  <text x="290" y="475" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Compatible with</text>
+  <text x="290" y="490" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">GRPO, PPO, REINFORCE++</text>
+  
+  <!-- 8. Performance Improvement -->
+  <rect x="620" y="430" width="180" height="80" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="710" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Performance</text>
+  <text x="710" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Improvement</text>
+  <text x="710" y="490" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Continuous & Stable</text>
+  
+  <!-- Key Features Boxes -->
+  <rect x="50" y="580" width="280" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="190" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Key Features</text>
+  <text x="70" y="630" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Complete decoupling of agent & training</text>
+  <text x="70" y="650" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Unified data interface for ANY agent</text>
+  <text x="70" y="670" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Hierarchical RL with credit assignment</text>
+  <text x="70" y="690" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Automatic Intermediate Rewarding (AIR)</text>
+  
+  <!-- Applications -->
+  <rect x="380" y="580" width="280" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="520" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Applications</text>
+  <text x="400" y="630" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Text-to-SQL (LangChain)</text>
+  <text x="400" y="650" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• RAG (OpenAI Agents SDK)</text>
+  <text x="400" y="670" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Math QA with Tools (AutoGen)</text>
+  <text x="400" y="690" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Multi-agent scenarios</text>
+  
+  <!-- Benefits -->
+  <rect x="720" y="580" width="230" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="835" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Benefits</text>
+  <text x="740" y="630" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Framework agnostic</text>
+  <text x="740" y="650" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Scalable & robust</text>
+  <text x="740" y="670" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Real-world deployment</text>
+  <text x="740" y="690" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">• Observability integration</text>
+  
+  <!-- Flow connections with curved lines -->
+  <path d="M 230 130 Q 250 130 280 130" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 460 130 Q 480 130 510 130" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 690 130 Q 710 130 740 130" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 370 180 Q 370 210 370 250" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 660 180 Q 660 210 660 250" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 390 370 Q 350 400 290 430" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 660 370 Q 700 400 710 430" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Complete decoupling between agent execution and RL training">
+                        <div class="quiz-question">1. What is the key innovation in Agent Lightning's architecture that differentiates it from existing RL frameworks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Its ability to handle multiple LLMs simultaneously">Its ability to handle multiple LLMs simultaneously</div><div class="quiz-choice" data-value="Complete decoupling between agent execution and RL training">Complete decoupling between agent execution and RL training</div><div class="quiz-choice" data-value="The use of a new type of neural network architecture">The use of a new type of neural network architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Image generation with Stable Diffusion">
+                        <div class="quiz-question">2. In the experimental evaluation, which combination of task and framework was NOT tested?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Text-to-SQL with LangChain">Text-to-SQL with LangChain</div><div class="quiz-choice" data-value="Math QA with AutoGen">Math QA with AutoGen</div><div class="quiz-choice" data-value="Image generation with Stable Diffusion">Image generation with Stable Diffusion</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By organizing data as individual transitions rather than concatenated turns">
+                        <div class="quiz-question">3. How does Agent Lightning handle the challenge of long sequences in multi-turn interactions?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using advanced compression algorithms">By using advanced compression algorithms</div><div class="quiz-choice" data-value="By organizing data as individual transitions rather than concatenated turns">By organizing data as individual transitions rather than concatenated turns</div><div class="quiz-choice" data-value="By limiting the maximum context length">By limiting the maximum context length</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
