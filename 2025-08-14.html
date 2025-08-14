@@ -1,0 +1,1068 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-08-14 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-08-14 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>AWorld: Dynamic Multi-Agent System with Stable Maneuvering for Robust
+  GAIA Problem Solving</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-13</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.09889" target="_blank">http://arxiv.org/pdf/2508.09889</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing a dynamic multi-agent system (MAS) called AWorld for enhanced problem-solving capabilities using large language models and external tools in the domain of artificial intelligence.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research in tool-augmented LLMs and agent frameworks, it introduces a novel dynamic supervision and maneuvering mechanism inspired by vessel navigation principles, proposing adaptive intervention during problem-solving rather than static supervision.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of maintaining system stability and reliability when agents use multiple tools, as extended contexts and noisy tool outputs can undermine accuracy.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implemented a dynamic MAS architecture with an Execution Agent and Guard Agent, where the Guard Agent verifies and corrects reasoning at critical steps, using the Gemini 2.5 Pro model and testing on 109 GAIA benchmark questions.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The MAS achieved first place on the GAIA leaderboard among open-source projects, with 67.89% pass@1 accuracy (8.82% improvement over single-agent systems) and 83.49% pass@3 accuracy, while reducing performance variance by 17.3%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>AWorld: Dynamic Multi-Agent System with Stable Maneuvering for Robust
+  GAIA Problem Solving</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    AWorld: Dynamic Multi-Agent System Workflow
+  </text>
+  
+  <!-- Input Layer -->
+  <rect x="50" y="60" width="150" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">GAIA Problem</text>
+  <text x="125" y="105" text-anchor="middle" font-size="12" fill="white">Input</text>
+  
+  <!-- Task Analysis Phase -->
+  <rect x="250" y="60" width="180" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="340" y="80" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Task Analysis</text>
+  <text x="340" y="95" text-anchor="middle" font-size="10" fill="white">Break down complex task</text>
+  <text x="340" y="110" text-anchor="middle" font-size="10" fill="white">Create multi-step plan</text>
+  
+  <!-- Execution Agent -->
+  <rect x="480" y="60" width="200" height="60" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="580" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Execution Agent</text>
+  <text x="580" y="100" text-anchor="middle" font-size="11" fill="white">(Gemini 2.5 Pro)</text>
+  
+  <!-- Tool Selection -->
+  <rect x="50" y="160" width="150" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="125" y="185" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Tool Selection</text>
+  <text x="125" y="205" text-anchor="middle" font-size="10" fill="white">• Search engines</text>
+  <text x="125" y="220" text-anchor="middle" font-size="10" fill="white">• File processors</text>
+  <text x="125" y="235" text-anchor="middle" font-size="10" fill="white">• MCP tools</text>
+  
+  <!-- Information Gathering -->
+  <rect x="250" y="160" width="180" height="80" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="340" y="185" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Information Gathering</text>
+  <text x="340" y="205" text-anchor="middle" font-size="10" fill="white">External data retrieval</text>
+  <text x="340" y="220" text-anchor="middle" font-size="10" fill="white">Context expansion</text>
+  
+  <!-- Dynamic Maneuvering Core -->
+  <ellipse cx="580" cy="200" rx="120" ry="50" fill="#34495e" stroke="#2c3e50" stroke-width="3"/>
+  <text x="580" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Dynamic Maneuvering</text>
+  <text x="580" y="205" text-anchor="middle" font-size="11" fill="white">Mechanism</text>
+  <text x="580" y="220" text-anchor="middle" font-size="10" fill="white">(Inspired by vessel navigation)</text>
+  
+  <!-- Guard Agent -->
+  <rect x="750" y="160" width="180" height="80" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="840" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Guard Agent</text>
+  <text x="840" y="205" text-anchor="middle" font-size="11" fill="white">(Gemini 2.5 Pro)</text>
+  <text x="840" y="220" text-anchor="middle" font-size="10" fill="white">Logical verification</text>
+  <text x="840" y="235" text-anchor="middle" font-size="10" fill="white">Error correction</text>
+  
+  <!-- Supervision Process -->
+  <rect x="480" y="300" width="200" height="60" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="580" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Dynamic Supervision</text>
+  <text x="580" y="345" text-anchor="middle" font-size="11" fill="white">Real-time intervention</text>
+  
+  <!-- Reasoning Correction -->
+  <rect x="750" y="300" width="180" height="60" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="840" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reasoning Correction</text>
+  <text x="840" y="345" text-anchor="middle" font-size="11" fill="white">Logic validation</text>
+  
+  <!-- Context Optimization -->
+  <rect x="250" y="300" width="180" height="60" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="340" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Context Optimization</text>
+  <text x="340" y="345" text-anchor="middle" font-size="11" fill="white">Noise reduction</text>
+  
+  <!-- Solution Integration -->
+  <rect x="350" y="420" width="200" height="60" rx="10" fill="#2980b9" stroke="#1f618d" stroke-width="2"/>
+  <text x="450" y="445" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Solution Integration</text>
+  <text x="450" y="465" text-anchor="middle" font-size="11" fill="white">Multi-step convergence</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="100" y="520" width="150" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="175" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Results</text>
+  <text x="175" y="565" text-anchor="middle" font-size="10" fill="white">Pass@1: 67.89%</text>
+  <text x="175" y="580" text-anchor="middle" font-size="10" fill="white">Pass@3: 83.49%</text>
+  <text x="175" y="595" text-anchor="middle" font-size="10" fill="white">Stability +17.3%</text>
+  
+  <!-- Final Output -->
+  <rect x="350" y="520" width="200" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="450" y="545" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Final Answer</text>
+  <text x="450" y="565" text-anchor="middle" font-size="11" fill="white">Formatted Response</text>
+  <text x="450" y="585" text-anchor="middle" font-size="10" fill="white">&lt;answer&gt;...&lt;/answer&gt;</text>
+  
+  <!-- Achievement -->
+  <rect x="650" y="520" width="200" height="80" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="750" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Achievement</text>
+  <text x="750" y="565" text-anchor="middle" font-size="11" fill="white">1st Place on GAIA</text>
+  <text x="750" y="585" text-anchor="middle" font-size="11" fill="white">Test Leaderboard</text>
+  
+  <!-- Comparison Box -->
+  <rect x="50" y="650" width="300" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="200" y="675" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">System Comparison</text>
+  <text x="80" y="700" font-size="10" fill="#2c3e50">Base Model: 31.5%</text>
+  <text x="80" y="720" font-size="10" fill="#2c3e50">SAS: 62.39% (+98.06%)</text>
+  <text x="80" y="740" font-size="10" fill="#2c3e50">MAS: 67.89% (+8.82%)</text>
+  <text x="80" y="760" font-size="10" fill="#e74c3c">Stability improved by 17.3%</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="400" y="650" width="550" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="675" y="675" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Key Innovations</text>
+  <text x="420" y="700" font-size="10" fill="#2c3e50">• Dynamic maneuvering inspired by vessel navigation control theory</text>
+  <text x="420" y="720" font-size="10" fill="#2c3e50">• Agent-as-tool paradigm with Guard Agent integration</text>
+  <text x="420" y="740" font-size="10" fill="#2c3e50">• Real-time logical verification and error correction</text>
+  <text x="420" y="760" font-size="10" fill="#2c3e50">• Context optimization to reduce noise from extended tool outputs</text>
+  
+  <!-- Connection Lines -->
+  <line x1="200" y1="90" x2="250" y2="90" stroke="#34495e" stroke-width="2"/>
+  <line x1="430" y1="90" x2="480" y2="90" stroke="#34495e" stroke-width="2"/>
+  <line x1="580" y1="120" x2="580" y2="150" stroke="#34495e" stroke-width="2"/>
+  <line x1="580" y1="250" x2="580" y2="300" stroke="#34495e" stroke-width="2"/>
+  <line x1="680" y1="200" x2="750" y2="200" stroke="#34495e" stroke-width="2"/>
+  <line x1="840" y1="240" x2="840" y2="300" stroke="#34495e" stroke-width="2"/>
+  <line x1="580" y1="360" x2="450" y2="420" stroke="#34495e" stroke-width="2"/>
+  <line x1="450" y1="480" x2="450" y2="520" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Feedback loop -->
+  <path d="M 750 330 Q 700 350 680 330 Q 660 310 680 290" stroke="#e74c3c" stroke-width="2" fill="none"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Marine vessel navigation">
+                        <div class="quiz-question">1. What was the main inspiration for the dynamic maneuvering mechanism in the AWorld framework?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Aviation control systems">Aviation control systems</div><div class="quiz-choice" data-value="Marine vessel navigation">Marine vessel navigation</div><div class="quiz-choice" data-value="Traffic control systems">Traffic control systems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A strong Q&A model doesn't automatically translate to effective tool usage">
+                        <div class="quiz-question">2. What surprising finding emerged about the relationship between base model and tool-using capabilities?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Base models always perform better than tool-augmented versions">Base models always perform better than tool-augmented versions</div><div class="quiz-choice" data-value="Tools completely eliminate the need for base model capabilities">Tools completely eliminate the need for base model capabilities</div><div class="quiz-choice" data-value="A strong Q&A model doesn't automatically translate to effective tool usage">A strong Q&A model doesn't automatically translate to effective tool usage</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It reduced the pass@1 standard deviation by 17.3%">
+                        <div class="quiz-question">3. How did the addition of the Guard Agent affect the system's performance variability?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It increased variability by adding complexity">It increased variability by adding complexity</div><div class="quiz-choice" data-value="It reduced the pass@1 standard deviation by 17.3%">It reduced the pass@1 standard deviation by 17.3%</div><div class="quiz-choice" data-value="It had no significant impact on variability">It had no significant impact on variability</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Echo-4o: Harnessing the Power of GPT-4o Synthetic Images for Improved
+  Image Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-13</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.09987" target="_blank">http://arxiv.org/pdf/2508.09987</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on improving image generation using synthetic training data created by GPT-4o, situated in the domain of artificial intelligence and computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on previous research using synthetic data for model training, but uniquely proposes using GPT-4o-generated images to complement real-world datasets by covering rare scenarios and providing cleaner supervision.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitations of real-world image datasets in training generative models, particularly their lack of surreal/fantasy content and the presence of background noise that complicates text-image alignment.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created Echo-4o-Image, a 180K synthetic image dataset generated by GPT-4o, covering surreal fantasy, multi-reference, and instruction-following tasks, then fine-tuned the Bagel model on this dataset to create Echo-4o.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Echo-4o achieved superior performance across multiple benchmarks including GenEval and DPG-Bench, while the Echo-4o-Image dataset demonstrated strong transferability by improving performance when applied to other foundation models like OmniGen2 and BLIP3-o.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Echo-4o: Harnessing the Power of GPT-4o Synthetic Images for Improved
+  Image Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Echo-4o Methodology Flow Chart</text>
+  
+  <!-- Phase 1: Data Collection -->
+  <rect x="50" y="70" width="200" height="60" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Data Collection</text>
+  <text x="150" y="110" text-anchor="middle" font-size="10" fill="#2c3e50">COCO & Open Images</text>
+  <text x="150" y="122" text-anchor="middle" font-size="10" fill="#2c3e50">Reference Images</text>
+  
+  <!-- Phase 2: Echo-4o-Image Dataset Construction -->
+  <rect x="300" y="50" width="400" height="100" rx="10" fill="#fff2e6" stroke="#e67e22" stroke-width="2"/>
+  <text x="500" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Echo-4o-Image Dataset (180K samples)</text>
+  
+  <!-- Three dataset components -->
+  <rect x="320" y="90" width="110" height="50" rx="5" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="1"/>
+  <text x="375" y="108" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Surreal Fantasy</text>
+  <text x="375" y="120" text-anchor="middle" font-size="8" fill="#2c3e50">38K samples</text>
+  <text x="375" y="132" text-anchor="middle" font-size="8" fill="#2c3e50">Attribute shift</text>
+  
+  <rect x="445" y="90" width="110" height="50" rx="5" fill="#fab1a0" stroke="#e17055" stroke-width="1"/>
+  <text x="500" y="105" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Multi-Reference</text>
+  <text x="500" y="117" text-anchor="middle" font-size="8" fill="#2c3e50">73K samples</text>
+  <text x="500" y="129" text-anchor="middle" font-size="8" fill="#2c3e50">2-4 input images</text>
+  
+  <rect x="570" y="90" width="110" height="50" rx="5" fill="#a29bfe" stroke="#6c5ce7" stroke-width="1"/>
+  <text x="625" y="105" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">Instruction Following</text>
+  <text x="625" y="117" text-anchor="middle" font-size="8" fill="#2c3e50">68K samples</text>
+  <text x="625" y="129" text-anchor="middle" font-size="8" fill="#2c3e50">Complex attributes</text>
+  
+  <!-- GPT-4o Generation Process -->
+  <rect x="750" y="70" width="180" height="60" rx="10" fill="#d1f2eb" stroke="#00b894" stroke-width="2"/>
+  <text x="840" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">GPT-4o Generation</text>
+  <text x="840" y="110" text-anchor="middle" font-size="10" fill="#2c3e50">Image Synthesis</text>
+  <text x="840" y="122" text-anchor="middle" font-size="10" fill="#2c3e50">Text Rewriting</text>
+  
+  <!-- Phase 3: Model Fine-tuning -->
+  <rect x="100" y="200" width="200" height="80" rx="10" fill="#f8d7da" stroke="#dc3545" stroke-width="2"/>
+  <text x="200" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Bagel Baseline Model</text>
+  <text x="200" y="240" text-anchor="middle" font-size="10" fill="#2c3e50">ViT + VAE</text>
+  <text x="200" y="252" text-anchor="middle" font-size="10" fill="#2c3e50">Mixture of Transformers</text>
+  <text x="200" y="264" text-anchor="middle" font-size="10" fill="#2c3e50">24K steps, LR=2e-5</text>
+  
+  <rect x="400" y="200" width="200" height="80" rx="10" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="500" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Echo-4o Model</text>
+  <text x="500" y="240" text-anchor="middle" font-size="10" fill="#2c3e50">Fine-tuned on</text>
+  <text x="500" y="252" text-anchor="middle" font-size="10" fill="#2c3e50">Echo-4o-Image</text>
+  <text x="500" y="264" text-anchor="middle" font-size="10" fill="#2c3e50">Flow Matching Loss</text>
+  
+  <!-- Phase 4: Benchmark Development -->
+  <rect x="50" y="330" width="400" height="100" rx="10" fill="#e6f3ff" stroke="#0066cc" stroke-width="2"/>
+  <text x="250" y="355" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">New Evaluation Benchmarks</text>
+  
+  <rect x="70" y="370" width="170" height="50" rx="5" fill="#cce7ff" stroke="#0066cc" stroke-width="1"/>
+  <text x="155" y="390" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">GenEval++</text>
+  <text x="155" y="402" text-anchor="middle" font-size="9" fill="#2c3e50">GPT-4.1 Evaluator</text>
+  <text x="155" y="414" text-anchor="middle" font-size="9" fill="#2c3e50">280 complex prompts</text>
+  
+  <rect x="260" y="370" width="170" height="50" rx="5" fill="#cce7ff" stroke="#0066cc" stroke-width="1"/>
+  <text x="345" y="390" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Imagine-Bench</text>
+  <text x="345" y="402" text-anchor="middle" font-size="9" fill="#2c3e50">270 creative instructions</text>
+  <text x="345" y="414" text-anchor="middle" font-size="9" fill="#2c3e50">Fantasy evaluation</text>
+  
+  <!-- Phase 5: Evaluation Results -->
+  <rect x="550" y="330" width="400" height="100" rx="10" fill="#fff0f5" stroke="#ff1493" stroke-width="2"/>
+  <text x="750" y="355" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Performance Evaluation</text>
+  
+  <rect x="570" y="370" width="110" height="50" rx="5" fill="#ffe4e1" stroke="#ff69b4" stroke-width="1"/>
+  <text x="625" y="388" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">GenEval</text>
+  <text x="625" y="400" text-anchor="middle" font-size="8" fill="#2c3e50">0.89 score</text>
+  <text x="625" y="412" text-anchor="middle" font-size="8" fill="#2c3e50">+8.5% vs Bagel</text>
+  
+  <rect x="695" y="370" width="110" height="50" rx="5" fill="#ffe4e1" stroke="#ff69b4" stroke-width="1"/>
+  <text x="750" y="388" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">DPG-Bench</text>
+  <text x="750" y="400" text-anchor="middle" font-size="8" fill="#2c3e50">86.07 score</text>
+  <text x="750" y="412" text-anchor="middle" font-size="8" fill="#2c3e50">SOTA performance</text>
+  
+  <rect x="820" y="370" width="110" height="50" rx="5" fill="#ffe4e1" stroke="#ff69b4" stroke-width="1"/>
+  <text x="875" y="385" text-anchor="middle" font-size="9" font-weight="bold" fill="#2c3e50">OmniContext</text>
+  <text x="875" y="397" text-anchor="middle" font-size="8" fill="#2c3e50">8.09 score</text>
+  <text x="875" y="409" text-anchor="middle" font-size="8" fill="#2c3e50">Multi-reference</text>
+  <text x="875" y="421" text-anchor="middle" font-size="8" fill="#2c3e50">generation</text>
+  
+  <!-- Phase 6: Transferability -->
+  <rect x="200" y="480" width="600" height="80" rx="10" fill="#f0f8ff" stroke="#4682b4" stroke-width="2"/>
+  <text x="500" y="505" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Dataset Transferability</text>
+  
+  <rect x="230" y="520" width="120" height="30" rx="5" fill="#e6f2ff" stroke="#4682b4" stroke-width="1"/>
+  <text x="290" y="540" text-anchor="middle" font-size="10" fill="#2c3e50">BLIP3-o</text>
+  
+  <rect x="370" y="520" width="120" height="30" rx="5" fill="#e6f2ff" stroke="#4682b4" stroke-width="1"/>
+  <text x="430" y="540" text-anchor="middle" font-size="10" fill="#2c3e50">OmniGen2</text>
+  
+  <rect x="510" y="520" width="120" height="30" rx="5" fill="#e6f2ff" stroke="#4682b4" stroke-width="1"/>
+  <text x="570" y="540" text-anchor="middle" font-size="10" fill="#2c3e50">Other Models</text>
+  
+  <rect x="650" y="520" width="120" height="30" rx="5" fill="#90ee90" stroke="#32cd32" stroke-width="1"/>
+  <text x="710" y="540" text-anchor="middle" font-size="10" fill="#2c3e50">Consistent Gains</text>
+  
+  <!-- Key Advantages Box -->
+  <rect x="50" y="600" width="900" height="120" rx="10" fill="#f5f5dc" stroke="#daa520" stroke-width="2"/>
+  <text x="500" y="625" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Advantages of Synthetic Data</text>
+  
+  <rect x="80" y="640" width="200" height="60" rx="5" fill="#fff8dc" stroke="#daa520" stroke-width="1"/>
+  <text x="180" y="660" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Rare Scenarios</text>
+  <text x="180" y="672" text-anchor="middle" font-size="9" fill="#2c3e50">Fantasy content</text>
+  <text x="180" y="684" text-anchor="middle" font-size="9" fill="#2c3e50">Multi-reference tasks</text>
+  
+  <rect x="300" y="640" width="200" height="60" rx="5" fill="#fff8dc" stroke="#daa520" stroke-width="1"/>
+  <text x="400" y="660" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Pure Supervision</text>
+  <text x="400" y="672" text-anchor="middle" font-size="9" fill="#2c3e50">Clean backgrounds</text>
+  <text x="400" y="684" text-anchor="middle" font-size="9" fill="#2c3e50">Better alignment</text>
+  
+  <rect x="520" y="640" width="200" height="60" rx="5" fill="#fff8dc" stroke="#daa520" stroke-width="1"/>
+  <text x="620" y="660" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Long-tail Coverage</text>
+  <text x="620" y="672" text-anchor="middle" font-size="9" fill="#2c3e50">Complex attributes</text>
+  <text x="620" y="684" text-anchor="middle" font-size="9" fill="#2c3e50">Controllable generation</text>
+  
+  <rect x="740" y="640" width="200" height="60" rx="5" fill="#fff8dc" stroke="#daa520" stroke-width="1"/>
+  <text x="840" y="660" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Transferability</text>
+  <text x="840" y="672" text-anchor="middle" font-size="9" fill="#2c3e50">Cross-model benefits</text>
+  <text x="840" y="684" text-anchor="middle" font-size="9" fill="#2c3e50">Generalizable gains</text>
+  
+  <!-- Connection lines with different colors -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#3498db" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="700" y1="100" x2="750" y2="100" stroke="#e67e22" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="150" x2="500" y2="200" stroke="#e67e22" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="300" y1="240" x2="400" y2="240" stroke="#dc3545" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="280" x2="250" y2="330" stroke="#28a745" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="280" x2="750" y2="330" stroke="#28a745" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="430" x2="500" y2="480" stroke="#ff1493" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="560" x2="500" y2="600" stroke="#4682b4" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+  
+  <!-- Final result indicator -->
+  <circle cx="500" cy="770" r="15" fill="#32cd32" stroke="#228b22" stroke-width="2"/>
+  <text x="500" y="775" text-anchor="middle" font-size="10" font-weight="bold" fill="white">✓</text>
+  <text x="500" y="795" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Enhanced Multimodal Generation</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Synthetic images can complement rare scenarios and provide cleaner supervision">
+                        <div class="quiz-question">1. What is the main advantage of using GPT-4o synthetic images over real-world images according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Synthetic images have higher visual quality than real photos">Synthetic images have higher visual quality than real photos</div><div class="quiz-choice" data-value="Synthetic images can complement rare scenarios and provide cleaner supervision">Synthetic images can complement rare scenarios and provide cleaner supervision</div><div class="quiz-choice" data-value="Synthetic images are cheaper and faster to generate at scale">Synthetic images are cheaper and faster to generate at scale</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="180K images, with 38K surreal fantasy, 73K multi-reference, and 68K instruction-following samples">
+                        <div class="quiz-question">2. What is the size of the Echo-4o-Image dataset and how is it distributed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="100K images, evenly split between fantasy and instruction-following tasks">100K images, evenly split between fantasy and instruction-following tasks</div><div class="quiz-choice" data-value="180K images, with 38K surreal fantasy, 73K multi-reference, and 68K instruction-following samples">180K images, with 38K surreal fantasy, 73K multi-reference, and 68K instruction-following samples</div><div class="quiz-choice" data-value="250K images, mostly focused on multi-reference image generation">250K images, mostly focused on multi-reference image generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="GPT-4.1 as evaluator following a predefined checklist covering multiple criteria">
+                        <div class="quiz-question">3. What unique evaluation metric did the authors introduce in their GenEval++ benchmark?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A simple CLIP-based scoring system">A simple CLIP-based scoring system</div><div class="quiz-choice" data-value="A human evaluation panel for rating image quality">A human evaluation panel for rating image quality</div><div class="quiz-choice" data-value="GPT-4.1 as evaluator following a predefined checklist covering multiple criteria">GPT-4.1 as evaluator following a predefined checklist covering multiple criteria</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Story2Board: A Training-Free Approach for Expressive Storyboard
+  Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-13</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.09983" target="_blank">http://arxiv.org/pdf/2508.09983</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Text-to-image storyboard generation using diffusion models in the domain of visual storytelling and computer graphics.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing text-to-image diffusion models and character consistency methods, proposes a novel training-free approach using Latent Panel Anchoring and Reciprocal Attention Value Mixing.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The challenge of generating coherent multi-panel storyboards that maintain character consistency while allowing dynamic composition changes and narrative expressiveness.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a two-part consistency framework: Latent Panel Anchoring to preserve character reference across panels, and Reciprocal Attention Value Mixing to blend visual features between semantically aligned tokens.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved superior performance in both qualitative and quantitative evaluations, including user studies, showing better balance between character consistency, scene diversity, and narrative coherence compared to existing methods.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Story2Board: A Training-Free Approach for Expressive Storyboard
+  Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357abd;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7ed321;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5ba517;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5a623;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d68910;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9013fe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7209b7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGradient)"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">Story2Board: Training-Free Storyboard Generation</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="80" width="200" height="80" rx="10" fill="url(#blueGradient)" stroke="#2980b9" stroke-width="2"/>
+  <text x="150" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Natural Language</text>
+  <text x="150" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Story Input</text>
+  
+  <!-- LLM Director Stage -->
+  <rect x="320" y="80" width="200" height="80" rx="10" fill="url(#greenGradient)" stroke="#27ae60" stroke-width="2"/>
+  <text x="420" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">LLM Director</text>
+  <text x="420" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">(GPT-4o)</text>
+  <text x="420" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">Scene Decomposition</text>
+  
+  <!-- Prompt Generation -->
+  <rect x="590" y="50" width="150" height="60" rx="8" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="665" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2980b9">Reference Panel</text>
+  <text x="665" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2980b9">Prompt</text>
+  
+  <rect x="590" y="130" width="150" height="60" rx="8" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="665" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2980b9">Scene-Level</text>
+  <text x="665" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2980b9">Prompts</text>
+  
+  <!-- Core Method Components -->
+  <rect x="100" y="250" width="800" height="200" rx="15" fill="#f8f9fa" stroke="#34495e" stroke-width="3" stroke-dasharray="5,5"/>
+  <text x="500" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Core Training-Free Framework</text>
+  
+  <!-- Latent Panel Anchoring -->
+  <rect x="150" y="300" width="250" height="120" rx="10" fill="url(#orangeGradient)" stroke="#e67e22" stroke-width="2"/>
+  <text x="275" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Latent Panel Anchoring</text>
+  <text x="275" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">(LPA)</text>
+  <text x="275" y="365" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Shared reference across panels</text>
+  <text x="275" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Two-panel latent grids</text>
+  <text x="275" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Synchronized denoising</text>
+  
+  <!-- Reciprocal Attention Value Mixing -->
+  <rect x="450" y="300" width="300" height="120" rx="10" fill="url(#purpleGradient)" stroke="#8e44ad" stroke-width="2"/>
+  <text x="600" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Reciprocal Attention</text>
+  <text x="600" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Value Mixing (RAVM)</text>
+  <text x="600" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Token-level correspondence</text>
+  <text x="600" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Bidirectional attention scores</text>
+  <text x="600" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Soft value vector blending</text>
+  <text x="600" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">• Preserves spatial layout</text>
+  
+  <!-- Diffusion Process -->
+  <rect x="200" y="480" width="600" height="80" rx="10" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Pre-trained Diffusion Transformer</text>
+  <text x="500" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">Flux / Stable Diffusion 3</text>
+  <text x="500" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">No architectural changes or fine-tuning required</text>
+  
+  <!-- Output Processing -->
+  <rect x="150" y="600" width="200" height="60" rx="8" fill="#d5f4e6" stroke="#27ae60" stroke-width="2"/>
+  <text x="250" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#27ae60">VAE Decode</text>
+  <text x="250" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#27ae60">& Crop</text>
+  
+  <!-- Final Output -->
+  <rect x="450" y="600" width="200" height="60" rx="8" fill="#fff2cc" stroke="#f39c12" stroke-width="2"/>
+  <text x="550" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#d68910">Coherent</text>
+  <text x="550" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#d68910">Storyboard Panels</text>
+  
+  <!-- Evaluation -->
+  <rect x="720" y="600" width="200" height="60" rx="8" fill="#fdeaea" stroke="#e74c3c" stroke-width="2"/>
+  <text x="820" y="620" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#c0392b">Rich Storyboard</text>
+  <text x="820" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#c0392b">Benchmark</text>
+  <text x="820" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#c0392b">Scene Diversity Metric</text>
+  
+  <!-- Key Features Box -->
+  <rect x="50" y="700" width="900" height="80" rx="10" fill="#f7f9fc" stroke="#2c3e50" stroke-width="2"/>
+  <text x="500" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Key Advantages</text>
+  <text x="200" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">✓ Training-Free</text>
+  <text x="350" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">✓ Character Consistency</text>
+  <text x="520" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">✓ Scene Diversity</text>
+  <text x="680" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">✓ Cinematic Composition</text>
+  <text x="200" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">✓ No Architecture Changes</text>
+  <text x="380" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">✓ Compatible with Modern DiTs</text>
+  <text x="620" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">✓ Expressive Visual Storytelling</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses a training-free consistency framework with Latent Panel Anchoring">
+                        <div class="quiz-question">1. What is the key innovation that distinguishes Story2Board from previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires extensive model training and fine-tuning">It requires extensive model training and fine-tuning</div><div class="quiz-choice" data-value="It uses a training-free consistency framework with Latent Panel Anchoring">It uses a training-free consistency framework with Latent Panel Anchoring</div><div class="quiz-choice" data-value="It only works with pre-defined character templates">It only works with pre-defined character templates</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="An off-the-shelf large language model (LLM)">
+                        <div class="quiz-question">2. Which component does Story2Board use to decompose natural language stories into panel-level prompts?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A specialized neural network trained on storyboards">A specialized neural network trained on storyboards</div><div class="quiz-choice" data-value="A rule-based template system">A rule-based template system</div><div class="quiz-choice" data-value="An off-the-shelf large language model (LLM)">An off-the-shelf large language model (LLM)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It inherits attention entanglement issues from base diffusion models">
+                        <div class="quiz-question">3. What is the main limitation of Story2Board mentioned in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It cannot generate more than 4 panels at once">It cannot generate more than 4 panels at once</div><div class="quiz-choice" data-value="It inherits attention entanglement issues from base diffusion models">It inherits attention entanglement issues from base diffusion models</div><div class="quiz-choice" data-value="It only works with human characters">It only works with human characters</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
