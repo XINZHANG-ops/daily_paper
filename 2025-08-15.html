@@ -1,0 +1,1075 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-08-15 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-08-15 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>NextStep-1: Toward Autoregressive Image Generation with Continuous
+  Tokens at Scale</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.10711" target="_blank">http://arxiv.org/pdf/2508.10711</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces NextStep-1, a large-scale autoregressive model for text-to-image generation and editing, operating in the domain of artificial intelligence and computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous autoregressive language models and diffusion models, it proposes a novel approach using continuous tokens and flow matching for image generation, rather than traditional vector quantization or heavy diffusion models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the limitations of existing autoregressive text-to-image models that either rely on computationally-intensive diffusion models or suffer from quantization loss through vector quantization.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper implements a 14B parameter autoregressive model with a 157M flow matching head, combining a Transformer backbone for text processing with continuous image tokens, trained on a diverse dataset including text-only corpus, image-text pairs, and interleaved data.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieves state-of-the-art performance for autoregressive models in text-to-image generation, scoring 0.54 on WISE, 0.67 on GenAI-Bench advanced prompts, 85.28 on DPG-Bench, and 0.417 on OneIG-Bench English prompts, while also demonstrating strong capabilities in image editing tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>NextStep-1: Toward Autoregressive Image Generation with Continuous
+  Tokens at Scale</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c3e50">NextStep-1 Method Flow</text>
+  
+  <!-- Data Processing Section -->
+  <rect x="50" y="60" width="200" height="120" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="150" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Data Construction</text>
+  <text x="150" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">• Text-only Corpus (400B)</text>
+  <text x="150" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">• Image-Text Pairs (550M)</text>
+  <text x="150" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">• Image-to-Image Data (1M)</text>
+  <text x="150" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">• Interleaved Data (80M)</text>
+  <text x="150" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">• Character-centric Dataset</text>
+  
+  <!-- Image Tokenizer -->
+  <rect x="300" y="60" width="180" height="120" fill="#fff2e8" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="390" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Image Tokenizer</text>
+  <text x="390" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Fine-tuned from Flux VAE</text>
+  <text x="390" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">16-channel latents</text>
+  <text x="390" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Channel-wise normalization</text>
+  <text x="390" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Stochastic perturbation</text>
+  <text x="390" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Space-to-depth transform</text>
+  
+  <!-- Text Tokenizer -->
+  <rect x="520" y="60" width="160" height="120" fill="#f0f8e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="600" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Text Tokenizer</text>
+  <text x="600" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Standard discrete tokens</text>
+  <text x="600" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">From Qwen2.5-14B</text>
+  <text x="600" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Language understanding</text>
+  <text x="600" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Reasoning capabilities</text>
+  
+  <!-- Causal Transformer -->
+  <rect x="200" y="220" width="300" height="100" fill="#f4e8ff" stroke="#9b59b6" stroke-width="2" rx="10"/>
+  <text x="350" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Causal Transformer (14B)</text>
+  <text x="350" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Initialized from Qwen2.5-14B</text>
+  <text x="350" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Unified multimodal sequence modeling</text>
+  <text x="350" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Next-token prediction: p(x_i | x_&lt;i)</text>
+  <text x="350" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">1D RoPE positional encoding</text>
+  
+  <!-- Training Process -->
+  <rect x="550" y="220" width="200" height="100" fill="#ffe8e8" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="650" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Training Recipe</text>
+  <text x="650" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Stage 1: 256×256 (200K steps)</text>
+  <text x="650" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Stage 2: Dynamic resolution (100K)</text>
+  <text x="650" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Annealing: High-quality subset</text>
+  <text x="650" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">SFT + DPO alignment</text>
+  
+  <!-- Output Heads -->
+  <rect x="150" y="360" width="160" height="100" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2" rx="10"/>
+  <text x="230" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">LM Head</text>
+  <text x="230" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Cross-entropy loss</text>
+  <text x="230" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Discrete text tokens</text>
+  <text x="230" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Standard sampling</text>
+  <text x="230" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Language modeling</text>
+  
+  <rect x="350" y="360" width="180" height="100" fill="#fdf2e9" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="440" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Flow Matching Head</text>
+  <text x="440" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">157M parameters</text>
+  <text x="440" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">MSE loss (velocity prediction)</text>
+  <text x="440" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Continuous image tokens</text>
+  <text x="440" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Patch-wise generation</text>
+  
+  <!-- Loss Computation -->
+  <rect x="580" y="360" width="160" height="100" fill="#ebedef" stroke="#95a5a6" stroke-width="2" rx="10"/>
+  <text x="660" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Loss Function</text>
+  <text x="660" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">L_total = λ_text × L_text</text>
+  <text x="660" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">+ λ_visual × L_visual</text>
+  <text x="660" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">Weighted combination</text>
+  <text x="660" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#34495e">End-to-end training</text>
+  
+  <!-- Output Generation -->
+  <rect x="200" y="500" width="280" height="80" fill="#e8f6f3" stroke="#16a085" stroke-width="2" rx="10"/>
+  <text x="340" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Image Generation</text>
+  <text x="340" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Autoregressive patch-by-patch generation</text>
+  <text x="340" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Classifier-free guidance for quality</text>
+  <text x="340" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">High-fidelity image synthesis</text>
+  
+  <!-- Image Editing -->
+  <rect x="520" y="500" width="200" height="80" fill="#fef9e7" stroke="#f1c40f" stroke-width="2" rx="10"/>
+  <text x="620" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Image Editing</text>
+  <text x="620" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">NextStep-1-Edit variant</text>
+  <text x="620" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Instruction-guided editing</text>
+  <text x="620" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Competitive performance</text>
+  
+  <!-- Key Innovations -->
+  <rect x="50" y="620" width="900" height="120" fill="#fdf2e9" stroke="#d35400" stroke-width="2" rx="10"/>
+  <text x="500" y="645" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Key Technical Innovations</text>
+  
+  <circle cx="120" cy="670" r="5" fill="#e74c3c"/>
+  <text x="135" y="675" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Channel-wise normalization prevents CFG instability</text>
+  
+  <circle cx="120" cy="690" r="5" fill="#3498db"/>
+  <text x="135" y="695" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Stochastic perturbation creates robust latent space</text>
+  
+  <circle cx="120" cy="710" r="5" fill="#27ae60"/>
+  <text x="135" y="715" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Lightweight FM head acts as token sampler (157M vs 14B transformer)</text>
+  
+  <circle cx="520" cy="670" r="5" fill="#9b59b6"/>
+  <text x="535" y="675" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Pure autoregressive paradigm without heavy diffusion models</text>
+  
+  <circle cx="520" cy="690" r="5" fill="#f39c12"/>
+  <text x="535" y="695" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Multi-stage curriculum learning for stable convergence</text>
+  
+  <circle cx="520" cy="710" r="5" fill="#1abc9c"/>
+  <text x="535" y="715" font-family="Arial, sans-serif" font-size="11" fill="#34495e">Self-CoT reasoning enhances complex prompt understanding</text>
+  
+  <!-- Flow connections with subtle lines -->
+  <line x1="250" y1="120" x2="350" y2="220" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="390" y1="180" x2="350" y2="220" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="600" y1="180" x2="350" y2="220" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="350" y1="320" x2="230" y2="360" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="350" y1="320" x2="440" y2="360" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="350" y1="320" x2="660" y2="360" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="340" y1="460" x2="340" y2="500" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="620" y1="460" x2="620" y2="500" stroke="#7f8c8d" stroke-width="1" stroke-dasharray="3,3"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses continuous tokens with flow matching">
+                        <div class="quiz-question">1. What is the key innovation of NextStep-1 compared to previous autoregressive image generation models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses discrete tokens with vector quantization">It uses discrete tokens with vector quantization</div><div class="quiz-choice" data-value="It uses continuous tokens with flow matching">It uses continuous tokens with flow matching</div><div class="quiz-choice" data-value="It uses pure diffusion models for generation">It uses pure diffusion models for generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The head size had minimal impact on generation quality">
+                        <div class="quiz-question">2. What was an unexpected finding about the Flow Matching Head in NextStep-1?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Larger head sizes always produced better results">Larger head sizes always produced better results</div><div class="quiz-choice" data-value="The head size had minimal impact on generation quality">The head size had minimal impact on generation quality</div><div class="quiz-choice" data-value="The head could only work with small images">The head could only work with small images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Higher generation loss with more noise actually improved image quality">
+                        <div class="quiz-question">3. What counterintuitive relationship was discovered during the training of NextStep-1's tokenizer?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Lower generation loss led to better image quality">Lower generation loss led to better image quality</div><div class="quiz-choice" data-value="Higher noise in training led to worse image quality">Higher noise in training led to worse image quality</div><div class="quiz-choice" data-value="Higher generation loss with more noise actually improved image quality">Higher generation loss with more noise actually improved image quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>ToonComposer: Streamlining Cartoon Production with Generative
+  Post-Keyframing</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.10881" target="_blank">http://arxiv.org/pdf/2508.10881</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> AI-assisted cartoon animation production, specifically focusing on streamlining the process of generating cartoon videos from sparse keyframe sketches.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in video diffusion models and cartoon generation, introduces a novel "post-keyframing" paradigm that unifies inbetweening and colorization into a single automated process.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Traditional cartoon production requires intensive manual effort in inbetweening and colorization stages, while existing AI methods handle these stages separately leading to error accumulation and artifacts.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Develops ToonComposer, a DiT-based model with sparse sketch injection mechanism for precise control and spatial low-rank adapter (SLRA) for cartoon domain adaptation, requiring only sparse keyframe sketches and a colored reference frame.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperforms existing methods in both synthetic and real benchmarks (PKBench), achieving superior visual quality, motion consistency, and production efficiency, with 70.99% user preference rate for aesthetic quality.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ToonComposer: Streamlining Cartoon Production with Generative
+  Post-Keyframing</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="inputGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffeaa7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fdcb6e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="processGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#74b9ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0984e3;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="outputGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#55a3ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d3436;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1000" height="800" fill="url(#bgGradient)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2d3436">ToonComposer Workflow</text>
+  
+  <!-- Input Section -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="180" height="120" rx="10" fill="url(#inputGradient)" stroke="#e17055" stroke-width="2"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2d3436">Input</text>
+    <text x="90" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2d3436">Sparse Keyframe</text>
+    <text x="90" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2d3436">Sketches</text>
+    <text x="90" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2d3436">+</text>
+    <text x="90" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2d3436">Color Reference</text>
+    <text x="90" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2d3436">Frame</text>
+  </g>
+  
+  <!-- VAE Encoder -->
+  <g transform="translate(280, 80)">
+    <rect x="0" y="0" width="120" height="60" rx="8" fill="#81ecec" stroke="#00b894" stroke-width="2"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">VAE</text>
+    <text x="60" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">Encoder</text>
+  </g>
+  
+  <!-- Sparse Sketch Injection -->
+  <g transform="translate(50, 240)">
+    <rect x="0" y="0" width="200" height="100" rx="10" fill="#a29bfe" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Sparse Sketch</text>
+    <text x="100" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Injection</text>
+    <text x="100" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Position Encoding</text>
+    <text x="100" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Position-aware Residual</text>
+    <text x="100" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Region-wise Control</text>
+  </g>
+  
+  <!-- DiT Model Core -->
+  <g transform="translate(350, 200)">
+    <rect x="0" y="0" width="300" height="180" rx="15" fill="url(#processGradient)" stroke="#0984e3" stroke-width="3"/>
+    <text x="150" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Diffusion Transformer (DiT)</text>
+    <text x="150" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="white">Wan 2.1 Foundation Model</text>
+    
+    <!-- DiT Blocks -->
+    <rect x="20" y="70" width="80" height="40" rx="5" fill="#fd79a8" stroke="#e84393" stroke-width="1"/>
+    <text x="60" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">DiT Block</text>
+    <text x="60" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">#1</text>
+    
+    <rect x="110" y="70" width="80" height="40" rx="5" fill="#fd79a8" stroke="#e84393" stroke-width="1"/>
+    <text x="150" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">DiT Block</text>
+    <text x="150" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">#2</text>
+    
+    <rect x="200" y="70" width="80" height="40" rx="5" fill="#fd79a8" stroke="#e84393" stroke-width="1"/>
+    <text x="240" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">DiT Block</text>
+    <text x="240" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">#N</text>
+    
+    <!-- SLRA -->
+    <rect x="60" y="130" width="180" height="35" rx="5" fill="#00b894" stroke="#00a085" stroke-width="2"/>
+    <text x="150" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Spatial Low-Rank Adapter</text>
+    <text x="150" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">(SLRA)</text>
+  </g>
+  
+  <!-- Cartoon Adaptation Detail -->
+  <g transform="translate(720, 200)">
+    <rect x="0" y="0" width="160" height="120" rx="10" fill="#fd79a8" stroke="#e84393" stroke-width="2"/>
+    <text x="80" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Cartoon</text>
+    <text x="80" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Adaptation</text>
+    <text x="80" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Spatial Behavior</text>
+    <text x="80" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Adaptation</text>
+    <text x="80" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Preserve Temporal</text>
+    <text x="80" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Prior</text>
+  </g>
+  
+  <!-- VAE Decoder -->
+  <g transform="translate(350, 450)">
+    <rect x="0" y="0" width="120" height="60" rx="8" fill="#81ecec" stroke="#00b894" stroke-width="2"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">VAE</text>
+    <text x="60" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">Decoder</text>
+  </g>
+  
+  <!-- Output -->
+  <g transform="translate(550, 450)">
+    <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#outputGradient)" stroke="#2d3436" stroke-width="2"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Output</text>
+    <text x="90" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">High-Quality</text>
+    <text x="90" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">Cartoon Video</text>
+  </g>
+  
+  <!-- Training Components -->
+  <g transform="translate(50, 580)">
+    <rect x="0" y="0" width="150" height="80" rx="8" fill="#fab1a0" stroke="#e17055" stroke-width="2"/>
+    <text x="75" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">PKData</text>
+    <text x="75" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">37K Cartoon Clips</text>
+    <text x="75" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">Diverse Sketches</text>
+    <text x="75" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">Training Dataset</text>
+  </g>
+  
+  <g transform="translate(230, 580)">
+    <rect x="0" y="0" width="150" height="80" rx="8" fill="#fab1a0" stroke="#e17055" stroke-width="2"/>
+    <text x="75" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">PKBench</text>
+    <text x="75" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">30 Scenes</text>
+    <text x="75" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">Human-drawn</text>
+    <text x="75" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">Evaluation Benchmark</text>
+  </g>
+  
+  <!-- Training Objective -->
+  <g transform="translate(420, 580)">
+    <rect x="0" y="0" width="200" height="80" rx="8" fill="#e17055" stroke="#d63031" stroke-width="2"/>
+    <text x="100" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Training Objective</text>
+    <text x="100" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Rectified Flow</text>
+    <text x="100" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Velocity Prediction</text>
+    <text x="100" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">L = E[||vt - ε(xin)||²]</text>
+  </g>
+  
+  <!-- Key Features -->
+  <g transform="translate(680, 580)">
+    <rect x="0" y="0" width="180" height="100" rx="8" fill="#00b894" stroke="#00a085" stroke-width="2"/>
+    <text x="90" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Key Features</text>
+    <text x="90" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Post-keyframing Stage</text>
+    <text x="90" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Unified Inbetweening</text>
+    <text x="90" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">  & Colorization</text>
+    <text x="90" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Sparse Input Control</text>
+  </g>
+  
+  <!-- Flow indicators with circles -->
+  <circle cx="240" cy="120" r="8" fill="#e17055"/>
+  <circle cx="340" cy="120" r="8" fill="#e17055"/>
+  <circle cx="270" cy="290" r="8" fill="#6c5ce7"/>
+  <circle cx="500" cy="400" r="8" fill="#0984e3"/>
+  <circle cx="480" cy="480" r="8" fill="#00b894"/>
+  <circle cx="540" cy="480" r="8" fill="#00b894"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It unifies inbetweening and colorization into a single post-keyframing stage">
+                        <div class="quiz-question">1. What is the main innovation of ToonComposer compared to previous AI-assisted cartoon production methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a completely new neural network architecture">It uses a completely new neural network architecture</div><div class="quiz-choice" data-value="It unifies inbetweening and colorization into a single post-keyframing stage">It unifies inbetweening and colorization into a single post-keyframing stage</div><div class="quiz-choice" data-value="It requires more keyframes but produces better quality">It requires more keyframes but produces better quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="One colored reference frame and one sketch frame">
+                        <div class="quiz-question">2. What is the minimum input requirement for ToonComposer to generate a cartoon video sequence?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="One colored reference frame and one sketch frame">One colored reference frame and one sketch frame</div><div class="quiz-choice" data-value="Multiple colored frames and multiple sketches">Multiple colored frames and multiple sketches</div><div class="quiz-choice" data-value="One sketch frame and a text prompt">One sketch frame and a text prompt</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="To adapt the model's spatial behavior to cartoons while preserving temporal priors">
+                        <div class="quiz-question">3. What is the purpose of the Spatial Low-Rank Adapter (SLRA) in ToonComposer?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce the model's computational requirements">To reduce the model's computational requirements</div><div class="quiz-choice" data-value="To enable processing of higher resolution videos">To enable processing of higher resolution videos</div><div class="quiz-choice" data-value="To adapt the model's spatial behavior to cartoons while preserving temporal priors">To adapt the model's spatial behavior to cartoons while preserving temporal priors</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>STream3R: Scalable Sequential 3D Reconstruction with Causal Transformer</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.10893" target="_blank">http://arxiv.org/pdf/2508.10893</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> 3D reconstruction from streaming images/video using transformers in computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on DUSt3R's pointmap prediction approach, introduces a novel decoder-only transformer architecture with causal attention for sequential processing, inspired by large language models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing 3D reconstruction methods either require expensive global optimization or use limited memory mechanisms that don't scale well with sequence length for processing streaming inputs.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a causal transformer architecture that caches features from previous frames and processes new frames sequentially, with dual coordinate prediction (local and global) and KV-cache for efficient inference.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperforms existing methods on benchmarks like Sintel, KITTI, and NYU-v2 for depth estimation and 7-scenes for 3D reconstruction, while being 40% faster than state-of-the-art methods.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>STream3R: Scalable Sequential 3D Reconstruction with Causal Transformer</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">STREAM3R: Scalable Sequential 3D Reconstruction with Causal Transformer</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="70" width="150" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="125" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#1976d2">Streaming Input</text>
+  <text x="125" y="110" text-anchor="middle" font-size="10" fill="#1976d2">Images I₁, I₂, ..., Iₜ</text>
+  <text x="125" y="125" text-anchor="middle" font-size="10" fill="#1976d2">(Uncalibrated)</text>
+  
+  <!-- ViT Encoder -->
+  <rect x="250" y="70" width="120" height="80" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="310" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">ViT Encoder</text>
+  <text x="310" y="110" text-anchor="middle" font-size="10" fill="#f57c00">Shared Weights</text>
+  <text x="310" y="125" text-anchor="middle" font-size="10" fill="#f57c00">Fₜ = Encoder(Iₜ)</text>
+  
+  <!-- Causal Transformer Decoder -->
+  <rect x="420" y="60" width="200" height="100" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="520" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#7b1fa2">Causal Transformer</text>
+  <text x="520" y="100" text-anchor="middle" font-size="14" font-weight="bold" fill="#7b1fa2">Decoder</text>
+  
+  <!-- Self Attention -->
+  <rect x="440" y="115" width="70" height="30" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="1"/>
+  <text x="475" y="132" text-anchor="middle" font-size="9" fill="#4caf50">Self Attn</text>
+  
+  <!-- Causal Attention -->
+  <rect x="530" y="115" width="70" height="30" rx="5" fill="#ffe8e8" stroke="#f44336" stroke-width="1"/>
+  <text x="565" y="132" text-anchor="middle" font-size="9" fill="#f44336">Causal Attn</text>
+  
+  <!-- Memory Cache -->
+  <rect x="680" y="70" width="120" height="80" rx="10" fill="#fff8e1" stroke="#fbc02d" stroke-width="2"/>
+  <text x="740" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#fbc02d">Memory Cache</text>
+  <text x="740" y="110" text-anchor="middle" font-size="10" fill="#fbc02d">KV Cache</text>
+  <text x="740" y="125" text-anchor="middle" font-size="10" fill="#fbc02d">Previous Features</text>
+  
+  <!-- Register Token -->
+  <rect x="420" y="190" width="80" height="40" rx="5" fill="#ffebee" stroke="#e91e63" stroke-width="2"/>
+  <text x="460" y="205" text-anchor="middle" font-size="10" font-weight="bold" fill="#e91e63">🔥 Reg Token</text>
+  <text x="460" y="218" text-anchor="middle" font-size="8" fill="#e91e63">(First Frame)</text>
+  
+  <!-- Prediction Heads -->
+  <rect x="100" y="280" width="120" height="60" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="160" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#4caf50">Local Head</text>
+  <text x="160" y="315" text-anchor="middle" font-size="9" fill="#4caf50">X̂ₜˡᵒᶜᵃˡ, Ĉₜˡᵒᶜᵃˡ</text>
+  <text x="160" y="328" text-anchor="middle" font-size="8" fill="#4caf50">(Camera Coord)</text>
+  
+  <rect x="280" y="280" width="120" height="60" rx="10" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="340" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#2196f3">Global Head</text>
+  <text x="340" y="315" text-anchor="middle" font-size="9" fill="#2196f3">X̂ₜᵍˡᵒᵇᵃˡ, Ĉₜᵍˡᵒᵇᵃˡ</text>
+  <text x="340" y="328" text-anchor="middle" font-size="8" fill="#2196f3">(World Coord)</text>
+  
+  <rect x="460" y="280" width="120" height="60" rx="10" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="520" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff9800">Pose Head</text>
+  <text x="520" y="315" text-anchor="middle" font-size="9" fill="#ff9800">P̂ₜ (R, t, f)</text>
+  <text x="520" y="328" text-anchor="middle" font-size="8" fill="#ff9800">(Camera Pose)</text>
+  
+  <!-- Training Objective -->
+  <rect x="650" y="280" width="250" height="80" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="775" y="300" text-anchor="middle" font-size="12" font-weight="bold" fill="#9c27b0">Training Objective</text>
+  <text x="775" y="318" text-anchor="middle" font-size="10" fill="#9c27b0">Lconf = Σ(ĉ·||x̂/ŝ - x/s||² - α log ĉ)</text>
+  <text x="775" y="333" text-anchor="middle" font-size="10" fill="#9c27b0">Lpose = Σ(||q̂ₜ - qₜ||² + ||τ̂ₜ/ŝ - τₜ/s||² + ||f̂ₜ - fₜ||²)</text>
+  <text x="775" y="348" text-anchor="middle" font-size="9" fill="#9c27b0">Confidence-aware regression + Pose loss</text>
+  
+  <!-- Output Section -->
+  <rect x="100" y="400" width="600" height="80" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="400" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">Sequential 3D Reconstruction Output</text>
+  <text x="400" y="445" text-anchor="middle" font-size="11" fill="#388e3c">Dense Point Maps + Confidence Maps + Camera Poses</text>
+  <text x="400" y="460" text-anchor="middle" font-size="10" fill="#388e3c">Compatible with Gaussian Splatting, SLAM, Novel View Synthesis</text>
+  
+  <!-- Key Features -->
+  <rect x="750" y="400" width="200" height="120" rx="10" fill="#fff8e1" stroke="#f57c00" stroke-width="2"/>
+  <text x="850" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Key Features</text>
+  <text x="850" y="440" text-anchor="middle" font-size="10" fill="#f57c00">✓ Causal Attention</text>
+  <text x="850" y="455" text-anchor="middle" font-size="10" fill="#f57c00">✓ KV Cache Efficiency</text>
+  <text x="850" y="470" text-anchor="middle" font-size="10" fill="#f57c00">✓ LLM-style Training</text>
+  <text x="850" y="485" text-anchor="middle" font-size="10" fill="#f57c00">✓ Streaming Processing</text>
+  <text x="850" y="500" text-anchor="middle" font-size="10" fill="#f57c00">✓ No Global Alignment</text>
+  
+  <!-- Architecture Details -->
+  <rect x="100" y="550" width="800" height="100" rx="10" fill="#f5f5f5" stroke="#616161" stroke-width="2"/>
+  <text x="500" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="#424242">Architecture Details</text>
+  <text x="200" y="600" text-anchor="middle" font-size="11" fill="#424242">Encoder: CroCo ViT (24 layers)</text>
+  <text x="500" y="600" text-anchor="middle" font-size="11" fill="#424242">Decoder: 12 layers with Causal Attention</text>
+  <text x="750" y="600" text-anchor="middle" font-size="11" fill="#424242">Heads: DPT-L for regression</text>
+  <text x="300" y="620" text-anchor="middle" font-size="10" fill="#424242">FlashAttention + QK-Norm</text>
+  <text x="600" y="620" text-anchor="middle" font-size="10" fill="#424242">29 diverse 3D datasets</text>
+  <text x="500" y="635" text-anchor="middle" font-size="10" fill="#424242">End-to-end training: 400K iterations, 8 A100 GPUs, 7 days</text>
+  
+  <!-- Data Flow Lines -->
+  <line x1="200" y1="110" x2="250" y2="110" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="370" y1="110" x2="420" y2="110" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="620" y1="110" x2="680" y2="110" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="520" y1="160" x2="520" y2="190" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="460" y1="230" x2="340" y2="280" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="460" y1="230" x2="160" y2="280" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="520" y1="230" x2="520" y2="280" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="340" x2="400" y2="400" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Feedback line from cache to decoder -->
+  <path d="M 740 150 Q 740 180 620 140" stroke="#fbc02d" stroke-width="2" fill="none" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Using a decoder-only transformer with causal attention">
+                        <div class="quiz-question">1. What is the main architectural innovation of STREAM3R compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a bi-directional transformer with global attention">Using a bi-directional transformer with global attention</div><div class="quiz-choice" data-value="Using a decoder-only transformer with causal attention">Using a decoder-only transformer with causal attention</div><div class="quiz-choice" data-value="Using a RNN-based architecture with fixed memory">Using a RNN-based architecture with fixed memory</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By caching features from previous frames as context using KV-cache">
+                        <div class="quiz-question">2. How does STREAM3R achieve efficient processing of streaming inputs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using expensive global optimization for each frame">By using expensive global optimization for each frame</div><div class="quiz-choice" data-value="By maintaining a fixed-size memory buffer">By maintaining a fixed-size memory buffer</div><div class="quiz-choice" data-value="By caching features from previous frames as context using KV-cache">By caching features from previous frames as context using KV-cache</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="40% faster inference with better accuracy">
+                        <div class="quiz-question">3. What performance improvement does STREAM3R achieve compared to the state-of-the-art CUT3R?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="20% faster inference with slightly worse accuracy">20% faster inference with slightly worse accuracy</div><div class="quiz-choice" data-value="40% faster inference with better accuracy">40% faster inference with better accuracy</div><div class="quiz-choice" data-value="Same speed but 40% better accuracy">Same speed but 40% better accuracy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
