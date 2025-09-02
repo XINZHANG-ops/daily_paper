@@ -1,0 +1,1197 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-02 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-02 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>R-4B: Incentivizing General-Purpose Auto-Thinking Capability in MLLMs
+  via Bi-Mode Annealing and Reinforce Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-28</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.21113" target="_blank">http://arxiv.org/pdf/2508.21113</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing an auto-thinking capability in Multimodal Large Language Models (MLLMs) that can adaptively decide when to engage in complex reasoning based on problem complexity.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research included manual thinking mode activation and auto-thinking methods that relied on complex reward functions or manual data curation; this paper introduces a novel bi-mode annealing and reinforcement learning approach for more efficient auto-thinking.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the inefficiency of MLLMs that use step-by-step thinking for all problems, even simple ones that don't require complex reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use bi-mode annealing to train the model on both thinking and non-thinking datasets, followed by Bi-mode Policy Optimization (BPO) to improve the model's accuracy in determining when to activate thinking processes.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> R-4B achieved state-of-the-art performance across 25 benchmarks, outperforming Qwen2.5-VL-7B in most tasks and matching larger models like Kimi-VL-A3B-Thinking-2506 (16B) on reasoning-intensive benchmarks with lower computational cost.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>R-4B: Incentivizing General-Purpose Auto-Thinking Capability in MLLMs
+  via Bi-Mode Annealing and Reinforce Learning</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">R-4B: Auto-Thinking MLLM Workflow</text>
+  
+  <!-- Stage 1: Data Preparation -->
+  <rect x="50" y="80" width="280" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="190" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Data Curation Strategy</text>
+  <text x="190" y="125" text-anchor="middle" font-size="12" fill="#34495e">Heuristic-driven Bi-mode</text>
+  <text x="190" y="145" text-anchor="middle" font-size="12" fill="#34495e">Difficulty-based (Subjective)</text>
+  <text x="190" y="165" text-anchor="middle" font-size="12" fill="#34495e">Performance-based (Objective)</text>
+  <text x="190" y="185" text-anchor="middle" font-size="12" fill="#34495e">16.3M samples</text>
+  
+  <!-- Stage 2: Bi-mode Annealing -->
+  <rect x="380" y="80" width="280" height="120" rx="10" fill="#fff2e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="520" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Bi-mode Annealing</text>
+  <text x="520" y="125" text-anchor="middle" font-size="12" fill="#34495e">Mixed reasoning + non-reasoning</text>
+  <text x="520" y="145" text-anchor="middle" font-size="12" fill="#34495e">&lt;think&gt;...&lt;/think&gt; format</text>
+  <text x="520" y="165" text-anchor="middle" font-size="12" fill="#34495e">Structural consistency</text>
+  <text x="520" y="185" text-anchor="middle" font-size="12" font-weight="bold" fill="#e67e22">→ R-4B-Base</text>
+  
+  <!-- Stage 3: Policy Optimization -->
+  <rect x="710" y="80" width="280" height="120" rx="10" fill="#e8f8e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="850" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Bi-mode Policy Optimization</text>
+  <text x="850" y="125" text-anchor="middle" font-size="12" fill="#34495e">GRPO + Bi-mode Rollouts</text>
+  <text x="850" y="145" text-anchor="middle" font-size="12" fill="#34495e">Thinking + Non-thinking groups</text>
+  <text x="850" y="165" text-anchor="middle" font-size="12" fill="#34495e">Rule-based math reward</text>
+  <text x="850" y="185" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">→ R-4B-RL</text>
+  
+  <!-- Data Categories -->
+  <rect x="50" y="240" width="500" height="160" rx="10" fill="#f4f1ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="300" y="265" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Data Categories Distribution</text>
+  
+  <!-- Data circles -->
+  <circle cx="120" cy="320" r="25" fill="#3498db"/>
+  <text x="120" y="325" text-anchor="middle" font-size="10" fill="white">General 16%</text>
+  
+  <circle cx="200" cy="320" r="30" fill="#e74c3c"/>
+  <text x="200" y="325" text-anchor="middle" font-size="10" fill="white">Math 23%</text>
+  
+  <circle cx="280" cy="320" r="20" fill="#f39c12"/>
+  <text x="280" y="325" text-anchor="middle" font-size="10" fill="white">Chart 15%</text>
+  
+  <circle cx="360" cy="320" r="18" fill="#2ecc71"/>
+  <text x="360" y="325" text-anchor="middle" font-size="10" fill="white">OCR 10%</text>
+  
+  <circle cx="440" cy="320" r="15" fill="#9b59b6"/>
+  <text x="440" y="325" text-anchor="middle" font-size="10" fill="white">Code 5%</text>
+  
+  <text x="300" y="380" text-anchor="middle" font-size="12" fill="#7f8c8d">+ Knowledge, Caption, Grounding, Text-Only</text>
+  
+  <!-- BPO Details -->
+  <rect x="600" y="240" width="450" height="160" rx="10" fill="#fff5f5" stroke="#e74c3c" stroke-width="2"/>
+  <text x="825" y="265" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">BPO Mechanism</text>
+  
+  <!-- Special tokens -->
+  <rect x="620" y="285" width="180" height="40" rx="5" fill="#3498db" fill-opacity="0.2"/>
+  <text x="710" y="300" text-anchor="middle" font-size="12" fill="#2c3e50">&lt;thinking token&gt;</text>
+  <text x="710" y="315" text-anchor="middle" font-size="10" fill="#7f8c8d">Triggers reasoning mode</text>
+  
+  <rect x="820" y="285" width="200" height="40" rx="5" fill="#e74c3c" fill-opacity="0.2"/>
+  <text x="920" y="300" text-anchor="middle" font-size="12" fill="#2c3e50">&lt;non-thinking token&gt;</text>
+  <text x="920" y="315" text-anchor="middle" font-size="10" fill="#7f8c8d">Triggers direct response</text>
+  
+  <!-- Objective function -->
+  <text x="825" y="350" text-anchor="middle" font-size="12" fill="#2c3e50">Objective: J_BPO(θ) with mixed advantage</text>
+  <text x="825" y="370" text-anchor="middle" font-size="11" fill="#7f8c8d">Balanced exploration + KL penalty</text>
+  <text x="825" y="385" text-anchor="middle" font-size="11" fill="#7f8c8d">Prevents mode collapse</text>
+  
+  <!-- Training Process Flow -->
+  <rect x="100" y="450" width="1000" height="100" rx="10" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="600" y="475" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Training Pipeline</text>
+  
+  <!-- Training steps -->
+  <rect x="130" y="490" width="150" height="40" rx="5" fill="#3498db"/>
+  <text x="205" y="510" text-anchor="middle" font-size="12" fill="white">Pre-training</text>
+  <text x="205" y="525" text-anchor="middle" font-size="10" fill="white">3-stage foundation</text>
+  
+  <rect x="320" y="490" width="150" height="40" rx="5" fill="#e67e22"/>
+  <text x="395" y="510" text-anchor="middle" font-size="12" fill="white">Bi-mode Annealing</text>
+  <text x="395" y="525" text-anchor="middle" font-size="10" fill="white">Dual capabilities</text>
+  
+  <rect x="510" y="490" width="150" height="40" rx="5" fill="#27ae60"/>
+  <text x="585" y="510" text-anchor="middle" font-size="12" fill="white">BPO Training</text>
+  <text x="585" y="525" text-anchor="middle" font-size="10" fill="white">Auto-thinking policy</text>
+  
+  <rect x="700" y="490" width="150" height="40" rx="5" fill="#9b59b6"/>
+  <text x="775" y="510" text-anchor="middle" font-size="12" fill="white">Evaluation</text>
+  <text x="775" y="525" text-anchor="middle" font-size="10" fill="white">25 benchmarks</text>
+  
+  <rect x="890" y="490" width="150" height="40" rx="5" fill="#e74c3c"/>
+  <text x="965" y="510" text-anchor="middle" font-size="12" fill="white">R-4B-RL</text>
+  <text x="965" y="525" text-anchor="middle" font-size="10" fill="white">Final model</text>
+  
+  <!-- Key Innovation Boxes -->
+  <rect x="50" y="580" width="350" height="120" rx="10" fill="#e8f6f3" stroke="#1abc9c" stroke-width="2"/>
+  <text x="225" y="605" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Innovation 1</text>
+  <text x="225" y="630" text-anchor="middle" font-size="14" fill="#2c3e50">Heuristic Data Curation</text>
+  <text x="225" y="650" text-anchor="middle" font-size="12" fill="#34495e">• Automated reasoning/non-reasoning split</text>
+  <text x="225" y="670" text-anchor="middle" font-size="12" fill="#34495e">• No manual complexity annotation</text>
+  <text x="225" y="690" text-anchor="middle" font-size="12" fill="#34495e">• Consistent MLLM-based labeling</text>
+  
+  <rect x="450" y="580" width="350" height="120" rx="10" fill="#fef9e7" stroke="#f1c40f" stroke-width="2"/>
+  <text x="625" y="605" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Innovation 2</text>
+  <text x="625" y="630" text-anchor="middle" font-size="14" fill="#2c3e50">Bi-mode Policy Optimization</text>
+  <text x="625" y="650" text-anchor="middle" font-size="12" fill="#34495e">• Forced dual-mode generation</text>
+  <text x="625" y="670" text-anchor="middle" font-size="12" fill="#34495e">• Simple rule-based reward</text>
+  <text x="625" y="690" text-anchor="middle" font-size="12" fill="#34495e">• Prevents thinking atrophy</text>
+  
+  <rect x="850" y="580" width="300" height="120" rx="10" fill="#fdedec" stroke="#e74c3c" stroke-width="2"/>
+  <text x="1000" y="605" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Results</text>
+  <text x="1000" y="630" text-anchor="middle" font-size="14" fill="#2c3e50">Auto-thinking MLLM</text>
+  <text x="1000" y="650" text-anchor="middle" font-size="12" fill="#34495e">• Adaptive reasoning decisions</text>
+  <text x="1000" y="670" text-anchor="middle" font-size="12" fill="#34495e">• SOTA on 25 benchmarks</text>
+  <text x="1000" y="690" text-anchor="middle" font-size="12" fill="#34495e">• Efficient token usage</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="200" y="740" width="800" height="120" rx="10" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="600" y="765" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Performance Highlights</text>
+  
+  <text x="350" y="790" text-anchor="middle" font-size="14" fill="#2c3e50">MMMU: 68.1%</text>
+  <text x="500" y="790" text-anchor="middle" font-size="14" fill="#2c3e50">MMStar: 73.1%</text>
+  <text x="650" y="790" text-anchor="middle" font-size="14" fill="#2c3e50">MathVerse: 64.9%</text>
+  <text x="850" y="790" text-anchor="middle" font-size="14" fill="#2c3e50">LogicVista: 59.1%</text>
+  
+  <text x="400" y="815" text-anchor="middle" font-size="12" fill="#7f8c8d">Outperforms Qwen2.5-VL-7B</text>
+  <text x="750" y="815" text-anchor="middle" font-size="12" fill="#7f8c8d">Competitive with 16B models</text>
+  
+  <text x="600" y="840" text-anchor="middle" font-size="12" font-style="italic" fill="#6c757d">Intelligent token usage: 66-1278 tokens based on complexity</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It combines bi-mode annealing with reinforcement learning">
+                        <div class="quiz-question">1. What is the main innovation of R-4B compared to previous auto-thinking MLLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses manual activation of thinking mode">It uses manual activation of thinking mode</div><div class="quiz-choice" data-value="It combines bi-mode annealing with reinforcement learning">It combines bi-mode annealing with reinforcement learning</div><div class="quiz-choice" data-value="It relies on complex reward functions and manual data curation">It relies on complex reward functions and manual data curation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It adaptively decides based on problem complexity through trained policy optimization">
+                        <div class="quiz-question">2. How does R-4B determine when to use thinking mode versus non-thinking mode?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It always uses thinking mode for every problem">It always uses thinking mode for every problem</div><div class="quiz-choice" data-value="Users manually select the mode for each query">Users manually select the mode for each query</div><div class="quiz-choice" data-value="It adaptively decides based on problem complexity through trained policy optimization">It adaptively decides based on problem complexity through trained policy optimization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It matched performance of 16B parameter models while being much smaller">
+                        <div class="quiz-question">3. What was a key performance achievement of R-4B compared to larger models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It matched performance of 16B parameter models while being much smaller">It matched performance of 16B parameter models while being much smaller</div><div class="quiz-choice" data-value="It performed worse but used less computing power">It performed worse but used less computing power</div><div class="quiz-choice" data-value="It outperformed all other models regardless of size">It outperformed all other models regardless of size</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Pref-GRPO: Pairwise Preference Reward-based GRPO for Stable
+  Text-to-Image Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-28</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.20751" target="_blank">http://arxiv.org/pdf/2508.20751</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Text-to-image generation using reinforcement learning, specifically focusing on improving the stability and evaluation of text-to-image models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Group Relative Policy Optimization (GRPO) and pointwise reward models, introduces a novel pairwise preference reward-based approach and a comprehensive evaluation benchmark.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses reward hacking in existing text-to-image models where scores increase but image quality deteriorates, and the lack of fine-grained evaluation metrics in current benchmarks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces Pref-GRPO, which uses pairwise preference comparisons instead of absolute reward scores, and develops UniGenBench, a unified benchmark with 600 prompts spanning 5 themes and evaluating 10 primary and 27 sub-criteria.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Pref-GRPO achieved better stability and image quality compared to baseline methods, with significant improvements in semantic consistency (5.84% increase in overall score) and specific aspects like Text (12.69%) and Logical Reasoning (12.04%).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Pref-GRPO: Pairwise Preference Reward-based GRPO for Stable
+  Text-to-Image Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="problemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffebee;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffcdd2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="solutionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8f5e8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c8e6c9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="benchmarkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff3e0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffe0b2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c3e50">
+    Pref-GRPO: Pairwise Preference Reward-based GRPO for Stable T2I RL
+  </text>
+  
+  <!-- Problem Analysis Section -->
+  <rect x="50" y="60" width="280" height="120" rx="10" fill="url(#problemGrad)" stroke="#d32f2f" stroke-width="2"/>
+  <text x="190" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#d32f2f">
+    Problem: Reward Hacking
+  </text>
+  <text x="60" y="100" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Pointwise RMs assign similar scores
+  </text>
+  <text x="60" y="115" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Small σᵣ → Illusory Advantage
+  </text>
+  <text x="60" y="130" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Amplified advantages drive over-optimization
+  </text>
+  <text x="60" y="145" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Score increases but quality deteriorates
+  </text>
+  <text x="60" y="160" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Advantage = (R(xᵢ) - μᵣ) / σᵣ
+  </text>
+  
+  <!-- Traditional GRPO Flow -->
+  <rect x="50" y="200" width="120" height="60" rx="8" fill="#ffcccb" stroke="#ff6b6b" stroke-width="2"/>
+  <text x="110" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    Text Prompt
+  </text>
+  <text x="110" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Input
+  </text>
+  
+  <rect x="190" y="200" width="120" height="60" rx="8" fill="#ffcccb" stroke="#ff6b6b" stroke-width="2"/>
+  <text x="250" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    T2I Model
+  </text>
+  <text x="250" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Generate Images
+  </text>
+  
+  <rect x="330" y="200" width="120" height="60" rx="8" fill="#ffcccb" stroke="#ff6b6b" stroke-width="2"/>
+  <text x="390" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">
+    Pointwise RM
+  </text>
+  <text x="390" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Score each image
+  </text>
+  <text x="390" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Similar scores
+  </text>
+  
+  <rect x="470" y="200" width="120" height="60" rx="8" fill="#ffcccb" stroke="#ff6b6b" stroke-width="2"/>
+  <text x="530" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">
+    Group Advantage
+  </text>
+  <text x="530" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Normalization
+  </text>
+  <text x="530" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Amplified differences
+  </text>
+  
+  <!-- Pref-GRPO Solution -->
+  <rect x="650" y="60" width="300" height="120" rx="10" fill="url(#solutionGrad)" stroke="#4caf50" stroke-width="2"/>
+  <text x="800" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#4caf50">
+    Solution: Pref-GRPO
+  </text>
+  <text x="660" y="100" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Pairwise Preference Reward Model (PPRM)
+  </text>
+  <text x="660" y="115" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Win rate: wᵢ = (1/(G-1)) Σⱼ≠ᵢ I(xᵢ ≻ xⱼ)
+  </text>
+  <text x="660" y="130" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Amplified reward variance (0 to 1)
+  </text>
+  <text x="660" y="145" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Robust to reward noise
+  </text>
+  <text x="660" y="160" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Better alignment with human preference
+  </text>
+  
+  <!-- Pref-GRPO Flow -->
+  <rect x="650" y="200" width="120" height="60" rx="8" fill="#c8e6c9" stroke="#4caf50" stroke-width="2"/>
+  <text x="710" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    Text Prompt
+  </text>
+  <text x="710" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Input
+  </text>
+  
+  <rect x="790" y="200" width="120" height="60" rx="8" fill="#c8e6c9" stroke="#4caf50" stroke-width="2"/>
+  <text x="850" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    T2I Model
+  </text>
+  <text x="850" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Generate Images
+  </text>
+  
+  <rect x="650" y="280" width="120" height="60" rx="8" fill="#c8e6c9" stroke="#4caf50" stroke-width="2"/>
+  <text x="710" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">
+    Pairwise PPRM
+  </text>
+  <text x="710" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Compare all pairs
+  </text>
+  <text x="710" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    xᵢ ≻ xⱼ ?
+  </text>
+  
+  <rect x="790" y="280" width="120" height="60" rx="8" fill="#c8e6c9" stroke="#4caf50" stroke-width="2"/>
+  <text x="850" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">
+    Win Rate
+  </text>
+  <text x="850" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Calculate wᵢ
+  </text>
+  <text x="850" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Stable advantages
+  </text>
+  
+  <rect x="720" y="360" width="120" height="60" rx="8" fill="#c8e6c9" stroke="#4caf50" stroke-width="2"/>
+  <text x="780" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">
+    Policy Update
+  </text>
+  <text x="780" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Stable optimization
+  </text>
+  <text x="780" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    No reward hacking
+  </text>
+  
+  <!-- UniGenBench Section -->
+  <rect x="50" y="450" width="900" height="120" rx="10" fill="url(#benchmarkGrad)" stroke="#ff9800" stroke-width="2"/>
+  <text x="500" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ff9800">
+    UniGenBench: Unified T2I Generation Benchmark
+  </text>
+  
+  <rect x="70" y="490" width="180" height="70" rx="5" fill="#fff8e1" stroke="#ffc107" stroke-width="1"/>
+  <text x="160" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    Comprehensive Coverage
+  </text>
+  <text x="80" y="525" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • 5 main themes, 20 subthemes
+  </text>
+  <text x="80" y="540" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • 10 primary + 27 sub dimensions
+  </text>
+  <text x="80" y="555" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • 600 prompts with 1-5 testpoints
+  </text>
+  
+  <rect x="270" y="490" width="180" height="70" rx="5" fill="#fff8e1" stroke="#ffc107" stroke-width="1"/>
+  <text x="360" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    MLLM-based Pipeline
+  </text>
+  <text x="280" y="525" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Automated prompt generation
+  </text>
+  <text x="280" y="540" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Fine-grained evaluation
+  </text>
+  <text x="280" y="555" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Gemini2.5-pro based
+  </text>
+  
+  <rect x="470" y="490" width="180" height="70" rx="5" fill="#fff8e1" stroke="#ffc107" stroke-width="1"/>
+  <text x="560" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    Novel Dimensions
+  </text>
+  <text x="480" y="525" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Logical reasoning
+  </text>
+  <text x="480" y="540" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Pronoun reference
+  </text>
+  <text x="480" y="555" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Facial expressions
+  </text>
+  
+  <rect x="670" y="490" width="180" height="70" rx="5" fill="#fff8e1" stroke="#ffc107" stroke-width="1"/>
+  <text x="760" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">
+    Evaluation Results
+  </text>
+  <text x="680" y="525" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Open vs Closed-source models
+  </text>
+  <text x="680" y="540" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Strengths & weaknesses
+  </text>
+  <text x="680" y="555" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    • Pref-GRPO effectiveness
+  </text>
+  
+  <!-- Results Section -->
+  <rect x="50" y="590" width="400" height="80" rx="10" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="250" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2196f3">
+    Key Results
+  </text>
+  <text x="60" y="630" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • 5.84% improvement in overall semantic consistency
+  </text>
+  <text x="60" y="645" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • 12.69% improvement on Text, 12.04% on Logical Reasoning
+  </text>
+  <text x="60" y="660" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • Mitigated reward hacking with stable optimization
+  </text>
+  
+  <!-- Technical Details -->
+  <rect x="500" y="590" width="450" height="80" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="725" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#9c27b0">
+    Technical Implementation
+  </text>
+  <text x="510" y="630" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • FLUX.1-dev as base model, UnifiedReward-Think as PPRM
+  </text>
+  <text x="510" y="645" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • SDE formulation: dxₜ = [vθ(xₜ,t) + σₜ²/2t(xₜ + (1-t)vθ(xₜ,t))]dt + σₜdwₜ
+  </text>
+  <text x="510" y="660" font-family="Arial, sans-serif" font-size="11" fill="#333">
+    • 25 sampling steps, group size G, pairwise preference comparison
+  </text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 170 230 Q 180 230 190 230" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 310 230 Q 320 230 330 230" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 450 230 Q 460 230 470 230" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 770 230 Q 780 230 790 230" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 850 260 Q 850 270 770 310" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 770 310 Q 780 310 790 310" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 850 340 Q 850 350 780 380" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Labels -->
+  <text x="50" y="750" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2c3e50">
+    Traditional GRPO (Top): Reward Hacking Problem
+  </text>
+  <text x="50" y="770" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2c3e50">
+    Pref-GRPO (Bottom): Stable Pairwise Preference Learning
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Illusory advantage from minimal reward score differences">
+                        <div class="quiz-question">1. What is the fundamental cause of reward hacking in text-to-image generation according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Insufficient training data">Insufficient training data</div><div class="quiz-choice" data-value="Illusory advantage from minimal reward score differences">Illusory advantage from minimal reward score differences</div><div class="quiz-choice" data-value="Lack of human supervision">Lack of human supervision</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="600 prompts with 10 primary and 27 sub-dimensions">
+                        <div class="quiz-question">2. How many prompts and evaluation dimensions does UniGenBench contain?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1000 prompts with 15 dimensions">1000 prompts with 15 dimensions</div><div class="quiz-choice" data-value="600 prompts with 10 primary and 27 sub-dimensions">600 prompts with 10 primary and 27 sub-dimensions</div><div class="quiz-choice" data-value="300 prompts with 20 dimensions">300 prompts with 20 dimensions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It shifts from absolute reward scores to pairwise preference comparisons">
+                        <div class="quiz-question">3. What is the key innovation of Pref-GRPO compared to traditional methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses larger batch sizes during training">It uses larger batch sizes during training</div><div class="quiz-choice" data-value="It incorporates more complex neural networks">It incorporates more complex neural networks</div><div class="quiz-choice" data-value="It shifts from absolute reward scores to pairwise preference comparisons">It shifts from absolute reward scores to pairwise preference comparisons</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>VibeVoice Technical Report</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-26</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2508.19205" target="_blank">http://arxiv.org/pdf/2508.19205</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A novel text-to-speech synthesis model called VibeVoice for generating long-form, multi-speaker conversational audio.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on next-token diffusion and recent TTS advancements, introducing a new continuous speech tokenizer that achieves 80x better compression than Encodec while maintaining quality.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The challenge of generating natural, high-quality long-form conversational speech with multiple speakers, which current systems struggle to achieve.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a hybrid approach combining an efficient speech tokenizer (7.5Hz frame rate), large language model (Qwen2.5), and token-level diffusion head to generate speech in a streaming manner.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperforms existing models in both subjective metrics (realism, richness, preference) and objective metrics (WER), capable of generating up to 90 minutes of high-quality multi-speaker audio.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VibeVoice Technical Report</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">VibeVoice Method Workflow</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="70" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#1976d2">User Input</text>
+  <text x="150" y="115" text-anchor="middle" font-size="10" fill="#1976d2">Voice Prompts + Text Scripts</text>
+  <text x="150" y="130" text-anchor="middle" font-size="10" fill="#1976d2">Speaker Roles</text>
+  
+  <!-- Speech Tokenizers Section -->
+  <rect x="320" y="50" width="150" height="120" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="395" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">Speech Tokenizers</text>
+  
+  <!-- Acoustic Tokenizer -->
+  <rect x="330" y="85" width="130" height="35" rx="5" fill="#ffcc80" stroke="#ff8f00"/>
+  <text x="395" y="100" text-anchor="middle" font-size="10" font-weight="bold" fill="#e65100">Acoustic Tokenizer</text>
+  <text x="395" y="115" text-anchor="middle" font-size="9" fill="#e65100">σ-VAE (7.5 Hz)</text>
+  
+  <!-- Semantic Tokenizer -->
+  <rect x="330" y="125" width="130" height="35" rx="5" fill="#ffcc80" stroke="#ff8f00"/>
+  <text x="395" y="140" text-anchor="middle" font-size="10" font-weight="bold" fill="#e65100">Semantic Tokenizer</text>
+  <text x="395" y="155" text-anchor="middle" font-size="9" fill="#e65100">ASR-based</text>
+  
+  <!-- LLM Core Section -->
+  <rect x="550" y="80" width="180" height="80" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="640" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2e7d32">Large Language Model</text>
+  <text x="640" y="125" text-anchor="middle" font-size="11" fill="#2e7d32">Qwen2.5 (1.5B/7B)</text>
+  <text x="640" y="145" text-anchor="middle" font-size="10" fill="#2e7d32">Context Processing</text>
+  
+  <!-- Token-Level Diffusion -->
+  <rect x="400" y="220" width="200" height="80" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="500" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#7b1fa2">Token-Level Diffusion</text>
+  <text x="500" y="265" text-anchor="middle" font-size="11" fill="#7b1fa2">Diffusion Head (4 layers)</text>
+  <text x="500" y="285" text-anchor="middle" font-size="10" fill="#7b1fa2">CFG + DPM-Solver++</text>
+  
+  <!-- Training Process -->
+  <rect x="100" y="350" width="300" height="100" rx="10" fill="#fff8e1" stroke="#ff9800" stroke-width="2"/>
+  <text x="250" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">Training Process</text>
+  <text x="250" y="395" text-anchor="middle" font-size="11" fill="#f57c00">Curriculum Learning</text>
+  <text x="250" y="415" text-anchor="middle" font-size="10" fill="#f57c00">4K → 65K tokens</text>
+  <text x="250" y="435" text-anchor="middle" font-size="10" fill="#f57c00">Frozen Tokenizers</text>
+  
+  <!-- Audio Decoder -->
+  <rect x="500" y="350" width="150" height="80" rx="10" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="575" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="#c2185b">Audio Decoder</text>
+  <text x="575" y="395" text-anchor="middle" font-size="11" fill="#c2185b">VAE Decoder</text>
+  <text x="575" y="415" text-anchor="middle" font-size="10" fill="#c2185b">24kHz Output</text>
+  
+  <!-- Output -->
+  <rect x="750" y="370" width="180" height="80" rx="10" fill="#e1f5fe" stroke="#0288d1" stroke-width="2"/>
+  <text x="840" y="395" text-anchor="middle" font-size="14" font-weight="bold" fill="#0277bd">Generated Speech</text>
+  <text x="840" y="415" text-anchor="middle" font-size="11" fill="#0277bd">Up to 90 minutes</text>
+  <text x="840" y="435" text-anchor="middle" font-size="11" fill="#0277bd">Multi-speaker (4 max)</text>
+  
+  <!-- Key Features -->
+  <rect x="200" y="520" width="600" height="120" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-size="16" font-weight="bold" fill="#558b2f">Key Innovations</text>
+  
+  <circle cx="250" cy="570" r="3" fill="#8bc34a"/>
+  <text x="265" y="575" font-size="11" fill="#558b2f">3200x compression rate (7.5 Hz frame rate)</text>
+  
+  <circle cx="250" cy="590" r="3" fill="#8bc34a"/>
+  <text x="265" y="595" font-size="11" fill="#558b2f">2:1 speech-to-text token ratio</text>
+  
+  <circle cx="250" cy="610" r="3" fill="#8bc34a"/>
+  <text x="265" y="615" font-size="11" fill="#558b2f">Next-token diffusion framework</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="100" y="680" width="800" height="80" rx="10" fill="#fff" stroke="#607d8b" stroke-width="2"/>
+  <text x="500" y="705" text-anchor="middle" font-size="16" font-weight="bold" fill="#455a64">Performance Results</text>
+  <text x="200" y="730" text-anchor="middle" font-size="11" fill="#455a64">Realism: 3.71</text>
+  <text x="350" y="730" text-anchor="middle" font-size="11" fill="#455a64">Richness: 3.81</text>
+  <text x="500" y="730" text-anchor="middle" font-size="11" fill="#455a64">Preference: 3.75</text>
+  <text x="650" y="730" text-anchor="middle" font-size="11" fill="#455a64">WER: 1.29%</text>
+  <text x="800" y="730" text-anchor="middle" font-size="11" fill="#455a64">SIM: 0.692</text>
+  
+  <!-- Connection Lines -->
+  <line x1="250" y1="110" x2="320" y2="110" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="470" y1="110" x2="550" y2="110" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="640" y1="160" x2="500" y2="220" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="300" x2="575" y2="350" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="650" y1="390" x2="750" y2="410" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It achieves an ultra-low frame rate of 7.5 Hz with high fidelity">
+                        <div class="quiz-question">1. What is the main technical innovation in VibeVoice's tokenizer compared to existing models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses multiple tokenizers in parallel">It uses multiple tokenizers in parallel</div><div class="quiz-choice" data-value="It achieves an ultra-low frame rate of 7.5 Hz with high fidelity">It achieves an ultra-low frame rate of 7.5 Hz with high fidelity</div><div class="quiz-choice" data-value="It can only process short audio segments">It can only process short audio segments</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="90 minutes with 4 speakers">
+                        <div class="quiz-question">2. What is the maximum capability of VibeVoice in terms of audio generation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="30 minutes with 2 speakers">30 minutes with 2 speakers</div><div class="quiz-choice" data-value="60 minutes with 3 speakers">60 minutes with 3 speakers</div><div class="quiz-choice" data-value="90 minutes with 4 speakers">90 minutes with 4 speakers</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It only works with English and Chinese">
+                        <div class="quiz-question">3. What current limitation does VibeVoice face in terms of language support?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only works with English and Chinese">It only works with English and Chinese</div><div class="quiz-choice" data-value="It works with all European languages">It works with all European languages</div><div class="quiz-choice" data-value="It supports any language with a written script">It supports any language with a written script</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
