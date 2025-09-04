@@ -1,0 +1,1032 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-04 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-04 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>LLaVA-Critic-R1: Your Critic Model is Secretly a Strong Policy Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-08-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.00676" target="_blank">http://arxiv.org/pdf/2509.00676</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores vision-language modeling, specifically challenging the conventional separation between critic models (which evaluate outputs) and policy models (which generate responses).</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research separating critic and policy models, this paper proposes reorganizing preference-labeled critic datasets into verifiable training signals and using reinforcement learning to create a unified model capable of both evaluation and generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the traditional limitation of treating critic models solely as evaluators rather than generators, seeking to create a single model that excels at both tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use reinforcement learning on a base generative model (Qwen-2.5-VL-7B) with reorganized preference-labeled critic datasets, creating LLaVA-Critic-R1 and its enhanced version LLaVA-Critic-R1+.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieved significant improvements over its base model (+5.7% average gain across 26 benchmarks), reached state-of-the-art performance on MMMU (71.9) at 7B scale, and demonstrated +13.8% improvement on reasoning tasks through self-critique at test time.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LLaVA-Critic-R1: Your Critic Model is Secretly a Strong Policy Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    LLaVA-Critic-R1: Methodology Flow Chart
+  </text>
+  
+  <!-- Data Preparation Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Preparation</text>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#34495e">40K Pairwise Critic Data</text>
+  <text x="150" y="120" text-anchor="middle" font-size="11" fill="#34495e">Strip GPT rationales</text>
+  <text x="150" y="135" text-anchor="middle" font-size="11" fill="#34495e">Keep: Image + Question</text>
+  <text x="150" y="150" text-anchor="middle" font-size="11" fill="#34495e">+ Two Responses</text>
+  <text x="150" y="165" text-anchor="middle" font-size="11" fill="#34495e">+ Preference Labels</text>
+  
+  <!-- RL Training Section -->
+  <rect x="300" y="60" width="200" height="120" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">RL Training (GRPO)</text>
+  <text x="400" y="105" text-anchor="middle" font-size="11" fill="#34495e">Preference Reward (α=0.9)</text>
+  <text x="400" y="120" text-anchor="middle" font-size="11" fill="#34495e">Format Reward (α=0.1)</text>
+  <text x="400" y="135" text-anchor="middle" font-size="11" fill="#34495e">&lt;think&gt;...&lt;/think&gt;</text>
+  <text x="400" y="150" text-anchor="middle" font-size="11" fill="#34495e">\boxed{answer}</text>
+  <text x="400" y="165" text-anchor="middle" font-size="11" fill="#34495e">Self-derived reasoning</text>
+  
+  <!-- Base Models -->
+  <rect x="50" y="220" width="150" height="60" rx="8" fill="#e8f8f5" stroke="#27ae60" stroke-width="2"/>
+  <text x="125" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Base Model</text>
+  <text x="125" y="255" text-anchor="middle" font-size="10" fill="#34495e">Qwen-2.5-VL-7B</text>
+  <text x="125" y="270" text-anchor="middle" font-size="10" fill="#34495e">Mimo-VL / LLaMA-3.2</text>
+  
+  <rect x="250" y="220" width="150" height="60" rx="8" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="325" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Policy Model</text>
+  <text x="325" y="255" text-anchor="middle" font-size="10" fill="#34495e">ThinkLite-VL-7B</text>
+  <text x="325" y="270" text-anchor="middle" font-size="10" fill="#34495e">Other reasoning VLMs</text>
+  
+  <!-- Output Models -->
+  <rect x="100" y="320" width="180" height="80" rx="10" fill="#f4e6ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="190" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">LLaVA-Critic-R1</text>
+  <text x="190" y="355" text-anchor="middle" font-size="11" fill="#34495e">Base + Critic Training</text>
+  <text x="190" y="370" text-anchor="middle" font-size="11" fill="#34495e">+5.7% avg improvement</text>
+  <text x="190" y="385" text-anchor="middle" font-size="11" fill="#34495e">Strong dual capability</text>
+  
+  <rect x="320" y="320" width="180" height="80" rx="10" fill="#ffe6e6" stroke="#e74c3c" stroke-width="2"/>
+  <text x="410" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">LLaVA-Critic-R1+</text>
+  <text x="410" y="355" text-anchor="middle" font-size="11" fill="#34495e">Policy + Critic Training</text>
+  <text x="410" y="370" text-anchor="middle" font-size="11" fill="#34495e">71.9 MMMU (SOTA)</text>
+  <text x="410" y="385" text-anchor="middle" font-size="11" fill="#34495e">Enhanced performance</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="50" y="440" width="200" height="100" rx="10" fill="#e6f3ff" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="465" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Policy Evaluation</text>
+  <text x="150" y="485" text-anchor="middle" font-size="11" fill="#34495e">26 Visual Benchmarks</text>
+  <text x="150" y="500" text-anchor="middle" font-size="11" fill="#34495e">• Perception &amp; VQA</text>
+  <text x="150" y="515" text-anchor="middle" font-size="11" fill="#34495e">• Image Reasoning</text>
+  <text x="150" y="530" text-anchor="middle" font-size="11" fill="#34495e">• Chart Understanding</text>
+  
+  <rect x="300" y="440" width="200" height="100" rx="10" fill="#fff0e6" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="465" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Critic Evaluation</text>
+  <text x="400" y="485" text-anchor="middle" font-size="11" fill="#34495e">Visual RewardBench</text>
+  <text x="400" y="500" text-anchor="middle" font-size="11" fill="#34495e">• VLRewardBench</text>
+  <text x="400" y="515" text-anchor="middle" font-size="11" fill="#34495e">• MM-RLHF</text>
+  <text x="400" y="530" text-anchor="middle" font-size="11" fill="#34495e">Superior judgment</text>
+  
+  <!-- Test-Time Scaling -->
+  <rect x="550" y="440" width="200" height="100" rx="10" fill="#f0fff0" stroke="#27ae60" stroke-width="2"/>
+  <text x="650" y="465" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Test-Time Scaling</text>
+  <text x="650" y="485" text-anchor="middle" font-size="11" fill="#34495e">Self-Critic (Best-of-128)</text>
+  <text x="650" y="500" text-anchor="middle" font-size="11" fill="#34495e">+13.8% improvement</text>
+  <text x="650" y="515" text-anchor="middle" font-size="11" fill="#34495e">Pairwise comparison</text>
+  <text x="650" y="530" text-anchor="middle" font-size="11" fill="#34495e">Recursive selection</text>
+  
+  <!-- Key Findings Box -->
+  <rect x="100" y="580" width="600" height="120" rx="15" fill="#f8f9fa" stroke="#2c3e50" stroke-width="3"/>
+  <text x="400" y="605" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Findings</text>
+  <text x="120" y="630" font-size="12" fill="#34495e">1. Critic RL training surprisingly improves policy performance across diverse tasks</text>
+  <text x="120" y="650" font-size="12" fill="#34495e">2. Single model excels at both evaluation and generation simultaneously</text>
+  <text x="120" y="670" font-size="12" fill="#34495e">3. Enhanced critic enables effective test-time scaling without additional training</text>
+  <text x="120" y="690" font-size="12" fill="#34495e">4. Path toward scalable, self-improving multimodal systems</text>
+  
+  <!-- Ablation Studies -->
+  <rect x="780" y="60" width="180" height="200" rx="10" fill="#f5f5f5" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="870" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Ablation Studies</text>
+  <text x="870" y="110" text-anchor="middle" font-size="11" fill="#34495e">Enhanced Visual</text>
+  <text x="870" y="125" text-anchor="middle" font-size="11" fill="#34495e">Perception</text>
+  <text x="870" y="150" text-anchor="middle" font-size="11" fill="#34495e">Structured Reasoning</text>
+  <text x="870" y="165" text-anchor="middle" font-size="11" fill="#34495e">(Think-then-Answer)</text>
+  <text x="870" y="190" text-anchor="middle" font-size="11" fill="#34495e">Policy-then-Critic</text>
+  <text x="870" y="205" text-anchor="middle" font-size="11" fill="#34495e">Training Strategy</text>
+  <text x="870" y="230" text-anchor="middle" font-size="11" fill="#34495e">RL vs SFT</text>
+  <text x="870" y="245" text-anchor="middle" font-size="11" fill="#34495e">Comparison</text>
+  
+  <!-- Connecting lines -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="125" y1="280" x2="190" y2="320" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="325" y1="280" x2="410" y2="320" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="190" y1="400" x2="150" y2="440" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="290" y1="360" x2="400" y2="440" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="360" x2="650" y2="440" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It combines critic and policy capabilities in a single model through reinforcement learning">
+                        <div class="quiz-question">1. What is the main innovation of LLaVA-Critic-R1 compared to traditional vision-language models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger model architecture than previous approaches">It uses a larger model architecture than previous approaches</div><div class="quiz-choice" data-value="It combines critic and policy capabilities in a single model through reinforcement learning">It combines critic and policy capabilities in a single model through reinforcement learning</div><div class="quiz-choice" data-value="It only focuses on improving evaluation capabilities">It only focuses on improving evaluation capabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="+13.8% improvement">
+                        <div class="quiz-question">2. When applying test-time self-critique, what performance improvement did the model achieve on reasoning tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="+5.7% improvement">+5.7% improvement</div><div class="quiz-choice" data-value="+10.2% improvement">+10.2% improvement</div><div class="quiz-choice" data-value="+13.8% improvement">+13.8% improvement</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="To avoid knowledge distillation bias and encourage self-derived reasoning">
+                        <div class="quiz-question">3. Why did the authors discard GPT-generated rationales in their RL training approach?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce computational costs during training">To reduce computational costs during training</div><div class="quiz-choice" data-value="To avoid knowledge distillation bias and encourage self-derived reasoning">To avoid knowledge distillation bias and encourage self-derived reasoning</div><div class="quiz-choice" data-value="Because the rationales were of poor quality">Because the rationales were of poor quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>POINTS-Reader: Distillation-Free Adaptation of Vision-Language Models
+  for Document Conversion</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-01</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.01215" target="_blank">http://arxiv.org/pdf/2509.01215</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of a distillation-free framework for adapting vision-language models to document conversion tasks in computer vision and natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in document conversion and vision-language models, proposes a novel two-stage framework that eliminates reliance on knowledge distillation from larger models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of creating high-quality labeled datasets for training document conversion models without depending on distillation from existing models, which often introduces biases and limitations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a two-stage approach: (1) Uniform Format Warm-up Stage generates synthetic data with standardized formats, and (2) Iterative Self-improvement Stage uses filtering strategies to refine real-world document annotations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The resulting POINTS-Reader model outperforms many existing public and proprietary models, including larger ones, achieving state-of-the-art performance across various benchmarks, particularly excelling in table recognition tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>POINTS-Reader: Distillation-Free Adaptation of Vision-Language Models
+  for Document Conversion</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c3e50">POINTS-Reader: Distillation-Free Document Conversion Framework</text>
+  
+  <!-- Stage 1: Uniform Format Warm-up Stage -->
+  <rect x="50" y="70" width="400" height="320" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="250" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2980b9">Stage 1: Uniform Format Warm-up Stage</text>
+  
+  <!-- LLM Generation -->
+  <rect x="70" y="110" width="120" height="60" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="5"/>
+  <text x="130" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Large Language</text>
+  <text x="130" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Model Generation</text>
+  
+  <!-- Unified Format Design -->
+  <rect x="210" y="110" width="120" height="60" fill="#27ae60" stroke="#229954" stroke-width="2" rx="5"/>
+  <text x="270" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Unified Format:</text>
+  <text x="270" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Plain Text (MD)</text>
+  <text x="270" y="158" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Tables (HTML)</text>
+  
+  <!-- HTML Rendering -->
+  <rect x="70" y="190" width="120" height="60" fill="#e74c3c" stroke="#c0392b" stroke-width="2" rx="5"/>
+  <text x="130" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">HTML Templates</text>
+  <text x="130" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">& Rendering</text>
+  
+  <!-- Initial Training -->
+  <rect x="210" y="190" width="120" height="60" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="5"/>
+  <text x="270" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Vision-Language</text>
+  <text x="270" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Model Training</text>
+  
+  <!-- Data Categories -->
+  <rect x="70" y="270" width="260" height="100" fill="#f39c12" stroke="#e67e22" stroke-width="2" rx="5"/>
+  <text x="200" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Generated Data Categories:</text>
+  <text x="200" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">1. Plain text only</text>
+  <text x="200" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">2. Text with mathematical formulas</text>
+  <text x="200" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">3. Text with tables</text>
+  <text x="200" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">4. Multi-column layouts with tables</text>
+  
+  <!-- Stage 2: Iterative Self-improvement Stage -->
+  <rect x="550" y="70" width="400" height="500" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="750" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#d68910">Stage 2: Iterative Self-improvement Stage</text>
+  
+  <!-- Real Document Annotation -->
+  <rect x="570" y="110" width="150" height="60" fill="#e67e22" stroke="#d68910" stroke-width="2" rx="5"/>
+  <text x="645" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Annotate Real-world</text>
+  <text x="645" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Documents</text>
+  
+  <!-- Filtering Strategies -->
+  <rect x="750" y="110" width="150" height="60" fill="#8e44ad" stroke="#7d3c98" stroke-width="2" rx="5"/>
+  <text x="825" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Rule-based</text>
+  <text x="825" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Filtering</text>
+  
+  <!-- Plain Text Filter -->
+  <rect x="570" y="200" width="100" height="80" fill="#16a085" stroke="#138d75" stroke-width="2" rx="5"/>
+  <text x="620" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Plain Text</text>
+  <text x="620" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Filter:</text>
+  <text x="620" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">F1-score vs</text>
+  <text x="620" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">OCR reference</text>
+  
+  <!-- Table Filter -->
+  <rect x="690" y="200" width="100" height="80" fill="#c0392b" stroke="#a93226" stroke-width="2" rx="5"/>
+  <text x="740" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Table</text>
+  <text x="740" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Filter:</text>
+  <text x="740" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Structure</text>
+  <text x="740" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">validation</text>
+  
+  <!-- Formula Filter -->
+  <rect x="810" y="200" width="100" height="80" fill="#7d3c98" stroke="#6c3483" stroke-width="2" rx="5"/>
+  <text x="860" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Formula</text>
+  <text x="860" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Filter:</text>
+  <text x="860" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Syntax</text>
+  <text x="860" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">correctness</text>
+  
+  <!-- Model Retraining -->
+  <rect x="650" y="310" width="140" height="60" fill="#d35400" stroke="#ba4a00" stroke-width="2" rx="5"/>
+  <text x="720" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Model Retraining</text>
+  <text x="720" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">on Filtered Data</text>
+  
+  <!-- Iteration Loop -->
+  <rect x="570" y="400" width="340" height="80" fill="#2c3e50" stroke="#1b2631" stroke-width="2" rx="5"/>
+  <text x="740" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Iterative Process:</text>
+  <text x="740" y="445" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Continuous improvement of model performance</text>
+  <text x="740" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Progressive enhancement of data quality</text>
+  <text x="740" y="475" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Multiple iterations until convergence</text>
+  
+  <!-- Final Output -->
+  <rect x="300" y="650" width="400" height="100" fill="#34495e" stroke="#2c3e50" stroke-width="3" rx="10"/>
+  <text x="500" y="680" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">POINTS-Reader Model</text>
+  <text x="500" y="705" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">High-quality document conversion without distillation</text>
+  <text x="500" y="725" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">Supports plain text, tables, and mathematical formulas</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="390" x2="250" y2="430" stroke="#2c3e50" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="250" y1="430" x2="500" y2="430" stroke="#2c3e50" stroke-width="3"/>
+  <line x1="500" y1="430" x2="500" y2="650" stroke="#2c3e50" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <line x1="750" y1="480" x2="750" y2="520" stroke="#d68910" stroke-width="3"/>
+  <line x1="750" y1="520" x2="500" y2="520" stroke="#d68910" stroke-width="3"/>
+  <line x1="500" y1="520" x2="500" y2="650" stroke="#d68910" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Innovation Highlight -->
+  <rect x="50" y="500" width="300" height="120" fill="#e8f5e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="200" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#27ae60">Key Innovation</text>
+  <text x="200" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">✓ Distillation-free approach</text>
+  <text x="200" y="570" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">✓ Automated data generation</text>
+  <text x="200" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">✓ Self-improvement mechanism</text>
+  <text x="200" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">✓ Unified output format</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It eliminates the need for knowledge distillation from teacher models">
+                        <div class="quiz-question">1. What is the main innovation of POINTS-Reader compared to existing document conversion approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger model architecture than previous approaches">It uses a larger model architecture than previous approaches</div><div class="quiz-choice" data-value="It eliminates the need for knowledge distillation from teacher models">It eliminates the need for knowledge distillation from teacher models</div><div class="quiz-choice" data-value="It only works with simple document layouts">It only works with simple document layouts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="HTML format because it can handle complex structures like merged cells">
+                        <div class="quiz-question">2. In the Uniform Format Warm-up Stage, what output format is used for representing tables and why?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="LaTeX format because it's the most widely used">LaTeX format because it's the most widely used</div><div class="quiz-choice" data-value="Markdown format because it's simple to implement">Markdown format because it's simple to implement</div><div class="quiz-choice" data-value="HTML format because it can handle complex structures like merged cells">HTML format because it can handle complex structures like merged cells</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Performance improved even though only structural validity was checked, not content accuracy">
+                        <div class="quiz-question">3. During the Iterative Self-improvement Stage, what interesting observation was made about table and formula recognition?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The model's performance decreased over iterations">The model's performance decreased over iterations</div><div class="quiz-choice" data-value="Performance improved even though only structural validity was checked, not content accuracy">Performance improved even though only structural validity was checked, not content accuracy</div><div class="quiz-choice" data-value="The model could only improve on simple layouts">The model could only improve on simple layouts</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>DCPO: Dynamic Clipping Policy Optimization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-02</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.02333" target="_blank">http://arxiv.org/pdf/2509.02333</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Dynamic Clipping Policy Optimization (DCPO) for enhancing reasoning capabilities in large language models through reinforcement learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on GRPO and DAPO algorithms for reinforcement learning from verifiable rewards; proposes new dynamic clipping bounds and smooth advantage standardization.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing zero gradients and inefficient training in existing approaches due to fixed clipping bounds and standardization of identical rewards.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces dynamic clipping strategy that adjusts bounds based on token-specific probabilities, and smooth advantage standardization that standardizes rewards across cumulative training steps.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art performance on four benchmarks across four models, with 46.7% Avg@1 accuracy on AIME24, 28% improvement in nonzero advantage ratio, doubled training efficiency, and significantly reduced token clipping ratio.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>DCPO: Dynamic Clipping Policy Optimization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">DCPO: Dynamic Clipping Policy Optimization Workflow</text>
+  
+  <!-- Problem Identification Section -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">GRPO/DAPO Issues</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">• Zero gradients</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">• Fixed clipping bounds</text>
+  
+  <!-- Core Components -->
+  <g transform="translate(300, 80)">
+    <!-- Dynamic Adaptive Clipping -->
+    <rect x="0" y="0" width="180" height="120" rx="15" fill="#3498db" opacity="0.9"/>
+    <text x="90" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Dynamic Adaptive</text>
+    <text x="90" y="35" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Clipping (DAC)</text>
+    <text x="90" y="55" text-anchor="middle" font-size="10" fill="white">|(r(x)-1)p(x)| ≤ ε</text>
+    <text x="90" y="75" text-anchor="middle" font-size="9" fill="white">Adaptive bounds based on</text>
+    <text x="90" y="90" text-anchor="middle" font-size="9" fill="white">token probabilities</text>
+    <text x="90" y="105" text-anchor="middle" font-size="9" fill="white">Better low-prob exploration</text>
+  </g>
+  
+  <g transform="translate(520, 80)">
+    <!-- Smooth Advantage Standardization -->
+    <rect x="0" y="0" width="180" height="120" rx="15" fill="#9b59b6" opacity="0.9"/>
+    <text x="90" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Smooth Advantage</text>
+    <text x="90" y="35" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Standardization (SAS)</text>
+    <text x="90" y="55" text-anchor="middle" font-size="10" fill="white">Cumulative + Current</text>
+    <text x="90" y="75" text-anchor="middle" font-size="9" fill="white">Weighted combination of</text>
+    <text x="90" y="90" text-anchor="middle" font-size="9" fill="white">step-wise & cumulative</text>
+    <text x="90" y="105" text-anchor="middle" font-size="9" fill="white">standardization</text>
+  </g>
+  
+  <g transform="translate(750, 80)">
+    <!-- Only Token Mean Loss -->
+    <rect x="0" y="0" width="180" height="120" rx="15" fill="#e67e22" opacity="0.9"/>
+    <text x="90" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Only Token Mean</text>
+    <text x="90" y="35" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Loss (OTM)</text>
+    <text x="90" y="55" text-anchor="middle" font-size="10" fill="white">Response-level averaging</text>
+    <text x="90" y="75" text-anchor="middle" font-size="9" fill="white">Preserves relative</text>
+    <text x="90" y="90" text-anchor="middle" font-size="9" fill="white">advantage structure</text>
+    <text x="90" y="105" text-anchor="middle" font-size="9" fill="white">among responses</text>
+  </g>
+  
+  <!-- Mathematical Formulations -->
+  <g transform="translate(100, 250)">
+    <rect x="0" y="0" width="800" height="100" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+    <text x="400" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Mathematical Components</text>
+    
+    <!-- DAC Formula -->
+    <text x="50" y="50" font-size="11" fill="#2c3e50" font-weight="bold">DAC Bounds:</text>
+    <text x="50" y="70" font-size="10" fill="#2c3e50">0.5 + ½√max(1-4ε_low/q(x), 0) ≤ r(x) ≤ 0.5 + ½√(1+4ε_high/q(x))</text>
+    
+    <!-- SAS Formula -->
+    <text x="450" y="50" font-size="11" fill="#2c3e50" font-weight="bold">SAS:</text>
+    <text x="450" y="70" font-size="10" fill="#2c3e50">Â^i_j = min(|ŜA^i_new,j|, |ŜA^i_total,j|)</text>
+  </g>
+  
+  <!-- Training Process -->
+  <g transform="translate(150, 400)">
+    <rect x="0" y="0" width="700" height="60" rx="10" fill="#27ae60" opacity="0.9"/>
+    <text x="350" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="white">DCPO Training Process</text>
+    <text x="350" y="45" text-anchor="middle" font-size="12" fill="white">Generate Responses → Apply DAC + SAS + OTM → Update Policy</text>
+  </g>
+  
+  <!-- Benefits -->
+  <g transform="translate(50, 500)">
+    <rect x="0" y="0" width="200" height="100" rx="10" fill="#16a085" opacity="0.8"/>
+    <text x="100" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Token-Level Benefits</text>
+    <text x="100" y="40" text-anchor="middle" font-size="10" fill="white">• Lower TCR (10x reduction)</text>
+    <text x="100" y="55" text-anchor="middle" font-size="10" fill="white">• Better rare token exploration</text>
+    <text x="100" y="70" text-anchor="middle" font-size="10" fill="white">• Stable clipping ratios</text>
+    <text x="100" y="85" text-anchor="middle" font-size="10" fill="white">• Enhanced diversity</text>
+  </g>
+  
+  <g transform="translate(300, 500)">
+    <rect x="0" y="0" width="200" height="100" rx="10" fill="#8e44ad" opacity="0.8"/>
+    <text x="100" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Response-Level Benefits</text>
+    <text x="100" y="40" text-anchor="middle" font-size="10" fill="white">• Higher RUR (+28%)</text>
+    <text x="100" y="55" text-anchor="middle" font-size="10" fill="white">• Reduced zero gradients</text>
+    <text x="100" y="70" text-anchor="middle" font-size="10" fill="white">• Better data utilization</text>
+    <text x="100" y="85" text-anchor="middle" font-size="10" fill="white">• Stable training</text>
+  </g>
+  
+  <g transform="translate(550, 500)">
+    <rect x="0" y="0" width="200" height="100" rx="10" fill="#d35400" opacity="0.8"/>
+    <text x="100" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Training Efficiency</text>
+    <text x="100" y="40" text-anchor="middle" font-size="10" fill="white">• 2x faster than DAPO</text>
+    <text x="100" y="55" text-anchor="middle" font-size="10" fill="white">• Less data waste</text>
+    <text x="100" y="70" text-anchor="middle" font-size="10" fill="white">• Consistent performance</text>
+    <text x="100" y="85" text-anchor="middle" font-size="10" fill="white">• Superior results</text>
+  </g>
+  
+  <!-- Results -->
+  <g transform="translate(200, 650)">
+    <rect x="0" y="0" width="600" height="80" rx="15" fill="#2c3e50" opacity="0.9"/>
+    <text x="300" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Experimental Results</text>
+    <text x="300" y="45" text-anchor="middle" font-size="12" fill="white">AIME24: 38.8 (DCPO) vs 32.1 (GRPO) vs 31.6 (DAPO)</text>
+    <text x="300" y="60" text-anchor="middle" font-size="12" fill="white">Consistent improvements across 4 models and 4 benchmarks</text>
+  </g>
+  
+  <!-- Connecting lines -->
+  <line x1="250" y1="100" x2="300" y2="140" stroke="#34495e" stroke-width="2" opacity="0.6"/>
+  <line x1="390" y1="200" x2="390" y2="250" stroke="#34495e" stroke-width="2" opacity="0.6"/>
+  <line x1="610" y1="200" x2="610" y2="250" stroke="#34495e" stroke-width="2" opacity="0.6"/>
+  <line x1="840" y1="200" x2="840" y2="250" stroke="#34495e" stroke-width="2" opacity="0.6"/>
+  <line x1="500" y1="350" x2="500" y2="400" stroke="#34495e" stroke-width="3" opacity="0.7"/>
+  <line x1="500" y1="460" x2="500" y2="500" stroke="#34495e" stroke-width="2" opacity="0.6"/>
+  <line x1="500" y1="600" x2="500" y2="650" stroke="#34495e" stroke-width="3" opacity="0.7"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Dynamically adjusting clipping bounds based on token probabilities">
+                        <div class="quiz-question">1. What is the main innovation of DCPO compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using fixed clipping bounds for all tokens">Using fixed clipping bounds for all tokens</div><div class="quiz-choice" data-value="Dynamically adjusting clipping bounds based on token probabilities">Dynamically adjusting clipping bounds based on token probabilities</div><div class="quiz-choice" data-value="Removing clipping bounds entirely">Removing clipping bounds entirely</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="An increase from 32.1 to 38.8">
+                        <div class="quiz-question">2. On the AIME24 benchmark with 32-time sampling, what performance improvement did DCPO-7B achieve over GRPO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="An increase from 32.1 to 38.8">An increase from 32.1 to 38.8</div><div class="quiz-choice" data-value="An increase from 31.6 to 36.7">An increase from 31.6 to 36.7</div><div class="quiz-choice" data-value="An increase from 36.7 to 46.7">An increase from 36.7 to 46.7</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Zero gradients from identical rewards">
+                        <div class="quiz-question">3. What problem with previous approaches did DCPO's smooth advantage standardization technique address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Too many model parameters">Too many model parameters</div><div class="quiz-choice" data-value="Slow training speed">Slow training speed</div><div class="quiz-choice" data-value="Zero gradients from identical rewards">Zero gradients from identical rewards</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
