@@ -1,0 +1,1169 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-11 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-11 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Sharing is Caring: Efficient LM Post-Training with Collective RL
+  Experience Sharing</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.08721" target="_blank">http://arxiv.org/pdf/2509.08721</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on efficient language model post-training using reinforcement learning through decentralized experience sharing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on previous RL fine-tuning methods like RLHF and RLVR, the paper introduces SAPO (Swarm sAmpling Policy Optimization) as a new decentralized approach that enables heterogeneous nodes to share experiences without synchronization requirements.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenges of scaling RL for language models, including high costs, communication bottlenecks, and infrastructure complexity in traditional centralized approaches.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implemented SAPO using a swarm of eight 0.5B-parameter Qwen2.5 models, testing various configurations of local/external rollout ratios on ReasoningGYM dataset tasks.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The balanced configuration (4 local/4 external rollouts) achieved a 94% improvement in cumulative rewards over the baseline, with additional validation through a large-scale open-source demo involving thousands of community nodes.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Sharing is Caring: Efficient LM Post-Training with Collective RL
+  Experience Sharing</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    SAPO: Swarm sAmpling Policy Optimization Workflow
+  </text>
+  
+  <!-- Swarm Network Setup -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Swarm Network Setup</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">N decentralized nodes</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">Each with policy πn</text>
+  
+  <!-- Dataset & Tasks -->
+  <rect x="300" y="60" width="180" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Dataset & Tasks</text>
+  <text x="390" y="105" text-anchor="middle" font-size="10" fill="white">Questions Qn per node</text>
+  <text x="390" y="120" text-anchor="middle" font-size="10" fill="white">Verifiable rewards</text>
+  
+  <!-- Training Round Loop -->
+  <rect x="520" y="60" width="180" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="610" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Training Round t</text>
+  <text x="610" y="105" text-anchor="middle" font-size="10" fill="white">For each round</text>
+  <text x="610" y="120" text-anchor="middle" font-size="10" fill="white">Parallel execution</text>
+  
+  <!-- Sample Questions -->
+  <rect x="50" y="180" width="160" height="70" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="130" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Sample Questions</text>
+  <text x="130" y="225" text-anchor="middle" font-size="9" fill="white">Bn ⊆ Qn</text>
+  <text x="130" y="240" text-anchor="middle" font-size="9" fill="white">Batch per node</text>
+  
+  <!-- Generate Rollouts -->
+  <rect x="250" y="180" width="160" height="70" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="330" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Generate Rollouts</text>
+  <text x="330" y="225" text-anchor="middle" font-size="9" fill="white">Rn(q) = {a1,...,aL}</text>
+  <text x="330" y="240" text-anchor="middle" font-size="9" fill="white">L answers per question</text>
+  
+  <!-- Share Rollouts -->
+  <rect x="450" y="180" width="160" height="70" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="530" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Share Rollouts</text>
+  <text x="530" y="225" text-anchor="middle" font-size="9" fill="white">Broadcast Cn(q)</text>
+  <text x="530" y="240" text-anchor="middle" font-size="9" fill="white">Decoded format</text>
+  
+  <!-- Experience Sampling -->
+  <rect x="650" y="180" width="160" height="70" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="730" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Experience Sampling</text>
+  <text x="730" y="225" text-anchor="middle" font-size="9" fill="white">In local + Jn external</text>
+  <text x="730" y="240" text-anchor="middle" font-size="9" fill="white">Form training set Tn</text>
+  
+  <!-- Training Set Construction -->
+  <rect x="150" y="300" width="200" height="80" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="250" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Training Set Construction</text>
+  <text x="250" y="345" text-anchor="middle" font-size="10" fill="white">Tn = Self-rollouts ∪ External</text>
+  <text x="250" y="365" text-anchor="middle" font-size="10" fill="white">Filter zero advantage</text>
+  
+  <!-- Reward Computation -->
+  <rect x="400" y="300" width="180" height="80" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="490" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reward Computation</text>
+  <text x="490" y="345" text-anchor="middle" font-size="10" fill="white">Local reward model ρn</text>
+  <text x="490" y="365" text-anchor="middle" font-size="10" fill="white">Compute rewards on Tn</text>
+  
+  <!-- Policy Update -->
+  <rect x="620" y="300" width="180" height="80" rx="10" fill="#2980b9" stroke="#1f618d" stroke-width="2"/>
+  <text x="710" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Policy Update</text>
+  <text x="710" y="345" text-anchor="middle" font-size="10" fill="white">PPO/GRPO algorithm</text>
+  <text x="710" y="365" text-anchor="middle" font-size="10" fill="white">Update πn locally</text>
+  
+  <!-- Key Features Box -->
+  <rect x="50" y="420" width="300" height="120" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="200" y="445" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Key SAPO Features</text>
+  <text x="70" y="465" font-size="10" fill="white">• Fully decentralized & asynchronous</text>
+  <text x="70" y="485" font-size="10" fill="white">• No model/hardware assumptions</text>
+  <text x="70" y="505" font-size="10" fill="white">• Lightweight rollout sharing</text>
+  <text x="70" y="525" font-size="10" fill="white">• "Aha moments" propagation</text>
+  
+  <!-- Experimental Results Box -->
+  <rect x="400" y="420" width="300" height="120" rx="10" fill="#7f8c8d" stroke="#566573" stroke-width="2"/>
+  <text x="550" y="445" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Experimental Results</text>
+  <text x="420" y="465" font-size="10" fill="white">• 94% improvement in cumulative rewards</text>
+  <text x="420" y="485" font-size="10" fill="white">• Best: 4 local / 4 external rollouts</text>
+  <text x="420" y="505" font-size="10" fill="white">• ReasoningGYM dataset</text>
+  <text x="420" y="525" font-size="10" fill="white">• Qwen2.5 0.5B models</text>
+  
+  <!-- Configuration Comparison -->
+  <rect x="750" y="420" width="200" height="120" rx="10" fill="#d35400" stroke="#ba4a00" stroke-width="2"/>
+  <text x="850" y="445" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Configurations Tested</text>
+  <text x="770" y="465" font-size="9" fill="white">8 local / 0 external (baseline)</text>
+  <text x="770" y="485" font-size="9" fill="white">6 local / 2 external</text>
+  <text x="770" y="505" font-size="9" fill="white">4 local / 4 external (best)</text>
+  <text x="770" y="525" font-size="9" fill="white">2 local / 6 external</text>
+  
+  <!-- Multi-Agent Benefits -->
+  <rect x="50" y="580" width="280" height="100" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="190" y="605" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Multi-Agent Benefits</text>
+  <text x="70" y="625" font-size="10" fill="white">• Enhanced exploration</text>
+  <text x="70" y="645" font-size="10" fill="white">• Diverse reasoning patterns</text>
+  <text x="70" y="665" font-size="10" fill="white">• Collective learning acceleration</text>
+  
+  <!-- Challenges & Future Work -->
+  <rect x="370" y="580" width="280" height="100" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="510" y="605" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Challenges & Future Work</text>
+  <text x="390" y="625" font-size="10" fill="white">• Stability with heavy external reliance</text>
+  <text x="390" y="645" font-size="10" fill="white">• Adaptive sampling strategies</text>
+  <text x="390" y="665" font-size="10" fill="white">• Multi-modal applications</text>
+  
+  <!-- Large Scale Demo -->
+  <rect x="690" y="580" width="260" height="100" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="820" y="605" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Large Scale Demo</text>
+  <text x="710" y="625" font-size="10" fill="white">• Thousands of community nodes</text>
+  <text x="710" y="645" font-size="10" fill="white">• Heterogeneous hardware</text>
+  <text x="710" y="665" font-size="10" fill="white">• Significant gains after ~175 rounds</text>
+  
+  <!-- Connection lines with flow indicators -->
+  <line x1="150" y1="140" x2="130" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="210" y1="215" x2="250" y2="215" stroke="#34495e" stroke-width="2"/>
+  <line x1="410" y1="215" x2="450" y2="215" stroke="#34495e" stroke-width="2"/>
+  <line x1="610" y1="215" x2="650" y2="215" stroke="#34495e" stroke-width="2"/>
+  <line x1="730" y1="250" x2="250" y2="300" stroke="#34495e" stroke-width="2"/>
+  <line x1="350" y1="340" x2="400" y2="340" stroke="#34495e" stroke-width="2"/>
+  <line x1="580" y1="340" x2="620" y2="340" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Feedback loop -->
+  <path d="M 710 380 Q 850 400 850 450 Q 850 500 130 520 Q 130 200 130 180" 
+        stroke="#e74c3c" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  <text x="850" y="430" font-size="9" fill="#e74c3c">Feedback Loop</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="4 local / 4 external">
+                        <div class="quiz-question">1. What was the optimal ratio of local to external rollouts that achieved the best performance improvement in SAPO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="6 local / 2 external">6 local / 2 external</div><div class="quiz-choice" data-value="4 local / 4 external">4 local / 4 external</div><div class="quiz-choice" data-value="2 local / 6 external">2 local / 6 external</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Small language models (<10B parameters)">
+                        <div class="quiz-question">2. In the paper's large-scale demo, which type of models benefited most from SAPO's swarm training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Large language models (>10B parameters)">Large language models (>10B parameters)</div><div class="quiz-choice" data-value="Mid-sized language models (~5B parameters)">Mid-sized language models (~5B parameters)</div><div class="quiz-choice" data-value="Small language models (<10B parameters)">Small language models (<10B parameters)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It shares only decoded rollouts in plain text">
+                        <div class="quiz-question">3. What unique aspect of SAPO differentiates it from traditional distributed RL approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires synchronized GPU clusters">It requires synchronized GPU clusters</div><div class="quiz-choice" data-value="It shares only decoded rollouts in plain text">It shares only decoded rollouts in plain text</div><div class="quiz-choice" data-value="It needs homogeneous hardware setup">It needs homogeneous hardware setup</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Paper2Agent: Reimagining Research Papers As Interactive and Reliable AI
+  Agents</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.06917" target="_blank">http://arxiv.org/pdf/2509.06917</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Paper2Agent is a framework that automatically converts research papers into interactive AI agents, focusing on computational biology and bioinformatics methods.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in executable papers and code availability initiatives, it introduces the novel concept of transforming static research papers into dynamic AI agents that can directly execute methods and interact with users.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of making research methods more accessible and executable, as traditional papers require significant technical expertise to understand and implement their methods.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a multi-agent system with specialized agents (environment-manager, tutorial-scanner, tutorial-tool-extractor-implementor, and test-verifier-improver) to convert papers into Model Context Protocol (MCP) servers that can be connected to AI agents for natural language interaction.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Successfully demonstrated the framework's effectiveness through three case studies (AlphaGenome, TISSUE, and Scanpy), achieving 100% accuracy in reproducing original results and handling novel queries, while maintaining full reproducibility of the original papers' analyses.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Paper2Agent: Reimagining Research Papers As Interactive and Reliable AI
+  Agents</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Paper2Agent Workflow</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Input</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#34495e">Research Paper</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#34495e">Code Repository</text>
+  
+  <!-- Step 1: Codebase Identification -->
+  <rect x="300" y="60" width="180" height="80" rx="10" fill="#fff3cd" stroke="#f39c12" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Codebase</text>
+  <text x="390" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Identification</text>
+  <text x="390" y="125" text-anchor="middle" font-size="11" fill="#856404">Locate & Download</text>
+  
+  <!-- Step 2: Environment Setup -->
+  <rect x="520" y="60" width="180" height="80" rx="10" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="610" y="85" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Environment</text>
+  <text x="610" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Setup</text>
+  <text x="610" y="125" text-anchor="middle" font-size="11" fill="#155724">Configure Dependencies</text>
+  
+  <!-- Step 3: Tutorial Discovery -->
+  <rect x="50" y="180" width="180" height="80" rx="10" fill="#f8d7da" stroke="#dc3545" stroke-width="2"/>
+  <text x="140" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Tutorial</text>
+  <text x="140" y="225" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Discovery</text>
+  <text x="140" y="245" text-anchor="middle" font-size="11" fill="#721c24">Scan Repository</text>
+  
+  <!-- Step 4: Tool Extraction -->
+  <rect x="270" y="180" width="180" height="80" rx="10" fill="#e2e3e5" stroke="#6c757d" stroke-width="2"/>
+  <text x="360" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Tool</text>
+  <text x="360" y="225" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Extraction</text>
+  <text x="360" y="245" text-anchor="middle" font-size="11" fill="#495057">Convert to Functions</text>
+  
+  <!-- Step 5: Testing & Refinement -->
+  <rect x="490" y="180" width="180" height="80" rx="10" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2"/>
+  <text x="580" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Testing &</text>
+  <text x="580" y="225" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Refinement</text>
+  <text x="580" y="245" text-anchor="middle" font-size="11" fill="#0c5460">Validate Results</text>
+  
+  <!-- MCP Server Generation -->
+  <rect x="720" y="60" width="180" height="200" rx="10" fill="#e7e3ff" stroke="#6f42c1" stroke-width="2"/>
+  <text x="810" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">MCP Server</text>
+  <text x="810" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Generation</text>
+  
+  <!-- MCP Components -->
+  <rect x="740" y="130" width="140" height="30" rx="5" fill="#fff" stroke="#6f42c1"/>
+  <text x="810" y="150" text-anchor="middle" font-size="11" fill="#2c3e50">MCP Tools</text>
+  
+  <rect x="740" y="170" width="140" height="30" rx="5" fill="#fff" stroke="#6f42c1"/>
+  <text x="810" y="190" text-anchor="middle" font-size="11" fill="#2c3e50">MCP Resources</text>
+  
+  <rect x="740" y="210" width="140" height="30" rx="5" fill="#fff" stroke="#6f42c1"/>
+  <text x="810" y="230" text-anchor="middle" font-size="11" fill="#2c3e50">MCP Prompts</text>
+  
+  <!-- Agent Connection -->
+  <rect x="200" y="320" width="600" height="80" rx="10" fill="#f0f8ff" stroke="#4169e1" stroke-width="3"/>
+  <text x="500" y="350" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Paper Agent</text>
+  <text x="500" y="375" text-anchor="middle" font-size="13" fill="#34495e">Interactive AI Agent with Natural Language Interface</text>
+  
+  <!-- Case Studies -->
+  <text x="500" y="440" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Case Studies</text>
+  
+  <!-- AlphaGenome -->
+  <rect x="50" y="470" width="250" height="120" rx="10" fill="#e8f5e8" stroke="#28a745" stroke-width="2"/>
+  <text x="175" y="495" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">AlphaGenome Agent</text>
+  <text x="175" y="515" text-anchor="middle" font-size="11" fill="#155724">Genomic Variant Interpretation</text>
+  <text x="175" y="535" text-anchor="middle" font-size="11" fill="#155724">22 MCP Tools Generated</text>
+  <text x="175" y="555" text-anchor="middle" font-size="11" fill="#155724">100% Accuracy on Benchmarks</text>
+  <text x="175" y="575" text-anchor="middle" font-size="11" fill="#155724">GWAS Loci Analysis</text>
+  
+  <!-- TISSUE -->
+  <rect x="375" y="470" width="250" height="120" rx="10" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="500" y="495" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">TISSUE Agent</text>
+  <text x="500" y="515" text-anchor="middle" font-size="11" fill="#e65100">Spatial Transcriptomics</text>
+  <text x="500" y="535" text-anchor="middle" font-size="11" fill="#e65100">6 MCP Tools Generated</text>
+  <text x="500" y="555" text-anchor="middle" font-size="11" fill="#e65100">Uncertainty-Aware Analysis</text>
+  <text x="500" y="575" text-anchor="middle" font-size="11" fill="#e65100">Q&A Support</text>
+  
+  <!-- Scanpy -->
+  <rect x="700" y="470" width="250" height="120" rx="10" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="825" y="495" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Scanpy Agent</text>
+  <text x="825" y="515" text-anchor="middle" font-size="11" fill="#1565c0">Single-Cell Analysis</text>
+  <text x="825" y="535" text-anchor="middle" font-size="11" fill="#1565c0">7 MCP Tools Generated</text>
+  <text x="825" y="555" text-anchor="middle" font-size="11" fill="#1565c0">Preprocessing Pipeline</text>
+  <text x="825" y="575" text-anchor="middle" font-size="11" fill="#1565c0">Workflow Automation</text>
+  
+  <!-- Key Features Box -->
+  <rect x="50" y="630" width="900" height="120" rx="10" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="500" y="655" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Features</text>
+  
+  <circle cx="120" cy="680" r="5" fill="#28a745"/>
+  <text x="140" y="685" font-size="12" fill="#2c3e50">Interactive & Easy to Use</text>
+  
+  <circle cx="120" cy="705" r="5" fill="#dc3545"/>
+  <text x="140" y="710" font-size="12" fill="#2c3e50">Reliable & Reproducible</text>
+  
+  <circle cx="120" cy="730" r="5" fill="#17a2b8"/>
+  <text x="140" y="735" font-size="12" fill="#2c3e50">Natural Language Interface</text>
+  
+  <circle cx="500" cy="680" r="5" fill="#6f42c1"/>
+  <text x="520" y="685" font-size="12" fill="#2c3e50">Modular MCP Architecture</text>
+  
+  <circle cx="500" cy="705" r="5" fill="#fd7e14"/>
+  <text x="520" y="710" font-size="12" fill="#2c3e50">Remote Server Deployment</text>
+  
+  <circle cx="500" cy="730" r="5" fill="#20c997"/>
+  <text x="520" y="735" font-size="12" fill="#2c3e50">Automated Testing & Validation</text>
+  
+  <!-- Flow connections -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="480" y1="100" x2="520" y2="100" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="700" y1="100" x2="720" y2="100" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <line x1="140" y1="140" x2="140" y2="180" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="230" y1="220" x2="270" y2="220" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="220" x2="490" y2="220" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <line x1="580" y1="260" x2="580" y2="290" stroke="#666" stroke-width="2"/>
+  <line x1="580" y1="290" x2="500" y2="290" stroke="#666" stroke-width="2"/>
+  <line x1="500" y1="290" x2="500" y2="320" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <line x1="810" y1="260" x2="810" y2="290" stroke="#666" stroke-width="2"/>
+  <line x1="810" y1="290" x2="500" y2="290" stroke="#666" stroke-width="2"/>
+  
+  <line x1="500" y1="400" x2="500" y2="440" stroke="#666" stroke-width="2"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It converts papers into interactive AI agents that can execute methods through natural language">
+                        <div class="quiz-question">1. What is the main innovation of Paper2Agent compared to previous efforts in making research more accessible?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It creates PDF versions of papers that are easier to read">It creates PDF versions of papers that are easier to read</div><div class="quiz-choice" data-value="It converts papers into interactive AI agents that can execute methods through natural language">It converts papers into interactive AI agents that can execute methods through natural language</div><div class="quiz-choice" data-value="It provides better code documentation for research papers">It provides better code documentation for research papers</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The agent identified SORT1 as the most likely causal gene while the original paper emphasized different genes">
+                        <div class="quiz-question">2. In the AlphaGenome case study, what interesting discrepancy did the Paper2Agent system reveal?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The agent found errors in the original paper's calculations">The agent found errors in the original paper's calculations</div><div class="quiz-choice long-text" data-value="The agent identified SORT1 as the most likely causal gene while the original paper emphasized different genes">The agent identified SORT1 as the most likely causal gene while the original paper emphasized different genes</div><div class="quiz-choice" data-value="The agent was unable to reproduce the original paper's results">The agent was unable to reproduce the original paper's results</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Test-verifier-improver agent">
+                        <div class="quiz-question">3. Which component of the Paper2Agent framework is responsible for ensuring that implemented tools match the original paper's results?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Environment-manager agent">Environment-manager agent</div><div class="quiz-choice" data-value="Tutorial-scanner agent">Tutorial-scanner agent</div><div class="quiz-choice" data-value="Test-verifier-improver agent">Test-verifier-improver agent</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Causal Attention with Lookahead Keys</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.07301" target="_blank">http://arxiv.org/pdf/2509.07301</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces CASTLE (CAuSal aTtention with Lookahead kEys), a novel attention mechanism for language models in the domain of natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on standard causal attention in transformer models, it proposes a new mechanism where keys are continuously updated to incorporate information from later tokens while maintaining autoregressive properties.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitation of standard causal attention where each token's query, key, and value can only encode preceding context, which impairs natural language understanding and global context capture.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> CASTLE uses a hybrid design with both causal keys and lookahead keys, where lookahead keys are updated as context unfolds, and employs an efficient parallel training algorithm to avoid explicitly materializing lookahead keys.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> CASTLE consistently outperformed standard causal attention across different model scales (0.16B-1.3B parameters), achieving lower validation perplexity and better performance on downstream tasks like ARC, BoolQ, HellaSwag, and MMLU.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Causal Attention with Lookahead Keys</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4ecdc4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#45b7d1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#96ceb4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#feca57;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff9ff3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    CASTLE: Causal Attention with Lookahead Keys
+  </text>
+  
+  <!-- Input Layer -->
+  <rect x="50" y="80" width="160" height="60" rx="10" fill="url(#grad1)" stroke="#34495e" stroke-width="2"/>
+  <text x="130" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Input Sequence X_L
+  </text>
+  <text x="130" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    (L × d_model)
+  </text>
+  
+  <!-- Projection Layer -->
+  <rect x="280" y="60" width="200" height="100" rx="10" fill="url(#grad2)" stroke="#34495e" stroke-width="2"/>
+  <text x="380" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Projection to QKV
+  </text>
+  <text x="380" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Q^U, K^U, V^U (Lookahead)
+  </text>
+  <text x="380" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Q^C, K^C, V^C (Causal)
+  </text>
+  <text x="380" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    6 matrices: X_L × W
+  </text>
+  
+  <!-- Causal Keys Branch -->
+  <rect x="120" y="220" width="140" height="80" rx="10" fill="#e74c3c" stroke="#34495e" stroke-width="2"/>
+  <text x="190" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Causal Keys K^C
+  </text>
+  <text x="190" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Static keys from
+  </text>
+  <text x="190" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    past context only
+  </text>
+  
+  <!-- Lookahead Keys Branch -->
+  <rect x="320" y="220" width="160" height="80" rx="10" fill="#3498db" stroke="#34495e" stroke-width="2"/>
+  <text x="400" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Lookahead Keys U^t
+  </text>
+  <text x="400" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Dynamic keys updated
+  </text>
+  <text x="400" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    with future context
+  </text>
+  
+  <!-- Lookahead Key Computation -->
+  <rect x="550" y="180" width="180" height="120" rx="10" fill="#9b59b6" stroke="#34495e" stroke-width="2"/>
+  <text x="640" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Lookahead Computation
+  </text>
+  <text x="640" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    U^t = sigmoid((Q^U K^U^T)/√d + M^U) V^U
+  </text>
+  <text x="640" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    M^U: Upper triangular mask
+  </text>
+  <text x="640" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Preserves autoregressive
+  </text>
+  <text x="640" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    property
+  </text>
+  
+  <!-- Attention Score Computation -->
+  <rect x="200" y="360" width="160" height="80" rx="10" fill="#f39c12" stroke="#34495e" stroke-width="2"/>
+  <text x="280" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Attention Scores
+  </text>
+  <text x="280" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    s^C = q^C (K^C)^T / √d
+  </text>
+  <text x="280" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    s^U = q^C (U^t)^T / √d
+  </text>
+  
+  <!-- Attention Weights -->
+  <rect x="420" y="360" width="160" height="80" rx="10" fill="#27ae60" stroke="#34495e" stroke-width="2"/>
+  <text x="500" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Attention Weights
+  </text>
+  <text x="500" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    p^t = softmax(s^C - SiLU(s^U))
+  </text>
+  <text x="500" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    SiLU acts as gate
+  </text>
+  
+  <!-- Parallel Training Algorithm -->
+  <rect x="650" y="340" width="180" height="120" rx="10" fill="#e67e22" stroke="#34495e" stroke-width="2"/>
+  <text x="740" y="365" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Parallel Training
+  </text>
+  <text x="740" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Mathematical equivalence
+  </text>
+  <text x="740" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    avoids materializing U^t
+  </text>
+  <text x="740" y="415" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Complexity: O(L²d)
+  </text>
+  <text x="740" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Block-wise computation
+  </text>
+  <text x="740" y="445" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    FlashAttention-style
+  </text>
+  
+  <!-- Output -->
+  <rect x="350" y="500" width="160" height="60" rx="10" fill="url(#grad3)" stroke="#34495e" stroke-width="2"/>
+  <text x="430" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Output
+  </text>
+  <text x="430" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    attention(X^t) = p^t V^C
+  </text>
+  
+  <!-- UQ-KV Cache for Inference -->
+  <rect x="80" y="480" width="180" height="100" rx="10" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  <text x="170" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    UQ-KV Cache
+  </text>
+  <text x="170" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Cache: U^t, Q^U, K^C, V^C
+  </text>
+  <text x="170" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Recursive update:
+  </text>
+  <text x="170" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    U^t = [U^(t-1) + ...; 0]
+  </text>
+  
+  <!-- Experimental Results -->
+  <rect x="600" y="520" width="200" height="100" rx="10" fill="#8e44ad" stroke="#34495e" stroke-width="2"/>
+  <text x="700" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">
+    Experimental Results
+  </text>
+  <text x="700" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    ✓ Lower perplexity
+  </text>
+  <text x="700" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    ✓ Better downstream tasks
+  </text>
+  <text x="700" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    ✓ Scales: 0.16B to 1.3B
+  </text>
+  <text x="700" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    ✓ 50B tokens training
+  </text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="50" y="640" width="900" height="80" rx="15" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+  <text x="500" y="665" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" font-weight="bold">
+    Key Innovation: Lookahead keys continuously update to incorporate future context while preserving autoregressive property
+  </text>
+  <text x="500" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">
+    Mathematical equivalence enables efficient O(L²d) parallel training without explicit materialization
+  </text>
+  <text x="500" y="705" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#34495e">
+    Hybrid design: Half causal keys (static) + Half lookahead keys (dynamic) for optimal performance
+  </text>
+  
+  <!-- Connection lines -->
+  <line x1="210" y1="110" x2="280" y2="110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="380" y1="160" x2="190" y2="220" stroke="#34495e" stroke-width="2"/>
+  <line x1="380" y1="160" x2="400" y2="220" stroke="#34495e" stroke-width="2"/>
+  <line x1="480" y1="260" x2="550" y2="240" stroke="#34495e" stroke-width="2"/>
+  <line x1="190" y1="300" x2="250" y2="360" stroke="#34495e" stroke-width="2"/>
+  <line x1="400" y1="300" x2="350" y2="360" stroke="#34495e" stroke-width="2"/>
+  <line x1="360" y1="400" x2="420" y2="400" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="440" x2="430" y2="500" stroke="#34495e" stroke-width="2"/>
+  <line x1="580" y1="400" x2="650" y2="400" stroke="#34495e" stroke-width="2"/>
+  <line x1="430" y1="560" x2="600" y2="570" stroke="#34495e" stroke-width="2"/>
+  <line x1="260" y1="530" x2="350" y2="530" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It continuously updates keys to incorporate information from later tokens">
+                        <div class="quiz-question">1. What is the main innovation of CASTLE compared to standard causal attention?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses fewer attention heads to reduce computational cost">It uses fewer attention heads to reduce computational cost</div><div class="quiz-choice" data-value="It continuously updates keys to incorporate information from later tokens">It continuously updates keys to incorporate information from later tokens</div><div class="quiz-choice" data-value="It completely removes the causal mask from the attention mechanism">It completely removes the causal mask from the attention mechanism</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Because keys are used multiple times while queries are only used once">
+                        <div class="quiz-question">2. Why did the authors choose to update keys instead of queries in CASTLE?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Because queries are more computationally expensive to update">Because queries are more computationally expensive to update</div><div class="quiz-choice" data-value="Because keys are used multiple times while queries are only used once">Because keys are used multiple times while queries are only used once</div><div class="quiz-choice" data-value="Because updating queries would break the autoregressive property">Because updating queries would break the autoregressive property</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="CASTLE showed more significant improvements in medium to large models compared to small models">
+                        <div class="quiz-question">3. What was an interesting finding from the model scale experiments?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="CASTLE showed equal improvements across all model sizes">CASTLE showed equal improvements across all model sizes</div><div class="quiz-choice" data-value="CASTLE performed worse on larger models">CASTLE performed worse on larger models</div><div class="quiz-choice" data-value="CASTLE showed more significant improvements in medium to large models compared to small models">CASTLE showed more significant improvements in medium to large models compared to small models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
