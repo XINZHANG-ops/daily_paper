@@ -1,0 +1,1038 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-16 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-16 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>OmniWorld: A Multi-Domain and Multi-Modal Dataset for 4D World Modeling</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.12201" target="_blank">http://arxiv.org/pdf/2509.12201</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A large-scale multi-domain and multi-modal dataset called OmniWorld for 4D world modeling, focusing on computer vision and machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing datasets like Sintel, KITTI, and RealEstate10K which lack diversity and dynamic complexity; proposes a new comprehensive dataset combining synthetic game data with real-world footage across multiple domains.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the lack of high-quality, diverse data for training and evaluating 4D world modeling systems, particularly for tasks requiring complex spatial-temporal understanding.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Created OmniWorld by combining self-collected game footage (OmniWorld-Game) with curated public datasets, annotating them with depth maps, camera poses, text captions, optical flow, and foreground masks using specialized pipelines.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Fine-tuning existing models on OmniWorld significantly improved their performance across tasks like depth estimation and camera-controlled video generation, with quantitative improvements shown on multiple benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>OmniWorld: A Multi-Domain and Multi-Modal Dataset for 4D World Modeling</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">OmniWorld Dataset Creation and Benchmarking Pipeline</text>
+  
+  <!-- Data Collection Phase -->
+  <rect x="50" y="60" width="900" height="120" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="500" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Data Collection Phase</text>
+  
+  <!-- Four domains -->
+  <rect x="80" y="100" width="180" height="60" fill="#3498db" rx="5"/>
+  <text x="170" y="125" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Simulator Domain</text>
+  <text x="170" y="140" text-anchor="middle" font-size="10" fill="white">OmniWorld-Game</text>
+  <text x="170" y="152" text-anchor="middle" font-size="10" fill="white">ReShade + OBS</text>
+  
+  <rect x="280" y="100" width="180" height="60" fill="#e74c3c" rx="5"/>
+  <text x="370" y="125" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Robot Domain</text>
+  <text x="370" y="140" text-anchor="middle" font-size="10" fill="white">AgiBot, DROID, RH20T</text>
+  
+  <rect x="480" y="100" width="180" height="60" fill="#27ae60" rx="5"/>
+  <text x="570" y="125" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Human Domain</text>
+  <text x="570" y="140" text-anchor="middle" font-size="10" fill="white">Epic-Kitchens, HOI4D</text>
+  <text x="570" y="152" text-anchor="middle" font-size="10" fill="white">Ego-Exo4D, etc.</text>
+  
+  <rect x="680" y="100" width="180" height="60" fill="#f39c12" rx="5"/>
+  <text x="770" y="125" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Internet Domain</text>
+  <text x="770" y="140" text-anchor="middle" font-size="10" fill="white">CityWalk</text>
+  
+  <!-- Video Slicing -->
+  <rect x="50" y="200" width="900" height="80" fill="#fff3cd" stroke="#ffc107" stroke-width="2" rx="10"/>
+  <text x="500" y="225" text-anchor="middle" font-size="16" font-weight="bold" fill="#856404">Video Slicing & Quality Control</text>
+  <text x="500" y="245" text-anchor="middle" font-size="12" fill="#856404">Remove motion blur, insufficient features, excessive motion</text>
+  <text x="500" y="260" text-anchor="middle" font-size="12" fill="#856404">Segment long videos into manageable clips</text>
+  
+  <!-- Multi-Modal Annotation Pipeline -->
+  <rect x="50" y="300" width="900" height="200" fill="#f0f8ff" stroke="#6c5ce7" stroke-width="2" rx="10"/>
+  <text x="500" y="325" text-anchor="middle" font-size="16" font-weight="bold" fill="#5a4fcf">Multi-Modal Annotation Pipeline</text>
+  
+  <!-- Five annotation modules -->
+  <rect x="80" y="340" width="160" height="80" fill="#a29bfe" rx="5"/>
+  <text x="160" y="365" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Depth Maps</text>
+  <text x="160" y="380" text-anchor="middle" font-size="10" fill="white">ReShade (Game)</text>
+  <text x="160" y="392" text-anchor="middle" font-size="10" fill="white">Prior Depth Anything</text>
+  <text x="160" y="404" text-anchor="middle" font-size="10" fill="white">FoundationStereo</text>
+  
+  <rect x="260" y="340" width="160" height="80" fill="#fd79a8" rx="5"/>
+  <text x="340" y="365" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Camera Poses</text>
+  <text x="340" y="380" text-anchor="middle" font-size="10" fill="white">VGGT / DroidCalib</text>
+  <text x="340" y="392" text-anchor="middle" font-size="10" fill="white">CoTracker + BA</text>
+  
+  <rect x="440" y="340" width="160" height="80" fill="#00b894" rx="5"/>
+  <text x="520" y="365" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Text Captions</text>
+  <text x="520" y="380" text-anchor="middle" font-size="10" fill="white">Qwen2-VL-72B</text>
+  <text x="520" y="392" text-anchor="middle" font-size="10" fill="white">Domain-specific</text>
+  <text x="520" y="404" text-anchor="middle" font-size="10" fill="white">prompting</text>
+  
+  <rect x="620" y="340" width="160" height="80" fill="#e17055" rx="5"/>
+  <text x="700" y="365" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Optical Flow</text>
+  <text x="700" y="380" text-anchor="middle" font-size="10" fill="white">DPFlow</text>
+  <text x="700" y="392" text-anchor="middle" font-size="10" fill="white">High-resolution</text>
+  <text x="700" y="404" text-anchor="middle" font-size="10" fill="white">compatible</text>
+  
+  <rect x="800" y="340" width="160" height="80" fill="#fdcb6e" rx="5"/>
+  <text x="880" y="365" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Fg. Masks</text>
+  <text x="880" y="380" text-anchor="middle" font-size="10" fill="white">RoboEngine</text>
+  <text x="880" y="392" text-anchor="middle" font-size="10" fill="white">SAM 2</text>
+  <text x="880" y="404" text-anchor="middle" font-size="10" fill="white">Grounding DINO</text>
+  
+  <!-- Benchmark Construction -->
+  <rect x="50" y="520" width="430" height="120" fill="#ffe8e8" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="265" y="545" text-anchor="middle" font-size="16" font-weight="bold" fill="#c0392b">3D Geometric Prediction Benchmark</text>
+  <text x="265" y="565" text-anchor="middle" font-size="12" fill="#c0392b">Monocular & Video Depth Estimation</text>
+  <text x="265" y="580" text-anchor="middle" font-size="12" fill="#c0392b">Evaluated Models:</text>
+  <text x="265" y="595" text-anchor="middle" font-size="10" fill="#c0392b">DUSt3R, MASt3R, MonST3R, Fast3R</text>
+  <text x="265" y="607" text-anchor="middle" font-size="10" fill="c0392b">CUT3R, FLARE, VGGT, MoGe</text>
+  <text x="265" y="625" text-anchor="middle" font-size="12" fill="#c0392b">Metrics: Abs Rel, δ<1.25</text>
+  
+  <rect x="520" y="520" width="430" height="120" fill="#e8f8e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="735" y="545" text-anchor="middle" font-size="16" font-weight="bold" fill="#2d5016">Camera Control Video Generation Benchmark</text>
+  <text x="735" y="565" text-anchor="middle" font-size="12" fill="#2d5016">Text-to-Video & Image-to-Video</text>
+  <text x="735" y="580" text-anchor="middle" font-size="12" fill="#2d5016">Evaluated Models:</text>
+  <text x="735" y="595" text-anchor="middle" font-size="10" fill="#2d5016">AC3D, CamCtrl, MotionCtrl, CAMI2V</text>
+  <text x="735" y="610" text-anchor="middle" font-size="12" fill="#2d5016">Metrics: TransError, RotError</text>
+  <text x="735" y="625" text-anchor="middle" font-size="12" fill="#2d5016">CamMC, FVD</text>
+  
+  <!-- Model Fine-tuning -->
+  <rect x="50" y="660" width="900" height="80" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="10"/>
+  <text x="500" y="685" text-anchor="middle" font-size="16" font-weight="bold" fill="#7b1fa2">Model Fine-tuning & Validation</text>
+  <text x="500" y="705" text-anchor="middle" font-size="12" fill="#7b1fa2">Fine-tune SOTA models on OmniWorld → Significant performance improvements</text>
+  <text x="500" y="720" text-anchor="middle" font-size="12" fill="#7b1fa2">Validates OmniWorld as effective training resource for 4D world modeling</text>
+  
+  <!-- Statistics -->
+  <circle cx="900" cy="50" r="25" fill="#ff6b6b"/>
+  <text x="900" y="50" text-anchor="middle" font-size="10" fill="white" font-weight="bold">300M+</text>
+  <text x="900" y="58" text-anchor="middle" font-size="8" fill="white">Frames</text>
+  
+  <circle cx="850" cy="50" r="25" fill="#4ecdc4"/>
+  <text x="850" y="50" text-anchor="middle" font-size="10" fill="white" font-weight="bold">600K+</text>
+  <text x="850" y="58" text-anchor="middle" font-size="8" fill="white">Videos</text>
+  
+  <!-- Flow indicators -->
+  <polygon points="500,180 510,190 490,190" fill="#34495e"/>
+  <polygon points="500,280 510,290 490,290" fill="#34495e"/>
+  <polygon points="500,500 510,510 490,510" fill="#34495e"/>
+  <polygon points="500,640 510,650 490,650" fill="#34495e"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It provides more modality types and larger data scale">
+                        <div class="quiz-question">1. What is the main advantage of OmniWorld-Game compared to existing synthetic datasets?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It has higher frame resolution">It has higher frame resolution</div><div class="quiz-choice" data-value="It provides more modality types and larger data scale">It provides more modality types and larger data scale</div><div class="quiz-choice" data-value="It focuses only on indoor scenes">It focuses only on indoor scenes</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Camera pose estimation and depth prediction">
+                        <div class="quiz-question">2. When fine-tuning models on OmniWorld, which component showed the most significant improvement?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Text generation capabilities">Text generation capabilities</div><div class="quiz-choice" data-value="Audio processing">Audio processing</div><div class="quiz-choice" data-value="Camera pose estimation and depth prediction">Camera pose estimation and depth prediction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Its captions contain primarily between 150-250 tokens per description">
+                        <div class="quiz-question">3. What unique feature of OmniWorld's text annotations sets it apart from other datasets?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Its captions contain primarily between 150-250 tokens per description">Its captions contain primarily between 150-250 tokens per description</div><div class="quiz-choice" data-value="It only uses single-word labels">It only uses single-word labels</div><div class="quiz-choice" data-value="It focuses exclusively on technical terminology">It focuses exclusively on technical terminology</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-paper.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>UI-S1: Advancing GUI Automation via Semi-online Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.11543" target="_blank">http://arxiv.org/pdf/2509.11543</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on advancing GUI (Graphical User Interface) automation using semi-online reinforcement learning, specifically in the domain of human-computer interaction and artificial intelligence.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous offline and online reinforcement learning approaches for GUI automation, the paper proposes a novel "Semi-online RL" paradigm that combines benefits of both by simulating online RL on offline trajectories.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the dilemma between offline RL (which enables stable training but struggles with multi-step tasks) and online RL (which captures trajectory-level signals but suffers from sparse rewards and high deployment costs).</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed Semi-online RL with three key components: a semi-online rollout that simulates online interaction dynamics, a Patch Module that recovers from action mismatches, and a dual-level advantage computation system for policy optimization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Their UI-S1-7B model achieved state-of-the-art performance among 7B models across four dynamic benchmarks, with significant improvements over the base model (+12.0% on AndroidWorld, +23.8% on AITW), while maintaining competitive performance on single-turn tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>UI-S1: Advancing GUI Automation via Semi-online Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    UI-S1: Semi-online Reinforcement Learning Workflow
+  </text>
+  
+  <!-- Input Data Section -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Expert Trajectories</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#1976d2">τ* = {(S₁*, a₁*), ..., (Sₜ*, aₜ*)}</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#1976d2">Static Offline Data</text>
+  
+  <!-- Semi-online Rollout -->
+  <rect x="300" y="60" width="220" height="120" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="410" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">Semi-online Rollout</text>
+  <text x="410" y="105" text-anchor="middle" font-size="12" fill="#f57c00">Generate N trajectories</text>
+  <text x="410" y="125" text-anchor="middle" font-size="12" fill="#f57c00">Maintain policy-generated history</text>
+  <text x="410" y="145" text-anchor="middle" font-size="12" fill="#f57c00">H_t = {(S₁, a₁, T₁), ..., (Sₜ₋₁, aₜ₋₁, Tₜ₋₁)}</text>
+  <text x="410" y="165" text-anchor="middle" font-size="12" fill="#f57c00">Simulate online dynamics</text>
+  
+  <!-- Action Matching Decision -->
+  <polygon points="410,200 460,230 410,260 360,230" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="410" y="235" text-anchor="middle" font-size="12" fill="#d32f2f">Action Match?</text>
+  
+  <!-- Continue Path -->
+  <rect x="500" y="210" width="120" height="40" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="560" y="235" text-anchor="middle" font-size="12" fill="#4caf50">Continue Rollout</text>
+  
+  <!-- Patch Module -->
+  <rect x="200" y="300" width="220" height="100" rx="10" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="310" y="325" text-anchor="middle" font-size="14" font-weight="bold" fill="#9c27b0">Patch Module</text>
+  <text x="310" y="345" text-anchor="middle" font-size="12" fill="#9c27b0">Thought-Free: (a*, ∅)</text>
+  <text x="310" y="365" text-anchor="middle" font-size="12" fill="#9c27b0">Off-Policy: (a*, M₀(...))</text>
+  <text x="310" y="385" text-anchor="middle" font-size="12" fill="#9c27b0">On-Policy: (a*, M(...))</text>
+  
+  <!-- Reward Computation -->
+  <rect x="500" y="300" width="200" height="100" rx="10" fill="#fff8e1" stroke="#fbc02d" stroke-width="2"/>
+  <text x="600" y="325" text-anchor="middle" font-size="14" font-weight="bold" fill="#fbc02d">Reward Computation</text>
+  <text x="600" y="345" text-anchor="middle" font-size="12" fill="#fbc02d">r_t = 0.1·r_format + 0.4·r_type + 0.5·r_acc</text>
+  <text x="600" y="365" text-anchor="middle" font-size="12" fill="#fbc02d">Discounted Future Returns</text>
+  <text x="600" y="385" text-anchor="middle" font-size="12" fill="#fbc02d">R_t = Σ γ^(k-t) r_k</text>
+  
+  <!-- Dual-level Advantages -->
+  <rect x="100" y="450" width="180" height="80" rx="10" fill="#e1f5fe" stroke="#0288d1" stroke-width="2"/>
+  <text x="190" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#0288d1">Step-level Advantage</text>
+  <text x="190" y="495" text-anchor="middle" font-size="12" fill="#0288d1">A_S(a_t) = (R_t - μ_t) / σ_t</text>
+  <text x="190" y="515" text-anchor="middle" font-size="12" fill="#0288d1">Local optimization signals</text>
+  
+  <rect x="320" y="450" width="180" height="80" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="410" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">Episode-level Advantage</text>
+  <text x="410" y="495" text-anchor="middle" font-size="12" fill="#388e3c">A_E(τ) = (R(τ) - μ_τ) / σ_τ</text>
+  <text x="410" y="515" text-anchor="middle" font-size="12" fill="#388e3c">Global task completion</text>
+  
+  <!-- Combined Advantage -->
+  <rect x="540" y="450" width="180" height="80" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="630" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#c2185b">Combined Advantage</text>
+  <text x="630" y="495" text-anchor="middle" font-size="12" fill="#c2185b">A(a_t) = A_E(τ) + ω·A_S(a_t)</text>
+  <text x="630" y="515" text-anchor="middle" font-size="12" fill="#c2185b">Group-in-group optimization</text>
+  
+  <!-- Policy Optimization -->
+  <rect x="250" y="570" width="300" height="80" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="400" y="595" text-anchor="middle" font-size="14" font-weight="bold" fill="#689f38">Semi-online Policy Optimization</text>
+  <text x="400" y="615" text-anchor="middle" font-size="12" fill="#689f38">PPO with clipped surrogate objective</text>
+  <text x="400" y="635" text-anchor="middle" font-size="12" fill="#689f38">J(θ) = E[min(ρ(θ)A(a_t), clip(ρ(θ))A(a_t))]</text>
+  
+  <!-- Evaluation Metrics -->
+  <rect x="750" y="60" width="200" height="120" rx="10" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="850" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#3f51b5">Evaluation</text>
+  <text x="850" y="105" text-anchor="middle" font-size="12" fill="#3f51b5">SOP (Semi-Online Performance)</text>
+  <text x="850" y="125" text-anchor="middle" font-size="12" fill="#3f51b5">AndroidWorld, AITW</text>
+  <text x="850" y="145" text-anchor="middle" font-size="12" fill="#3f51b5">MiniWob++</text>
+  <text x="850" y="165" text-anchor="middle" font-size="12" fill="#3f51b5">Strong correlation R² = 0.934</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="750" y="250" width="200" height="120" rx="10" fill="#fff3e0" stroke="#ff9800" stroke-width="3"/>
+  <text x="850" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#ff9800">Key Innovation</text>
+  <text x="850" y="295" text-anchor="middle" font-size="12" fill="#ff9800">Bridge offline efficiency</text>
+  <text x="850" y="315" text-anchor="middle" font-size="12" fill="#ff9800">with online multi-turn</text>
+  <text x="850" y="335" text-anchor="middle" font-size="12" fill="#ff9800">reasoning capabilities</text>
+  <text x="850" y="355" text-anchor="middle" font-size="12" fill="#ff9800">+12.0% on AndroidWorld</text>
+  
+  <!-- Flow connections with colored lines -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="520" y1="120" x2="750" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="410" y1="180" x2="410" y2="200" stroke="#666" stroke-width="2"/>
+  <line x1="460" y1="230" x2="500" y2="230" stroke="#4caf50" stroke-width="2"/>
+  <line x1="360" y1="230" x2="310" y2="300" stroke="#9c27b0" stroke-width="2"/>
+  <line x1="420" y1="300" x2="500" y2="340" stroke="#666" stroke-width="2"/>
+  <line x1="310" y1="400" x2="190" y2="450" stroke="#666" stroke-width="2"/>
+  <line x1="310" y1="400" x2="410" y2="450" stroke="#666" stroke-width="2"/>
+  <line x1="600" y1="400" x2="630" y2="450" stroke="#666" stroke-width="2"/>
+  <line x1="400" y1="530" x2="400" y2="570" stroke="#666" stroke-width="2"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Labels for decision paths -->
+  <text x="480" y="220" font-size="10" fill="#4caf50">Yes</text>
+  <text x="340" y="250" font-size="10" fill="#9c27b0">No</text>
+  
+  <!-- Result box -->
+  <rect x="600" y="570" width="300" height="80" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="750" y="595" text-anchor="middle" font-size="14" font-weight="bold" fill="#4caf50">UI-S1-7B Results</text>
+  <text x="750" y="615" text-anchor="middle" font-size="12" fill="#4caf50">SOTA among 7B models</text>
+  <text x="750" y="635" text-anchor="middle" font-size="12" fill="#4caf50">+23.8% on AITW-Gen</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It simulates online RL dynamics using offline trajectories">
+                        <div class="quiz-question">1. What is the main innovation of the Semi-online RL approach compared to traditional methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses larger language models for training">It uses larger language models for training</div><div class="quiz-choice" data-value="It simulates online RL dynamics using offline trajectories">It simulates online RL dynamics using offline trajectories</div><div class="quiz-choice" data-value="It completely eliminates the need for training data">It completely eliminates the need for training data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The module replaces incorrect action with expert action and continues training">
+                        <div class="quiz-question">2. When using the Patch Module in the paper's method, what happens if an action mismatch occurs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The training immediately terminates">The training immediately terminates</div><div class="quiz-choice" data-value="The model restarts from the beginning">The model restarts from the beginning</div><div class="quiz-choice" data-value="The module replaces incorrect action with expert action and continues training">The module replaces incorrect action with expert action and continues training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="+23.8% on AITW">
+                        <div class="quiz-question">3. What was the most significant performance improvement achieved by UI-S1-7B over its base model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="+23.8% on AITW">+23.8% on AITW</div><div class="quiz-choice" data-value="+12.0% on AndroidWorld">+12.0% on AndroidWorld</div><div class="quiz-choice" data-value="+7.1% on GUI Odyssey">+7.1% on GUI Odyssey</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>LazyDrag: Enabling Stable Drag-Based Editing on Multi-Modal Diffusion
+  Transformers via Explicit Correspondence</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.12203" target="_blank">http://arxiv.org/pdf/2509.12203</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents LazyDrag, a training-free method for drag-based image editing using Multi-Modal Diffusion Transformers (MM-DiTs).</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous drag-based editing methods that relied on implicit point matching via attention, this paper proposes using explicit correspondence maps instead of implicit matching.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the instability and limitations of current drag-based editing methods that require test-time optimization or weakened inversion strength, which compromises editing quality and capabilities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a two-stage approach: first generating an explicit correspondence map from drag instructions, then using this map to drive attention controls for identity and background preservation in MM-DiTs.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The method outperformed existing baselines on DragBench in terms of drag accuracy and perceptual quality, as validated by VIEScore metrics and human evaluation, achieving state-of-the-art performance without requiring test-time optimization.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LazyDrag: Enabling Stable Drag-Based Editing on Multi-Modal Diffusion
+  Transformers via Explicit Correspondence</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">LazyDrag: Explicit Correspondence-Driven Drag Editing</text>
+  
+  <!-- Stage 1: Input Processing -->
+  <rect x="50" y="70" width="180" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="140" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Input Image</text>
+  <text x="140" y="110" text-anchor="middle" font-size="11" fill="#2c3e50">+ Drag Instructions</text>
+  <text x="140" y="125" text-anchor="middle" font-size="11" fill="#2c3e50">D={(s_i, e_i)}</text>
+  
+  <!-- Stage 2: Inversion -->
+  <rect x="280" y="70" width="150" height="80" rx="10" fill="#fff2e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="355" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">DDIM Inversion</text>
+  <text x="355" y="110" text-anchor="middle" font-size="11" fill="#2c3e50">Full Strength</text>
+  <text x="355" y="125" text-anchor="middle" font-size="11" fill="#2c3e50">z_T extraction</text>
+  
+  <!-- Stage 3: Correspondence Map Generation -->
+  <rect x="50" y="190" width="380" height="120" rx="10" fill="#e8f6f0" stroke="#27ae60" stroke-width="2"/>
+  <text x="240" y="215" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Explicit Correspondence Map Generation</text>
+  
+  <!-- Sub-components of correspondence map -->
+  <rect x="70" y="230" width="100" height="60" rx="5" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="120" y="250" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Winner-Takes-All</text>
+  <text x="120" y="265" text-anchor="middle" font-size="9" fill="#2c3e50">Displacement</text>
+  <text x="120" y="275" text-anchor="middle" font-size="9" fill="#2c3e50">Field V</text>
+  
+  <rect x="190" y="230" width="100" height="60" rx="5" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="240" y="250" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Matching Map</text>
+  <text x="240" y="265" text-anchor="middle" font-size="9" fill="#2c3e50">M(x) & A(x)</text>
+  
+  <rect x="310" y="230" width="100" height="60" rx="5" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="360" y="250" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Latent Init</text>
+  <text x="360" y="265" text-anchor="middle" font-size="9" fill="#2c3e50">ẑ_T with</text>
+  <text x="360" y="275" text-anchor="middle" font-size="9" fill="#2c3e50">Gaussian noise</text>
+  
+  <!-- Stage 4: Region Partitioning -->
+  <rect x="480" y="190" width="200" height="120" rx="10" fill="#fdf2e9" stroke="#d35400" stroke-width="2"/>
+  <text x="580" y="215" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Region Partitioning</text>
+  
+  <circle cx="520" cy="240" r="15" fill="#95a5a6"/>
+  <text x="520" y="245" text-anchor="middle" font-size="8" fill="white">Rbg</text>
+  <text x="545" y="245" text-anchor="start" font-size="9" fill="#2c3e50">Background</text>
+  
+  <circle cx="520" cy="260" r="15" fill="#e74c3c"/>
+  <text x="520" y="265" text-anchor="middle" font-size="8" fill="white">Rdst</text>
+  <text x="545" y="265" text-anchor="start" font-size="9" fill="#2c3e50">Destination</text>
+  
+  <circle cx="520" cy="280" r="15" fill="#f39c12"/>
+  <text x="520" y="285" text-anchor="middle" font-size="8" fill="white">Rinp</text>
+  <text x="545" y="285" text-anchor="start" font-size="9" fill="#2c3e50">Inpainting</text>
+  
+  <circle cx="520" cy="300" r="15" fill="#2ecc71"/>
+  <text x="520" y="305" text-anchor="middle" font-size="8" fill="white">Rtrans</text>
+  <text x="545" y="305" text-anchor="start" font-size="9" fill="#2c3e50">Transition</text>
+  
+  <!-- Stage 5: MM-DiT Denoising -->
+  <rect x="750" y="70" width="200" height="240" rx="10" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2"/>
+  <text x="850" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">MM-DiT Denoising</text>
+  <text x="850" y="115" text-anchor="middle" font-size="11" fill="#2c3e50">with Attention Control</text>
+  
+  <!-- Attention Control Components -->
+  <rect x="770" y="130" width="160" height="80" rx="5" fill="#e8e3f0" stroke="#8e44ad"/>
+  <text x="850" y="150" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Input Control</text>
+  <text x="850" y="165" text-anchor="middle" font-size="9" fill="#2c3e50">Token Replacement</text>
+  <text x="850" y="175" text-anchor="middle" font-size="9" fill="#2c3e50">Token Concatenation</text>
+  <text x="850" y="185" text-anchor="middle" font-size="9" fill="#2c3e50">Q, K, V manipulation</text>
+  <text x="850" y="195" text-anchor="middle" font-size="9" fill="#2c3e50">via correspondence map</text>
+  
+  <rect x="770" y="220" width="160" height="80" rx="5" fill="#e8e3f0" stroke="#8e44ad"/>
+  <text x="850" y="240" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Output Control</text>
+  <text x="850" y="255" text-anchor="middle" font-size="9" fill="#2c3e50">Attention Refinement</text>
+  <text x="850" y="265" text-anchor="middle" font-size="9" fill="#2c3e50">Gated Merging</text>
+  <text x="850" y="275" text-anchor="middle" font-size="9" fill="#2c3e50">Weight: γ = h_t · A(x)</text>
+  <text x="850" y="285" text-anchor="middle" font-size="9" fill="#2c3e50">y ← (1-γ)y + γy_cached</text>
+  
+  <!-- Stage 6: Output -->
+  <rect x="400" y="360" width="200" height="80" rx="10" fill="#e8f8f5" stroke="#16a085" stroke-width="2"/>
+  <text x="500" y="385" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Final Output</text>
+  <text x="500" y="400" text-anchor="middle" font-size="11" fill="#2c3e50">Edited Image with</text>
+  <text x="500" y="415" text-anchor="middle" font-size="11" fill="#2c3e50">Identity Preservation</text>
+  <text x="500" y="430" text-anchor="middle" font-size="11" fill="#2c3e50">+ Text Guidance</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="50" y="480" width="900" height="100" rx="10" fill="#fff3cd" stroke="#856404" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="500" y="505" text-anchor="middle" font-size="14" font-weight="bold" fill="#856404">Key Innovation: Explicit Correspondence vs Implicit Attention Matching</text>
+  <text x="500" y="525" text-anchor="middle" font-size="11" fill="#856404">• Replaces fragile attention-similarity matching with deterministic drag-based correspondence</text>
+  <text x="500" y="540" text-anchor="middle" font-size="11" fill="#856404">• Enables full-strength inversion without test-time optimization (TTO)</text>
+  <text x="500" y="555" text-anchor="middle" font-size="11" fill="#856404">• First drag editing method for Multi-Modal Diffusion Transformers with text guidance</text>
+  
+  <!-- Benefits Box -->
+  <rect x="50" y="600" width="420" height="120" rx="10" fill="#d1ecf1" stroke="#0c5460" stroke-width="2"/>
+  <text x="260" y="625" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c5460">Achieved Benefits</text>
+  <text x="70" y="645" font-size="10" fill="#0c5460">✓ No test-time optimization required</text>
+  <text x="70" y="660" font-size="10" fill="#0c5460">✓ Full-strength inversion capability</text>
+  <text x="70" y="675" font-size="10" fill="#0c5460">✓ High-fidelity inpainting</text>
+  <text x="70" y="690" font-size="10" fill="#0c5460">✓ Text-guided semantic editing</text>
+  <text x="70" y="705" font-size="10" fill="#0c5460">✓ Multi-round editing workflows</text>
+  
+  <!-- Technical Details Box -->
+  <rect x="530" y="600" width="420" height="120" rx="10" fill="#f8d7da" stroke="#721c24" stroke-width="2"/>
+  <text x="740" y="625" text-anchor="middle" font-size="12" font-weight="bold" fill="#721c24">Technical Components</text>
+  <text x="550" y="645" font-size="10" fill="#721c24">• Winner-takes-all displacement fusion</text>
+  <text x="550" y="660" font-size="10" fill="#721c24">• Gaussian noise for inpainting regions</text>
+  <text x="550" y="675" font-size="10" fill="#721c24">• Correspondence-driven token control</text>
+  <text x="550" y="690" font-size="10" fill="#721c24">• Gated attention output refinement</text>
+  <text x="550" y="705" font-size="10" fill="#721c24">• Single-stream attention manipulation</text>
+  
+  <!-- Flow connections -->
+  <line x1="230" y1="110" x2="280" y2="110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="430" y1="110" x2="480" y2="200" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="240" y1="190" x2="240" y2="160" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="680" y1="250" x2="750" y2="190" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="850" y1="310" x2="600" y2="360" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Using an explicit correspondence map instead of implicit point matching">
+                        <div class="quiz-question">1. What is the key innovation of LazyDrag compared to previous drag-based editing methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using an explicit correspondence map instead of implicit point matching">Using an explicit correspondence map instead of implicit point matching</div><div class="quiz-choice" data-value="Introducing a new type of neural network architecture">Introducing a new type of neural network architecture</div><div class="quiz-choice" data-value="Adding more layers to the diffusion model">Adding more layers to the diffusion model</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The need for test-time optimization or weakened inversion strength">
+                        <div class="quiz-question">2. What was a major limitation that LazyDrag aimed to overcome?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Slow processing speed of image editing">Slow processing speed of image editing</div><div class="quiz-choice" data-value="The need for test-time optimization or weakened inversion strength">The need for test-time optimization or weakened inversion strength</div><div class="quiz-choice" data-value="High memory requirements for operation">High memory requirements for operation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By using a winner-takes-all approach with Voronoi partitioning">
+                        <div class="quiz-question">3. How does LazyDrag handle multiple opposing drag instructions?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By averaging all drag directions">By averaging all drag directions</div><div class="quiz-choice" data-value="By canceling out opposing forces">By canceling out opposing forces</div><div class="quiz-choice" data-value="By using a winner-takes-all approach with Voronoi partitioning">By using a winner-takes-all approach with Voronoi partitioning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
