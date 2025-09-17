@@ -1,0 +1,1098 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-17 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-17 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Scaling Agents via Continual Pre-training</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.13310" target="_blank">http://arxiv.org/pdf/2509.13310</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on scaling language models into agentic systems through continual pre-training in the domain of AI/ML, specifically addressing deep research agents capable of autonomous tool use and complex problem-solving.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on traditional post-training approaches (SFT and RL) for language models, the paper proposes a novel Agentic Continual Pre-training (Agentic CPT) framework as an intermediate step between pre-training and post-training.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the limitation of post-training approaches that force models to simultaneously learn diverse agentic behaviors while aligning them to expert demonstrations, creating optimization tensions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed AgentFounder using First-order Action Synthesis (FAS) and Higher-order Action Synthesis (HAS) for data generation, implemented through a two-stage training strategy with progressive context window expansion (32K to 128K).</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> AgentFounder-30B achieved state-of-the-art performance across 10 benchmarks, notably scoring 39.9% on BrowseComp-en, 43.3% on BrowseComp-zh, and 31.5% Pass@1 on HLE, outperforming both open-source and some commercial models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Scaling Agents via Continual Pre-training</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    AgentFounder: Scaling Agents via Continual Pre-training
+  </text>
+  
+  <!-- Stage 1: Data Collection -->
+  <rect x="50" y="70" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Collection</text>
+  <text x="150" y="115" text-anchor="middle" font-size="11" fill="#34495e">• Web-crawled data</text>
+  <text x="150" y="130" text-anchor="middle" font-size="11" fill="#34495e">• Tool invocation records</text>
+  <text x="150" y="145" text-anchor="middle" font-size="11" fill="#34495e">• Wikipedia data</text>
+  <text x="150" y="160" text-anchor="middle" font-size="11" fill="#34495e">• Discarded trajectories</text>
+  <text x="150" y="175" text-anchor="middle" font-size="11" fill="#34495e">• Search results</text>
+  
+  <!-- Stage 2: Knowledge-to-Question Transformation -->
+  <rect x="300" y="70" width="200" height="120" rx="10" fill="#fff2e8" stroke="#f39c12" stroke-width="2"/>
+  <text x="400" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Knowledge-to-Question</text>
+  <text x="400" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Transformation</text>
+  <text x="400" y="130" text-anchor="middle" font-size="11" fill="#34495e">Entity-Anchored</text>
+  <text x="400" y="145" text-anchor="middle" font-size="11" fill="#34495e">Open-World Memory</text>
+  <text x="400" y="165" text-anchor="middle" font-size="11" fill="#34495e">Multi-Style Question</text>
+  <text x="400" y="180" text-anchor="middle" font-size="11" fill="#34495e">Synthesis</text>
+  
+  <!-- Stage 3: First-order Action Synthesis (FAS) -->
+  <rect x="50" y="220" width="200" height="140" rx="10" fill="#e8f8f5" stroke="#27ae60" stroke-width="2"/>
+  <text x="150" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">First-order Action</text>
+  <text x="150" y="260" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Synthesis (FAS)</text>
+  <text x="150" y="285" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">Planning Action:</text>
+  <text x="150" y="300" text-anchor="middle" font-size="10" fill="#34495e">Problem decomposition</text>
+  <text x="150" y="315" text-anchor="middle" font-size="10" fill="#34495e">Tool invocation prediction</text>
+  <text x="150" y="335" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">Reasoning Action:</text>
+  <text x="150" y="350" text-anchor="middle" font-size="10" fill="#34495e">Step-by-step reasoning</text>
+  
+  <!-- Stage 4: Higher-order Action Synthesis (HAS) -->
+  <rect x="300" y="220" width="200" height="140" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Higher-order Action</text>
+  <text x="400" y="260" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Synthesis (HAS)</text>
+  <text x="400" y="285" text-anchor="middle" font-size="12" font-weight="bold" fill="#e67e22">Step-level Scaling:</text>
+  <text x="400" y="300" text-anchor="middle" font-size="10" fill="#34495e">Multi-option generation</text>
+  <text x="400" y="315" text-anchor="middle" font-size="10" fill="#34495e">Action space exploration</text>
+  <text x="400" y="335" text-anchor="middle" font-size="12" font-weight="bold" fill="#e67e22">Decision Synthesis:</text>
+  <text x="400" y="350" text-anchor="middle" font-size="10" fill="#34495e">Multi-step decision process</text>
+  
+  <!-- Stage 5: Two-Stage Training -->
+  <rect x="550" y="70" width="180" height="290" rx="10" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2"/>
+  <text x="640" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Two-Stage Training</text>
+  
+  <!-- Stage 1 Training -->
+  <rect x="570" y="110" width="140" height="80" rx="5" fill="#e8d5ff" stroke="#9b59b6" stroke-width="1"/>
+  <text x="640" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#8e44ad">Stage 1</text>
+  <text x="640" y="145" text-anchor="middle" font-size="10" fill="#34495e">200B tokens</text>
+  <text x="640" y="160" text-anchor="middle" font-size="10" fill="#34495e">32K context</text>
+  <text x="640" y="175" text-anchor="middle" font-size="10" fill="#34495e">FAS + short HAS</text>
+  
+  <!-- Stage 2 Training -->
+  <rect x="570" y="200" width="140" height="80" rx="5" fill="#e8d5ff" stroke="#9b59b6" stroke-width="1"/>
+  <text x="640" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="#8e44ad">Stage 2</text>
+  <text x="640" y="235" text-anchor="middle" font-size="10" fill="#34495e">100B tokens</text>
+  <text x="640" y="250" text-anchor="middle" font-size="10" fill="#34495e">128K context</text>
+  <text x="640" y="265" text-anchor="middle" font-size="10" fill="#34495e">High-quality HAS</text>
+  
+  <!-- Base Model Output -->
+  <rect x="570" y="290" width="140" height="60" rx="5" fill="#d5f4e6" stroke="#27ae60" stroke-width="1"/>
+  <text x="640" y="310" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">Output</text>
+  <text x="640" y="325" text-anchor="middle" font-size="11" fill="#34495e">AgentFounder-30B</text>
+  <text x="640" y="340" text-anchor="middle" font-size="11" fill="#34495e">Base Model</text>
+  
+  <!-- Stage 6: Post-training -->
+  <rect x="770" y="70" width="180" height="120" rx="10" fill="#fdedec" stroke="#e74c3c" stroke-width="2"/>
+  <text x="860" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Post-training</text>
+  <text x="860" y="115" text-anchor="middle" font-size="11" fill="#34495e">SFT-A: Two-stage React</text>
+  <text x="860" y="130" text-anchor="middle" font-size="11" fill="#34495e">SFT-B: Mixed training</text>
+  <text x="860" y="145" text-anchor="middle" font-size="11" fill="#34495e">SFT-C: Summarized reasoning</text>
+  <text x="860" y="165" text-anchor="middle" font-size="11" fill="#34495e">General + Agent data</text>
+  
+  <!-- Final Model -->
+  <rect x="770" y="220" width="180" height="80" rx="10" fill="#e8f6f3" stroke="#16a085" stroke-width="2"/>
+  <text x="860" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Final Model</text>
+  <text x="860" y="265" text-anchor="middle" font-size="13" font-weight="bold" fill="#16a085">AgentFounder-30B</text>
+  <text x="860" y="285" text-anchor="middle" font-size="11" fill="#34495e">Deep Research Agent</text>
+  
+  <!-- Performance Results -->
+  <rect x="50" y="400" width="900" height="180" rx="10" fill="#f8f9fa" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="425" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Performance Results</text>
+  
+  <!-- Benchmark Results -->
+  <text x="70" y="450" font-size="12" font-weight="bold" fill="#e74c3c">Key Achievements:</text>
+  <text x="70" y="470" font-size="11" fill="#34495e">• BrowseComp-en: 39.9% (SOTA among open-source)</text>
+  <text x="70" y="485" font-size="11" fill="#34495e">• BrowseComp-zh: 43.3%</text>
+  <text x="70" y="500" font-size="11" fill="#34495e">• GAIA: 72.8% (highest single-agent accuracy)</text>
+  <text x="70" y="515" font-size="11" fill="#34495e">• HLE: 31.5% Pass@1 (first open-source >30%)</text>
+  <text x="70" y="530" font-size="11" fill="#34495e">• Xbench-DeepSearch: 73.0%</text>
+  
+  <text x="500" y="450" font-size="12" font-weight="bold" fill="#27ae60">Scaling Properties:</text>
+  <text x="500" y="470" font-size="11" fill="#34495e">• Logarithmic scaling law holds</text>
+  <text x="500" y="485" font-size="11" fill="#34495e">• Consistent improvements up to 315B tokens</text>
+  <text x="500" y="500" font-size="11" fill="#34495e">• Superior scaling efficiency vs larger models</text>
+  <text x="500" y="515" font-size="11" fill="#34495e">• Maintains general tool-use capabilities</text>
+  <text x="500" y="530" font-size="11" fill="#34495e">• Adaptable to different post-training methods</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="50" y="600" width="900" height="150" rx="10" fill="#ecf0f1" stroke="#34495e" stroke-width="2"/>
+  <text x="500" y="625" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Innovation: Agentic Continual Pre-training (Agentic CPT)</text>
+  
+  <text x="70" y="650" font-size="12" font-weight="bold" fill="#3498db">Problem Solved:</text>
+  <text x="70" y="665" font-size="11" fill="#34495e">Traditional post-training forces models to simultaneously learn capabilities and alignment,</text>
+  <text x="70" y="680" font-size="11" fill="#34495e">creating optimization tensions and limiting performance.</text>
+  
+  <text x="500" y="650" font-size="12" font-weight="bold" fill="#e67e22">Solution:</text>
+  <text x="500" y="665" font-size="11" fill="#34495e">Agentic CPT creates pre-aligned foundation models with</text>
+  <text x="500" y="680" font-size="11" fill="#34495e">inherent agentic behaviors before post-training.</text>
+  
+  <text x="70" y="705" font-size="12" font-weight="bold" fill="#8e44ad">Impact:</text>
+  <text x="70" y="720" font-size="11" fill="#34495e">• Enables effective downstream fine-tuning</text>
+  <text x="70" y="735" font-size="11" fill="#34495e">• Reduces post-training complexity and improves convergence</text>
+  
+  <text x="500" y="705" font-size="12" font-weight="bold" fill="#27ae60">Scalability:</text>
+  <text x="500" y="720" font-size="11" fill="#34495e">• Offline synthesis without API costs</text>
+  <text x="500" y="735" font-size="11" fill="#34495e">• Systematic and scalable data generation</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Agentic Continual Pre-training (Agentic CPT) as an intermediate step">
+                        <div class="quiz-question">1. What is the main innovation that AgentFounder introduces to address the limitations of traditional post-training approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A larger context window of 128K tokens">A larger context window of 128K tokens</div><div class="quiz-choice" data-value="Agentic Continual Pre-training (Agentic CPT) as an intermediate step">Agentic Continual Pre-training (Agentic CPT) as an intermediate step</div><div class="quiz-choice" data-value="More efficient supervised fine-tuning methods">More efficient supervised fine-tuning methods</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It transforms trajectories into multi-step decision-making processes with expanded exploration paths">
+                        <div class="quiz-question">2. In the two-stage data synthesis approach of AgentFounder, what is the main advantage of Higher-order Action Synthesis (HAS) over First-order Action Synthesis (FAS)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires fewer computational resources">It requires fewer computational resources</div><div class="quiz-choice" data-value="It generates shorter training sequences">It generates shorter training sequences</div><div class="quiz-choice" data-value="It transforms trajectories into multi-step decision-making processes with expanded exploration paths">It transforms trajectories into multi-step decision-making processes with expanded exploration paths</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It became the first open-source model to surpass the 30-point threshold with 31.5%">
+                        <div class="quiz-question">3. What performance breakthrough did AgentFounder-30B achieve in the HLE benchmark?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It became the first open-source model to surpass the 30-point threshold with 31.5%">It became the first open-source model to surpass the 30-point threshold with 31.5%</div><div class="quiz-choice" data-value="It matched the performance of commercial deep research products">It matched the performance of commercial deep research products</div><div class="quiz-choice" data-value="It achieved perfect accuracy on academic questions">It achieved perfect accuracy on academic questions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Towards General Agentic Intelligence via Environment Scaling</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.13311" target="_blank">http://arxiv.org/pdf/2509.13311</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing general agentic intelligence for Large Language Models through environment scaling and tool-learning capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Prior research used real-world APIs, LLM simulations, or manual environment construction for tool learning, while this paper proposes automatic environment construction and a two-phase agent training strategy.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of scaling up environments for training language agents' function-calling capabilities and effectively training agents in these environments.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop a scalable framework that automatically constructs heterogeneous environments through tool graph modeling and programmatic materialization, combined with a two-phase agent training approach (general foundation learning followed by domain specialization).</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Their AgentScaler models achieved state-of-the-art performance among open-source models under 1T parameters on τ-bench, τ2-Bench, and ACEBench benchmarks, with AgentScaler-30B-A3B performing comparably to trillion-parameter models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Towards General Agentic Intelligence via Environment Scaling</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">AgentScaler: Environment Scaling for General Agentic Intelligence</text>
+  
+  <!-- Phase 1: Environment Construction -->
+  <rect x="50" y="60" width="400" height="300" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="250" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Phase 1: Environment Construction & Scaling</text>
+  
+  <!-- Step 1.1: Scenario Collection -->
+  <rect x="70" y="100" width="160" height="60" fill="#3498db" stroke="#2980b9" stroke-width="1" rx="5"/>
+  <text x="150" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Scenario Collection</text>
+  <text x="150" y="135" text-anchor="middle" font-size="10" fill="white">30,000+ APIs</text>
+  <text x="150" y="150" text-anchor="middle" font-size="10" fill="white">ToolBench, API-Gen</text>
+  
+  <!-- Step 1.2: Tool Dependency Graph -->
+  <rect x="270" y="100" width="160" height="60" fill="#e74c3c" stroke="#c0392b" stroke-width="1" rx="5"/>
+  <text x="350" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Tool Dependency</text>
+  <text x="350" y="135" text-anchor="middle" font-size="10" fill="white">Graph Modeling</text>
+  <text x="350" y="150" text-anchor="middle" font-size="10" fill="white">Louvain Clustering</text>
+  
+  <!-- Step 1.3: Domain Partitioning -->
+  <rect x="70" y="180" width="160" height="60" fill="#f39c12" stroke="#e67e22" stroke-width="1" rx="5"/>
+  <text x="150" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Domain Partitioning</text>
+  <text x="150" y="215" text-anchor="middle" font-size="10" fill="white">1,000+ Domains</text>
+  <text x="150" y="230" text-anchor="middle" font-size="10" fill="white">Community Detection</text>
+  
+  <!-- Step 1.4: Function Materialization -->
+  <rect x="270" y="180" width="160" height="60" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="350" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Function Schema</text>
+  <text x="350" y="215" text-anchor="middle" font-size="10" fill="white">Materialization</text>
+  <text x="350" y="230" text-anchor="middle" font-size="10" fill="white">Database Operations</text>
+  
+  <!-- Step 1.5: Task Construction -->
+  <rect x="170" y="260" width="160" height="60" fill="#1abc9c" stroke="#16a085" stroke-width="1" rx="5"/>
+  <text x="250" y="280" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Agentic Task</text>
+  <text x="250" y="295" text-anchor="middle" font-size="10" fill="white">Construction</text>
+  <text x="250" y="310" text-anchor="middle" font-size="10" fill="white">Tool Sequences</text>
+  
+  <!-- Phase 2: Agent Experience Learning -->
+  <rect x="550" y="60" width="400" height="300" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="750" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#d35400">Phase 2: Agent Experience Learning</text>
+  
+  <!-- Step 2.1: Human-Agent Interplay -->
+  <rect x="570" y="100" width="160" height="60" fill="#e67e22" stroke="#d35400" stroke-width="1" rx="5"/>
+  <text x="650" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Human-Agent</text>
+  <text x="650" y="135" text-anchor="middle" font-size="10" fill="white">Interplay</text>
+  <text x="650" y="150" text-anchor="middle" font-size="10" fill="white">Experience Collection</text>
+  
+  <!-- Step 2.2: Trajectory Filtering -->
+  <rect x="770" y="100" width="160" height="60" fill="#8e44ad" stroke="#7d3c98" stroke-width="1" rx="5"/>
+  <text x="850" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Trajectory Filtering</text>
+  <text x="850" y="135" text-anchor="middle" font-size="10" fill="white">3-Stage Funnel</text>
+  <text x="850" y="150" text-anchor="middle" font-size="10" fill="white">Validity + State + Match</text>
+  
+  <!-- Step 2.3: Stage 1 Training -->
+  <rect x="570" y="180" width="160" height="60" fill="#27ae60" stroke="#229954" stroke-width="1" rx="5"/>
+  <text x="650" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 1 Training</text>
+  <text x="650" y="215" text-anchor="middle" font-size="10" fill="white">General Domains</text>
+  <text x="650" y="230" text-anchor="middle" font-size="10" fill="white">Foundation Skills</text>
+  
+  <!-- Step 2.4: Stage 2 Training -->
+  <rect x="770" y="180" width="160" height="60" fill="#2980b9" stroke="#21618c" stroke-width="1" rx="5"/>
+  <text x="850" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Stage 2 Training</text>
+  <text x="850" y="215" text-anchor="middle" font-size="10" fill="white">Vertical Domains</text>
+  <text x="850" y="230" text-anchor="middle" font-size="10" fill="white">Specialization</text>
+  
+  <!-- Step 2.5: Model Output -->
+  <rect x="670" y="260" width="160" height="60" fill="#c0392b" stroke="#a93226" stroke-width="1" rx="5"/>
+  <text x="750" y="280" text-anchor="middle" font-size="12" font-weight="bold" fill="white">AgentScaler Models</text>
+  <text x="750" y="295" text-anchor="middle" font-size="10" fill="white">4B, 8B, 30B-A3B</text>
+  <text x="750" y="310" text-anchor="middle" font-size="10" fill="white">State-of-the-Art</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="200" y="400" width="600" height="180" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2" rx="10"/>
+  <text x="500" y="425" text-anchor="middle" font-size="16" font-weight="bold" fill="#34495e">Evaluation & Results</text>
+  
+  <!-- Benchmark 1 -->
+  <rect x="220" y="450" width="120" height="50" fill="#3498db" stroke="#2980b9" stroke-width="1" rx="5"/>
+  <text x="280" y="470" text-anchor="middle" font-size="12" font-weight="bold" fill="white">τ-bench</text>
+  <text x="280" y="485" text-anchor="middle" font-size="10" fill="white">Retail & Airline</text>
+  
+  <!-- Benchmark 2 -->
+  <rect x="360" y="450" width="120" height="50" fill="#e74c3c" stroke="#c0392b" stroke-width="1" rx="5"/>
+  <text x="420" y="470" text-anchor="middle" font-size="12" font-weight="bold" fill="white">τ2-Bench</text>
+  <text x="420" y="485" text-anchor="middle" font-size="10" fill="white">Multi-domain</text>
+  
+  <!-- Benchmark 3 -->
+  <rect x="500" y="450" width="120" height="50" fill="#f39c12" stroke="#e67e22" stroke-width="1" rx="5"/>
+  <text x="560" y="470" text-anchor="middle" font-size="12" font-weight="bold" fill="white">ACEBench</text>
+  <text x="560" y="485" text-anchor="middle" font-size="10" fill="white">Multi-category</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="660" y="450" width="120" height="50" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="720" y="470" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Performance</text>
+  <text x="720" y="485" text-anchor="middle" font-size="10" fill="white">SOTA Results</text>
+  
+  <!-- Key Insights -->
+  <rect x="250" y="520" width="180" height="40" fill="#1abc9c" stroke="#16a085" stroke-width="1" rx="5"/>
+  <text x="340" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Strong Generalization</text>
+  <text x="340" y="552" text-anchor="middle" font-size="9" fill="white">Cross-domain Transfer</text>
+  
+  <rect x="450" y="520" width="180" height="40" fill="#e67e22" stroke="#d35400" stroke-width="1" rx="5"/>
+  <text x="540" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Stability & Consistency</text>
+  <text x="540" y="552" text-anchor="middle" font-size="9" fill="white">Pass@k Analysis</text>
+  
+  <!-- Design Principles Box -->
+  <rect x="50" y="620" width="900" height="120" fill="#f4f6f7" stroke="#85929e" stroke-width="2" rx="10"/>
+  <text x="500" y="645" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Core Design Principles</text>
+  
+  <circle cx="150" cy="680" r="8" fill="#3498db"/>
+  <text x="170" y="685" font-size="12" fill="#2c3e50">Function calls as read-write operations on database D</text>
+  
+  <circle cx="150" cy="705" r="8" fill="#e74c3c"/>
+  <text x="170" y="710" font-size="12" fill="#2c3e50">Tools grouped by domains with shared database schemas</text>
+  
+  <circle cx="500" cy="680" r="8" fill="#f39c12"/>
+  <text x="520" y="685" font-size="12" fill="#2c3e50">Verifiable environments through state tracking</text>
+  
+  <circle cx="500" cy="705" r="8" fill="#9b59b6"/>
+  <text x="520" y="710" font-size="12" fill="#2c3e50">Two-stage learning: Foundation → Specialization</text>
+  
+  <!-- Connection lines (minimal as requested) -->
+  <line x1="450" y1="290" x2="550" y2="290" stroke="#7f8c8d" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="500" y="285" text-anchor="middle" font-size="10" fill="#7f8c8d">feeds into</text>
+  
+  <line x1="500" y1="360" x2="500" y2="400" stroke="#7f8c8d" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Lack of reinforcement learning integration">
+                        <div class="quiz-question">1. What is the main limitation of the AgentScaler framework according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Inability to handle multiple languages">Inability to handle multiple languages</div><div class="quiz-choice" data-value="Lack of reinforcement learning integration">Lack of reinforcement learning integration</div><div class="quiz-choice" data-value="Poor performance on simple tasks">Poor performance on simple tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Fundamental tool usage skills across general domains">
+                        <div class="quiz-question">2. In the two-phase agent training strategy, what is the focus of the first phase?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Domain-specific specialization">Domain-specific specialization</div><div class="quiz-choice" data-value="Fundamental tool usage skills across general domains">Fundamental tool usage skills across general domains</div><div class="quiz-choice" data-value="Real-world API integration">Real-world API integration</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="There was a negative correlation between number of tool calls and task accuracy">
+                        <div class="quiz-question">3. What interesting trend was observed regarding tool-calling complexity in the experimental analysis?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="More tool calls led to higher accuracy">More tool calls led to higher accuracy</div><div class="quiz-choice" data-value="Tool call count had no impact on performance">Tool call count had no impact on performance</div><div class="quiz-choice" data-value="There was a negative correlation between number of tool calls and task accuracy">There was a negative correlation between number of tool calls and task accuracy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>WebResearcher: Unleashing unbounded reasoning capability in Long-Horizon
+  Agents</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.13309" target="_blank">http://arxiv.org/pdf/2509.13309</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of an advanced AI research agent (WebResearcher) that can autonomously discover and synthesize knowledge from external sources through web search and tool use.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous deep-research systems like OpenAI's Deep Research and Google's Gemini Deep Research, but introduces a novel iterative paradigm instead of the traditional mono-contextual approach for information accumulation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the limitations of current mono-contextual AI research agents that suffer from context suffocation and noise contamination when handling complex, long-horizon research tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements IterResearch (an iterative deep-research paradigm), WebFrontier (a data synthesis engine), and a Research-Synthesis Framework using multiple parallel agents, with periodic consolidation of findings into evolving reports.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art performance across 6 benchmarks, notably scoring 36.7% accuracy on Humanity's Last Exam (surpassing DeepSeek-V3.1's 29.8%) and 51.7% on BrowseComp-en (matching OpenAI's Deep Research system).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>WebResearcher: Unleashing unbounded reasoning capability in Long-Horizon
+  Agents</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">WebResearcher: Methodology Flow</text>
+  
+  <!-- Stage 1: IterResearch Paradigm -->
+  <rect x="50" y="60" width="280" height="180" fill="#e3f2fd" stroke="#1976d2" stroke-width="2" rx="10"/>
+  <text x="190" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#1976d2">IterResearch Paradigm</text>
+  <text x="190" y="100" text-anchor="middle" font-size="12" fill="#424242">Reformulates deep research as MDP</text>
+  
+  <!-- Think-Report-Action Components -->
+  <circle cx="110" cy="130" r="20" fill="#4caf50"/>
+  <text x="110" y="135" text-anchor="middle" font-size="10" fill="white">Think</text>
+  
+  <circle cx="190" cy="130" r="20" fill="#ff9800"/>
+  <text x="190" y="135" text-anchor="middle" font-size="10" fill="white">Report</text>
+  
+  <circle cx="270" cy="130" r="20" fill="#f44336"/>
+  <text x="270" y="135" text-anchor="middle" font-size="10" fill="white">Action</text>
+  
+  <text x="190" y="170" text-anchor="middle" font-size="10" fill="#666">Cognitive Scratchpad</text>
+  <text x="190" y="185" text-anchor="middle" font-size="10" fill="#666">Central Memory</text>
+  <text x="190" y="200" text-anchor="middle" font-size="10" fill="#666">Tool Call / Final Answer</text>
+  <text x="190" y="220" text-anchor="middle" font-size="10" fill="#666">Periodic Synthesis & Reconstruction</text>
+  
+  <!-- Stage 2: WebFrontier Data Engine -->
+  <rect x="360" y="60" width="280" height="180" fill="#fff3e0" stroke="#f57c00" stroke-width="2" rx="10"/>
+  <text x="500" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#f57c00">WebFrontier Data Engine</text>
+  <text x="500" y="100" text-anchor="middle" font-size="12" fill="#424242">Scalable Data Synthesis</text>
+  
+  <!-- Three stages -->
+  <rect x="380" y="120" width="70" height="40" fill="#ffeb3b" stroke="#fbc02d" rx="5"/>
+  <text x="415" y="135" text-anchor="middle" font-size="9" fill="#333">Seed Data</text>
+  <text x="415" y="148" text-anchor="middle" font-size="9" fill="#333">Generation</text>
+  
+  <rect x="465" y="120" width="70" height="40" fill="#4caf50" stroke="#388e3c" rx="5"/>
+  <text x="500" y="130" text-anchor="middle" font-size="9" fill="white">Complexity</text>
+  <text x="500" y="143" text-anchor="middle" font-size="9" fill="white">Escalation</text>
+  <text x="500" y="156" text-anchor="middle" font-size="9" fill="white">(Tool-Augmented)</text>
+  
+  <rect x="550" y="120" width="70" height="40" fill="#9c27b0" stroke="#7b1fa2" rx="5"/>
+  <text x="585" y="135" text-anchor="middle" font-size="9" fill="white">Quality</text>
+  <text x="585" y="148" text-anchor="middle" font-size="9" fill="white">Control</text>
+  
+  <text x="500" y="180" text-anchor="middle" font-size="10" fill="#666">Multi-Agent Collaborative Framework</text>
+  <text x="500" y="195" text-anchor="middle" font-size="10" fill="#666">Knowledge Expansion → Abstraction</text>
+  <text x="500" y="210" text-anchor="middle" font-size="10" fill="#666">Factual Grounding → Validation</text>
+  
+  <!-- Stage 3: Training Process -->
+  <rect x="670" y="60" width="280" height="180" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2" rx="10"/>
+  <text x="810" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#7b1fa2">Training Optimization</text>
+  
+  <!-- RFT and RL boxes -->
+  <rect x="690" y="100" width="100" height="50" fill="#e1bee7" stroke="#8e24aa" rx="5"/>
+  <text x="740" y="115" text-anchor="middle" font-size="11" fill="#4a148c">Rejection</text>
+  <text x="740" y="128" text-anchor="middle" font-size="11" fill="#4a148c">Sampling</text>
+  <text x="740" y="141" text-anchor="middle" font-size="11" fill="#4a148c">Fine-Tuning</text>
+  
+  <rect x="810" y="100" width="100" height="50" fill="#ce93d8" stroke="#8e24aa" rx="5"/>
+  <text x="860" y="115" text-anchor="middle" font-size="11" fill="#4a148c">Group Sequence</text>
+  <text x="860" y="128" text-anchor="middle" font-size="11" fill="#4a148c">Policy</text>
+  <text x="860" y="141" text-anchor="middle" font-size="11" fill="#4a148c">Optimization</text>
+  
+  <text x="810" y="175" text-anchor="middle" font-size="10" fill="#666">Multi-round Trajectory Training</text>
+  <text x="810" y="190" text-anchor="middle" font-size="10" fill="#666">Data Amplification via Decomposition</text>
+  <text x="810" y="205" text-anchor="middle" font-size="10" fill="#666">Markov Property Enforcement</text>
+  
+  <!-- Stage 4: Research-Synthesis Framework -->
+  <rect x="200" y="280" width="600" height="180" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="10"/>
+  <text x="500" y="300" text-anchor="middle" font-size="16" font-weight="bold" fill="#2e7d32">Research-Synthesis Framework</text>
+  <text x="500" y="320" text-anchor="middle" font-size="12" fill="#424242">Test-Time Scaling with Parallel Agents</text>
+  
+  <!-- Parallel Research Phase -->
+  <rect x="230" y="340" width="200" height="100" fill="#c8e6c9" stroke="#4caf50" rx="5"/>
+  <text x="330" y="360" text-anchor="middle" font-size="14" font-weight="bold" fill="#1b5e20">Parallel Research</text>
+  
+  <circle cx="280" cy="385" r="15" fill="#66bb6a"/>
+  <text x="280" y="390" text-anchor="middle" font-size="8" fill="white">Agent 1</text>
+  
+  <circle cx="330" cy="385" r="15" fill="#66bb6a"/>
+  <text x="330" y="390" text-anchor="middle" font-size="8" fill="white">Agent 2</text>
+  
+  <circle cx="380" cy="385" r="15" fill="#66bb6a"/>
+  <text x="380" y="390" text-anchor="middle" font-size="8" fill="white">Agent n</text>
+  
+  <text x="330" y="415" text-anchor="middle" font-size="10" fill="#2e7d32">Concurrent IterResearch</text>
+  <text x="330" y="430" text-anchor="middle" font-size="10" fill="#2e7d32">Multiple Final Reports</text>
+  
+  <!-- Synthesis Phase -->
+  <rect x="470" y="340" width="200" height="100" fill="#a5d6a7" stroke="#4caf50" rx="5"/>
+  <text x="570" y="360" text-anchor="middle" font-size="14" font-weight="bold" fill="#1b5e20">Integrative Synthesis</text>
+  
+  <circle cx="570" cy="385" r="20" fill="#388e3c"/>
+  <text x="570" y="380" text-anchor="middle" font-size="9" fill="white">Synthesis</text>
+  <text x="570" y="392" text-anchor="middle" font-size="9" fill="white">Agent</text>
+  
+  <text x="570" y="415" text-anchor="middle" font-size="10" fill="#1b5e20">Report Consolidation</text>
+  <text x="570" y="430" text-anchor="middle" font-size="10" fill="#1b5e20">Final Answer Generation</text>
+  
+  <!-- Tools Section -->
+  <rect x="50" y="500" width="900" height="120" fill="#fff8e1" stroke="#ff8f00" stroke-width="2" rx="10"/>
+  <text x="500" y="520" text-anchor="middle" font-size="16" font-weight="bold" fill="#ef6c00">External Tools Integration</text>
+  
+  <rect x="100" y="540" width="150" height="60" fill="#ffcc02" stroke="#ff8f00" rx="5"/>
+  <text x="175" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">Search</text>
+  <text x="175" y="575" text-anchor="middle" font-size="10" fill="#bf360c">Web Information</text>
+  <text x="175" y="588" text-anchor="middle" font-size="10" fill="#bf360c">Retrieval</text>
+  
+  <rect x="275" y="540" width="150" height="60" fill="#ffcc02" stroke="#ff8f00" rx="5"/>
+  <text x="350" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">Scholar</text>
+  <text x="350" y="575" text-anchor="middle" font-size="10" fill="#bf360c">Academic Literature</text>
+  <text x="350" y="588" text-anchor="middle" font-size="10" fill="#bf360c">Search</text>
+  
+  <rect x="450" y="540" width="150" height="60" fill="#ffcc02" stroke="#ff8f00" rx="5"/>
+  <text x="525" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">Visit</text>
+  <text x="525" y="575" text-anchor="middle" font-size="10" fill="#bf360c">Web Page Content</text>
+  <text x="525" y="588" text-anchor="middle" font-size="10" fill="#bf360c">Extraction</text>
+  
+  <rect x="625" y="540" width="150" height="60" fill="#ffcc02" stroke="#ff8f00" rx="5"/>
+  <text x="700" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">Python</text>
+  <text x="700" y="575" text-anchor="middle" font-size="10" fill="#bf360c">Code Execution</text>
+  <text x="700" y="588" text-anchor="middle" font-size="10" fill="#bf360c">& Computation</text>
+  
+  <!-- Key Advantages -->
+  <rect x="50" y="650" width="900" height="120" fill="#e1f5fe" stroke="#0277bd" stroke-width="2" rx="10"/>
+  <text x="500" y="670" text-anchor="middle" font-size="16" font-weight="bold" fill="#01579b">Key Advantages</text>
+  
+  <text x="200" y="695" text-anchor="middle" font-size="12" font-weight="bold" fill="#0277bd">✓ Prevents Context Suffocation</text>
+  <text x="200" y="710" text-anchor="middle" font-size="10" fill="#0277bd">Maintains focused workspace</text>
+  
+  <text x="500" y="695" text-anchor="middle" font-size="12" font-weight="bold" fill="#0277bd">✓ Eliminates Noise Contamination</text>
+  <text x="500" y="710" text-anchor="middle" font-size="10" fill="#0277bd">Periodic synthesis filtering</text>
+  
+  <text x="800" y="695" text-anchor="middle" font-size="12" font-weight="bold" fill="#0277bd">✓ Enables Unbounded Reasoning</text>
+  <text x="800" y="710" text-anchor="middle" font-size="10" fill="#0277bd">Arbitrary research depth</text>
+  
+  <text x="300" y="735" text-anchor="middle" font-size="12" font-weight="bold" fill="#0277bd">✓ Superior Performance</text>
+  <text x="300" y="750" text-anchor="middle" font-size="10" fill="#0277bd">State-of-the-art results across benchmarks</text>
+  
+  <text x="700" y="735" text-anchor="middle" font-size="12" font-weight="bold" fill="#0277bd">✓ Test-Time Scaling</text>
+  <text x="700" y="750" text-anchor="middle" font-size="10" fill="#0277bd">Parallel agent exploration</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Context suffocation and noise contamination in long-horizon tasks">
+                        <div class="quiz-question">1. What is the main limitation of mono-contextual approaches that WebResearcher aims to solve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High computational costs and slow processing speed">High computational costs and slow processing speed</div><div class="quiz-choice" data-value="Context suffocation and noise contamination in long-horizon tasks">Context suffocation and noise contamination in long-horizon tasks</div><div class="quiz-choice" data-value="Inability to access multiple web sources simultaneously">Inability to access multiple web sources simultaneously</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Performance improves but shows diminishing returns after n>8">
+                        <div class="quiz-question">2. In WebResearcher's Research-Synthesis Framework, what happens when n (number of parallel research agents) increases?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Performance decreases due to conflicting information">Performance decreases due to conflicting information</div><div class="quiz-choice" data-value="No significant change in performance is observed">No significant change in performance is observed</div><div class="quiz-choice" data-value="Performance improves but shows diminishing returns after n>8">Performance improves but shows diminishing returns after n>8</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Search and Visit tools (96% of all tool invocations)">
+                        <div class="quiz-question">3. On the BrowseComp benchmark, which tools were most frequently used by WebResearcher?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Scholar and Python tools">Scholar and Python tools</div><div class="quiz-choice" data-value="Search and Visit tools (96% of all tool invocations)">Search and Visit tools (96% of all tool invocations)</div><div class="quiz-choice" data-value="Python and Visit tools">Python and Visit tools</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
