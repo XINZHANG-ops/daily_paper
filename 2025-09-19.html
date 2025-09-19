@@ -1,0 +1,1192 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-19 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-19 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>FlowRL: Matching Reward Distributions for LLM Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.15207" target="_blank">http://arxiv.org/pdf/2509.15207</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents FlowRL, a novel reinforcement learning algorithm for improving large language model (LLM) reasoning through reward distribution matching.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing reward-maximizing RL methods (PPO, GRPO), it proposes a new approach of matching full reward distributions rather than just maximizing rewards to promote diverse exploration.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the mode collapse issue in current RL methods for LLM reasoning, where models tend to overoptimize dominant reward signals while neglecting other valid reasoning paths.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method uses flow balancing optimization with length normalization and importance sampling, transforming scalar rewards into a normalized target distribution using a learnable partition function and minimizing KL divergence.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> FlowRL achieved 10.0% improvement over GRPO and 5.1% over PPO on math benchmarks, with consistent better performance on code reasoning tasks, while generating substantially more diverse reasoning paths.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>FlowRL: Matching Reward Distributions for LLM Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">FlowRL: Matching Reward Distributions for LLM Reasoning</text>
+  
+  <!-- Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" fill="#e74c3c" rx="10" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem with</text>
+  <text x="150" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reward Maximization</text>
+  <text x="150" y="115" text-anchor="middle" font-size="10" fill="white">(PPO, GRPO)</text>
+  <text x="150" y="130" text-anchor="middle" font-size="10" fill="white">Mode Collapse</text>
+  
+  <!-- Core Innovation -->
+  <rect x="300" y="60" width="200" height="80" fill="#3498db" rx="10" opacity="0.8"/>
+  <text x="400" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">FlowRL Innovation</text>
+  <text x="400" y="100" text-anchor="middle" font-size="10" fill="white">Reward Distribution</text>
+  <text x="400" y="115" text-anchor="middle" font-size="10" fill="white">Matching via</text>
+  <text x="400" y="130" text-anchor="middle" font-size="10" fill="white">Flow Balance</text>
+  
+  <!-- Mathematical Foundation -->
+  <rect x="550" y="60" width="200" height="80" fill="#9b59b6" rx="10" opacity="0.8"/>
+  <text x="650" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Theoretical Base</text>
+  <text x="650" y="100" text-anchor="middle" font-size="10" fill="white">GFlowNets</text>
+  <text x="650" y="115" text-anchor="middle" font-size="10" fill="white">Trajectory Balance</text>
+  <text x="650" y="130" text-anchor="middle" font-size="10" fill="white">KL Divergence</text>
+  
+  <!-- Method Components -->
+  <text x="500" y="180" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">FlowRL Method Components</text>
+  
+  <!-- Component 1: Distribution Matching -->
+  <rect x="80" y="200" width="180" height="120" fill="#27ae60" rx="10" opacity="0.8"/>
+  <text x="170" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Distribution Matching</text>
+  <text x="170" y="245" text-anchor="middle" font-size="10" fill="white">min DKL(π_θ || exp(βr)/Z_φ)</text>
+  <text x="170" y="260" text-anchor="middle" font-size="10" fill="white">Learnable partition</text>
+  <text x="170" y="275" text-anchor="middle" font-size="10" fill="white">function Z_φ(x)</text>
+  <text x="170" y="290" text-anchor="middle" font-size="10" fill="white">Normalized target</text>
+  <text x="170" y="305" text-anchor="middle" font-size="10" fill="white">distribution</text>
+  
+  <!-- Component 2: Trajectory Balance -->
+  <rect x="280" y="200" width="180" height="120" fill="#f39c12" rx="10" opacity="0.8"/>
+  <text x="370" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Trajectory Balance</text>
+  <text x="370" y="245" text-anchor="middle" font-size="10" fill="white">Equivalent to KL</text>
+  <text x="370" y="260" text-anchor="middle" font-size="10" fill="white">minimization</text>
+  <text x="370" y="275" text-anchor="middle" font-size="10" fill="white">Practical squared</text>
+  <text x="370" y="290" text-anchor="middle" font-size="10" fill="white">loss formulation</text>
+  <text x="370" y="305" text-anchor="middle" font-size="10" fill="white">Proposition 1</text>
+  
+  <!-- Component 3: Technical Solutions -->
+  <rect x="480" y="200" width="180" height="120" fill="#e67e22" rx="10" opacity="0.8"/>
+  <text x="570" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Technical Solutions</text>
+  <text x="570" y="245" text-anchor="middle" font-size="10" fill="white">Length Normalization</text>
+  <text x="570" y="260" text-anchor="middle" font-size="10" fill="white">(Gradient explosion)</text>
+  <text x="570" y="275" text-anchor="middle" font-size="10" fill="white">Importance Sampling</text>
+  <text x="570" y="290" text-anchor="middle" font-size="10" fill="white">(Distribution mismatch)</text>
+  <text x="570" y="305" text-anchor="middle" font-size="10" fill="white">PPO-style clipping</text>
+  
+  <!-- Component 4: Reference Model -->
+  <rect x="680" y="200" width="180" height="120" fill="#8e44ad" rx="10" opacity="0.8"/>
+  <text x="770" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Reference Model</text>
+  <text x="770" y="245" text-anchor="middle" font-size="10" fill="white">Prior constraint</text>
+  <text x="770" y="260" text-anchor="middle" font-size="10" fill="white">π_ref(y|x)</text>
+  <text x="770" y="275" text-anchor="middle" font-size="10" fill="white">Inductive bias</text>
+  <text x="770" y="290" text-anchor="middle" font-size="10" fill="white">Regularization</text>
+  <text x="770" y="305" text-anchor="middle" font-size="10" fill="white">KL penalty</text>
+  
+  <!-- Final Objective -->
+  <rect x="200" y="350" width="600" height="80" fill="#34495e" rx="10" opacity="0.9"/>
+  <text x="500" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="white">FlowRL Final Objective</text>
+  <text x="500" y="395" text-anchor="middle" font-size="11" fill="#ecf0f1">L_FlowRL = w · [log Z_φ(x) + (1/|y|)log π_θ(y|x) - βr̂(x,y) - (1/|y|)log π_ref(y|x)]²</text>
+  <text x="500" y="415" text-anchor="middle" font-size="10" fill="#bdc3c7">where w = clip(π_θ(y|x)/π_old(y|x), 1-ε, 1+ε)</text>
+  
+  <!-- Experimental Setup -->
+  <text x="500" y="470" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Experimental Validation</text>
+  
+  <!-- Datasets -->
+  <rect x="50" y="490" width="150" height="100" fill="#16a085" rx="10" opacity="0.8"/>
+  <text x="125" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Math Benchmarks</text>
+  <text x="125" y="535" text-anchor="middle" font-size="9" fill="white">AIME 2024/2025</text>
+  <text x="125" y="550" text-anchor="middle" font-size="9" fill="white">AMC 2023</text>
+  <text x="125" y="565" text-anchor="middle" font-size="9" fill="white">MATH-500</text>
+  <text x="125" y="580" text-anchor="middle" font-size="9" fill="white">Minerva, Olympiad</text>
+  
+  <rect x="220" y="490" width="150" height="100" fill="#d35400" rx="10" opacity="0.8"/>
+  <text x="295" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Code Benchmarks</text>
+  <text x="295" y="535" text-anchor="middle" font-size="9" fill="white">LiveCodeBench</text>
+  <text x="295" y="550" text-anchor="middle" font-size="9" fill="white">CodeForces</text>
+  <text x="295" y="565" text-anchor="middle" font-size="9" fill="white">HumanEval+</text>
+  
+  <!-- Models -->
+  <rect x="390" y="490" width="150" height="100" fill="#7f8c8d" rx="10" opacity="0.8"/>
+  <text x="465" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Models</text>
+  <text x="465" y="535" text-anchor="middle" font-size="9" fill="white">Qwen-2.5-7B/32B</text>
+  <text x="465" y="550" text-anchor="middle" font-size="9" fill="white">DeepSeek-R1-Distill</text>
+  <text x="465" y="565" text-anchor="middle" font-size="9" fill="white">Qwen-7B</text>
+  
+  <!-- Baselines -->
+  <rect x="560" y="490" width="150" height="100" fill="#c0392b" rx="10" opacity="0.8"/>
+  <text x="635" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Baselines</text>
+  <text x="635" y="535" text-anchor="middle" font-size="9" fill="white">REINFORCE++</text>
+  <text x="635" y="550" text-anchor="middle" font-size="9" fill="white">PPO</text>
+  <text x="635" y="565" text-anchor="middle" font-size="9" fill="white">GRPO</text>
+  
+  <!-- Results -->
+  <rect x="730" y="490" width="150" height="100" fill="#2980b9" rx="10" opacity="0.8"/>
+  <text x="805" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Key Results</text>
+  <text x="805" y="535" text-anchor="middle" font-size="9" fill="white">+10.0% vs GRPO</text>
+  <text x="805" y="550" text-anchor="middle" font-size="9" fill="white">+5.1% vs PPO</text>
+  <text x="805" y="565" text-anchor="middle" font-size="9" fill="white">Higher diversity</text>
+  
+  <!-- Analysis -->
+  <text x="500" y="630" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Analysis & Validation</text>
+  
+  <rect x="150" y="650" width="200" height="80" fill="#1abc9c" rx="10" opacity="0.8"/>
+  <text x="250" y="675" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Diversity Analysis</text>
+  <text x="250" y="695" text-anchor="middle" font-size="10" fill="white">GPT-4o evaluation</text>
+  <text x="250" y="710" text-anchor="middle" font-size="10" fill="white">Doubled diversity score</text>
+  
+  <rect x="400" y="650" width="200" height="80" fill="#f1c40f" rx="10" opacity="0.8"/>
+  <text x="500" y="675" text-anchor="middle" font-size="12" font-weight="bold" fill="black">Case Study</text>
+  <text x="500" y="695" text-anchor="middle" font-size="10" fill="black">AIME problem solving</text>
+  <text x="500" y="710" text-anchor="middle" font-size="10" fill="black">Avoids repetitive patterns</text>
+  
+  <rect x="650" y="650" width="200" height="80" fill="#e74c3c" rx="10" opacity="0.8"/>
+  <text x="750" y="675" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Ablation Studies</text>
+  <text x="750" y="695" text-anchor="middle" font-size="10" fill="white">Importance sampling</text>
+  <text x="750" y="710" text-anchor="middle" font-size="10" fill="white">β hyperparameter</text>
+  
+  <!-- Conclusion -->
+  <rect x="300" y="750" width="400" height="40" fill="#95a5a6" rx="10" opacity="0.9"/>
+  <text x="500" y="775" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Reward Distribution Matching > Reward Maximization</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Mode collapse and neglect of valid alternative solutions">
+                        <div class="quiz-question">1. What is the main limitation of traditional reward-maximizing RL methods that FlowRL aims to address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Slow training speed on math problems">Slow training speed on math problems</div><div class="quiz-choice" data-value="Mode collapse and neglect of valid alternative solutions">Mode collapse and neglect of valid alternative solutions</div><div class="quiz-choice" data-value="High computational resource requirements">High computational resource requirements</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="A learnable partition function">
+                        <div class="quiz-question">2. Which key technical component does FlowRL use to normalize scalar rewards into a target distribution?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A pre-trained language model">A pre-trained language model</div><div class="quiz-choice" data-value="A learnable partition function">A learnable partition function</div><div class="quiz-choice" data-value="A fixed reward scaling factor">A fixed reward scaling factor</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It nearly doubled the diversity score of the strongest baseline">
+                        <div class="quiz-question">3. In the diversity analysis comparing different methods, what was notable about FlowRL's performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It achieved the same diversity score as PPO">It achieved the same diversity score as PPO</div><div class="quiz-choice" data-value="It showed marginally better diversity than baselines">It showed marginally better diversity than baselines</div><div class="quiz-choice" data-value="It nearly doubled the diversity score of the strongest baseline">It nearly doubled the diversity score of the strongest baseline</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Evolving Language Models without Labels: Majority Drives Selection,
+  Novelty Promotes Variation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.15194" target="_blank">http://arxiv.org/pdf/2509.15194</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Language model evolution without requiring labeled data, focusing on improving reasoning capabilities of large language models through self-learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Test-Time Reinforcement Learning (TTRL) and majority-vote approaches, proposing a novel "majority-for-selection + novelty-for-variation" design that balances stability with exploration.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the "entropy collapse" issue where language models trained with majority-only rewards become less diverse, shorter, and more brittle in their reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements EVolution-Oriented and Label-free Reinforcement Learning (EVOL-RL) using GRPO algorithm with three key components: novelty-aware rewards, entropy regularization, and asymmetric clipping.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Significantly improved performance across multiple benchmarks, with notable gains in both pass@1 and pass@16 metrics - for example, lifting Qwen3-4B-Base AIME25 pass@1 from 4.6% to 16.4% and pass@16 from 18.5% to 37.9%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Evolving Language Models without Labels: Majority Drives Selection,
+  Novelty Promotes Variation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4dabf7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1971c2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#51cf66;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2b8a3e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff8787;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e03131;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#da77f2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9775fa;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#495057">EVOL-RL: Evolution-Oriented Label-free Reinforcement Learning</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="70" width="180" height="80" rx="15" fill="url(#blueGrad)" stroke="#1971c2" stroke-width="2"/>
+  <text x="140" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Input Prompt</text>
+  <text x="140" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">Mathematical Problem</text>
+  <text x="140" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">(No Labels)</text>
+  
+  <!-- Policy Model Generation -->
+  <rect x="280" y="70" width="180" height="80" rx="15" fill="url(#greenGrad)" stroke="#2b8a3e" stroke-width="2"/>
+  <text x="370" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Policy Model π_θ</text>
+  <text x="370" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">Generate G=64 responses</text>
+  <text x="370" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">{o₁, o₂, ..., o₆₄}</text>
+  
+  <!-- Response Processing -->
+  <rect x="50" y="200" width="150" height="100" rx="15" fill="url(#orangeGrad)" stroke="#e03131" stroke-width="2"/>
+  <text x="125" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">Answer Extraction</text>
+  <text x="125" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Parse \boxed{·}</text>
+  <text x="125" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Validity Check</text>
+  <text x="125" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Group by Answer</text>
+  
+  <!-- Majority Voting -->
+  <rect x="230" y="200" width="150" height="100" rx="15" fill="url(#purpleGrad)" stroke="#9775fa" stroke-width="2"/>
+  <text x="305" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">Majority Voting</text>
+  <text x="305" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Selection Signal</text>
+  <text x="305" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">y_i ∈ {+1, -1}</text>
+  <text x="305" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Stability Anchor</text>
+  
+  <!-- Novelty Computation -->
+  <rect x="410" y="200" width="150" height="100" rx="15" fill="#ffd43b" stroke="#fab005" stroke-width="2"/>
+  <text x="485" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#495057">Novelty Scoring</text>
+  <text x="485" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#495057">Semantic Embedding</text>
+  <text x="485" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#495057">Cosine Similarity</text>
+  <text x="485" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#495057">u_i = 1 - (ᾱs_i + (1-α)m_i)</text>
+  
+  <!-- Reward Calculation -->
+  <rect x="600" y="200" width="180" height="100" rx="15" fill="url(#blueGrad)" stroke="#1971c2" stroke-width="2"/>
+  <text x="690" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">Reward Assignment</text>
+  <text x="690" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Majority: r_i ∈ [0.5, 1.0]</text>
+  <text x="690" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Higher novelty → Higher reward</text>
+  <text x="690" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Minority: r_i ∈ [-1.0, -0.5]</text>
+  <text x="690" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Novelty mitigates penalty</text>
+  
+  <!-- GRPO Update -->
+  <rect x="200" y="350" width="200" height="120" rx="15" fill="url(#greenGrad)" stroke="#2b8a3e" stroke-width="2"/>
+  <text x="300" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">GRPO Update</text>
+  <text x="300" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Z-score Normalization</text>
+  <text x="300" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Advantage: Â_i = (r_i - μ) / σ</text>
+  <text x="300" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Asymmetric Clipping</text>
+  <text x="300" y="445" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">ε_high > ε_low</text>
+  <text x="300" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Preserve strong signals</text>
+  
+  <!-- Entropy Regularization -->
+  <rect x="450" y="350" width="180" height="120" rx="15" fill="url(#orangeGrad)" stroke="#e03131" stroke-width="2"/>
+  <text x="540" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Entropy Regularizer</text>
+  <text x="540" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">L_ent = -λ_ent E[H(π_θ)]</text>
+  <text x="540" y="415" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Maintains Diversity</text>
+  <text x="540" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Prevents Collapse</text>
+  <text x="540" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">L_total = L_GRPO + L_ent</text>
+  
+  <!-- Updated Policy -->
+  <rect x="350" y="520" width="180" height="80" rx="15" fill="url(#purpleGrad)" stroke="#9775fa" stroke-width="2"/>
+  <text x="440" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Updated Policy π_θ'</text>
+  <text x="440" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">Balanced Selection</text>
+  <text x="440" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">& Variation</text>
+  
+  <!-- Key Principles -->
+  <rect x="50" y="650" width="280" height="100" rx="15" fill="#e9ecef" stroke="#adb5bd" stroke-width="2"/>
+  <text x="190" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#495057">Core Evolutionary Principles</text>
+  <text x="70" y="695" font-family="Arial, sans-serif" font-size="12" fill="#495057">• Selection: Majority vote for stability</text>
+  <text x="70" y="715" font-family="Arial, sans-serif" font-size="12" fill="#495057">• Variation: Novelty reward for exploration</text>
+  <text x="70" y="735" font-family="Arial, sans-serif" font-size="12" fill="#495057">• Prevents entropy collapse</text>
+  
+  <!-- Results -->
+  <rect x="370" y="650" width="280" height="100" rx="15" fill="#e9ecef" stroke="#adb5bd" stroke-width="2"/>
+  <text x="510" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#495057">Key Achievements</text>
+  <text x="390" y="695" font-family="Arial, sans-serif" font-size="12" fill="#495057">• Improves pass@1 and pass@16</text>
+  <text x="390" y="715" font-family="Arial, sans-serif" font-size="12" fill="#495057">• Maintains reasoning complexity</text>
+  <text x="390" y="735" font-family="Arial, sans-serif" font-size="12" fill="#495057">• Strong out-of-domain generalization</text>
+  
+  <!-- Problem with TTRL -->
+  <rect x="700" y="650" width="250" height="100" rx="15" fill="#ffdeeb" stroke="#e03131" stroke-width="2"/>
+  <text x="825" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#c92a2a">TTRL Problems Solved</text>
+  <text x="720" y="695" font-family="Arial, sans-serif" font-size="12" fill="#c92a2a">• Entropy collapse</text>
+  <text x="720" y="715" font-family="Arial, sans-serif" font-size="12" fill="#c92a2a">• Declining pass@n</text>
+  <text x="720" y="735" font-family="Arial, sans-serif" font-size="12" fill="#c92a2a">• Shorter reasoning chains</text>
+  
+  <!-- Flow lines -->
+  <path d="M230 110 L280 110" stroke="#495057" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M140 150 L140 200" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M305 150 L305 200" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M370 150 L485 200" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M200 250 L230 250" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M380 250 L410 250" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M560 250 L600 250" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M690 300 L300 350" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M690 300 L540 350" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M300 470 L440 520" stroke="#495057" stroke-width="2" fill="none"/>
+  <path d="M540 470 L440 520" stroke="#495057" stroke-width="2" fill="none"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The entropy collapse where models become less diverse and more brittle">
+                        <div class="quiz-question">1. What is the main problem that EVOL-RL aims to solve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The need for large amounts of labeled training data">The need for large amounts of labeled training data</div><div class="quiz-choice" data-value="The entropy collapse where models become less diverse and more brittle">The entropy collapse where models become less diverse and more brittle</div><div class="quiz-choice" data-value="The slow computation speed of language models during training">The slow computation speed of language models during training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It combines majority voting with novelty rewards to balance stability and variation">
+                        <div class="quiz-question">2. How does EVOL-RL's reward system work differently from previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only uses majority voting like TTRL">It only uses majority voting like TTRL</div><div class="quiz-choice" data-value="It completely ignores majority voting in favor of novelty">It completely ignores majority voting in favor of novelty</div><div class="quiz-choice" data-value="It combines majority voting with novelty rewards to balance stability and variation">It combines majority voting with novelty rewards to balance stability and variation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="An increase from 4.6% to 16.4%">
+                        <div class="quiz-question">3. When training on AIME24 dataset with Qwen3-4B-Base model, what improvement did EVOL-RL achieve for AIME25 pass@1 accuracy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="An increase from 4.6% to 8.2%">An increase from 4.6% to 8.2%</div><div class="quiz-choice" data-value="An increase from 4.6% to 16.4%">An increase from 4.6% to 16.4%</div><div class="quiz-choice" data-value="An increase from 8.2% to 16.4%">An increase from 8.2% to 16.4%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Understand Before You Generate: Self-Guided Training for Autoregressive
+  Image Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.15185" target="_blank">http://arxiv.org/pdf/2509.15185</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Self-guided training framework for autoregressive image generation models to improve visual understanding and generation quality.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on autoregressive models like LlamaGen and self-supervised learning techniques, proposing a novel training framework that integrates masked image modeling and contrastive learning into autoregressive generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses three key limitations of autoregressive image models: local and conditional dependence, inter-step semantic inconsistency, and spatial invariance deficiency.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements ST-AR framework combining masked image modeling for broader attention, inter-step contrastive learning for semantic consistency, and inter-view contrastive learning for visual representation alignment.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves significant improvements in both image understanding (linear probing accuracy from 21% to 55.23%) and generation quality (42% FID improvement for LlamaGen-L and 49% for LlamaGen-XL).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Understand Before You Generate: Self-Guided Training for Autoregressive
+  Image Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8e8e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6ed5cd;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#45b7d1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#67c5da;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#96ceb4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b4d7c4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#feca57;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fed976;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2c3e50">
+    ST-AR: Self-Guided Training for Autoregressive Image Generation
+  </text>
+  
+  <!-- Problem Identification Phase -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="url(#grad1)" stroke="#e74c3c" stroke-width="2"/>
+  <text x="150" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Problem Analysis
+  </text>
+  <text x="150" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    • Local &amp; Conditional Dependence
+  </text>
+  <text x="150" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    • Inter-step Semantic Inconsistency
+  </text>
+  <text x="150" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    • Spatial Invariance Deficiency
+  </text>
+  <text x="150" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    (Attention Maps + Linear Probing)
+  </text>
+  
+  <!-- Input Processing -->
+  <rect x="300" y="60" width="150" height="80" rx="10" fill="url(#grad2)" stroke="#16a085" stroke-width="2"/>
+  <text x="375" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Input Image I
+  </text>
+  <text x="375" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    VQ-GAN Tokenization
+  </text>
+  <text x="375" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    x = q(I)
+  </text>
+  
+  <!-- Augmentation -->
+  <rect x="500" y="60" width="150" height="80" rx="10" fill="url(#grad3)" stroke="#3498db" stroke-width="2"/>
+  <text x="575" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Data Augmentation
+  </text>
+  <text x="575" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    M random views
+  </text>
+  <text x="575" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    {I^(b,m)}
+  </text>
+  
+  <!-- Student Network -->
+  <rect x="150" y="220" width="180" height="100" rx="10" fill="url(#grad4)" stroke="#27ae60" stroke-width="2"/>
+  <text x="240" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Student Network p_θ
+  </text>
+  <text x="240" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Transformer Layers
+  </text>
+  <text x="240" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    with Attention Masking
+  </text>
+  <text x="240" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    (Mask ratio r = 0.25)
+  </text>
+  
+  <!-- Teacher Network -->
+  <rect x="400" y="220" width="180" height="100" rx="10" fill="url(#grad5)" stroke="#f39c12" stroke-width="2"/>
+  <text x="490" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Teacher Network p_θ'
+  </text>
+  <text x="490" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    EMA Updated
+  </text>
+  <text x="490" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    No Masking
+  </text>
+  <text x="490" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    (τ = 0.9999)
+  </text>
+  
+  <!-- Feature Extraction -->
+  <rect x="650" y="220" width="120" height="100" rx="10" fill="url(#grad2)" stroke="#16a085" stroke-width="2"/>
+  <text x="710" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Feature
+  </text>
+  <text x="710" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Extraction
+  </text>
+  <text x="710" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    h_s = p_θ(X)
+  </text>
+  <text x="710" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    h_t = p_θ'(X)
+  </text>
+  
+  <!-- Loss Functions -->
+  <rect x="50" y="380" width="120" height="80" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="110" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    L_AR
+  </text>
+  <text x="110" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Autoregressive
+  </text>
+  <text x="110" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Token Prediction
+  </text>
+  
+  <rect x="200" y="380" width="120" height="80" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="260" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    L_MIM
+  </text>
+  <text x="260" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Masked Image
+  </text>
+  <text x="260" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Modeling
+  </text>
+  
+  <rect x="350" y="380" width="120" height="80" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="410" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    L_step
+  </text>
+  <text x="410" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Inter-step
+  </text>
+  <text x="410" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Contrastive
+  </text>
+  
+  <rect x="500" y="380" width="120" height="80" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="560" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    L_view
+  </text>
+  <text x="560" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Inter-view
+  </text>
+  <text x="560" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    Contrastive
+  </text>
+  
+  <!-- Combined Loss -->
+  <rect x="650" y="380" width="180" height="80" rx="8" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  <text x="740" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    L_ST-AR
+  </text>
+  <text x="740" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    L_AR + αL_MIM + β/2(L_step + L_view)
+  </text>
+  <text x="740" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">
+    α=1.0, β=0.5
+  </text>
+  
+  <!-- Results -->
+  <rect x="150" y="520" width="200" height="80" rx="10" fill="url(#grad4)" stroke="#27ae60" stroke-width="2"/>
+  <text x="250" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Enhanced Understanding
+  </text>
+  <text x="250" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Linear Probing: 21% → 55%
+  </text>
+  <text x="250" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Improved Attention Maps
+  </text>
+  
+  <rect x="400" y="520" width="200" height="80" rx="10" fill="url(#grad3)" stroke="#3498db" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Better Generation
+  </text>
+  <text x="500" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    FID: 42-49% improvement
+  </text>
+  <text x="500" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    Maintains AR sampling
+  </text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="700" y="650" width="250" height="120" rx="10" fill="#f8f9fa" stroke="#6c757d" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="825" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#495057">
+    Key Innovation
+  </text>
+  <text x="825" y="695" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">
+    Self-supervised objectives integrated
+  </text>
+  <text x="825" y="710" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">
+    into next-token prediction
+  </text>
+  <text x="825" y="725" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">
+    No pre-trained models needed
+  </text>
+  <text x="825" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">
+    Preserves AR compatibility
+  </text>
+  
+  <!-- Method Flow Indicators -->
+  <circle cx="375" cy="180" r="4" fill="#34495e"/>
+  <circle cx="240" cy="180" r="4" fill="#34495e"/>
+  <circle cx="490" cy="180" r="4" fill="#34495e"/>
+  <circle cx="710" cy="180" r="4" fill="#34495e"/>
+  
+  <circle cx="110" cy="350" r="4" fill="#34495e"/>
+  <circle cx="260" cy="350" r="4" fill="#34495e"/>
+  <circle cx="410" cy="350" r="4" fill="#34495e"/>
+  <circle cx="560" cy="350" r="4" fill="#34495e"/>
+  <circle cx="740" cy="350" r="4" fill="#34495e"/>
+  
+  <circle cx="250" cy="490" r="4" fill="#34495e"/>
+  <circle cx="500" cy="490" r="4" fill="#34495e"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It integrates self-supervised learning techniques during training">
+                        <div class="quiz-question">1. What is the main innovation of ST-AR framework compared to traditional autoregressive models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger transformer architecture">It uses a larger transformer architecture</div><div class="quiz-choice" data-value="It integrates self-supervised learning techniques during training">It integrates self-supervised learning techniques during training</div><div class="quiz-choice" data-value="It requires pre-trained representation models">It requires pre-trained representation models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Model computation efficiency">
+                        <div class="quiz-question">2. Which of the following is NOT one of the three key limitations addressed by the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Local and conditional dependence">Local and conditional dependence</div><div class="quiz-choice" data-value="Model computation efficiency">Model computation efficiency</div><div class="quiz-choice" data-value="Spatial invariance deficiency">Spatial invariance deficiency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Reduced FID from 19.42 to 9.81">
+                        <div class="quiz-question">3. What improvement did ST-AR achieve for LlamaGen-XL when trained for 50 epochs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Reduced FID from 19.42 to 9.81">Reduced FID from 19.42 to 9.81</div><div class="quiz-choice" data-value="Improved linear probing accuracy by 20%">Improved linear probing accuracy by 20%</div><div class="quiz-choice" data-value="Doubled the model parameters">Doubled the model parameters</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
