@@ -1,0 +1,1071 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-24 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-24 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Reinforcement Learning on Pre-Training Data</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.19249" target="_blank">http://arxiv.org/pdf/2509.19249</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A new training paradigm called Reinforcement Learning on Pre-Training Data (RLPT) for optimizing Large Language Models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous reinforcement learning approaches like RLHF and RLVR that rely on human annotation, this paper proposes using pre-training data directly for reinforcement learning without human feedback.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The growing disparity between computational resource scaling and finite high-quality text data availability that constrains conventional LLM training approaches.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces next-segment reasoning objective with two tasks (Autoregressive Segment Reasoning and Middle Segment Reasoning) that rewards the model for accurately predicting subsequent text segments based on context.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> When applied to Qwen3-4B-Base, RLPT achieved significant improvements across multiple benchmarks (3.0-8.1 points on general domain tasks and 5.3-6.6 points on mathematical reasoning tasks) with favorable scaling behavior.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Reinforcement Learning on Pre-Training Data</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">RLPT: Reinforcement Learning on Pre-Training Data</text>
+  
+  <!-- Data Preparation Phase -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-weight="bold" fill="#1976d2">Data Preparation</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#333">• Web Text Collection</text>
+  <text x="150" y="120" text-anchor="middle" font-size="12" fill="#333">• Deduplication</text>
+  <text x="150" y="135" text-anchor="middle" font-size="12" fill="#333">• PII Masking</text>
+  <text x="150" y="150" text-anchor="middle" font-size="12" fill="#333">• Quality Filtering</text>
+  <text x="150" y="165" text-anchor="middle" font-size="12" fill="#333">• Segmentation</text>
+  
+  <!-- Segmentation Detail -->
+  <rect x="300" y="60" width="180" height="120" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-weight="bold" fill="#f57c00">Text Segmentation</text>
+  <text x="390" y="105" text-anchor="middle" font-size="12" fill="#333">Input: Raw Text</text>
+  <text x="390" y="125" text-anchor="middle" font-size="12" fill="#333">Output: (s&lt;i, si, si+1)</text>
+  <text x="390" y="145" text-anchor="middle" font-size="12" fill="#333">Sentence-level segments</text>
+  <text x="390" y="165" text-anchor="middle" font-size="12" fill="#333">using NLTK toolkit</text>
+  
+  <!-- Cold Start Phase -->
+  <rect x="520" y="60" width="180" height="120" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="610" y="85" text-anchor="middle" font-weight="bold" fill="#7b1fa2">Cold-Start SFT</text>
+  <text x="610" y="105" text-anchor="middle" font-size="12" fill="#333">Instruction-following</text>
+  <text x="610" y="120" text-anchor="middle" font-size="12" fill="#333">capability initialization</text>
+  <text x="610" y="135" text-anchor="middle" font-size="12" fill="#333">Batch size: 1024</text>
+  <text x="610" y="150" text-anchor="middle" font-size="12" fill="#333">LR: 2×10⁻⁵</text>
+  <text x="610" y="165" text-anchor="middle" font-size="12" fill="#333">3 epochs</text>
+  
+  <!-- Next-Segment Reasoning Tasks -->
+  <rect x="50" y="220" width="200" height="140" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="150" y="245" text-anchor="middle" font-weight="bold" fill="#388e3c">ASR Task</text>
+  <text x="150" y="265" text-anchor="middle" font-size="12" fill="#333">Autoregressive</text>
+  <text x="150" y="280" text-anchor="middle" font-size="12" fill="#333">Segment Reasoning</text>
+  <text x="150" y="300" text-anchor="middle" font-size="11" fill="#333">Predict si from s&lt;i</text>
+  <text x="150" y="315" text-anchor="middle" font-size="11" fill="#333">Complete next sentence</text>
+  <text x="150" y="330" text-anchor="middle" font-size="11" fill="#333">given context</text>
+  <text x="150" y="345" text-anchor="middle" font-size="11" fill="#333">Aligns with autoregressive generation</text>
+  
+  <rect x="300" y="220" width="200" height="140" rx="10" fill="#fff8e1" stroke="#fbc02d" stroke-width="2"/>
+  <text x="400" y="245" text-anchor="middle" font-weight="bold" fill="#fbc02d">MSR Task</text>
+  <text x="400" y="265" text-anchor="middle" font-size="12" fill="#333">Middle Segment</text>
+  <text x="400" y="280" text-anchor="middle" font-size="12" fill="#333">Reasoning</text>
+  <text x="400" y="300" text-anchor="middle" font-size="11" fill="#333">Predict si from</text>
+  <text x="400" y="315" text-anchor="middle" font-size="11" fill="#333">(s&lt;i, si+1)</text>
+  <text x="400" y="330" text-anchor="middle" font-size="11" fill="#333">Fill masked content</text>
+  <text x="400" y="345" text-anchor="middle" font-size="11" fill="#333">using bidirectional context</text>
+  
+  <!-- Training Process -->
+  <rect x="550" y="220" width="200" height="140" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="650" y="245" text-anchor="middle" font-weight="bold" fill="#c2185b">RL Training</text>
+  <text x="650" y="265" text-anchor="middle" font-size="12" fill="#333">Policy: π_θ</text>
+  <text x="650" y="280" text-anchor="middle" font-size="12" fill="#333">Batch size: 512</text>
+  <text x="650" y="295" text-anchor="middle" font-size="12" fill="#333">8 samples per prompt</text>
+  <text x="650" y="310" text-anchor="middle" font-size="12" fill="#333">Temperature: 1.0</text>
+  <text x="650" y="325" text-anchor="middle" font-size="12" fill="#333">GRPO optimization</text>
+  <text x="650" y="340" text-anchor="middle" font-size="12" fill="#333">LR: 1×10⁻⁶</text>
+  <text x="650" y="355" text-anchor="middle" font-size="12" fill="#333">No KL regularization</text>
+  
+  <!-- Reward Model -->
+  <rect x="200" y="400" width="250" height="120" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="325" y="425" text-anchor="middle" font-weight="bold" fill="#0277bd">Generative Reward Model</text>
+  <text x="325" y="445" text-anchor="middle" font-size="12" fill="#333">Semantic Consistency Check</text>
+  <text x="325" y="465" text-anchor="middle" font-size="12" fill="#333">Predicted vs Reference</text>
+  <text x="325" y="485" text-anchor="middle" font-size="12" fill="#333">Prefix Reward Strategy</text>
+  <text x="325" y="505" text-anchor="middle" font-size="12" fill="#333">Score: 1 (match) / 0 (no match)</text>
+  
+  <!-- Training Objective -->
+  <rect x="500" y="400" width="280" height="120" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="640" y="425" text-anchor="middle" font-weight="bold" fill="#689f38">RLPT Objective</text>
+  <text x="640" y="445" text-anchor="middle" font-size="11" fill="#333">J_RLPT(θ) = E_ASR[r(o,si)] + λE_MSR[r(o,si)]</text>
+  <text x="640" y="465" text-anchor="middle" font-size="12" fill="#333">Interleaved ASR and MSR tasks</text>
+  <text x="640" y="485" text-anchor="middle" font-size="12" fill="#333">λ ∈ (0,1) balances contributions</text>
+  <text x="640" y="505" text-anchor="middle" font-size="12" fill="#333">Self-supervised reward signal</text>
+  
+  <!-- Evaluation -->
+  <rect x="50" y="560" width="180" height="120" rx="10" fill="#fff3e0" stroke="#ff8f00" stroke-width="2"/>
+  <text x="140" y="585" text-anchor="middle" font-weight="bold" fill="#ff8f00">General Domain</text>
+  <text x="140" y="605" text-anchor="middle" font-size="11" fill="#333">MMLU, MMLU-Pro</text>
+  <text x="140" y="620" text-anchor="middle" font-size="11" fill="#333">GPQA-Diamond</text>
+  <text x="140" y="635" text-anchor="middle" font-size="11" fill="#333">KOR-Bench</text>
+  <text x="140" y="650" text-anchor="middle" font-size="11" fill="#333">OlympiadBench</text>
+  <text x="140" y="665" text-anchor="middle" font-size="11" fill="#333">Accuracy metric</text>
+  
+  <rect x="270" y="560" width="180" height="120" rx="10" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="360" y="585" text-anchor="middle" font-weight="bold" fill="#3f51b5">Math Reasoning</text>
+  <text x="360" y="605" text-anchor="middle" font-size="11" fill="#333">MATH-500, AMC23</text>
+  <text x="360" y="620" text-anchor="middle" font-size="11" fill="#333">Minerva Math</text>
+  <text x="360" y="635" text-anchor="middle" font-size="11" fill="#333">AIME24, AIME25</text>
+  <text x="360" y="650" text-anchor="middle" font-size="11" fill="#333">Pass@k metric</text>
+  <text x="360" y="665" text-anchor="middle" font-size="11" fill="#333">n=64, temp=0.6</text>
+  
+  <rect x="490" y="560" width="180" height="120" rx="10" fill="#f3e5f5" stroke="#8e24aa" stroke-width="2"/>
+  <text x="580" y="585" text-anchor="middle" font-weight="bold" fill="#8e24aa">RLVR Extension</text>
+  <text x="580" y="605" text-anchor="middle" font-size="11" fill="#333">RLPT as foundation</text>
+  <text x="580" y="620" text-anchor="middle" font-size="11" fill="#333">for RLVR training</text>
+  <text x="580" y="635" text-anchor="middle" font-size="11" fill="#333">Additional 2.3-3.7</text>
+  <text x="580" y="650" text-anchor="middle" font-size="11" fill="#333">improvements</text>
+  <text x="580" y="665" text-anchor="middle" font-size="11" fill="#333">on AIME benchmarks</text>
+  
+  <rect x="710" y="560" width="180" height="120" rx="10" fill="#e0f2f1" stroke="#00695c" stroke-width="2"/>
+  <text x="800" y="585" text-anchor="middle" font-weight="bold" fill="#00695c">Scaling Properties</text>
+  <text x="800" y="605" text-anchor="middle" font-size="11" fill="#333">Power-law scaling</text>
+  <text x="800" y="620" text-anchor="middle" font-size="11" fill="#333">with training tokens</text>
+  <text x="800" y="635" text-anchor="middle" font-size="11" fill="#333">Favorable scaling trend</text>
+  <text x="800" y="650" text-anchor="middle" font-size="11" fill="#333">Potential for</text>
+  <text x="800" y="665" text-anchor="middle" font-size="11" fill="#333">continued gains</text>
+  
+  <!-- Key Benefits Box -->
+  <rect x="350" y="720" width="300" height="60" rx="10" fill="#fff9c4" stroke="#f57f17" stroke-width="2"/>
+  <text x="500" y="740" text-anchor="middle" font-weight="bold" fill="#f57f17">Key Benefits</text>
+  <text x="500" y="755" text-anchor="middle" font-size="11" fill="#333">• No human annotation required</text>
+  <text x="500" y="770" text-anchor="middle" font-size="11" fill="#333">• Scalable on pre-training data • Enhanced reasoning capabilities</text>
+  
+  <!-- Flow indicators -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="480" y1="120" x2="520" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="150" y1="180" x2="150" y2="220" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="180" x2="400" y2="220" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="250" y1="290" x2="325" y2="400" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="290" x2="500" y2="400" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="325" y1="520" x2="360" y2="560" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="640" y1="520" x2="580" y2="560" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It eliminates the need for human annotation by deriving rewards from pre-training data">
+                        <div class="quiz-question">1. What is the main innovation of RLPT compared to previous reinforcement learning approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses human feedback in a more efficient way">It uses human feedback in a more efficient way</div><div class="quiz-choice" data-value="It eliminates the need for human annotation by deriving rewards from pre-training data">It eliminates the need for human annotation by deriving rewards from pre-training data</div><div class="quiz-choice" data-value="It focuses only on mathematical reasoning tasks">It focuses only on mathematical reasoning tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Terminal Segment Reasoning (TSR)">
+                        <div class="quiz-question">2. Which of the following components is NOT one of the two main tasks in RLPT's next-segment reasoning objective?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Autoregressive Segment Reasoning (ASR)">Autoregressive Segment Reasoning (ASR)</div><div class="quiz-choice" data-value="Middle Segment Reasoning (MSR)">Middle Segment Reasoning (MSR)</div><div class="quiz-choice" data-value="Terminal Segment Reasoning (TSR)">Terminal Segment Reasoning (TSR)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="GPQA-Diamond (8.1 points)">
+                        <div class="quiz-question">3. When RLPT was applied to Qwen3-4B-Base, which benchmark showed the highest absolute improvement?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="MMLU (3.0 points)">MMLU (3.0 points)</div><div class="quiz-choice" data-value="GPQA-Diamond (8.1 points)">GPQA-Diamond (8.1 points)</div><div class="quiz-choice" data-value="AIME24 (6.6 points)">AIME24 (6.6 points)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Do You Need Proprioceptive States in Visuomotor Policies?</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.18644" target="_blank">http://arxiv.org/pdf/2509.18644</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Visuomotor policies for robotic manipulation, investigating whether proprioceptive state inputs are necessary for effective robot control.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on traditional imitation-learning visuomotor policies that use both visual and proprioceptive state inputs; proposes a novel "State-free Policy" that relies solely on visual inputs.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the limitation of state-based policies that overfit to training trajectories and show poor spatial generalization when manipulating objects in new positions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a State-free Policy using relative end-effector action space and dual wide-angle wrist cameras for full task observation, removing proprioceptive state inputs entirely.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved significantly improved spatial generalization (85% success in height generalization vs 0% with state input, 64% in horizontal generalization vs 6%), better data efficiency, and enhanced cross-embodiment adaptation across various robotic manipulation tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Do You Need Proprioceptive States in Visuomotor Policies?</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    State-free Visuomotor Policy Workflow
+  </text>
+  
+  <!-- Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem Identification</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">State input causes overfitting</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">Poor spatial generalization</text>
+  
+  <!-- Key Conditions -->
+  <rect x="300" y="60" width="180" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="390" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Key Conditions</text>
+  <text x="390" y="105" text-anchor="middle" font-size="10" fill="white">1. Relative EEF Action Space</text>
+  <text x="390" y="120" text-anchor="middle" font-size="10" fill="white">2. Full Task Observation</text>
+  
+  <!-- State-free Policy -->
+  <rect x="520" y="60" width="180" height="80" rx="10" fill="#27ae60" opacity="0.8"/>
+  <text x="610" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">State-free Policy</text>
+  <text x="610" y="105" text-anchor="middle" font-size="10" fill="white">Remove proprioceptive states</text>
+  <text x="610" y="120" text-anchor="middle" font-size="10" fill="white">Vision-only input</text>
+  
+  <!-- Benefits -->
+  <rect x="750" y="60" width="200" height="80" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="850" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Benefits</text>
+  <text x="850" y="105" text-anchor="middle" font-size="10" fill="white">Enhanced spatial generalization</text>
+  <text x="850" y="120" text-anchor="middle" font-size="10" fill="white">Better data efficiency</text>
+  
+  <!-- Detailed Components -->
+  
+  <!-- Action Space Analysis -->
+  <rect x="80" y="180" width="160" height="100" rx="8" fill="#f39c12" opacity="0.8"/>
+  <text x="160" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Action Space Analysis</text>
+  <text x="160" y="225" text-anchor="middle" font-size="9" fill="white">• Relative EEF: ✓</text>
+  <text x="160" y="240" text-anchor="middle" font-size="9" fill="white">• Absolute EEF: ✗</text>
+  <text x="160" y="255" text-anchor="middle" font-size="9" fill="white">• Joint-angle: ✗</text>
+  
+  <!-- Camera Configuration -->
+  <rect x="260" y="180" width="160" height="100" rx="8" fill="#1abc9c" opacity="0.8"/>
+  <text x="340" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Camera Setup</text>
+  <text x="340" y="225" text-anchor="middle" font-size="9" fill="white">Dual wide-angle</text>
+  <text x="340" y="240" text-anchor="middle" font-size="9" fill="white">wrist cameras</text>
+  <text x="340" y="255" text-anchor="middle" font-size="9" fill="white">120° × 120° FOV</text>
+  
+  <!-- Policy Architecture -->
+  <rect x="440" y="180" width="160" height="100" rx="8" fill="#e67e22" opacity="0.8"/>
+  <text x="520" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Policy Architecture</text>
+  <text x="520" y="225" text-anchor="middle" font-size="9" fill="white">• π₀ Policy</text>
+  <text x="520" y="240" text-anchor="middle" font-size="9" fill="white">• ACT</text>
+  <text x="520" y="255" text-anchor="middle" font-size="9" fill="white">• Diffusion Policy</text>
+  
+  <!-- Evaluation Tasks -->
+  <rect x="620" y="180" width="160" height="100" rx="8" fill="#8e44ad" opacity="0.8"/>
+  <text x="700" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Evaluation Tasks</text>
+  <text x="700" y="225" text-anchor="middle" font-size="9" fill="white">• Pick & Place</text>
+  <text x="700" y="240" text-anchor="middle" font-size="9" fill="white">• Shirt Folding</text>
+  <text x="700" y="255" text-anchor="middle" font-size="9" fill="white">• Whole-body Manipulation</text>
+  
+  <!-- Generalization Testing -->
+  <rect x="150" y="320" width="200" height="80" rx="8" fill="#34495e" opacity="0.8"/>
+  <text x="250" y="345" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Spatial Generalization</text>
+  <text x="250" y="365" text-anchor="middle" font-size="9" fill="white">Height: 0% → 85% success</text>
+  <text x="250" y="380" text-anchor="middle" font-size="9" fill="white">Horizontal: 6% → 64% success</text>
+  
+  <!-- Data Efficiency -->
+  <rect x="400" y="320" width="200" height="80" rx="8" fill="#16a085" opacity="0.8"/>
+  <text x="500" y="345" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Data Efficiency</text>
+  <text x="500" y="365" text-anchor="middle" font-size="9" fill="white">Fewer demonstrations needed</text>
+  <text x="500" y="380" text-anchor="middle" font-size="9" fill="white">Reduced overfitting</text>
+  
+  <!-- Cross-embodiment -->
+  <rect x="650" y="320" width="200" height="80" rx="8" fill="#c0392b" opacity="0.8"/>
+  <text x="750" y="345" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Cross-embodiment</text>
+  <text x="750" y="365" text-anchor="middle" font-size="9" fill="white">Better adaptation</text>
+  <text x="750" y="380" text-anchor="middle" font-size="9" fill="white">No state space alignment</text>
+  
+  <!-- Implementation Details -->
+  <rect x="100" y="450" width="250" height="120" rx="8" fill="#2980b9" opacity="0.7"/>
+  <text x="225" y="475" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Implementation Details</text>
+  <text x="225" y="495" text-anchor="middle" font-size="10" fill="white">• Remove proprioceptive state input</text>
+  <text x="225" y="510" text-anchor="middle" font-size="10" fill="white">• Use relative EEF action space</text>
+  <text x="225" y="525" text-anchor="middle" font-size="10" fill="white">• Deploy dual wide-angle wrist cams</text>
+  <text x="225" y="540" text-anchor="middle" font-size="10" fill="white">• Ensure full task observation</text>
+  <text x="225" y="555" text-anchor="middle" font-size="10" fill="white">• Optional: Remove overhead camera</text>
+  
+  <!-- Results Summary -->
+  <rect x="400" y="450" width="250" height="120" rx="8" fill="#27ae60" opacity="0.7"/>
+  <text x="525" y="475" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Key Results</text>
+  <text x="525" y="495" text-anchor="middle" font-size="10" fill="white">• Maintained in-domain performance</text>
+  <text x="525" y="510" text-anchor="middle" font-size="10" fill="white">• Significant spatial generalization</text>
+  <text x="525" y="525" text-anchor="middle" font-size="10" fill="white">• Improved data efficiency</text>
+  <text x="525" y="540" text-anchor="middle" font-size="10" fill="white">• Better cross-embodiment transfer</text>
+  <text x="525" y="555" text-anchor="middle" font-size="10" fill="white">• Architecture-agnostic benefits</text>
+  
+  <!-- Future Insights -->
+  <rect x="700" y="450" width="250" height="120" rx="8" fill="#e74c3c" opacity="0.7"/>
+  <text x="825" y="475" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Future Insights</text>
+  <text x="825" y="495" text-anchor="middle" font-size="10" fill="white">• Rethink sensor design</text>
+  <text x="825" y="510" text-anchor="middle" font-size="10" fill="white">• Overhead cameras may be harmful</text>
+  <text x="825" y="525" text-anchor="middle" font-size="10" fill="white">• Wrist cameras sufficient</text>
+  <text x="825" y="540" text-anchor="middle" font-size="10" fill="white">• Foundation for generalizable</text>
+  <text x="825" y="555" text-anchor="middle" font-size="10" fill="white">  robotic learning systems</text>
+  
+  <!-- Experimental Validation -->
+  <rect x="200" y="620" width="600" height="100" rx="10" fill="#95a5a6" opacity="0.8"/>
+  <text x="500" y="645" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Experimental Validation</text>
+  <text x="500" y="665" text-anchor="middle" font-size="11" fill="white">Real-world tasks: Pick Pen, Pick Bottle, Put Lid, Fold Shirt, Fetch Bottle</text>
+  <text x="500" y="680" text-anchor="middle" font-size="11" fill="white">Multiple robot embodiments: Dual-arm systems, Whole-body robots</text>
+  <text x="500" y="695" text-anchor="middle" font-size="11" fill="white">Simulation: LIBERO benchmark evaluation</text>
+  <text x="500" y="710" text-anchor="middle" font-size="11" fill="white">Consistent improvements across all architectures and tasks</text>
+  
+  <!-- Flow connections (simplified lines) -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="480" y1="100" x2="520" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="700" y1="100" x2="750" y2="100" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="160" y1="280" x2="160" y2="320" stroke="#34495e" stroke-width="2"/>
+  <line x1="340" y1="280" x2="340" y2="400" stroke="#34495e" stroke-width="2"/>
+  <line x1="520" y1="280" x2="520" y2="400" stroke="#34495e" stroke-width="2"/>
+  <line x1="700" y1="280" x2="700" y2="320" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="350" y1="570" x2="400" y2="620" stroke="#34495e" stroke-width="2"/>
+  <line x1="650" y1="570" x2="600" y2="620" stroke="#34495e" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It actually reduced performance in challenging scenarios">
+                        <div class="quiz-question">1. What was the key finding about the overhead camera in State-free Policies?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It was essential for successful task completion">It was essential for successful task completion</div><div class="quiz-choice" data-value="It actually reduced performance in challenging scenarios">It actually reduced performance in challenging scenarios</div><div class="quiz-choice" data-value="It had no impact on performance either way">It had no impact on performance either way</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Relative end-effector action space">
+                        <div class="quiz-question">2. Which action representation space proved most effective for State-free Policies?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Absolute joint-angle action space">Absolute joint-angle action space</div><div class="quiz-choice" data-value="Relative joint-angle action space">Relative joint-angle action space</div><div class="quiz-choice" data-value="Relative end-effector action space">Relative end-effector action space</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="They enabled better cross-embodiment adaptation between different robots">
+                        <div class="quiz-question">3. What was an unexpected benefit of State-free Policies?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They required more training data than state-based policies">They required more training data than state-based policies</div><div class="quiz-choice" data-value="They enabled better cross-embodiment adaptation between different robots">They enabled better cross-embodiment adaptation between different robots</div><div class="quiz-choice" data-value="They only worked with simple manipulation tasks">They only worked with simple manipulation tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>VolSplat: Rethinking Feed-Forward 3D Gaussian Splatting with
+  Voxel-Aligned Prediction</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.19297" target="_blank">http://arxiv.org/pdf/2509.19297</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Feed-forward 3D Gaussian Splatting for novel view synthesis using voxel-aligned prediction instead of traditional pixel-aligned approaches.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous pixel-aligned Gaussian Splatting methods, proposes a new voxel-aligned paradigm that predicts Gaussians from a 3D voxel grid rather than 2D pixels.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses limitations of pixel-aligned methods including view-dependent density distributions, heavy reliance on input view numbers, and alignment errors in occluded or low-texture regions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a multi-view transformer for feature extraction, constructs 3D voxel features through unprojection, refines them with a sparse 3D U-Net, and predicts Gaussian parameters directly from the voxel grid.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance on RealEstate10K and ScanNet datasets with higher PSNR/SSIM scores while using fewer Gaussians, demonstrating better geometric consistency and efficiency than pixel-aligned methods.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VolSplat: Rethinking Feed-Forward 3D Gaussian Splatting with
+  Voxel-Aligned Prediction</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">VolSplat: Voxel-Aligned Feed-Forward 3D Gaussian Splatting Workflow</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="70" width="150" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Multi-view Input</text>
+  <text x="125" y="110" text-anchor="middle" font-size="10" fill="white">Images {I₁, I₂, ..., Iₙ}</text>
+  <text x="125" y="125" text-anchor="middle" font-size="10" fill="white">Camera Poses {P₁, P₂, ..., Pₙ}</text>
+  
+  <!-- Feature Extraction -->
+  <rect x="250" y="70" width="150" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="325" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">2D Feature Extraction</text>
+  <text x="325" y="110" text-anchor="middle" font-size="10" fill="white">ResNet Backbone</text>
+  <text x="325" y="125" text-anchor="middle" font-size="10" fill="white">Cross-view Attention</text>
+  
+  <!-- Cost Volume Construction -->
+  <rect x="450" y="70" width="150" height="80" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="525" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Cost Volume</text>
+  <text x="525" y="110" text-anchor="middle" font-size="10" fill="white">Plane Sweeping</text>
+  <text x="525" y="125" text-anchor="middle" font-size="10" fill="white">Feature Matching</text>
+  
+  <!-- Depth Prediction -->
+  <rect x="650" y="70" width="150" height="80" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="725" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Depth Prediction</text>
+  <text x="725" y="110" text-anchor="middle" font-size="10" fill="white">Depth Module</text>
+  <text x="725" y="125" text-anchor="middle" font-size="10" fill="white">Per-view Depth Maps</text>
+  
+  <!-- 3D Feature Construction -->
+  <rect x="150" y="200" width="200" height="100" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="250" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">3D Feature Construction</text>
+  <text x="250" y="245" text-anchor="middle" font-size="10" fill="white">Unproject to World Space</text>
+  <text x="250" y="260" text-anchor="middle" font-size="10" fill="white">Voxelization</text>
+  <text x="250" y="275" text-anchor="middle" font-size="10" fill="white">Feature Aggregation</text>
+  <text x="250" y="290" text-anchor="middle" font-size="10" fill="white">V_{i,j,k} = avg(features)</text>
+  
+  <!-- Feature Refinement -->
+  <rect x="450" y="200" width="200" height="100" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="550" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Feature Refinement</text>
+  <text x="550" y="245" text-anchor="middle" font-size="10" fill="white">Sparse 3D U-Net</text>
+  <text x="550" y="260" text-anchor="middle" font-size="10" fill="white">Residual Learning</text>
+  <text x="550" y="275" text-anchor="middle" font-size="10" fill="white">V' = V + R(V)</text>
+  <text x="550" y="290" text-anchor="middle" font-size="10" fill="white">Multi-scale Fusion</text>
+  
+  <!-- Gaussian Prediction -->
+  <rect x="200" y="350" width="200" height="100" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="300" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Voxel-aligned</text>
+  <text x="300" y="390" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Gaussian Prediction</text>
+  <text x="300" y="410" text-anchor="middle" font-size="10" fill="white">Per-voxel Gaussians</text>
+  <text x="300" y="425" text-anchor="middle" font-size="10" fill="white">{μ, α, Σ, c}</text>
+  <text x="300" y="440" text-anchor="middle" font-size="10" fill="white">Adaptive Density</text>
+  
+  <!-- Rendering -->
+  <rect x="500" y="350" width="150" height="100" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="575" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="white">3D Gaussian</text>
+  <text x="575" y="400" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Splatting</text>
+  <text x="575" y="420" text-anchor="middle" font-size="10" fill="white">Novel View</text>
+  <text x="575" y="435" text-anchor="middle" font-size="10" fill="white">Rendering</text>
+  
+  <!-- Output -->
+  <rect x="750" y="350" width="150" height="100" rx="10" fill="#2c3e50" stroke="#1b2631" stroke-width="2"/>
+  <text x="825" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Output</text>
+  <text x="825" y="405" text-anchor="middle" font-size="10" fill="white">Novel View Images</text>
+  <text x="825" y="420" text-anchor="middle" font-size="10" fill="white">3D Reconstruction</text>
+  <text x="825" y="435" text-anchor="middle" font-size="10" fill="white">View-consistent</text>
+  
+  <!-- Loss Function -->
+  <rect x="350" y="500" width="200" height="80" rx="10" fill="#d35400" stroke="#ba4a00" stroke-width="2"/>
+  <text x="450" y="525" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Loss Function</text>
+  <text x="450" y="545" text-anchor="middle" font-size="10" fill="white">L = L_MSE + λ·L_LPIPS</text>
+  <text x="450" y="560" text-anchor="middle" font-size="10" fill="white">Photometric + Perceptual</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="750" y="200" width="200" height="120" rx="10" fill="#17a2b8" stroke="#138496" stroke-width="3" fill-opacity="0.9"/>
+  <text x="850" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Innovation:</text>
+  <text x="850" y="245" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Voxel-aligned vs</text>
+  <text x="850" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Pixel-aligned</text>
+  <text x="850" y="280" text-anchor="middle" font-size="10" fill="white">✓ Multi-view consistency</text>
+  <text x="850" y="295" text-anchor="middle" font-size="10" fill="white">✓ Adaptive density</text>
+  <text x="850" y="310" text-anchor="middle" font-size="10" fill="white">✓ Reduced alignment errors</text>
+  
+  <!-- Flow connections -->
+  <path d="M 200 110 L 250 110" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 110 L 450 110" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 600 110 L 650 110" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 325 150 L 250 200" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 525 150 L 250 200" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 725 150 L 250 200" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 350 250 L 450 250" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 550 300 L 300 350" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 400 L 500 400" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 650 400 L 750 400" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 575 450 L 450 500" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Data flow labels -->
+  <text x="125" y="180" text-anchor="middle" font-size="8" fill="#7f8c8d">2D Features</text>
+  <text x="375" y="180" text-anchor="middle" font-size="8" fill="#7f8c8d">Depth Maps</text>
+  <text x="375" y="330" text-anchor="middle" font-size="8" fill="#7f8c8d">3D Voxel Features</text>
+  <text x="450" y="480" text-anchor="middle" font-size="8" fill="#7f8c8d">Supervision</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It predicts Gaussians from a 3D voxel grid instead of 2D pixels">
+                        <div class="quiz-question">1. What is the key innovation of VolSplat compared to previous feed-forward 3D Gaussian Splatting methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more input camera views">It uses more input camera views</div><div class="quiz-choice" data-value="It predicts Gaussians from a 3D voxel grid instead of 2D pixels">It predicts Gaussians from a 3D voxel grid instead of 2D pixels</div><div class="quiz-choice" data-value="It has a larger neural network architecture">It has a larger neural network architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It adaptively controls Gaussian density based on scene complexity">
+                        <div class="quiz-question">2. According to the experimental results, what advantage does VolSplat demonstrate over pixel-aligned methods when handling scene complexity?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires more Gaussians to represent scenes">It requires more Gaussians to represent scenes</div><div class="quiz-choice" data-value="It only works well for simple scenes">It only works well for simple scenes</div><div class="quiz-choice" data-value="It adaptively controls Gaussian density based on scene complexity">It adaptively controls Gaussian density based on scene complexity</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It maintained significantly better performance than pixel-aligned methods">
+                        <div class="quiz-question">3. When tested on the ACID dataset without fine-tuning (cross-dataset generalization), what characteristic did VolSplat demonstrate?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It completely failed to generalize">It completely failed to generalize</div><div class="quiz-choice" data-value="It showed higher sensitivity to domain shifts">It showed higher sensitivity to domain shifts</div><div class="quiz-choice" data-value="It maintained significantly better performance than pixel-aligned methods">It maintained significantly better performance than pixel-aligned methods</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
