@@ -1,0 +1,1068 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-26 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-26 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>MMR1: Enhancing Multimodal Reasoning with Variance-Aware Sampling and
+  Open Resources</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-25</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.21268" target="_blank">http://arxiv.org/pdf/2509.21268</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on enhancing multimodal reasoning in large language models through improved reinforcement learning techniques and high-quality training data.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Group Relative Policy Optimization (GRPO) for reinforcement learning, the paper proposes a novel Variance-Aware Sampling (VAS) strategy and introduces large-scale curated datasets for multimodal reasoning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses two main limitations in multimodal reasoning models: the lack of high-quality long chain-of-thought data and the instability of reinforcement learning algorithms in post-training due to gradient vanishing.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed VAS, which uses Variance Promotion Score combining outcome variance and trajectory diversity to improve policy optimization, and curated ~1.6M long chain-of-thought data and ~15k RL QA pairs.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieved state-of-the-art performance across mathematical reasoning benchmarks, with the 7B model reaching an average score of 58.4 and demonstrating strong improvements in convergence, stability, and downstream performance.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MMR1: Enhancing Multimodal Reasoning with Variance-Aware Sampling and
+  Open Resources</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    MMR1: Variance-Aware Sampling Framework
+  </text>
+  
+  <!-- Data Curation Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Curation</text>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#34495e">Cold-start: ~1.6M</text>
+  <text x="150" y="120" text-anchor="middle" font-size="11" fill="#34495e">Long CoT Data</text>
+  <text x="150" y="135" text-anchor="middle" font-size="11" fill="#34495e">RL: ~15K QA pairs</text>
+  <text x="150" y="150" text-anchor="middle" font-size="11" fill="#34495e">Math + Logic</text>
+  
+  <!-- Cold-start SFT -->
+  <rect x="300" y="60" width="180" height="120" rx="10" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Cold-start SFT</text>
+  <text x="390" y="105" text-anchor="middle" font-size="11" fill="#34495e">Qwen2.5-VL</text>
+  <text x="390" y="120" text-anchor="middle" font-size="11" fill="#34495e">Long CoT Training</text>
+  <text x="390" y="135" text-anchor="middle" font-size="11" fill="#34495e">5 epochs</text>
+  <text x="390" y="150" text-anchor="middle" font-size="11" fill="#34495e">AdamW optimizer</text>
+  
+  <!-- VAS Framework Core -->
+  <rect x="200" y="220" width="600" height="300" rx="15" fill="#fff5f5" stroke="#e74c3c" stroke-width="3"/>
+  <text x="500" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#e74c3c">
+    Variance-Aware Sampling (VAS) Framework
+  </text>
+  
+  <!-- VPS Components -->
+  <rect x="230" y="270" width="160" height="100" rx="8" fill="#e8f6f3" stroke="#27ae60" stroke-width="2"/>
+  <text x="310" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">OVS</text>
+  <text x="310" y="305" text-anchor="middle" font-size="10" fill="#34495e">Outcome Variance</text>
+  <text x="310" y="320" text-anchor="middle" font-size="10" fill="#34495e">P(x)(1-P(x))</text>
+  <text x="310" y="335" text-anchor="middle" font-size="10" fill="#34495e">Balanced outcomes</text>
+  <text x="310" y="350" text-anchor="middle" font-size="10" fill="#34495e">Max at P=0.5</text>
+  
+  <rect x="420" y="270" width="160" height="100" rx="8" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="500" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">TDS</text>
+  <text x="500" y="305" text-anchor="middle" font-size="10" fill="#34495e">Trajectory Diversity</text>
+  <text x="500" y="320" text-anchor="middle" font-size="10" fill="#34495e">Diversity({yi})</text>
+  <text x="500" y="335" text-anchor="middle" font-size="10" fill="#34495e">Reasoning paths</text>
+  <text x="500" y="350" text-anchor="middle" font-size="10" fill="#34495e">Self-BLEU variance</text>
+  
+  <rect x="610" y="270" width="160" height="100" rx="8" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2"/>
+  <text x="690" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">VPS</text>
+  <text x="690" y="305" text-anchor="middle" font-size="10" fill="#34495e">Combined Score</text>
+  <text x="690" y="320" text-anchor="middle" font-size="10" fill="#34495e">α·OVS + β·TDS</text>
+  <text x="690" y="335" text-anchor="middle" font-size="10" fill="#34495e">α=0.8, β=0.2</text>
+  <text x="690" y="350" text-anchor="middle" font-size="10" fill="#34495e">Guides sampling</text>
+  
+  <!-- Dynamic Sampler -->
+  <rect x="250" y="390" width="200" height="80" rx="8" fill="#eaf2f8" stroke="#2980b9" stroke-width="2"/>
+  <text x="350" y="410" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Dynamic Sampler</text>
+  <text x="350" y="425" text-anchor="middle" font-size="10" fill="#34495e">λ=0.5 mix ratio</text>
+  <text x="350" y="440" text-anchor="middle" font-size="10" fill="#34495e">Weighted + Random</text>
+  <text x="350" y="455" text-anchor="middle" font-size="10" fill="#34495e">Update every T steps</text>
+  
+  <!-- GRPO Training -->
+  <rect x="480" y="390" width="200" height="80" rx="8" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="580" y="410" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">GRPO Training</text>
+  <text x="580" y="425" text-anchor="middle" font-size="10" fill="#34495e">Group normalization</text>
+  <text x="580" y="440" text-anchor="middle" font-size="10" fill="#34495e">Policy optimization</text>
+  <text x="580" y="455" text-anchor="middle" font-size="10" fill="#34495e">Stable gradients</text>
+  
+  <!-- Theoretical Foundation -->
+  <rect x="50" y="550" width="300" height="120" rx="10" fill="#f0f3ff" stroke="#6366f1" stroke-width="2"/>
+  <text x="200" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Theoretical Foundation</text>
+  <text x="200" y="595" text-anchor="middle" font-size="11" fill="#34495e">Variance-Progress Theorem</text>
+  <text x="200" y="610" text-anchor="middle" font-size="11" fill="#34495e">E[J(θ+) - J(θ)] ≥ η·cmin/4·Var[R]</text>
+  <text x="200" y="625" text-anchor="middle" font-size="11" fill="#34495e">Higher variance → Better progress</text>
+  <text x="200" y="640" text-anchor="middle" font-size="11" fill="#34495e">Mitigates gradient vanishing</text>
+  <text x="200" y="655" text-anchor="middle" font-size="11" fill="#34495e">Two-level decomposition</text>
+  
+  <!-- Results -->
+  <rect x="400" y="550" width="300" height="120" rx="10" fill="#f0fff4" stroke="#22c55e" stroke-width="2"/>
+  <text x="550" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Experimental Results</text>
+  <text x="550" y="595" text-anchor="middle" font-size="11" fill="#34495e">MMR1-7B: 58.4 avg score</text>
+  <text x="550" y="610" text-anchor="middle" font-size="11" fill="#34495e">SOTA on multiple benchmarks</text>
+  <text x="550" y="625" text-anchor="middle" font-size="11" fill="#34495e">MathVerse, MathVision</text>
+  <text x="550" y="640" text-anchor="middle" font-size="11" fill="#34495e">LogicVista, ChartQA</text>
+  <text x="550" y="655" text-anchor="middle" font-size="11" fill="#34495e">Stable training dynamics</text>
+  
+  <!-- Open Source -->
+  <rect x="750" y="550" width="200" height="120" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+  <text x="850" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Open Resources</text>
+  <text x="850" y="595" text-anchor="middle" font-size="11" fill="#34495e">Models (3B, 7B)</text>
+  <text x="850" y="610" text-anchor="middle" font-size="11" fill="#34495e">Datasets</text>
+  <text x="850" y="625" text-anchor="middle" font-size="11" fill="#34495e">Training code</text>
+  <text x="850" y="640" text-anchor="middle" font-size="11" fill="#34495e">Reproducible</text>
+  <text x="850" y="655" text-anchor="middle" font-size="11" fill="#34495e">Community baselines</text>
+  
+  <!-- Flow connections -->
+  <path d="M 250 120 L 300 120" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 390 180 L 390 220" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 310 370 L 350 390" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 370 L 500 390" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 690 370 L 630 390" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 470 L 500 550" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Innovation Highlight -->
+  <ellipse cx="500" cx="350" rx="320" ry="160" fill="none" stroke="#e74c3c" stroke-width="3" stroke-dasharray="10,5"/>
+  <text x="500" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="#e74c3c">
+    Core Innovation: VAS mitigates gradient vanishing in GRPO
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Variance-Aware Sampling (VAS) strategy">
+                        <div class="quiz-question">1. What is the main innovation introduced by the paper to address gradient vanishing in reinforcement learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A new type of language model architecture">A new type of language model architecture</div><div class="quiz-choice" data-value="Variance-Aware Sampling (VAS) strategy">Variance-Aware Sampling (VAS) strategy</div><div class="quiz-choice" data-value="Larger training datasets">Larger training datasets</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Outcome variance and trajectory diversity">
+                        <div class="quiz-question">2. The Variance Promotion Score (VPS) in the paper combines which two components?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Input variance and output diversity">Input variance and output diversity</div><div class="quiz-choice" data-value="Model size and training efficiency">Model size and training efficiency</div><div class="quiz-choice" data-value="Outcome variance and trajectory diversity">Outcome variance and trajectory diversity</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="~1.6 million samples">
+                        <div class="quiz-question">3. What was the size of the curated cold-start dataset for training the model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="~15,000 QA pairs">~15,000 QA pairs</div><div class="quiz-choice" data-value="~1.6 million samples">~1.6 million samples</div><div class="quiz-choice" data-value="~500,000 examples">~500,000 examples</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Tree Search for LLM Agent Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-25</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.21240" target="_blank">http://arxiv.org/pdf/2509.21240</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on tree-based reinforcement learning methods for training Large Language Model (LLM) agents, specifically in the domain of multi-turn agent interactions and decision-making.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing chain-based RL approaches for LLMs, the paper proposes a novel tree-based sampling strategy where each node represents a complete agent interaction step, introducing more efficient rollout sampling and finer-grained supervision signals.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses two key challenges in LLM agent RL: heavy budget consumption in rollouts due to multi-turn interactions, and sparse supervision signals in long-horizon trajectories.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop Tree-GRPO (Tree-based Group Relative Policy Optimization), which uses tree search for rollout sampling and estimates grouped relative advantages at both intra-tree and inter-tree levels to provide step-level process supervision signals.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Experiments across 11 datasets and 3 types of QA tasks showed Tree-GRPO consistently outperformed chain-based methods, achieving superior performance while using only a quarter of the rollout budget, with particularly strong improvements for smaller models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Tree Search for LLM Agent Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Tree-GRPO Methodology Flow</text>
+  
+  <!-- Problem Definition Box -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">Sparse supervision &amp;</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">Heavy rollout budget</text>
+  
+  <!-- Tree Search Rollout Box -->
+  <rect x="300" y="60" width="180" height="100" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="390" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Tree Search Rollout</text>
+  <text x="390" y="105" text-anchor="middle" font-size="10" fill="white">Agent Step-Level Nodes</text>
+  <text x="390" y="120" text-anchor="middle" font-size="10" fill="white">(τ, α, o) tuples</text>
+  <text x="390" y="140" text-anchor="middle" font-size="10" fill="white">Share common prefixes</text>
+  
+  <!-- Three Steps -->
+  <rect x="520" y="40" width="150" height="40" rx="5" fill="#27ae60" opacity="0.7"/>
+  <text x="595" y="65" text-anchor="middle" font-size="11" font-weight="bold" fill="white">1. Initialize M Trees</text>
+  
+  <rect x="520" y="90" width="150" height="40" rx="5" fill="#f39c12" opacity="0.7"/>
+  <text x="595" y="115" text-anchor="middle" font-size="11" font-weight="bold" fill="white">2. Sample N Nodes</text>
+  
+  <rect x="520" y="140" width="150" height="40" rx="5" fill="#9b59b6" opacity="0.7"/>
+  <text x="595" y="165" text-anchor="middle" font-size="11" font-weight="bold" fill="white">3. Expand L Times</text>
+  
+  <!-- Tree Structure Visualization -->
+  <g transform="translate(100, 220)">
+    <circle cx="100" cy="0" r="8" fill="#2c3e50"/>
+    <circle cx="60" cy="40" r="8" fill="#34495e"/>
+    <circle cx="140" cy="40" r="8" fill="#34495e"/>
+    <circle cx="40" cy="80" r="8" fill="#7f8c8d"/>
+    <circle cx="80" cy="80" r="8" fill="#7f8c8d"/>
+    <circle cx="120" cy="80" r="8" fill="#7f8c8d"/>
+    <circle cx="160" cy="80" r="8" fill="#7f8c8d"/>
+    
+    <line x1="100" y1="8" x2="60" y2="32" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="100" y1="8" x2="140" y2="32" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="60" y1="48" x2="40" y2="72" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="60" y1="48" x2="80" y2="72" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="140" y1="48" x2="120" y2="72" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="140" y1="48" x2="160" y2="72" stroke="#2c3e50" stroke-width="2"/>
+    
+    <text x="100" y="110" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Tree Structure</text>
+  </g>
+  
+  <!-- Advantage Estimation -->
+  <rect x="350" y="200" width="200" height="120" rx="10" fill="#e67e22" opacity="0.8"/>
+  <text x="450" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Group Relative Advantages</text>
+  <text x="450" y="250" text-anchor="middle" font-size="10" fill="white">Intra-tree: A^intra(H_i)</text>
+  <text x="450" y="270" text-anchor="middle" font-size="10" fill="white">Inter-tree: A^inter(H_i)</text>
+  <text x="450" y="290" text-anchor="middle" font-size="10" fill="white">Combined: A^tree(H_i)</text>
+  <text x="450" y="310" text-anchor="middle" font-size="10" fill="white">= A^intra + A^inter</text>
+  
+  <!-- Process Signal Generation -->
+  <rect x="600" y="200" width="180" height="100" rx="10" fill="#8e44ad" opacity="0.8"/>
+  <text x="690" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Process Signals</text>
+  <text x="690" y="245" text-anchor="middle" font-size="10" fill="white">Step-level preferences</text>
+  <text x="690" y="260" text-anchor="middle" font-size="10" fill="white">from tree structure</text>
+  <text x="690" y="275" text-anchor="middle" font-size="10" fill="white">Varying granularity</text>
+  <text x="690" y="290" text-anchor="middle" font-size="10" fill="white">based on subtree depth</text>
+  
+  <!-- Theoretical Analysis -->
+  <rect x="100" y="380" width="250" height="80" rx="10" fill="#16a085" opacity="0.8"/>
+  <text x="225" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Theoretical Equivalence</text>
+  <text x="225" y="425" text-anchor="middle" font-size="10" fill="white">Intra-tree GRPO ≡ Step-level DPO</text>
+  <text x="225" y="445" text-anchor="middle" font-size="10" fill="white">Same gradient structure, different weights</text>
+  
+  <!-- Policy Optimization -->
+  <rect x="400" y="380" width="200" height="80" rx="10" fill="#c0392b" opacity="0.8"/>
+  <text x="500" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Tree-GRPO Objective</text>
+  <text x="500" y="425" text-anchor="middle" font-size="10" fill="white">J_Tree-GRPO(θ)</text>
+  <text x="500" y="445" text-anchor="middle" font-size="10" fill="white">with clipped importance ratio</text>
+  
+  <!-- Benefits Box -->
+  <rect x="650" y="380" width="200" height="100" rx="10" fill="#2980b9" opacity="0.8"/>
+  <text x="750" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Benefits</text>
+  <text x="750" y="425" text-anchor="middle" font-size="10" fill="white">• 1.5× more rollouts</text>
+  <text x="750" y="440" text-anchor="middle" font-size="10" fill="white">• Finer process supervision</text>
+  <text x="750" y="455" text-anchor="middle" font-size="10" fill="white">• Better performance</text>
+  <text x="750" y="470" text-anchor="middle" font-size="10" fill="white">• Reduced budget</text>
+  
+  <!-- Experimental Results -->
+  <rect x="200" y="520" width="600" height="80" rx="10" fill="#d35400" opacity="0.8"/>
+  <text x="500" y="545" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Experimental Validation</text>
+  <text x="500" y="570" text-anchor="middle" font-size="11" fill="white">11 datasets • 3 task types • Multiple model scales</text>
+  <text x="500" y="585" text-anchor="middle" font-size="11" fill="white">Consistent improvements over chain-based methods</text>
+  
+  <!-- Algorithm Components -->
+  <rect x="100" y="650" width="120" height="60" rx="5" fill="#7f8c8d" opacity="0.7"/>
+  <text x="160" y="675" text-anchor="middle" font-size="10" font-weight="bold" fill="white">ReAct Framework</text>
+  <text x="160" y="690" text-anchor="middle" font-size="9" fill="white">Multi-turn agent</text>
+  
+  <rect x="250" y="650" width="120" height="60" rx="5" fill="#95a5a6" opacity="0.7"/>
+  <text x="310" y="675" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Tool Environment</text>
+  <text x="310" y="690" text-anchor="middle" font-size="9" fill="white">Search APIs</text>
+  
+  <rect x="400" y="650" width="120" height="60" rx="5" fill="#bdc3c7" opacity="0.7"/>
+  <text x="460" y="675" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Reward Model</text>
+  <text x="460" y="690" text-anchor="middle" font-size="9" fill="white">Outcome-based</text>
+  
+  <rect x="550" y="650" width="120" height="60" rx="5" fill="#ecf0f1" opacity="0.7"/>
+  <text x="610" y="675" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Policy Update</text>
+  <text x="610" y="690" text-anchor="middle" font-size="9" fill="black">PPO-style</text>
+  
+  <rect x="700" y="650" width="120" height="60" rx="5" fill="#34495e" opacity="0.7"/>
+  <text x="760" y="675" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Reference Model</text>
+  <text x="760" y="690" text-anchor="middle" font-size="9" fill="white">KL regularization</text>
+  
+  <!-- Flow indicators with curved paths -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Curved connections -->
+  <path d="M 250 100 Q 275 100 300 100" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 480 100 Q 500 100 520 100" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 390 160 Q 390 180 390 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 450 320 Q 450 350 450 380" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 460 Q 500 490 500 520" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables sharing of common prefixes, reducing rollout budget needs">
+                        <div class="quiz-question">1. What is the main advantage of using tree-based sampling over chain-based sampling in LLM agent reinforcement learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It allows for faster model convergence during training">It allows for faster model convergence during training</div><div class="quiz-choice" data-value="It enables sharing of common prefixes, reducing rollout budget needs">It enables sharing of common prefixes, reducing rollout budget needs</div><div class="quiz-choice" data-value="It simplifies the implementation of the reinforcement learning algorithm">It simplifies the implementation of the reinforcement learning algorithm</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="One quarter of the budget">
+                        <div class="quiz-question">2. According to the paper's experiments, how much rollout budget did Tree-GRPO need compared to chain-based methods to achieve better performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Half of the budget">Half of the budget</div><div class="quiz-choice" data-value="One quarter of the budget">One quarter of the budget</div><div class="quiz-choice" data-value="One third of the budget">One third of the budget</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Each node represents a complete agent interaction step (thought-action-observation)">
+                        <div class="quiz-question">3. What unique characteristic of Tree-GRPO's node structure sets it apart from previous tree-search methods in LLM reinforcement learning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Each node represents a complete agent interaction step (thought-action-observation)">Each node represents a complete agent interaction step (thought-action-observation)</div><div class="quiz-choice" data-value="Each node represents individual tokens or sentences">Each node represents individual tokens or sentences</div><div class="quiz-choice" data-value="Each node represents the final reward outcome">Each node represents the final reward outcome</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Hunyuan3D-Omni: A Unified Framework for Controllable Generation of 3D
+  Assets</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-25</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.21245" target="_blank">http://arxiv.org/pdf/2509.21245</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A unified framework for controllable 3D asset generation from images using multiple conditioning signals, in the domain of computer vision and 3D graphics.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Hunyuan3D 2.1 and recent advances in 3D-native generative models, proposing a novel unified framework that integrates multiple control signals (point clouds, voxels, bounding boxes, and skeletons) into a single model.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing 3D generation methods lack fine-grained control and cross-modal capabilities, limiting their practical applications in production workflows.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a unified control encoder that processes multiple types of conditioning signals, combining them with image features in a shared architecture using Diffusion Transformers (DiT) and VAE-based decoding.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Demonstrates improved generation accuracy and control across different conditions: accurate pose alignment for characters, proper scale adjustment with bounding boxes, enhanced geometric detail with point clouds, and better shape fidelity with voxel conditions.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Hunyuan3D-Omni: A Unified Framework for Controllable Generation of 3D
+  Assets</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Hunyuan3D-Omni: Unified Framework for Controllable 3D Generation</text>
+  
+  <!-- Input Image -->
+  <rect x="50" y="80" width="80" height="60" fill="#3498db" rx="5"/>
+  <text x="90" y="115" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Input Image</text>
+  
+  <!-- Control Conditions -->
+  <g id="conditions">
+    <!-- Point Cloud -->
+    <rect x="50" y="170" width="80" height="50" fill="#e74c3c" rx="5"/>
+    <text x="90" y="190" text-anchor="middle" font-size="9" fill="white">Point Cloud</text>
+    <text x="90" y="205" text-anchor="middle" font-size="8" fill="white">P_c ∈ R^(Nc×3)</text>
+    
+    <!-- Voxel -->
+    <rect x="50" y="240" width="80" height="50" fill="#9b59b6" rx="5"/>
+    <text x="90" y="260" text-anchor="middle" font-size="9" fill="white">Voxel</text>
+    <text x="90" y="275" text-anchor="middle" font-size="8" fill="white">16×16×16</text>
+    
+    <!-- Bounding Box -->
+    <rect x="50" y="310" width="80" height="50" fill="#f39c12" rx="5"/>
+    <text x="90" y="330" text-anchor="middle" font-size="9" fill="white">Bounding Box</text>
+    <text x="90" y="345" text-anchor="middle" font-size="8" fill="white">P_box ∈ R^(8×3)</text>
+    
+    <!-- Skeleton -->
+    <rect x="50" y="380" width="80" height="50" fill="#27ae60" rx="5"/>
+    <text x="90" y="400" text-anchor="middle" font-size="9" fill="white">Skeleton</text>
+    <text x="90" y="415" text-anchor="middle" font-size="8" fill="white">P_pose ∈ R^(M×6)</text>
+  </g>
+  
+  <!-- DINO Image Encoder -->
+  <rect x="200" y="80" width="120" height="60" fill="#34495e" rx="5"/>
+  <text x="260" y="105" text-anchor="middle" font-size="12" fill="white" font-weight="bold">DINO-v2</text>
+  <text x="260" y="120" text-anchor="middle" font-size="10" fill="white">Image Encoder</text>
+  
+  <!-- Unified Control Encoder -->
+  <rect x="200" y="200" width="120" height="180" fill="#16a085" rx="5"/>
+  <text x="260" y="220" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Unified Control</text>
+  <text x="260" y="235" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Encoder</text>
+  
+  <!-- Sub-components of Unified Control Encoder -->
+  <rect x="210" y="250" width="100" height="25" fill="#1abc9c" rx="3"/>
+  <text x="260" y="267" text-anchor="middle" font-size="9" fill="white">Position Embedding</text>
+  
+  <rect x="210" y="280" width="100" height="25" fill="#1abc9c" rx="3"/>
+  <text x="260" y="297" text-anchor="middle" font-size="9" fill="white">Task Embedding</text>
+  
+  <rect x="210" y="310" width="100" height="25" fill="#1abc9c" rx="3"/>
+  <text x="260" y="327" text-anchor="middle" font-size="9" fill="white">Linear Projection</text>
+  
+  <rect x="210" y="340" width="100" height="25" fill="#1abc9c" rx="3"/>
+  <text x="260" y="357" text-anchor="middle" font-size="9" fill="white">Feature Concat</text>
+  
+  <!-- Feature Concatenation -->
+  <circle cx="400" cy="200" r="30" fill="#e67e22"/>
+  <text x="400" y="200" text-anchor="middle" font-size="10" fill="white">Concat</text>
+  <text x="400" y="215" text-anchor="middle" font-size="8" fill="white">c' = [c, β_i]</text>
+  
+  <!-- Hunyuan3D DiT -->
+  <rect x="500" y="120" width="150" height="160" fill="#8e44ad" rx="5"/>
+  <text x="575" y="145" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Hunyuan3D DiT</text>
+  
+  <!-- DiT Layers -->
+  <rect x="510" y="160" width="130" height="30" fill="#9b59b6" rx="3"/>
+  <text x="575" y="180" text-anchor="middle" font-size="10" fill="white">Self Attention × 16</text>
+  
+  <rect x="510" y="195" width="130" height="30" fill="#9b59b6" rx="3"/>
+  <text x="575" y="215" text-anchor="middle" font-size="10" fill="white">Cross Attention</text>
+  
+  <rect x="510" y="230" width="130" height="30" fill="#9b59b6" rx="3"/>
+  <text x="575" y="250" text-anchor="middle" font-size="10" fill="white">Transformer × 21</text>
+  
+  <!-- VAE Decoder -->
+  <rect x="720" y="150" width="120" height="100" fill="#c0392b" rx="5"/>
+  <text x="780" y="175" text-anchor="middle" font-size="12" fill="white" font-weight="bold">VAE Decoder</text>
+  <text x="780" y="195" text-anchor="middle" font-size="10" fill="white">F_sdf = D(Z)</text>
+  
+  <!-- Marching Cubes -->
+  <rect x="720" y="270" width="120" height="60" fill="#d35400" rx="5"/>
+  <text x="780" y="295" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Marching Cubes</text>
+  <text x="780" y="310" text-anchor="middle" font-size="10" fill="white">Iso-surface</text>
+  
+  <!-- Output 3D Mesh -->
+  <rect x="720" y="360" width="120" height="60" fill="#2980b9" rx="5"/>
+  <text x="780" y="385" text-anchor="middle" font-size="12" fill="white" font-weight="bold">3D Mesh</text>
+  <text x="780" y="400" text-anchor="middle" font-size="10" fill="white">Output</text>
+  
+  <!-- Training Objective Box -->
+  <rect x="50" y="500" width="800" height="80" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="5"/>
+  <text x="450" y="525" text-anchor="middle" font-size="14" fill="#2c3e50" font-weight="bold">Training Objective</text>
+  <text x="450" y="550" text-anchor="middle" font-size="12" fill="#34495e">E[t,x₀,x₁,c'] ||v_θ(x,t,c') - (x₁ - x₀)||²₂</text>
+  <text x="450" y="570" text-anchor="middle" font-size="10" fill="#7f8c8d">where c' = [c, β_i] is the joint feature</text>
+  
+  <!-- Progressive Sampling Strategy -->
+  <rect x="50" y="600" width="400" height="120" fill="#fff3cd" stroke="#ffeaa7" stroke-width="2" rx="5"/>
+  <text x="250" y="625" text-anchor="middle" font-size="14" fill="#856404" font-weight="bold">Progressive Sampling Strategy</text>
+  <text x="250" y="650" text-anchor="middle" font-size="11" fill="#856404">• One control modality per example</text>
+  <text x="250" y="670" text-anchor="middle" font-size="11" fill="#856404">• Higher probability for harder signals (skeleton)</text>
+  <text x="250" y="690" text-anchor="middle" font-size="11" fill="#856404">• Lower probability for easier signals (point cloud)</text>
+  <text x="250" y="710" text-anchor="middle" font-size="11" fill="#856404">• Robust multi-modal fusion</text>
+  
+  <!-- Key Features -->
+  <rect x="500" y="600" width="400" height="120" fill="#d1ecf1" stroke="#bee5eb" stroke-width="2" rx="5"/>
+  <text x="700" y="625" text-anchor="middle" font-size="14" fill="#0c5460" font-weight="bold">Key Features</text>
+  <text x="700" y="650" text-anchor="middle" font-size="11" fill="#0c5460">• Unified cross-modal architecture</text>
+  <text x="700" y="670" text-anchor="middle" font-size="11" fill="#0c5460">• Fine-grained controllability</text>
+  <text x="700" y="690" text-anchor="middle" font-size="11" fill="#0c5460">• Geometry-aware transformations</text>
+  <text x="700" y="710" text-anchor="middle" font-size="11" fill="#0c5460">• Production workflow robustness</text>
+  
+  <!-- Flow indicators -->
+  <path d="M 130 110 L 200 110" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 130 290 L 200 290" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 320 110 L 370 150" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 320 290 L 370 220" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 430 200 L 500 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 650 200 L 720 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 780 250 L 780 270" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 780 330 L 780 360" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It unifies multiple control signals in a single framework using a shared encoder">
+                        <div class="quiz-question">1. What is the main innovation of Hunyuan3D-Omni compared to previous 3D generation models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a completely new architecture for 3D generation">It uses a completely new architecture for 3D generation</div><div class="quiz-choice" data-value="It unifies multiple control signals in a single framework using a shared encoder">It unifies multiple control signals in a single framework using a shared encoder</div><div class="quiz-choice" data-value="It only focuses on improving image-to-3D generation quality">It only focuses on improving image-to-3D generation quality</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Because pose control data is less abundant and more challenging to learn">
+                        <div class="quiz-question">2. Why is the skeleton condition given higher sampling probability during training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Because skeleton data is more abundant than other conditions">Because skeleton data is more abundant than other conditions</div><div class="quiz-choice" data-value="Because skeleton condition is easier to learn than others">Because skeleton condition is easier to learn than others</div><div class="quiz-choice" data-value="Because pose control data is less abundant and more challenging to learn">Because pose control data is less abundant and more challenging to learn</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It allows control over aspect ratio and prevents overly thin geometry">
+                        <div class="quiz-question">3. Which of the following best describes the bounding box condition's unique contribution?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It helps generate more realistic textures">It helps generate more realistic textures</div><div class="quiz-choice" data-value="It allows control over aspect ratio and prevents overly thin geometry">It allows control over aspect ratio and prevents overly thin geometry</div><div class="quiz-choice" data-value="It improves the resolution of generated 3D models">It improves the resolution of generated 3D models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
