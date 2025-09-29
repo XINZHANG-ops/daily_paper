@@ -1,0 +1,1084 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-09-29 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-09-29 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>LongLive: Real-time Interactive Long Video Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-26</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.22622" target="_blank">http://arxiv.org/pdf/2509.22622</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Real-time interactive long video generation using frame-level autoregressive models for AI-powered video content creation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Built upon diffusion models and autoregressive video generation, introducing new techniques like KV-recache, streaming long tuning, and short window attention with frame sink.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the challenges of generating high-quality long videos efficiently while enabling real-time interactive control through prompt switching.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implemented KV-recache to refresh cached states during prompt switches, streaming long tuning for train-long-test-long alignment, and short window attention with frame sink for faster generation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 20.7 FPS on a single NVIDIA H100 GPU, supported up to 240-second video generation, and outperformed baselines on VBench benchmarks while requiring only 32 GPU-days for training.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LongLive: Real-time Interactive Long Video Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    LONGLIVE: Real-time Interactive Long Video Generation Workflow
+  </text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e8f5e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#27ae60">Sequential User Prompts</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#27ae60">Interactive Input</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#27ae60">Real-time Streaming</text>
+  
+  <!-- Core Framework -->
+  <rect x="320" y="60" width="360" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="3"/>
+  <text x="500" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#1976d2">
+    Frame-level Autoregressive Framework
+  </text>
+  <text x="500" y="105" text-anchor="middle" font-size="13" fill="#1976d2">Causal Attention + KV Caching</text>
+  <text x="500" y="125" text-anchor="middle" font-size="13" fill="#1976d2">1.3B Parameters</text>
+  <text x="500" y="145" text-anchor="middle" font-size="13" fill="#1976d2">832×480 Resolution @ 16 FPS</text>
+  <text x="500" y="165" text-anchor="middle" font-size="13" fill="#1976d2">Up to 240 seconds</text>
+  
+  <!-- Key Method 1: KV Re-cache -->
+  <rect x="50" y="220" width="280" height="100" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="190" y="245" text-anchor="middle" font-size="15" font-weight="bold" fill="#f57c00">
+    KV Re-cache Mechanism
+  </text>
+  <text x="190" y="265" text-anchor="middle" font-size="12" fill="#f57c00">Refreshes cached states with new prompts</text>
+  <text x="190" y="280" text-anchor="middle" font-size="12" fill="#f57c00">Ensures smooth prompt transitions</text>
+  <text x="190" y="295" text-anchor="middle" font-size="12" fill="#f57c00">Maintains visual consistency</text>
+  <text x="190" y="310" text-anchor="middle" font-size="12" fill="#f57c00">Semantic adherence across switches</text>
+  
+  <!-- Key Method 2: Streaming Long Tuning -->
+  <rect x="360" y="220" width="280" height="100" rx="8" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="500" y="245" text-anchor="middle" font-size="15" font-weight="bold" fill="#7b1fa2">
+    Streaming Long Tuning
+  </text>
+  <text x="500" y="265" text-anchor="middle" font-size="12" fill="#7b1fa2">Train-long → Test-long alignment</text>
+  <text x="500" y="280" text-anchor="middle" font-size="12" fill="#7b1fa2">Self-supervised on long sequences</text>
+  <text x="500" y="295" text-anchor="middle" font-size="12" fill="#7b1fa2">Reduces error accumulation</text>
+  <text x="500" y="310" text-anchor="middle" font-size="12" fill="#7b1fa2">32 GPU-days training</text>
+  
+  <!-- Key Method 3: Efficient Inference -->
+  <rect x="670" y="220" width="280" height="100" rx="8" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="810" y="245" text-anchor="middle" font-size="15" font-weight="bold" fill="#388e3c">
+    Efficient Long Inference
+  </text>
+  <text x="810" y="265" text-anchor="middle" font-size="12" fill="#388e3c">Short Window Attention</text>
+  <text x="810" y="280" text-anchor="middle" font-size="12" fill="#388e3c">Frame-level Attention Sink</text>
+  <text x="810" y="295" text-anchor="middle" font-size="12" fill="#388e3c">28% compute reduction</text>
+  <text x="810" y="310" text-anchor="middle" font-size="12" fill="#388e3c">17% memory reduction</text>
+  
+  <!-- Training Process -->
+  <rect x="100" y="360" width="800" height="80" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="500" y="385" text-anchor="middle" font-size="16" font-weight="bold" fill="#c2185b">
+    Training Pipeline
+  </text>
+  <text x="200" y="410" text-anchor="middle" font-size="12" fill="#c2185b">Base Model</text>
+  <text x="200" y="425" text-anchor="middle" font-size="12" fill="#c2185b">Wan2.1-T2V-1.3B</text>
+  
+  <text x="400" y="410" text-anchor="middle" font-size="12" fill="#c2185b">DMD Self-Forcing</text>
+  <text x="400" y="425" text-anchor="middle" font-size="12" fill="#c2185b">Short Clip Adaptation</text>
+  
+  <text x="600" y="410" text-anchor="middle" font-size="12" fill="#c2185b">Long Sequence Training</text>
+  <text x="600" y="425" text-anchor="middle" font-size="12" fill="#c2185b">60s with Prompt Switches</text>
+  
+  <text x="800" y="410" text-anchor="middle" font-size="12" fill="#c2185b">LoRA Fine-tuning</text>
+  <text x="800" y="425" text-anchor="middle" font-size="12" fill="#c2185b">Rank 256, 27% params</text>
+  
+  <!-- Inference Process -->
+  <rect x="100" y="480" width="800" height="80" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="500" y="505" text-anchor="middle" font-size="16" font-weight="bold" fill="#0277bd">
+    Inference Pipeline
+  </text>
+  <text x="200" y="530" text-anchor="middle" font-size="12" fill="#0277bd">Sequential Prompts</text>
+  <text x="200" y="545" text-anchor="middle" font-size="12" fill="#0277bd">User Input Stream</text>
+  
+  <text x="400" y="530" text-anchor="middle" font-size="12" fill="#0277bd">Frame Generation</text>
+  <text x="400" y="545" text-anchor="middle" font-size="12" fill="#0277bd">Causal Rollout</text>
+  
+  <text x="600" y="530" text-anchor="middle" font-size="12" fill="#0277bd">KV Re-cache</text>
+  <text x="600" y="545" text-anchor="middle" font-size="12" fill="#0277bd">At Switch Points</text>
+  
+  <text x="800" y="530" text-anchor="middle" font-size="12" fill="#0277bd">Real-time Output</text>
+  <text x="800" y="545" text-anchor="middle" font-size="12" fill="#0277bd">20.7 FPS</text>
+  
+  <!-- Performance Results -->
+  <rect x="50" y="600" width="200" height="120" rx="8" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="150" y="625" text-anchor="middle" font-size="14" font-weight="bold" fill="#4caf50">Quality</text>
+  <text x="150" y="645" text-anchor="middle" font-size="12" fill="#4caf50">VBench: 84.87</text>
+  <text x="150" y="660" text-anchor="middle" font-size="12" fill="#4caf50">Long Video: 83.52</text>
+  <text x="150" y="675" text-anchor="middle" font-size="12" fill="#4caf50">Interactive: 84.38</text>
+  <text x="150" y="690" text-anchor="middle" font-size="12" fill="#4caf50">Strong Consistency</text>
+  <text x="150" y="705" text-anchor="middle" font-size="12" fill="#4caf50">Smooth Transitions</text>
+  
+  <rect x="280" y="600" width="200" height="120" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="380" y="625" text-anchor="middle" font-size="14" font-weight="bold" fill="#ff9800">Efficiency</text>
+  <text x="380" y="645" text-anchor="middle" font-size="12" fill="#ff9800">20.7 FPS (H100)</text>
+  <text x="380" y="660" text-anchor="middle" font-size="12" fill="#ff9800">41× faster than</text>
+  <text x="380" y="675" text-anchor="middle" font-size="12" fill="#ff9800">SkyReels-V2</text>
+  <text x="380" y="690" text-anchor="middle" font-size="12" fill="#ff9800">Real-time Generation</text>
+  <text x="380" y="705" text-anchor="middle" font-size="12" fill="#ff9800">INT8 Support</text>
+  
+  <rect x="510" y="600" width="200" height="120" rx="8" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="610" y="625" text-anchor="middle" font-size="14" font-weight="bold" fill="#9c27b0">Scalability</text>
+  <text x="610" y="645" text-anchor="middle" font-size="12" fill="#9c27b0">Up to 240 seconds</text>
+  <text x="610" y="660" text-anchor="middle" font-size="12" fill="#9c27b0">Single H100 GPU</text>
+  <text x="610" y="675" text-anchor="middle" font-size="12" fill="#9c27b0">Multiple Switches</text>
+  <text x="610" y="690" text-anchor="middle" font-size="12" fill="#9c27b0">Memory Efficient</text>
+  <text x="610" y="705" text-anchor="middle" font-size="12" fill="#9c27b0">O(W+T+S) complexity</text>
+  
+  <rect x="740" y="600" width="200" height="120" rx="8" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="840" y="625" text-anchor="middle" font-size="14" font-weight="bold" fill="#2196f3">Applications</text>
+  <text x="840" y="645" text-anchor="middle" font-size="12" fill="#2196f3">Interactive Storytelling</text>
+  <text x="840" y="660" text-anchor="middle" font-size="12" fill="#2196f3">Creative Content</text>
+  <text x="840" y="675" text-anchor="middle" font-size="12" fill="#2196f3">Real-time Control</text>
+  <text x="840" y="690" text-anchor="middle" font-size="12" fill="#2196f3">Educational Videos</text>
+  <text x="840" y="705" text-anchor="middle" font-size="12" fill="#2196f3">Cinematic Production</text>
+  
+  <!-- Output -->
+  <rect x="750" y="60" width="200" height="80" rx="10" fill="#ffebee" stroke="#e91e63" stroke-width="2"/>
+  <text x="850" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#e91e63">Long Video Output</text>
+  <text x="850" y="105" text-anchor="middle" font-size="12" fill="#e91e63">Interactive Control</text>
+  <text x="850" y="125" text-anchor="middle" font-size="12" fill="#e91e63">High Quality</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="100" x2="320" y2="120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="680" y1="120" x2="750" y2="100" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="180" x2="190" y2="220" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="180" x2="500" y2="220" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="180" x2="810" y2="220" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="320" x2="500" y2="360" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="440" x2="500" y2="480" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="560" x2="150" y2="600" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="560" x2="380" y2="600" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="560" x2="610" y2="600" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="560" x2="840" y2="600" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Innovation Badge -->
+  <circle cx="500" cy="750" r="40" fill="#ff6b6b" stroke="#fff" stroke-width="3"/>
+  <text x="500" y="745" text-anchor="middle" font-size="12" font-weight="bold" fill="white">KEY</text>
+  <text x="500" y="760" text-anchor="middle" font-size="12" font-weight="bold" fill="white">INNOVATION</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It refreshes cached states by combining previous videos with new prompt embeddings">
+                        <div class="quiz-question">1. What is the main innovation of KV-recache in LONGLIVE compared to traditional KV caching?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It completely discards all previous cached states">It completely discards all previous cached states</div><div class="quiz-choice" data-value="It refreshes cached states by combining previous videos with new prompt embeddings">It refreshes cached states by combining previous videos with new prompt embeddings</div><div class="quiz-choice" data-value="It stores cached states permanently without any updates">It stores cached states permanently without any updates</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="240 seconds">
+                        <div class="quiz-question">2. What is the maximum video length that LONGLIVE can generate on a single H100 GPU?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="60 seconds">60 seconds</div><div class="quiz-choice" data-value="120 seconds">120 seconds</div><div class="quiz-choice" data-value="240 seconds">240 seconds</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By aligning training and inference conditions through long sequence generation">
+                        <div class="quiz-question">3. How does streaming long tuning improve the model's performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using larger batch sizes during training">By using larger batch sizes during training</div><div class="quiz-choice" data-value="By training only on short video clips">By training only on short video clips</div><div class="quiz-choice" data-value="By aligning training and inference conditions through long sequence generation">By aligning training and inference conditions through long sequence generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Quantile Advantage Estimation for Entropy-Safe Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-26</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.22611" target="_blank">http://arxiv.org/pdf/2509.22611</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Reinforcement learning for large language models, specifically focusing on entropy control in language model reasoning tasks.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on value-free RL methods like GRPO and DAPO, proposes a new Quantile Advantage Estimation (QAE) approach that replaces mean-baseline with group-wise K-quantile baseline.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the dual challenge of preventing both entropy collapse (premature convergence) and entropy explosion (uncontrolled exploration) in LLM reinforcement learning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a K-quantile baseline that creates a two-regime gate: reinforcing rare successes on hard queries and targeting remaining failures on easy queries, with theoretical guarantees for entropy safety.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved sustained pass@1 gains on Qwen3-8B/14B-Base across AIME'24/'25 and AMC'23 benchmarks, with roughly 80% of responses receiving zero advantage, demonstrating more efficient credit assignment.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Quantile Advantage Estimation for Entropy-Safe Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    Quantile Advantage Estimation (QAE) for Entropy-Safe Reasoning
+  </text>
+  
+  <!-- Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem Analysis</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">Mean baseline in RLVR causes:</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">• Entropy collapse</text>
+  <text x="150" y="130" text-anchor="middle" font-size="10" fill="white">• Entropy explosion</text>
+  
+  <!-- Core Method -->
+  <rect x="300" y="60" width="200" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">QAE Method</text>
+  <text x="400" y="105" text-anchor="middle" font-size="10" fill="white">Replace mean baseline with</text>
+  <text x="400" y="120" text-anchor="middle" font-size="10" fill="white">K-quantile baseline</text>
+  
+  <!-- Two Regimes -->
+  <rect x="550" y="40" width="180" height="60" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="640" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Hard Queries (p ≤ 1-K)</text>
+  <text x="640" y="75" text-anchor="middle" font-size="9" fill="white">Baseline = 0</text>
+  <text x="640" y="88" text-anchor="middle" font-size="9" fill="white">Reinforce rare successes</text>
+  
+  <rect x="550" y="110" width="180" height="60" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="640" y="130" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Easy Queries (p > 1-K)</text>
+  <text x="640" y="145" text-anchor="middle" font-size="9" fill="white">Baseline = 1</text>
+  <text x="640" y="158" text-anchor="middle" font-size="9" fill="white">Target remaining failures</text>
+  
+  <!-- Advantage Estimation Formula -->
+  <rect x="100" y="200" width="300" height="60" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="250" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Advantage Estimation</text>
+  <text x="250" y="240" text-anchor="middle" font-size="11" fill="white">Â_i = (R_i - Q_K({R_j})) / std({R_j}) + ε</text>
+  
+  <!-- Theoretical Analysis -->
+  <rect x="450" y="200" width="200" height="60" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="550" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Theoretical Guarantee</text>
+  <text x="550" y="240" text-anchor="middle" font-size="10" fill="white">Two-sided entropy safety</text>
+  <text x="550" y="252" text-anchor="middle" font-size="10" fill="white">under first-order updates</text>
+  
+  <!-- Implementation -->
+  <rect x="50" y="300" width="180" height="80" rx="8" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="140" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Implementation</text>
+  <text x="140" y="345" text-anchor="middle" font-size="10" fill="white">• Drop-in replacement</text>
+  <text x="140" y="358" text-anchor="middle" font-size="10" fill="white">• Single parameter K</text>
+  <text x="140" y="371" text-anchor="middle" font-size="10" fill="white">• Compatible with existing</text>
+  
+  <!-- Sparsity Effect -->
+  <rect x="280" y="300" width="180" height="80" rx="8" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="370" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Sparsity Effect</text>
+  <text x="370" y="345" text-anchor="middle" font-size="10" fill="white">~80% responses get</text>
+  <text x="370" y="358" text-anchor="middle" font-size="10" fill="white">zero advantage</text>
+  <text x="370" y="371" text-anchor="middle" font-size="10" fill="white">Focus on informative samples</text>
+  
+  <!-- Entropy Control -->
+  <rect x="510" y="300" width="180" height="80" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="600" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Entropy Control</text>
+  <text x="600" y="345" text-anchor="middle" font-size="10" fill="white">• Prevents explosion</text>
+  <text x="600" y="358" text-anchor="middle" font-size="10" fill="white">• Prevents collapse</text>
+  <text x="600" y="371" text-anchor="middle" font-size="10" fill="white">• Stable training</text>
+  
+  <!-- Experimental Results -->
+  <rect x="150" y="420" width="250" height="80" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="275" y="445" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Experimental Results</text>
+  <text x="275" y="465" text-anchor="middle" font-size="10" fill="white">• Consistent pass@1 improvements</text>
+  <text x="275" y="478" text-anchor="middle" font-size="10" fill="white">• Stable across model sizes</text>
+  <text x="275" y="491" text-anchor="middle" font-size="10" fill="white">• AIME'24/'25, AMC'23 benchmarks</text>
+  
+  <!-- Model Compatibility -->
+  <rect x="450" y="420" width="200" height="80" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="550" y="445" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Model Compatibility</text>
+  <text x="550" y="465" text-anchor="middle" font-size="10" fill="white">• Qwen3-8B/14B/30B</text>
+  <text x="550" y="478" text-anchor="middle" font-size="10" fill="white">• DAPO, GSPO, CLIP-COV</text>
+  <text x="550" y="491" text-anchor="middle" font-size="10" fill="white">• KL-COV methods</text>
+  
+  <!-- Key Innovation -->
+  <rect x="200" y="540" width="300" height="60" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="3"/>
+  <text x="350" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Innovation</text>
+  <text x="350" y="585" text-anchor="middle" font-size="12" fill="white">Baseline design as entropy control mechanism</text>
+  
+  <!-- Benefits -->
+  <rect x="50" y="640" width="150" height="60" rx="8" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="125" y="660" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Benefits</text>
+  <text x="125" y="675" text-anchor="middle" font-size="9" fill="white">• Stable entropy</text>
+  <text x="125" y="688" text-anchor="middle" font-size="9" fill="white">• Better sample efficiency</text>
+  
+  <rect x="220" y="640" width="150" height="60" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="295" y="660" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Scalability</text>
+  <text x="295" y="675" text-anchor="middle" font-size="9" fill="white">• Cross-model sizes</text>
+  <text x="295" y="688" text-anchor="middle" font-size="9" fill="white">• Multiple algorithms</text>
+  
+  <rect x="390" y="640" width="150" height="60" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="465" y="660" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Performance</text>
+  <text x="465" y="675" text-anchor="middle" font-size="9" fill="white">• Sustained gains</text>
+  <text x="465" y="688" text-anchor="middle" font-size="9" fill="white">• No plateau</text>
+  
+  <rect x="560" y="640" width="150" height="60" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="635" y="660" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Simplicity</text>
+  <text x="635" y="675" text-anchor="middle" font-size="9" fill="white">• One-line change</text>
+  <text x="635" y="688" text-anchor="middle" font-size="9" fill="white">• Single parameter K</text>
+  
+  <!-- Connecting lines with flow -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="100" x2="550" y2="75" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="100" x2="550" y2="140" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="140" x2="250" y2="200" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="140" x2="550" y2="200" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="250" y1="260" x2="140" y2="300" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="250" y1="260" x2="370" y2="300" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="550" y1="260" x2="600" y2="300" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="275" y1="380" x2="275" y2="420" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="550" y1="380" x2="550" y2="420" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="350" y1="500" x2="350" y2="540" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It replaces the mean baseline with a K-quantile baseline">
+                        <div class="quiz-question">1. What is the main innovation of QAE compared to previous methods like GRPO and DAPO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It introduces a new token-level clipping mechanism">It introduces a new token-level clipping mechanism</div><div class="quiz-choice" data-value="It replaces the mean baseline with a K-quantile baseline">It replaces the mean baseline with a K-quantile baseline</div><div class="quiz-choice" data-value="It adds a new entropy regularization term">It adds a new entropy regularization term</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="About 80% of responses received zero advantage">
+                        <div class="quiz-question">2. What interesting empirical observation did the authors make about QAE's efficiency?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It reduced training time by 50%">It reduced training time by 50%</div><div class="quiz-choice" data-value="It required twice the computing resources">It required twice the computing resources</div><div class="quiz-choice" data-value="About 80% of responses received zero advantage">About 80% of responses received zero advantage</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It reinforces rare successes on hard queries and targets remaining failures on easy ones">
+                        <div class="quiz-question">3. How does QAE handle different difficulty levels of queries?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It treats all queries the same way regardless of difficulty">It treats all queries the same way regardless of difficulty</div><div class="quiz-choice" data-value="It reinforces rare successes on hard queries and targets remaining failures on easy ones">It reinforces rare successes on hard queries and targets remaining failures on easy ones</div><div class="quiz-choice" data-value="It only focuses on easy queries to maximize performance">It only focuses on easy queries to maximize performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>EPO: Entropy-regularized Policy Optimization for LLM Agents
+  Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-09-26</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2509.22576" target="_blank">http://arxiv.org/pdf/2509.22576</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Training large language model (LLM) agents in multi-turn environments using reinforcement learning, focusing on entropy-regularized policy optimization.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on traditional reinforcement learning approaches like PPO and GRPO; proposes a new framework called EPO that introduces entropy smoothing regularization and adaptive phase-based weighting.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the "exploration-exploitation cascade failure" in multi-turn environments with sparse rewards, where agents either commit to flawed strategies too early or engage in chaotic exploration that destabilizes training.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements three mechanisms: entropy regularization across multi-turn settings, entropy smoothing regularizer to prevent abrupt fluctuations, and adaptive phase-based weighting to balance exploration and exploitation throughout training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved up to 152% performance improvement on ScienceWorld and 19.8% on ALFWorld benchmarks compared to baselines, with significantly more stable training dynamics and better generalization to unseen tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>EPO: Entropy-regularized Policy Optimization for LLM Agents
+  Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">EPO: Entropy-regularized Policy Optimization Workflow</text>
+  
+  <!-- Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem Identification</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">Exploration-Exploitation</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">Cascade Failure</text>
+  
+  <!-- Multi-turn Environment -->
+  <rect x="300" y="60" width="180" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Multi-turn Environment</text>
+  <text x="390" y="105" text-anchor="middle" font-size="10" fill="white">30+ turns per episode</text>
+  <text x="390" y="120" text-anchor="middle" font-size="10" fill="white">Sparse rewards</text>
+  
+  <!-- Baseline Methods -->
+  <rect x="520" y="60" width="180" height="80" rx="10" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="610" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Baseline Methods</text>
+  <text x="610" y="105" text-anchor="middle" font-size="10" fill="white">PPO, GRPO</text>
+  <text x="610" y="120" text-anchor="middle" font-size="10" fill="white">Standard RL approaches</text>
+  
+  <!-- EPO Framework -->
+  <rect x="350" y="180" width="300" height="60" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="3"/>
+  <text x="500" y="205" text-anchor="middle" font-size="16" font-weight="bold" fill="white">EPO Framework</text>
+  <text x="500" y="225" text-anchor="middle" font-size="12" fill="white">Entropy-regularized Policy Optimization</text>
+  
+  <!-- Three Components -->
+  <!-- Component 1 -->
+  <rect x="50" y="300" width="250" height="100" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="175" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Component 1:</text>
+  <text x="175" y="345" text-anchor="middle" font-size="11" fill="white">Entropy Regularization</text>
+  <text x="175" y="365" text-anchor="middle" font-size="10" fill="white">Multi-turn entropy computation</text>
+  <text x="175" y="380" text-anchor="middle" font-size="10" fill="white">L_H(θ) = average entropy</text>
+  <text x="175" y="395" text-anchor="middle" font-size="10" fill="white">across trajectories</text>
+  
+  <!-- Component 2 -->
+  <rect x="375" y="300" width="250" height="100" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="500" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Component 2:</text>
+  <text x="500" y="345" text-anchor="middle" font-size="11" fill="white">Entropy Smoothing</text>
+  <text x="500" y="365" text-anchor="middle" font-size="10" fill="white">Historical entropy bounds</text>
+  <text x="500" y="380" text-anchor="middle" font-size="10" fill="white">L_smooth(θ) with penalty</text>
+  <text x="500" y="395" text-anchor="middle" font-size="10" fill="white">for deviations</text>
+  
+  <!-- Component 3 -->
+  <rect x="700" y="300" width="250" height="100" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="825" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Component 3:</text>
+  <text x="825" y="345" text-anchor="middle" font-size="11" fill="white">Adaptive Weighting</text>
+  <text x="825" y="365" text-anchor="middle" font-size="10" fill="white">Dynamic coefficient β_k</text>
+  <text x="825" y="380" text-anchor="middle" font-size="10" fill="white">Phase-based balancing</text>
+  <text x="825" y="395" text-anchor="middle" font-size="10" fill="white">exploration-exploitation</text>
+  
+  <!-- EPO Loss Function -->
+  <rect x="200" y="450" width="600" height="80" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="500" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="white">EPO Loss Function</text>
+  <text x="500" y="500" text-anchor="middle" font-size="12" fill="white">L_EPO(θ) = L_MT(θ) - λ[L_H(θ) - β_k L_smooth(θ)]</text>
+  <text x="500" y="515" text-anchor="middle" font-size="10" fill="#ecf0f1">Multi-turn loss + Entropy regularization + Smoothing penalty</text>
+  
+  <!-- Training Process -->
+  <rect x="100" y="570" width="200" height="80" rx="10" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="200" y="595" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Training Process</text>
+  <text x="200" y="615" text-anchor="middle" font-size="10" fill="white">Collect trajectories</text>
+  <text x="200" y="630" text-anchor="middle" font-size="10" fill="white">Update entropy history</text>
+  <text x="200" y="645" text-anchor="middle" font-size="10" fill="white">Optimize EPO loss</text>
+  
+  <!-- Evaluation -->
+  <rect x="400" y="570" width="200" height="80" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="500" y="595" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Evaluation</text>
+  <text x="500" y="615" text-anchor="middle" font-size="10" fill="white">ScienceWorld</text>
+  <text x="500" y="630" text-anchor="middle" font-size="10" fill="white">ALFWorld</text>
+  <text x="500" y="645" text-anchor="middle" font-size="10" fill="white">IID/OOD performance</text>
+  
+  <!-- Results -->
+  <rect x="700" y="570" width="200" height="80" rx="10" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="800" y="595" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Results</text>
+  <text x="800" y="615" text-anchor="middle" font-size="10" fill="white">Up to 152% improvement</text>
+  <text x="800" y="630" text-anchor="middle" font-size="10" fill="white">Stable training dynamics</text>
+  <text x="800" y="645" text-anchor="middle" font-size="10" fill="white">Better convergence</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 150 140 Q 200 160 350 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 390 140 Q 450 160 500 180" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 610 140 Q 580 160 550 180" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 450 240 Q 350 270 175 300" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 240 L 500 300" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 550 240 Q 650 270 825 300" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 175 400 Q 250 425 350 470" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 400 L 500 450" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 825 400 Q 750 425 650 470" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 350 510 Q 275 540 200 570" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 530 L 500 570" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 650 510 Q 725 540 800 570" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Key insight box -->
+  <rect x="750" y="60" width="200" height="80" rx="10" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
+  <text x="850" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Key Insight</text>
+  <text x="850" y="105" text-anchor="middle" font-size="10" fill="#2c3e50">Standard entropy methods</text>
+  <text x="850" y="120" text-anchor="middle" font-size="10" fill="#2c3e50">fail in multi-turn settings</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Exploration-exploitation cascade failure">
+                        <div class="quiz-question">1. What is the main challenge that EPO addresses in multi-turn LLM agent training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High computational costs of training">High computational costs of training</div><div class="quiz-choice" data-value="Exploration-exploitation cascade failure">Exploration-exploitation cascade failure</div><div class="quiz-choice" data-value="Memory limitations in language models">Memory limitations in language models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="152% improvement on ScienceWorld">
+                        <div class="quiz-question">2. In the experimental results, what was the most significant performance improvement achieved by EPO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="19.8% improvement on ALFWorld">19.8% improvement on ALFWorld</div><div class="quiz-choice" data-value="152% improvement on ScienceWorld">152% improvement on ScienceWorld</div><div class="quiz-choice" data-value="50% improvement on both benchmarks">50% improvement on both benchmarks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Entropy smoothing regularizer with historical bounds">
+                        <div class="quiz-question">3. Which component of EPO helps prevent uncontrolled entropy growth in early training stages?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Adaptive phase-based weighting">Adaptive phase-based weighting</div><div class="quiz-choice" data-value="Multi-turn entropy regularization">Multi-turn entropy regularization</div><div class="quiz-choice" data-value="Entropy smoothing regularizer with historical bounds">Entropy smoothing regularizer with historical bounds</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
