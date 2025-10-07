@@ -1,0 +1,1082 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-10-07 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-10-07 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Paper2Video: Automatic Video Generation from Scientific Papers</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-06</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.05096" target="_blank">http://arxiv.org/pdf/2510.05096</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Automatic generation of academic presentation videos from research papers using AI agents, in the domain of computer vision and AI for research.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on prior work in slide generation and video synthesis, proposing the first comprehensive framework to generate complete academic presentations including slides, speech, talking head, and cursor movements.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The highly labor-intensive process of creating academic presentation videos (taking hours to produce 2-10 minute videos), which involves slide design, recording, and editing.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Developed PaperTalker, a multi-agent framework that integrates slide generation with layout refinement, subtitling, speech synthesis, cursor grounding, and talking-head rendering, while enabling parallel slide-wise generation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The system outperformed human-made presentations by 10% in PresentQuiz accuracy and achieved comparable ratings in user studies, evaluated using a new benchmark (Paper2Video) with 101 paired papers and presentations and four novel metrics (Meta Similarity, PresentArena, PresentQuiz, IP Memory).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Paper2Video: Automatic Video Generation from Scientific Papers</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Paper2Video: Automatic Video Generation from Scientific Papers</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="60" width="150" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Input Paper</text>
+  <text x="125" y="100" text-anchor="middle" font-size="10" fill="white">LaTeX Project</text>
+  <text x="125" y="115" text-anchor="middle" font-size="10" fill="white">Author Portrait</text>
+  <text x="125" y="130" text-anchor="middle" font-size="10" fill="white">Voice Sample</text>
+  
+  <!-- PaperTalker Framework -->
+  <rect x="250" y="60" width="500" height="500" rx="15" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+  <text x="500" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">PaperTalker Multi-Agent Framework</text>
+  
+  <!-- Module 1: Slide Builder -->
+  <rect x="270" y="100" width="220" height="100" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="380" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">1. Slide Builder</text>
+  <text x="380" y="135" text-anchor="middle" font-size="10" fill="white">LaTeX Beamer Code Generation</text>
+  <text x="380" y="150" text-anchor="middle" font-size="10" fill="white">Focused Debugging</text>
+  <text x="380" y="165" text-anchor="middle" font-size="10" fill="white">Tree Search Visual Choice</text>
+  <text x="380" y="180" text-anchor="middle" font-size="10" fill="white">Layout Refinement</text>
+  
+  <!-- Module 2: Subtitle Builder -->
+  <rect x="510" y="100" width="220" height="100" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="620" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">2. Subtitle Builder</text>
+  <text x="620" y="135" text-anchor="middle" font-size="10" fill="white">VLM-based Subtitling</text>
+  <text x="620" y="150" text-anchor="middle" font-size="10" fill="white">Visual Focus Prompts</text>
+  <text x="620" y="165" text-anchor="middle" font-size="10" fill="white">Sentence-level Analysis</text>
+  
+  <!-- Module 3: Cursor Builder -->
+  <rect x="270" y="220" width="220" height="100" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="380" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="white">3. Cursor Builder</text>
+  <text x="380" y="255" text-anchor="middle" font-size="10" fill="white">GUI Grounding (UI-TARS)</text>
+  <text x="380" y="270" text-anchor="middle" font-size="10" fill="white">WhisperX Temporal Alignment</text>
+  <text x="380" y="285" text-anchor="middle" font-size="10" fill="white">Spatial-Temporal Sync</text>
+  
+  <!-- Module 4: Talker Builder -->
+  <rect x="510" y="220" width="220" height="100" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="620" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="white">4. Talker Builder</text>
+  <text x="620" y="255" text-anchor="middle" font-size="10" fill="white">F5-TTS Speech Synthesis</text>
+  <text x="620" y="270" text-anchor="middle" font-size="10" fill="white">Hallo2 Talking Head</text>
+  <text x="620" y="285" text-anchor="middle" font-size="10" fill="white">Parallel Generation</text>
+  
+  <!-- Parallel Processing -->
+  <rect x="270" y="340" width="460" height="60" rx="8" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="500" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Slide-wise Parallel Generation</text>
+  <text x="500" y="375" text-anchor="middle" font-size="10" fill="white">6× Speedup | O(1) Complexity</text>
+  <text x="500" y="390" text-anchor="middle" font-size="10" fill="white">Independent Slide Processing</text>
+  
+  <!-- Output -->
+  <rect x="270" y="420" width="460" height="120" rx="8" fill="#2c3e50" stroke="#1b2631" stroke-width="2"/>
+  <text x="500" y="445" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Generated Presentation Video</text>
+  <circle cx="350" cy="470" r="8" fill="#e74c3c"/>
+  <text x="365" y="475" font-size="10" fill="white">Academic Slides</text>
+  <circle cx="500" cy="470" r="8" fill="#f39c12"/>
+  <text x="515" y="475" font-size="10" fill="white">Synchronized Subtitles</text>
+  <circle cx="350" cy="495" r="8" fill="#27ae60"/>
+  <text x="365" y="500" font-size="10" fill="white">Cursor Guidance</text>
+  <circle cx="500" cy="495" r="8" fill="#9b59b6"/>
+  <text x="515" y="500" font-size="10" fill="white">Personalized Speaker</text>
+  <circle cx="425" cy="520" r="8" fill="#16a085"/>
+  <text x="440" y="525" font-size="10" fill="white">High-Quality Audio</text>
+  
+  <!-- Paper2Video Benchmark -->
+  <rect x="780" y="60" width="180" height="280" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="870" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Paper2Video Benchmark</text>
+  <text x="870" y="105" text-anchor="middle" font-size="10" fill="white">101 Paper-Video Pairs</text>
+  
+  <!-- Evaluation Metrics -->
+  <rect x="790" y="120" width="160" height="40" rx="5" fill="#e74c3c"/>
+  <text x="870" y="135" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Meta Similarity</text>
+  <text x="870" y="150" text-anchor="middle" font-size="8" fill="white">VLM-based Alignment</text>
+  
+  <rect x="790" y="170" width="160" height="40" rx="5" fill="#f39c12"/>
+  <text x="870" y="185" text-anchor="middle" font-size="10" font-weight="bold" fill="white">PresentArena</text>
+  <text x="870" y="200" text-anchor="middle" font-size="8" fill="white">Pairwise Comparison</text>
+  
+  <rect x="790" y="220" width="160" height="40" rx="5" fill="#27ae60"/>
+  <text x="870" y="235" text-anchor="middle" font-size="10" font-weight="bold" fill="white">PresentQuiz</text>
+  <text x="870" y="250" text-anchor="middle" font-size="8" fill="white">Knowledge Assessment</text>
+  
+  <rect x="790" y="270" width="160" height="40" rx="5" fill="#9b59b6"/>
+  <text x="870" y="285" text-anchor="middle" font-size="10" font-weight="bold" fill="white">IP Memory</text>
+  <text x="870" y="300" text-anchor="middle" font-size="8" fill="white">Author Recognition</text>
+  
+  <!-- Key Innovations -->
+  <rect x="50" y="600" width="900" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="625" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Technical Innovations</text>
+  
+  <circle cx="150" cy="650" r="30" fill="#e74c3c"/>
+  <text x="150" y="655" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Tree Search</text>
+  <text x="150" y="675" text-anchor="middle" font-size="8" fill="#2c3e50">Visual Choice for</text>
+  <text x="150" y="690" text-anchor="middle" font-size="8" fill="#2c3e50">Layout Optimization</text>
+  
+  <circle cx="350" cy="650" r="30" fill="#f39c12"/>
+  <text x="350" y="655" text-anchor="middle" font-size="10" font-weight="bold" fill="white">GUI Grounding</text>
+  <text x="350" y="675" text-anchor="middle" font-size="8" fill="#2c3e50">Spatial-Temporal</text>
+  <text x="350" y="690" text-anchor="middle" font-size="8" fill="#2c3e50">Cursor Alignment</text>
+  
+  <circle cx="550" cy="650" r="30" fill="#27ae60"/>
+  <text x="550" y="655" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Parallel</text>
+  <text x="550" y="675" text-anchor="middle" font-size="8" fill="#2c3e50">Slide-wise</text>
+  <text x="550" y="690" text-anchor="middle" font-size="8" fill="#2c3e50">Generation</text>
+  
+  <circle cx="750" cy="650" r="30" fill="#9b59b6"/>
+  <text x="750" y="655" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Multi-Modal</text>
+  <text x="750" y="675" text-anchor="middle" font-size="8" fill="#2c3e50">Long-Context</text>
+  <text x="750" y="690" text-anchor="middle" font-size="8" fill="#2c3e50">Understanding</text>
+  
+  <!-- Performance Indicators -->
+  <rect x="50" y="740" width="200" height="40" rx="5" fill="#27ae60"/>
+  <text x="150" y="760" text-anchor="middle" font-size="12" font-weight="bold" fill="white">10% Better Quiz Accuracy</text>
+  
+  <rect x="270" y="740" width="200" height="40" rx="5" fill="#3498db"/>
+  <text x="370" y="760" text-anchor="middle" font-size="12" font-weight="bold" fill="white">6× Faster Generation</text>
+  
+  <rect x="490" y="740" width="200" height="40" rx="5" fill="#e74c3c"/>
+  <text x="590" y="760" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Human-Level Quality</text>
+  
+  <rect x="710" y="740" width="200" height="40" rx="5" fill="#f39c12"/>
+  <text x="810" y="760" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Ready-to-Use Output</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Using LaTeX code with tree search visual choice for layout optimization">
+                        <div class="quiz-question">1. What is the key innovation in how PaperTalker handles slide generation compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using XML-based templates and manual editing">Using XML-based templates and manual editing</div><div class="quiz-choice" data-value="Using LaTeX code with tree search visual choice for layout optimization">Using LaTeX code with tree search visual choice for layout optimization</div><div class="quiz-choice" data-value="Using PowerPoint templates with automatic content filling">Using PowerPoint templates with automatic content filling</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By testing if viewers can recall and pose relevant questions about the work later">
+                        <div class="quiz-question">2. How does the Paper2Video benchmark evaluate a presentation video's effectiveness in promoting research visibility?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By counting the number of views and likes">By counting the number of views and likes</div><div class="quiz-choice" data-value="By measuring download statistics of the paper">By measuring download statistics of the paper</div><div class="quiz-choice" data-value="By testing if viewers can recall and pose relevant questions about the work later">By testing if viewers can recall and pose relevant questions about the work later</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Parallelizing generation across slides for 6x speedup">
+                        <div class="quiz-question">3. What unique efficiency improvement does PaperTalker implement in video generation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using cloud computing resources">Using cloud computing resources</div><div class="quiz-choice" data-value="Parallelizing generation across slides for 6x speedup">Parallelizing generation across slides for 6x speedup</div><div class="quiz-choice" data-value="Reducing video quality for faster processing">Reducing video quality for faster processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>VChain: Chain-of-Visual-Thought for Reasoning in Video Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-06</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.05094" target="_blank">http://arxiv.org/pdf/2510.05094</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Video generation with improved reasoning capabilities through chain-of-visual-thought framework.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on recent video generation models and large language/multimodal models, proposing a novel framework called VChain that combines the reasoning capabilities of multimodal models with video generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Current video generation models struggle to produce coherent sequences with logical state transitions and causal relationships, despite having good visual quality.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a three-stage approach: Visual Thought Reasoning (generating key frames using GPT-4), Sparse Inference-Time Tuning (fine-tuning video generator on key frames), and Video Sampling.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> VChain significantly improved video generation quality across multiple metrics including physics, commonsense reasoning, and causal reasoning, achieving up to 62.12% improvement in causal reasoning compared to baselines.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VChain: Chain-of-Visual-Thought for Reasoning in Video Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">VChain: Chain-of-Visual-Thought for Reasoning in Video Generation</text>
+  
+  <!-- Stage 1: Visual Thought Reasoning -->
+  <rect x="50" y="80" width="280" height="220" rx="15" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="190" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Stage 1: Visual Thought Reasoning</text>
+  
+  <!-- GPT-4o Chat -->
+  <rect x="70" y="120" width="100" height="40" rx="8" fill="#74b9ff" stroke="#0984e3"/>
+  <text x="120" y="145" text-anchor="middle" font-size="11" fill="white">GPT-4o Chat</text>
+  
+  <!-- Image Generation -->
+  <rect x="190" y="120" width="120" height="40" rx="8" fill="#fd79a8" stroke="#e84393"/>
+  <text x="250" y="145" text-anchor="middle" font-size="11" fill="white">Image Generation</text>
+  
+  <!-- Perception Loop -->
+  <ellipse cx="120" cy="200" rx="60" ry="25" fill="#55a3ff" stroke="#0984e3"/>
+  <text x="120" y="195" text-anchor="middle" font-size="10" fill="white">Perception</text>
+  <text x="120" y="210" text-anchor="middle" font-size="10" fill="white">& Editing</text>
+  
+  <!-- Chain of Visual Thoughts -->
+  <rect x="200" y="180" width="110" height="50" rx="8" fill="#00b894" stroke="#00a085"/>
+  <text x="255" y="200" text-anchor="middle" font-size="10" fill="white">Chain of</text>
+  <text x="255" y="215" text-anchor="middle" font-size="10" fill="white">Visual Thoughts</text>
+  
+  <!-- Stage 2: Sparse Inference-Time Tuning -->
+  <rect x="380" y="80" width="280" height="220" rx="15" fill="#fff2e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="520" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#d35400">Stage 2: Sparse Inference-Time Tuning</text>
+  
+  <!-- Pre-trained DiT -->
+  <rect x="400" y="130" width="120" height="60" rx="8" fill="#a29bfe" stroke="#6c5ce7"/>
+  <text x="460" y="155" text-anchor="middle" font-size="11" fill="white">Pre-trained</text>
+  <text x="460" y="170" text-anchor="middle" font-size="11" fill="white">DiT Model</text>
+  
+  <!-- LoRA Adaptation -->
+  <rect x="540" y="130" width="100" height="60" rx="8" fill="#fd79a8" stroke="#e84393"/>
+  <text x="590" y="155" text-anchor="middle" font-size="11" fill="white">LoRA</text>
+  <text x="590" y="170" text-anchor="middle" font-size="11" fill="white">Adaptation</text>
+  
+  <!-- Flow Matching Loss -->
+  <rect x="420" y="220" width="160" height="40" rx="8" fill="#fdcb6e" stroke="#e17055"/>
+  <text x="500" y="245" text-anchor="middle" font-size="11" fill="white">Flow Matching Loss</text>
+  
+  <!-- Stage 3: Video Sampling -->
+  <rect x="710" y="80" width="240" height="220" rx="15" fill="#e8f8e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="830" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#229954">Stage 3: Video Sampling</text>
+  
+  <!-- Concatenated Prompt -->
+  <rect x="730" y="130" width="120" height="50" rx="8" fill="#55efc4" stroke="#00b894"/>
+  <text x="790" y="150" text-anchor="middle" font-size="10" fill="#2d3436">Concatenated</text>
+  <text x="790" y="165" text-anchor="middle" font-size="10" fill="#2d3436">Text Prompt</text>
+  
+  <!-- Fine-tuned Model -->
+  <rect x="730" y="200" width="120" height="50" rx="8" fill="#81ecec" stroke="#00cec9"/>
+  <text x="790" y="220" text-anchor="middle" font-size="10" fill="#2d3436">Fine-tuned</text>
+  <text x="790" y="235" text-anchor="middle" font-size="10" fill="#2d3436">Model</text>
+  
+  <!-- Generated Video -->
+  <rect x="870" y="165" width="60" height="60" rx="8" fill="#00b894" stroke="#00a085"/>
+  <text x="900" y="190" text-anchor="middle" font-size="10" fill="white">Generated</text>
+  <text x="900" y="205" text-anchor="middle" font-size="10" fill="white">Video</text>
+  
+  <!-- Data Flow Lines -->
+  <path d="M 330 190 Q 355 190 380 190" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 660 190 Q 685 190 710 190" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Key Components Section -->
+  <rect x="50" y="350" width="900" height="420" rx="15" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="380" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Key Components & Methods</text>
+  
+  <!-- Visual Thought Reasoning Details -->
+  <rect x="80" y="400" width="260" height="160" rx="10" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="210" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">Visual Thought Reasoning</text>
+  
+  <circle cx="110" cy="450" r="5" fill="#ef4444"/>
+  <text x="125" y="455" font-size="11" fill="#374151">GPT-4o infers consequences</text>
+  
+  <circle cx="110" cy="475" r="5" fill="#ef4444"/>
+  <text x="125" y="480" font-size="11" fill="#374151">Generate context frame</text>
+  
+  <circle cx="110" cy="500" r="5" fill="#ef4444"/>
+  <text x="125" y="505" font-size="11" fill="#374151">Iterative perception & editing</text>
+  
+  <circle cx="110" cy="525" r="5" fill="#ef4444"/>
+  <text x="125" y="530" font-size="11" fill="#374151">Create visual keyframes</text>
+  
+  <!-- Sparse Tuning Details -->
+  <rect x="370" y="400" width="260" height="160" rx="10" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="500" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">Sparse Inference-Time Tuning</text>
+  
+  <circle cx="400" cy="450" r="5" fill="#10b981"/>
+  <text x="415" y="455" font-size="11" fill="#374151">Use keyframes as supervision</text>
+  
+  <circle cx="400" cy="475" r="5" fill="#10b981"/>
+  <text x="415" y="480" font-size="11" fill="#374151">LoRA adaptation</text>
+  
+  <circle cx="400" cy="500" r="5" fill="#10b981"/>
+  <text x="415" y="505" font-size="11" fill="#374151">Flow matching objective</text>
+  
+  <circle cx="400" cy="525" r="5" fill="#10b981"/>
+  <text x="415" y="530" font-size="11" fill="#374151">Efficient fine-tuning</text>
+  
+  <!-- Video Generation Details -->
+  <rect x="660" y="400" width="260" height="160" rx="10" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="790" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">Video Generation</text>
+  
+  <circle cx="690" cy="450" r="5" fill="#8b5cf6"/>
+  <text x="705" y="455" font-size="11" fill="#374151">Concatenate textual thoughts</text>
+  
+  <circle cx="690" cy="475" r="5" fill="#8b5cf6"/>
+  <text x="705" y="480" font-size="11" fill="#374151">Sample with fine-tuned model</text>
+  
+  <circle cx="690" cy="500" r="5" fill="#8b5cf6"/>
+  <text x="705" y="505" font-size="11" fill="#374151">Produce coherent video</text>
+  
+  <circle cx="690" cy="525" r="5" fill="#8b5cf6"/>
+  <text x="705" y="530" font-size="11" fill="#374151">Maintain visual quality</text>
+  
+  <!-- Technical Foundation -->
+  <rect x="80" y="590" width="840" height="120" rx="10" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="500" y="615" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">Technical Foundation</text>
+  
+  <!-- Diffusion Models -->
+  <rect x="110" y="635" width="140" height="60" rx="8" fill="#c084fc" stroke="#9333ea"/>
+  <text x="180" y="660" text-anchor="middle" font-size="11" fill="white">Diffusion Models</text>
+  <text x="180" y="675" text-anchor="middle" font-size="10" fill="white">Flow Matching</text>
+  
+  <!-- GPT-4o -->
+  <rect x="280" y="635" width="140" height="60" rx="8" fill="#34d399" stroke="#059669"/>
+  <text x="350" y="660" text-anchor="middle" font-size="11" fill="white">GPT-4o</text>
+  <text x="350" y="675" text-anchor="middle" font-size="10" fill="white">Multimodal LLM</text>
+  
+  <!-- LoRA -->
+  <rect x="450" y="635" width="140" height="60" rx="8" fill="#fb7185" stroke="#e11d48"/>
+  <text x="520" y="660" text-anchor="middle" font-size="11" fill="white">LoRA</text>
+  <text x="520" y="675" text-anchor="middle" font-size="10" fill="white">Low-rank Adaptation</text>
+  
+  <!-- Wan Model -->
+  <rect x="620" y="635" width="140" height="60" rx="8" fill="#60a5fa" stroke="#2563eb"/>
+  <text x="690" y="660" text-anchor="middle" font-size="11" fill="white">Wan Model</text>
+  <text x="690" y="675" text-anchor="middle" font-size="10" fill="white">Video Generator</text>
+  
+  <!-- Benefits Box -->
+  <rect x="80" y="730" width="840" height="40" rx="8" fill="#fef2f2" stroke="#f87171"/>
+  <text x="500" y="750" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">Benefits: Self-contained • Efficient • Effective • No external training data • Minimal overhead</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Lack of coherent causal relationships and logical state transitions">
+                        <div class="quiz-question">1. What is the main limitation that VChain aims to address in current video generation models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Poor visual quality and resolution">Poor visual quality and resolution</div><div class="quiz-choice" data-value="Lack of coherent causal relationships and logical state transitions">Lack of coherent causal relationships and logical state transitions</div><div class="quiz-choice" data-value="Slow processing speed and high computational requirements">Slow processing speed and high computational requirements</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Visual Thought Reasoning">
+                        <div class="quiz-question">2. Which component of VChain is responsible for generating the key frames that guide the video generation process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Sparse Inference-Time Tuning">Sparse Inference-Time Tuning</div><div class="quiz-choice" data-value="Video Sampling">Video Sampling</div><div class="quiz-choice" data-value="Visual Thought Reasoning">Visual Thought Reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The gradual progression of the melting process">
+                        <div class="quiz-question">3. If you want to generate a video of an ice cream melting, which aspect would VChain most likely improve compared to traditional methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The color accuracy of the ice cream">The color accuracy of the ice cream</div><div class="quiz-choice" data-value="The gradual progression of the melting process">The gradual progression of the melting process</div><div class="quiz-choice" data-value="The background scene details">The background scene details</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Imperceptible Jailbreaking against Large Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-06</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.05025" target="_blank">http://arxiv.org/pdf/2510.05025</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores imperceptible jailbreaking attacks against Large Language Models (LLMs) using invisible Unicode variation selector characters.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research focused on visible jailbreak modifications, while this paper introduces a novel approach using invisible Unicode characters for the first time.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses how to create effective jailbreak prompts without any visible modifications to malicious questions, making attacks harder to detect visually.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors propose a chain-of-search pipeline that optimizes invisible variation selector suffixes through multiple rounds of random search, reusing successful components to improve attack effectiveness.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The method achieved high attack success rates (80-100%) against four aligned LLMs while remaining visually indistinguishable from original prompts, and successfully generalized to prompt injection attacks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Imperceptible Jailbreaking against Large Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    Imperceptible Jailbreaking Method Workflow
+  </text>
+  
+  <!-- Step 1: Input -->
+  <rect x="50" y="80" width="200" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Original Malicious</text>
+  <text x="150" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Questions</text>
+  <text x="150" y="150" text-anchor="middle" font-size="12" fill="#7f8c8d">From AdvBench</text>
+  
+  <!-- Step 2: Variation Selectors -->
+  <rect x="300" y="80" width="200" height="80" rx="10" fill="#fef3e2" stroke="#f39c12" stroke-width="2"/>
+  <text x="400" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Unicode Variation</text>
+  <text x="400" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Selectors</text>
+  <text x="400" y="145" text-anchor="middle" font-size="12" fill="#7f8c8d">256 invisible characters</text>
+  
+  <!-- Step 3: Chain-of-Search Pipeline -->
+  <rect x="550" y="80" width="200" height="80" rx="10" fill="#e8f5e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="650" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Chain-of-Search</text>
+  <text x="650" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Pipeline</text>
+  <text x="650" y="145" text-anchor="middle" font-size="12" fill="#7f8c8d">R=5 rounds</text>
+  
+  <!-- Chain-of-Search Details -->
+  <rect x="100" y="220" width="800" height="300" rx="15" fill="#f7f9fc" stroke="#6c5ce7" stroke-width="3"/>
+  <text x="500" y="250" text-anchor="middle" font-size="16" font-weight="bold" fill="#6c5ce7">Chain-of-Search Optimization Process</text>
+  
+  <!-- Initialization -->
+  <ellipse cx="200" cy="300" rx="80" ry="40" fill="#fdcb6e" stroke="#e17055" stroke-width="2"/>
+  <text x="200" y="295" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Initialize</text>
+  <text x="200" y="310" text-anchor="middle" font-size="12" fill="#2c3e50">Random Suffixes</text>
+  
+  <!-- Random Search -->
+  <ellipse cx="400" cy="300" rx="80" ry="40" fill="#81ecec" stroke="#00b894" stroke-width="2"/>
+  <text x="400" y="295" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Random Search</text>
+  <text x="400" y="310" text-anchor="middle" font-size="12" fill="#2c3e50">T=10,000 iterations</text>
+  
+  <!-- Target Token Optimization -->
+  <ellipse cx="600" cy="300" rx="80" ry="40" fill="#fab1a0" stroke="#e84393" stroke-width="2"/>
+  <text x="600" y="295" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Target-Start Token</text>
+  <text x="600" y="310" text-anchor="middle" font-size="12" fill="#2c3e50">Optimization</text>
+  
+  <!-- Success Collection -->
+  <ellipse cx="800" cy="300" rx="80" ry="40" fill="#a29bfe" stroke="#6c5ce7" stroke-width="2"/>
+  <text x="800" y="295" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Collect Successful</text>
+  <text x="800" y="310" text-anchor="middle" font-size="12" fill="#2c3e50">Suffixes & Tokens</text>
+  
+  <!-- Bootstrapping -->
+  <ellipse cx="400" cy="420" rx="100" ry="40" fill="#fd79a8" stroke="#e84393" stroke-width="2"/>
+  <text x="400" y="415" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Bootstrap Process</text>
+  <text x="400" y="430" text-anchor="middle" font-size="12" fill="#2c3e50">Reuse for failed questions</text>
+  
+  <!-- Parameters Box -->
+  <rect x="120" y="360" width="150" height="80" rx="8" fill="#dfe6e9" stroke="#636e72" stroke-width="1"/>
+  <text x="195" y="380" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Parameters:</text>
+  <text x="195" y="395" text-anchor="middle" font-size="10" fill="#2c3e50">L = 800-1200 VS</text>
+  <text x="195" y="408" text-anchor="middle" font-size="10" fill="#2c3e50">M = 10 modifications</text>
+  <text x="195" y="421" text-anchor="middle" font-size="10" fill="#2c3e50">R = 5 rounds</text>
+  <text x="195" y="434" text-anchor="middle" font-size="10" fill="#2c3e50">T = 10K iterations</text>
+  
+  <!-- Output -->
+  <rect x="400" y="570" width="200" height="80" rx="10" fill="#e8f5e8" stroke="#00b894" stroke-width="2"/>
+  <text x="500" y="595" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Imperceptible</text>
+  <text x="500" y="615" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Jailbreak Prompts</text>
+  <text x="500" y="635" text-anchor="middle" font-size="12" fill="#7f8c8d">Visually identical to original</text>
+  
+  <!-- Evaluation -->
+  <rect x="700" y="570" width="150" height="80" rx="10" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2"/>
+  <text x="775" y="595" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Evaluation</text>
+  <text x="775" y="615" text-anchor="middle" font-size="12" fill="#2c3e50">GPT-4 Judge</text>
+  <text x="775" y="630" text-anchor="middle" font-size="12" fill="#2c3e50">ASR Metric</text>
+  
+  <!-- Extension -->
+  <rect x="100" y="700" width="200" height="60" rx="10" fill="#f8d7da" stroke="#dc3545" stroke-width="2"/>
+  <text x="200" y="720" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Extension to</text>
+  <text x="200" y="735" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Prompt Injection</text>
+  <text x="200" y="750" text-anchor="middle" font-size="11" fill="#7f8c8d">Generalization capability</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="400" y="700" width="300" height="60" rx="10" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2"/>
+  <text x="550" y="720" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Key Innovation: Invisible Modifications</text>
+  <text x="550" y="735" text-anchor="middle" font-size="11" fill="#2c3e50">No visible changes to malicious questions</text>
+  <text x="550" y="750" text-anchor="middle" font-size="11" fill="#2c3e50">but different tokenization by LLMs</text>
+  
+  <!-- Results Box -->
+  <rect x="750" y="700" width="150" height="60" rx="10" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="825" y="720" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">High ASR</text>
+  <text x="825" y="735" text-anchor="middle" font-size="11" fill="#2c3e50">80-100% success</text>
+  <text x="825" y="750" text-anchor="middle" font-size="11" fill="#2c3e50">across 4 LLMs</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="120" x2="550" y2="120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="650" y1="160" x2="500" y2="220" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="520" x2="500" y2="570" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="600" y1="610" x2="700" y2="610" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Using Unicode variation selectors as invisible characters">
+                        <div class="quiz-question">1. What is the key innovation of this paper's jailbreaking method compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using Unicode variation selectors as invisible characters">Using Unicode variation selectors as invisible characters</div><div class="quiz-choice" data-value="Applying gradient-based optimization techniques">Applying gradient-based optimization techniques</div><div class="quiz-choice" data-value="Creating longer prompt templates">Creating longer prompt templates</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The successful suffix and target-start tokens are reused as initialization for other cases">
+                        <div class="quiz-question">2. In the chain-of-search pipeline, what happens when a successful jailbreak is found?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The search immediately terminates">The search immediately terminates</div><div class="quiz-choice" data-value="The successful suffix and target-start tokens are reused as initialization for other cases">The successful suffix and target-start tokens are reused as initialization for other cases</div><div class="quiz-choice" data-value="The model is retrained from scratch">The model is retrained from scratch</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It requires a longer suffix length of 1,200 variation selectors while others need 800">
+                        <div class="quiz-question">3. What makes Llama-3.1-Instruct-8B different from other tested models in terms of attack implementation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires a shorter suffix length">It requires a shorter suffix length</div><div class="quiz-choice" data-value="It needs no variation selectors">It needs no variation selectors</div><div class="quiz-choice" data-value="It requires a longer suffix length of 1,200 variation selectors while others need 800">It requires a longer suffix length of 1,200 variation selectors while others need 800</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
