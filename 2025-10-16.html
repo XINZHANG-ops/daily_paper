@@ -1,0 +1,1193 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-10-16 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-10-16 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>FlashWorld: High-quality 3D Scene Generation within Seconds</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.13678" target="_blank">http://arxiv.org/pdf/2510.13678</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents FlashWorld, a generative AI model for creating high-quality 3D scenes from single images or text prompts, operating in the domain of computer vision and 3D graphics generation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous multi-view-oriented and 3D-oriented generation approaches, it proposes a novel hybrid approach combining the strengths of both through dual-mode pre-training and cross-mode post-training distillation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of generating high-quality 3D scenes quickly and efficiently, addressing issues of slow generation times (minutes to hours) and poor visual quality in existing methods.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement a dual-mode training strategy with a video diffusion model backbone, followed by cross-mode distillation where MV-oriented mode serves as teacher and 3D-oriented mode as student, plus leveraging massive single-view images and text prompts for better generalization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model achieves superior visual quality and 3D consistency while being 10-100x faster (generating scenes in seconds) compared to previous methods, demonstrated through extensive experiments on image-to-3D, text-to-3D generation, and WorldScore benchmark evaluations.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>FlashWorld: High-quality 3D Scene Generation within Seconds</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">FlashWorld: High-quality 3D Scene Generation Workflow</text>
+  
+  <!-- Phase 1: Dual-mode Pre-training -->
+  <rect x="50" y="80" width="500" height="280" fill="#e8f4f8" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="300" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">Phase 1: Dual-mode Pre-training</text>
+  
+  <!-- Input Data -->
+  <rect x="70" y="120" width="120" height="60" fill="#ecf0f1" stroke="#34495e" stroke-width="1" rx="5"/>
+  <text x="130" y="140" text-anchor="middle" font-size="12" fill="#2c3e50">Multi-view</text>
+  <text x="130" y="155" text-anchor="middle" font-size="12" fill="#2c3e50">Images X</text>
+  <text x="130" y="170" text-anchor="middle" font-size="12" fill="#2c3e50">Cameras C</text>
+  
+  <!-- Video Diffusion Model -->
+  <rect x="220" y="120" width="120" height="60" fill="#f39c12" stroke="#e67e22" stroke-width="2" rx="5"/>
+  <text x="280" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Video Diffusion</text>
+  <text x="280" y="155" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Model</text>
+  <text x="280" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Initialization</text>
+  
+  <!-- DiT Blocks -->
+  <rect x="370" y="120" width="120" height="60" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="5"/>
+  <text x="430" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">DiT Blocks</text>
+  <text x="430" y="155" text-anchor="middle" font-size="12" font-weight="bold" fill="white">with 3D</text>
+  <text x="430" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Attention</text>
+  
+  <!-- MV-oriented Mode -->
+  <rect x="70" y="200" width="180" height="80" fill="#27ae60" stroke="#229954" stroke-width="2" rx="5"/>
+  <text x="160" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="white">MV-oriented Mode</text>
+  <text x="160" y="240" text-anchor="middle" font-size="11" fill="white">Denoised Multi-view</text>
+  <text x="160" y="255" text-anchor="middle" font-size="11" fill="white">Latents Ẑ_MV</text>
+  <text x="160" y="270" text-anchor="middle" font-size="10" fill="white">L_MV = ||Z - Ẑ_MV||²</text>
+  
+  <!-- 3D-oriented Mode -->
+  <rect x="270" y="200" width="220" height="80" fill="#e74c3c" stroke="#c0392b" stroke-width="2" rx="5"/>
+  <text x="380" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="white">3D-oriented Mode</text>
+  <text x="380" y="240" text-anchor="middle" font-size="11" fill="white">3DGS Decoder → Gaussians</text>
+  <text x="380" y="255" text-anchor="middle" font-size="11" fill="white">Rendering → Novel Views</text>
+  <text x="380" y="270" text-anchor="middle" font-size="10" fill="white">L_3D = ||X_novel - R(G,C_novel)||²</text>
+  
+  <!-- Phase 2: Cross-mode Post-training -->
+  <rect x="650" y="80" width="500" height="350" fill="#fdf2e9" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="900" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#d68910">Phase 2: Cross-mode Post-training</text>
+  
+  <!-- Teacher Model -->
+  <rect x="670" y="120" width="150" height="70" fill="#2ecc71" stroke="#27ae60" stroke-width="2" rx="5"/>
+  <text x="745" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Teacher Model</text>
+  <text x="745" y="155" text-anchor="middle" font-size="11" fill="white">MV-oriented Mode</text>
+  <text x="745" y="170" text-anchor="middle" font-size="11" fill="white">(Frozen μ_real)</text>
+  <text x="745" y="185" text-anchor="middle" font-size="10" fill="white">High Visual Quality</text>
+  
+  <!-- Student Model -->
+  <rect x="850" y="120" width="150" height="70" fill="#e74c3c" stroke="#c0392b" stroke-width="2" rx="5"/>
+  <text x="925" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Student Model</text>
+  <text x="925" y="155" text-anchor="middle" font-size="11" fill="white">3D-oriented Mode</text>
+  <text x="925" y="170" text-anchor="middle" font-size="11" fill="white">Few-step Generator</text>
+  <text x="925" y="185" text-anchor="middle" font-size="10" fill="white">3D Consistency</text>
+  
+  <!-- DMD2 Distillation -->
+  <rect x="670" y="210" width="330" height="70" fill="#8e44ad" stroke="#7d3c98" stroke-width="2" rx="5"/>
+  <text x="835" y="230" text-anchor="middle" font-size="14" font-weight="bold" fill="white">DMD2 Distribution Matching Distillation</text>
+  <text x="835" y="250" text-anchor="middle" font-size="11" fill="white">Real Score (s_real) ← → Fake Score (s_fake)</text>
+  <text x="835" y="265" text-anchor="middle" font-size="11" fill="white">+ GAN Objective + R1 Regularization</text>
+  
+  <!-- Cross-mode Consistency -->
+  <rect x="670" y="300" width="330" height="60" fill="#16a085" stroke="#138d75" stroke-width="2" rx="5"/>
+  <text x="835" y="320" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Cross-mode Consistency Loss</text>
+  <text x="835" y="340" text-anchor="middle" font-size="11" fill="white">L_CMC = ||E(R(G_θ,3D)) - G_θ,MV||²</text>
+  <text x="835" y="355" text-anchor="middle" font-size="10" fill="white">Stabilizes 3D-oriented generation</text>
+  
+  <!-- OOD Training -->
+  <rect x="670" y="380" width="330" height="40" fill="#d35400" stroke="#ba4a00" stroke-width="2" rx="5"/>
+  <text x="835" y="395" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Out-of-Distribution Data Co-training</text>
+  <text x="835" y="410" text-anchor="middle" font-size="11" fill="white">Single-view images + Random camera trajectories</text>
+  
+  <!-- Final Output -->
+  <rect x="400" y="500" width="400" height="100" fill="#1abc9c" stroke="#16a085" stroke-width="3" rx="10"/>
+  <text x="600" y="530" text-anchor="middle" font-size="18" font-weight="bold" fill="white">FlashWorld Output</text>
+  <text x="600" y="550" text-anchor="middle" font-size="14" fill="white">High-quality 3D Gaussian Scene</text>
+  <text x="600" y="570" text-anchor="middle" font-size="12" fill="white">• 3D Consistency • Visual Fidelity</text>
+  <text x="600" y="585" text-anchor="middle" font-size="12" fill="white">• Fast Generation (9 seconds)</text>
+  
+  <!-- Key Features -->
+  <rect x="50" y="650" width="300" height="200" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="10"/>
+  <text x="200" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Innovations</text>
+  <text x="70" y="700" font-size="12" fill="#2c3e50">• Dual-mode pre-training strategy</text>
+  <text x="70" y="720" font-size="12" fill="#2c3e50">• Cross-mode post-training distillation</text>
+  <text x="70" y="740" font-size="12" fill="#2c3e50">• Video diffusion model initialization</text>
+  <text x="70" y="760" font-size="12" fill="#2c3e50">• 3D Gaussian Splatting representation</text>
+  <text x="70" y="780" font-size="12" fill="#2c3e50">• OOD data generalization</text>
+  <text x="70" y="800" font-size="12" fill="#2c3e50">• 24 views at 480P resolution</text>
+  <text x="70" y="820" font-size="12" fill="#2c3e50">• 10-100× faster than baselines</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="400" y="650" width="350" height="200" fill="#fff3cd" stroke="#ffc107" stroke-width="2" rx="10"/>
+  <text x="575" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#856404">Performance Highlights</text>
+  <text x="420" y="700" font-size="12" fill="#856404">Speed: 9 seconds (vs 77 min CAT3D)</text>
+  <text x="420" y="720" font-size="12" fill="#856404">Quality: Superior visual fidelity</text>
+  <text x="420" y="740" font-size="12" fill="#856404">Consistency: Perfect 3D coherence</text>
+  <text x="420" y="760" font-size="12" fill="#856404">Tasks: Image-to-3D + Text-to-3D</text>
+  <text x="420" y="780" font-size="12" fill="#856404">Evaluation: T3Bench, DL3DV, WorldScore</text>
+  <text x="420" y="800" font-size="12" fill="#856404">Architecture: Unified model framework</text>
+  <text x="420" y="820" font-size="12" fill="#856404">Hardware: H20 GPU efficient</text>
+  
+  <!-- Applications -->
+  <rect x="800" y="650" width="350" height="200" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2" rx="10"/>
+  <text x="975" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#0c5460">Applications</text>
+  <text x="820" y="700" font-size="12" fill="#0c5460">• Gaming and Entertainment</text>
+  <text x="820" y="720" font-size="12" fill="#0c5460">• Virtual/Augmented Reality</text>
+  <text x="820" y="740" font-size="12" fill="#0c5460">• Robotics and Simulation</text>
+  <text x="820" y="760" font-size="12" fill="#0c5460">• Content Creation</text>
+  <text x="820" y="780" font-size="12" fill="#0c5460">• Interactive 3D Environments</text>
+  <text x="820" y="800" font-size="12" fill="#0c5460">• Real-time Scene Generation</text>
+  <text x="820" y="820" font-size="12" fill="#0c5460">• Multi-modal Input Support</text>
+  
+  <!-- Connecting lines -->
+  <line x1="190" y1="180" x2="220" y2="150" stroke="#34495e" stroke-width="2"/>
+  <line x1="340" y1="150" x2="370" y2="150" stroke="#34495e" stroke-width="2"/>
+  <line x1="430" y1="180" x2="430" y2="200" stroke="#34495e" stroke-width="2"/>
+  <line x1="550" y1="240" x2="650" y2="240" stroke="#f39c12" stroke-width="3"/>
+  <line x1="835" y1="280" x2="835" y2="300" stroke="#8e44ad" stroke-width="2"/>
+  <line x1="835" y1="360" x2="835" y2="380" stroke="#16a085" stroke-width="2"/>
+  <line x1="835" y1="420" x2="600" y2="500" stroke="#d35400" stroke-width="3"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Combining dual-mode pre-training with cross-mode distillation">
+                        <div class="quiz-question">1. What is the key innovation in FlashWorld's training approach that helps achieve both high quality and speed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using only multi-view oriented generation">Using only multi-view oriented generation</div><div class="quiz-choice" data-value="Combining dual-mode pre-training with cross-mode distillation">Combining dual-mode pre-training with cross-mode distillation</div><div class="quiz-choice" data-value="Relying solely on 3D-oriented generation">Relying solely on 3D-oriented generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="10-100 times faster">
+                        <div class="quiz-question">2. What is the approximate speed improvement achieved by FlashWorld compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="2-5 times faster">2-5 times faster</div><div class="quiz-choice" data-value="10-100 times faster">10-100 times faster</div><div class="quiz-choice" data-value="500-1000 times faster">500-1000 times faster</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="MV-oriented mode">
+                        <div class="quiz-question">3. During the post-training phase, which mode serves as the 'teacher' to improve visual quality?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="3D-oriented mode">3D-oriented mode</div><div class="quiz-choice" data-value="Hybrid mode">Hybrid mode</div><div class="quiz-choice" data-value="MV-oriented mode">MV-oriented mode</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>UniMoE-Audio: Unified Speech and Music Generation with Dynamic-Capacity
+  MoE</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.13344" target="_blank">http://arxiv.org/pdf/2510.13344</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A unified speech and music generation model using dynamic-capacity Mixture-of-Experts (MoE) architecture.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous MoE and audio generation research, proposes novel dynamic expert allocation and hybrid expert design for unified audio generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenges of task conflict and data imbalance in combining speech and music generation into a single model.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a three-stage training curriculum (specialist training, MoE integration, joint training) and dynamic-capacity MoE with Top-P routing strategy.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance on both speech and music generation benchmarks, outperforming specialized models while using significantly less training data.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>UniMoE-Audio: Unified Speech and Music Generation with Dynamic-Capacity
+  MoE</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stage1Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e3f2fd;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#bbdefb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stage2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3e5f5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ce93d8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stage3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8f5e8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a5d6a7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="archGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff3e0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffcc02;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    UniMoE-Audio: Unified Speech and Music Generation Workflow
+  </text>
+  
+  <!-- Data Preparation Section -->
+  <rect x="50" y="80" width="300" height="120" rx="10" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2"/>
+  <text x="200" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2d3436">Data Preparation</text>
+  <text x="70" y="125" font-size="12" fill="#2d3436">• Large-scale imbalanced raw dataset</text>
+  <text x="70" y="145" font-size="12" fill="#2d3436">• Speech: 30K hours (ZhTTS, EnTTS)</text>
+  <text x="70" y="165" font-size="12" fill="#2d3436">• Music: 10K hours (T2M, V2M)</text>
+  <text x="70" y="185" font-size="12" fill="#2d3436">• Balanced dataset: 60K samples (15K each)</text>
+  
+  <!-- Architecture Design -->
+  <rect x="400" y="80" width="350" height="280" rx="10" fill="url(#archGrad)" stroke="#f39c12" stroke-width="3"/>
+  <text x="575" y="105" text-anchor="middle" font-size="16" font-weight="bold" fill="#2d3436">Dynamic-Capacity MoE Architecture</text>
+  
+  <!-- Top-P Routing -->
+  <rect x="420" y="120" width="150" height="80" rx="8" fill="#74b9ff" stroke="#0984e3" stroke-width="2"/>
+  <text x="495" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Top-P Routing</text>
+  <text x="430" y="160" font-size="10" fill="white">Dynamic expert</text>
+  <text x="430" y="175" font-size="10" fill="white">allocation based</text>
+  <text x="430" y="190" font-size="10" fill="white">on complexity</text>
+  
+  <!-- Hybrid Expert Design -->
+  <rect x="580" y="120" width="150" height="80" rx="8" fill="#a29bfe" stroke="#6c5ce7" stroke-width="2"/>
+  <text x="655" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Hybrid Experts</text>
+  <text x="590" y="160" font-size="10" fill="white">• Routed experts</text>
+  <text x="590" y="175" font-size="10" fill="white">• Shared experts</text>
+  <text x="590" y="190" font-size="10" fill="white">• Null experts</text>
+  
+  <!-- Expert Types -->
+  <circle cx="450" cy="250" r="25" fill="#fd79a8" stroke="#e84393" stroke-width="2"/>
+  <text x="450" y="256" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Routed</text>
+  
+  <circle cx="525" cy="250" r="25" fill="#00b894" stroke="#00a085" stroke-width="2"/>
+  <text x="525" y="256" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Shared</text>
+  
+  <circle cx="600" cy="250" r="25" fill="#636e72" stroke="#2d3436" stroke-width="2"/>
+  <text x="600" y="256" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Null</text>
+  
+  <text x="575" y="300" text-anchor="middle" font-size="12" fill="#2d3436">Domain-specific | Common | Adaptive Skip</text>
+  
+  <!-- Training Curriculum -->
+  <text x="600" y="400" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    Three-Stage Training Curriculum
+  </text>
+  
+  <!-- Stage 1: Independent Specialist Training -->
+  <rect x="80" y="430" width="280" height="140" rx="12" fill="url(#stage1Grad)" stroke="#1976d2" stroke-width="3"/>
+  <text x="220" y="455" text-anchor="middle" font-size="14" font-weight="bold" fill="#1565c0">Stage 1: Independent Specialist Training</text>
+  
+  <rect x="100" y="470" width="60" height="40" rx="5" fill="#42a5f5" stroke="#1976d2" stroke-width="1"/>
+  <text x="130" y="492" text-anchor="middle" font-size="10" fill="white">ZhTTS</text>
+  
+  <rect x="170" y="470" width="60" height="40" rx="5" fill="#42a5f5" stroke="#1976d2" stroke-width="1"/>
+  <text x="200" y="492" text-anchor="middle" font-size="10" fill="white">EnTTS</text>
+  
+  <rect x="240" y="470" width="60" height="40" rx="5" fill="#42a5f5" stroke="#1976d2" stroke-width="1"/>
+  <text x="270" y="492" text-anchor="middle" font-size="10" fill="white">T2M</text>
+  
+  <rect x="310" y="470" width="60" height="40" rx="5" fill="#42a5f5" stroke="#1976d2" stroke-width="1"/>
+  <text x="340" y="492" text-anchor="middle" font-size="10" fill="white">V2M</text>
+  
+  <text x="100" y="530" font-size="11" fill="#1565c0">• Train separate dense models (3.1B each)</text>
+  <text x="100" y="545" font-size="11" fill="#1565c0">• Use full imbalanced raw datasets</text>
+  <text x="100" y="560" font-size="11" fill="#1565c0">• Create domain-specific "proto-experts"</text>
+  
+  <!-- Stage 2: MoE Integration and Warmup -->
+  <rect x="400" y="430" width="280" height="140" rx="12" fill="url(#stage2Grad)" stroke="#7b1fa2" stroke-width="3"/>
+  <text x="540" y="455" text-anchor="middle" font-size="14" font-weight="bold" fill="#6a1b9a">Stage 2: MoE Integration & Warmup</text>
+  
+  <rect x="420" y="470" width="80" height="30" rx="5" fill="#ab47bc" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="460" y="488" text-anchor="middle" font-size="10" fill="white">Split FFN → 8 Experts</text>
+  
+  <rect x="510" y="470" width="80" height="30" rx="5" fill="#ab47bc" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="550" y="488" text-anchor="middle" font-size="10" fill="white">Init Gate Module</text>
+  
+  <rect x="600" y="470" width="60" height="30" rx="5" fill="#ab47bc" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="630" y="488" text-anchor="middle" font-size="10" fill="white">Add Shared</text>
+  
+  <text x="420" y="520" font-size="11" fill="#6a1b9a">• Freeze routed experts initially</text>
+  <text x="420" y="535" font-size="11" fill="#6a1b9a">• Train gate + shared experts only</text>
+  <text x="420" y="550" font-size="11" fill="#6a1b9a">• Use balanced dataset subset</text>
+  
+  <!-- Stage 3: Synergistic Joint Training -->
+  <rect x="720" y="430" width="280" height="140" rx="12" fill="url(#stage3Grad)" stroke="#388e3c" stroke-width="3"/>
+  <text x="860" y="455" text-anchor="middle" font-size="14" font-weight="bold" fill="#2e7d32">Stage 3: Synergistic Joint Training</text>
+  
+  <circle cx="780" cy="490" r="20" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/>
+  <text x="780" y="495" text-anchor="middle" font-size="9" fill="white">Unfreeze</text>
+  
+  <circle cx="830" cy="490" r="20" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/>
+  <text x="830" y="495" text-anchor="middle" font-size="9" fill="white">E2E</text>
+  
+  <circle cx="880" cy="490" r="20" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/>
+  <text x="880" y="495" text-anchor="middle" font-size="9" fill="white">Balance</text>
+  
+  <circle cx="930" cy="490" r="20" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/>
+  <text x="930" y="495" text-anchor="middle" font-size="9" fill="white">Synergy</text>
+  
+  <text x="740" y="530" font-size="11" fill="#2e7d32">• End-to-end fine-tuning on balanced data</text>
+  <text x="740" y="545" font-size="11" fill="#2e7d32">• Load-balancing loss with annealing</text>
+  <text x="740" y="560" font-size="11" fill="#2e7d32">• Foster cross-domain knowledge transfer</text>
+  
+  <!-- Results Section -->
+  <rect x="200" y="620" width="800" height="180" rx="15" fill="#dcedc8" stroke="#689f38" stroke-width="3"/>
+  <text x="600" y="650" text-anchor="middle" font-size="16" font-weight="bold" fill="#33691e">Key Results & Achievements</text>
+  
+  <!-- Performance boxes -->
+  <rect x="220" y="670" width="180" height="60" rx="8" fill="#81c784" stroke="#4caf50" stroke-width="2"/>
+  <text x="310" y="690" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Speech Synthesis</text>
+  <text x="230" y="710" font-size="10" fill="white">• SOTA UTMOS: 4.36</text>
+  <text x="230" y="720" font-size="10" fill="white">• Competitive WER/CER</text>
+  
+  <rect x="420" y="670" width="180" height="60" rx="8" fill="#64b5f6" stroke="#2196f3" stroke-width="2"/>
+  <text x="510" y="690" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Music Generation</text>
+  <text x="430" y="710" font-size="10" fill="white">• Superior aesthetic quality</text>
+  <text x="430" y="720" font-size="10" fill="white">• Strong semantic alignment</text>
+  
+  <rect x="620" y="670" width="180" height="60" rx="8" fill="#ffb74d" stroke="#ff9800" stroke-width="2"/>
+  <text x="710" y="690" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Data Efficiency</text>
+  <text x="630" y="710" font-size="10" fill="white">• 280K vs 10M hours</text>
+  <text x="630" y="720" font-size="10" fill="white">• Mitigates data imbalance</text>
+  
+  <rect x="820" y="670" width="160" height="60" rx="8" fill="#ba68c8" stroke="#9c27b0" stroke-width="2"/>
+  <text x="900" y="690" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MoE Benefits</text>
+  <text x="830" y="710" font-size="10" fill="white">• Dynamic allocation</text>
+  <text x="830" y="720" font-size="10" fill="white">• Task specialization</text>
+  
+  <!-- Expert routing insight -->
+  <rect x="220" y="750" width="760" height="40" rx="8" fill="#f8bbd9" stroke="#e91e63" stroke-width="2"/>
+  <text x="600" y="770" text-anchor="middle" font-size="12" font-weight="bold" fill="#880e4f">
+    Dynamic Expert Routing: Experts 1-4 prefer Speech, Experts 5-8 prefer Music, Null Expert enables adaptive computation
+  </text>
+  
+  <!-- Flow connections -->
+  <path d="M 220 580 Q 300 600 380 580" stroke="#74b9ff" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 540 580 Q 620 600 700 580" stroke="#a29bfe" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 600 580 Q 600 600 600 620" stroke="#00b894" stroke-width="4" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2d3436"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It dynamically allocates experts based on token complexity using Top-P sampling">
+                        <div class="quiz-question">1. What is the main innovation in UniMoE-Audio's routing strategy compared to conventional MoE models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a fixed number of experts for all tokens">It uses a fixed number of experts for all tokens</div><div class="quiz-choice" data-value="It dynamically allocates experts based on token complexity using Top-P sampling">It dynamically allocates experts based on token complexity using Top-P sampling</div><div class="quiz-choice" data-value="It randomly assigns experts to different audio tasks">It randomly assigns experts to different audio tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To enable true computation skipping for simple tokens">
+                        <div class="quiz-question">2. Why does the model incorporate 'null experts' in its architecture?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce the total number of parameters in the model">To reduce the total number of parameters in the model</div><div class="quiz-choice" data-value="To handle errors during training">To handle errors during training</div><div class="quiz-choice" data-value="To enable true computation skipping for simple tokens">To enable true computation skipping for simple tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By using a three-stage training curriculum with expert specialization">
+                        <div class="quiz-question">3. How does UniMoE-Audio achieve competitive performance while using less training data than specialized models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using a three-stage training curriculum with expert specialization">By using a three-stage training curriculum with expert specialization</div><div class="quiz-choice" data-value="By simply increasing the model size">By simply increasing the model size</div><div class="quiz-choice" data-value="By focusing only on simple audio generation tasks">By focusing only on simple audio generation tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Attention Illuminates LLM Reasoning: The Preplan-and-Anchor Rhythm
+  Enables Fine-Grained Policy Optimization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.13554" target="_blank">http://arxiv.org/pdf/2510.13554</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores attention mechanisms in Large Language Models (LLMs) to understand reasoning patterns and improve reinforcement learning optimization.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous research on LLM reasoning and reinforcement learning, it introduces a novel "preplan-and-anchor" rhythm concept that explains how LLMs structure their reasoning process through attention patterns.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of understanding how LLMs internally structure their reasoning and aims to improve reinforcement learning by making credit assignment more targeted and effective.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors analyze attention patterns using two metrics (WAAD and FAI) to identify critical reasoning nodes, then implement three RL strategies that amplify credit assignment to these key tokens during training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The proposed method achieved consistent improvements across various reasoning benchmarks, with significant gains on mathematical reasoning tasks (up to +6.3 points on AMC23) and better performance than baseline approaches in both simple puzzles and complex mathematical problems.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Attention Illuminates LLM Reasoning: The Preplan-and-Anchor Rhythm
+  Enables Fine-Grained Policy Optimization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    Attention Illuminates LLM Reasoning: The Preplan-and-Anchor Rhythm
+  </text>
+  
+  <!-- Phase 1: Attention Analysis -->
+  <rect x="50" y="60" width="280" height="180" rx="15" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="190" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+    Phase 1: Attention Dynamics Analysis
+  </text>
+  
+  <!-- Head Classification -->
+  <rect x="70" y="100" width="240" height="40" rx="8" fill="#ffffff" stroke="#3498db"/>
+  <text x="190" y="125" text-anchor="middle" font-size="12" fill="#2c3e50">
+    Head Classification by Attention Span
+  </text>
+  
+  <!-- Local Heads -->
+  <rect x="80" y="150" width="100" height="30" rx="5" fill="#f39c12" stroke="#e67e22"/>
+  <text x="130" y="170" text-anchor="middle" font-size="11" fill="white">Local Heads</text>
+  
+  <!-- Global Heads -->
+  <rect x="200" y="150" width="100" height="30" rx="5" fill="#27ae60" stroke="#229954"/>
+  <text x="250" y="170" text-anchor="middle" font-size="11" fill="white">Global Heads</text>
+  
+  <!-- WAAD Metric -->
+  <rect x="80" y="190" width="100" height="35" rx="5" fill="#ff6b6b" stroke="#e74c3c"/>
+  <text x="130" y="210" text-anchor="middle" font-size="10" fill="white">WAAD Metric</text>
+  <text x="130" y="220" text-anchor="middle" font-size="9" fill="white">(Local Pattern)</text>
+  
+  <!-- FAI Metric -->
+  <rect x="200" y="190" width="100" height="35" rx="5" fill="#4ecdc4" stroke="#16a085"/>
+  <text x="250" y="210" text-anchor="middle" font-size="10" fill="white">FAI Metric</text>
+  <text x="250" y="220" text-anchor="middle" font-size="9" fill="white">(Global Pattern)</text>
+  
+  <!-- Phase 2: Pattern Discovery -->
+  <rect x="370" y="60" width="280" height="180" rx="15" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="510" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+    Phase 2: Pattern Discovery
+  </text>
+  
+  <!-- Coupling Patterns -->
+  <rect x="390" y="100" width="240" height="30" rx="8" fill="#ffffff" stroke="#e67e22"/>
+  <text x="510" y="120" text-anchor="middle" font-size="12" fill="#2c3e50">
+    Three Coupling Patterns
+  </text>
+  
+  <!-- Pattern 1 -->
+  <rect x="400" y="140" width="70" height="25" rx="5" fill="#9b59b6" stroke="#8e44ad"/>
+  <text x="435" y="157" text-anchor="middle" font-size="9" fill="white">WAAD-Entropy</text>
+  
+  <!-- Pattern 2 -->
+  <rect x="480" y="140" width="70" height="25" rx="5" fill="#e74c3c" stroke="#c0392b"/>
+  <text x="515" y="157" text-anchor="middle" font-size="9" fill="white">Receiver-Global</text>
+  
+  <!-- Pattern 3 -->
+  <rect x="560" y="140" width="70" height="25" rx="5" fill="#f39c12" stroke="#e67e22"/>
+  <text x="595" y="157" text-anchor="middle" font-size="9" fill="white">FAI-WAAD</text>
+  
+  <!-- Preplan-Anchor Mechanism -->
+  <rect x="390" y="175" width="240" height="50" rx="8" fill="#d5dbdb" stroke="#85929e"/>
+  <text x="510" y="195" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">
+    Preplan-and-Anchor Mechanism
+  </text>
+  <text x="510" y="210" text-anchor="middle" font-size="10" fill="#2c3e50">
+    Long-range consultation → Anchor tokens
+  </text>
+  <text x="510" y="220" text-anchor="middle" font-size="10" fill="#2c3e50">
+    organize downstream reasoning
+  </text>
+  
+  <!-- Phase 3: RL Strategies -->
+  <rect x="670" y="60" width="280" height="180" rx="15" fill="#eaf2f8" stroke="#5dade2" stroke-width="2"/>
+  <text x="810" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+    Phase 3: Fine-Grained RL Strategies
+  </text>
+  
+  <!-- Strategy 1 -->
+  <rect x="690" y="105" width="240" height="35" rx="8" fill="#ff6b6b" stroke="#e74c3c"/>
+  <text x="810" y="125" text-anchor="middle" font-size="11" fill="white">Local-Chunk Credit</text>
+  <text x="810" y="135" text-anchor="middle" font-size="9" fill="white">Emphasize preplan tokens</text>
+  
+  <!-- Strategy 2 -->
+  <rect x="690" y="145" width="240" height="35" rx="8" fill="#4ecdc4" stroke="#16a085"/>
+  <text x="810" y="165" text-anchor="middle" font-size="11" fill="white">Global-Anchor Credit</text>
+  <text x="810" y="175" text-anchor="middle" font-size="9" fill="white">Amplify anchor tokens</text>
+  
+  <!-- Strategy 3 -->
+  <rect x="690" y="185" width="240" height="35" rx="8" fill="#9b59b6" stroke="#8e44ad"/>
+  <text x="810" y="205" text-anchor="middle" font-size="11" fill="white">Coupled Rhythm Credit</text>
+  <text x="810" y="215" text-anchor="middle" font-size="9" fill="white">Joint preplan-anchor optimization</text>
+  
+  <!-- Implementation Details -->
+  <rect x="50" y="270" width="900" height="120" rx="15" fill="#f4f6f7" stroke="#aab7b8" stroke-width="2"/>
+  <text x="500" y="295" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+    Implementation Framework
+  </text>
+  
+  <!-- Actor Components -->
+  <rect x="80" y="310" width="120" height="60" rx="8" fill="#85c1e9" stroke="#3498db"/>
+  <text x="140" y="330" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Actor Infer</text>
+  <text x="140" y="345" text-anchor="middle" font-size="9" fill="#2c3e50">High-throughput</text>
+  <text x="140" y="355" text-anchor="middle" font-size="9" fill="#2c3e50">inference with vLLM</text>
+  
+  <rect x="220" y="310" width="120" height="60" rx="8" fill="#f7dc6f" stroke="#f39c12"/>
+  <text x="280" y="330" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Actor Train</text>
+  <text x="280" y="345" text-anchor="middle" font-size="9" fill="#2c3e50">Policy gradient</text>
+  <text x="280" y="355" text-anchor="middle" font-size="9" fill="#2c3e50">updates with Megatron</text>
+  
+  <rect x="360" y="310" width="120" height="60" rx="8" fill="#bb8fce" stroke="#9b59b6"/>
+  <text x="420" y="330" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Actor Attn</text>
+  <text x="420" y="345" text-anchor="middle" font-size="9" fill="#2c3e50">Attention map</text>
+  <text x="420" y="355" text-anchor="middle" font-size="9" fill="#2c3e50">extraction</text>
+  
+  <!-- Credit Assignment Formula -->
+  <rect x="500" y="310" width="380" height="60" rx="8" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="690" y="330" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Advantage Scaling</text>
+  <text x="690" y="345" text-anchor="middle" font-size="10" fill="#2c3e50">γₜ = 1 + (γₐₘₚ - 1) × 𝟙{t ∈ T}</text>
+  <text x="690" y="355" text-anchor="middle" font-size="9" fill="#2c3e50">where T contains critical tokens</text>
+  
+  <!-- Experimental Results -->
+  <rect x="50" y="420" width="900" height="120" rx="15" fill="#e8f8f5" stroke="#16a085" stroke-width="2"/>
+  <text x="500" y="445" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+    Experimental Validation
+  </text>
+  
+  <!-- Benchmarks -->
+  <rect x="80" y="465" width="150" height="60" rx="8" fill="#f8c471" stroke="#f39c12"/>
+  <text x="155" y="485" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Benchmarks</text>
+  <text x="155" y="500" text-anchor="middle" font-size="9" fill="#2c3e50">• Countdown Puzzle</text>
+  <text x="155" y="510" text-anchor="middle" font-size="9" fill="#2c3e50">• CrossThink-QA</text>
+  <text x="155" y="520" text-anchor="middle" font-size="9" fill="#2c3e50">• Math Reasoning</text>
+  
+  <!-- Models -->
+  <rect x="250" y="465" width="150" height="60" rx="8" fill="#aed6f1" stroke="#3498db"/>
+  <text x="325" y="485" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Models</text>
+  <text x="325" y="500" text-anchor="middle" font-size="9" fill="#2c3e50">• Qwen3-4B-Base</text>
+  <text x="325" y="510" text-anchor="middle" font-size="9" fill="#2c3e50">• Qwen3-8B-Base</text>
+  <text x="325" y="520" text-anchor="middle" font-size="9" fill="#2c3e50">• 1K & 8K contexts</text>
+  
+  <!-- Results -->
+  <rect x="420" y="465" width="200" height="60" rx="8" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="520" y="485" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Key Results</text>
+  <text x="520" y="500" text-anchor="middle" font-size="9" fill="#2c3e50">• +10.5% on Countdown</text>
+  <text x="520" y="510" text-anchor="middle" font-size="9" fill="#2c3e50">• +5.0% on AIME25</text>
+  <text x="520" y="520" text-anchor="middle" font-size="9" fill="#2c3e50">• Consistent improvements</text>
+  
+  <!-- Ablations -->
+  <rect x="640" y="465" width="200" height="60" rx="8" fill="#fadbd8" stroke="#e74c3c"/>
+  <text x="740" y="485" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Ablation Studies</text>
+  <text x="740" y="500" text-anchor="middle" font-size="9" fill="#2c3e50">• Top-k vs Bottom-k</text>
+  <text x="740" y="510" text-anchor="middle" font-size="9" fill="#2c3e50">• Different k ratios</text>
+  <text x="740" y="520" text-anchor="middle" font-size="9" fill="#2c3e50">• Random baselines</text>
+  
+  <!-- Key Insights -->
+  <rect x="50" y="570" width="900" height="100" rx="15" fill="#fef9e7" stroke="#f4d03f" stroke-width="2"/>
+  <text x="500" y="595" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+    Key Insights and Contributions
+  </text>
+  
+  <text x="100" y="620" font-size="11" fill="#2c3e50">
+    • Attention dynamics reveal intrinsic reasoning patterns in LLMs
+  </text>
+  <text x="100" y="635" font-size="11" fill="#2c3e50">
+    • WAAD and FAI metrics formalize preplan-and-anchor mechanisms
+  </text>
+  <text x="100" y="650" font-size="11" fill="#2c3e50">
+    • Structure-aware RL strategies improve reasoning performance
+  </text>
+  <text x="100" y="665" font-size="11" fill="#2c3e50">
+    • Plug-and-play compatibility with existing RLVR frameworks
+  </text>
+  
+  <!-- Flow connections -->
+  <line x1="330" y1="150" x2="370" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="650" y1="150" x2="670" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="240" x2="500" y2="270" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="390" x2="500" y2="420" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="540" x2="500" y2="570" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- Bottom note -->
+  <text x="500" y="750" text-anchor="middle" font-size="12" font-style="italic" fill="#7f8c8d">
+    Transparent and Effective Optimization of LLM Reasoning
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It introduces the preplan-and-anchor rhythm concept based on attention patterns">
+                        <div class="quiz-question">1. What is the main novelty in how this paper analyzes LLM reasoning patterns?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses human feedback to identify reasoning steps">It uses human feedback to identify reasoning steps</div><div class="quiz-choice" data-value="It introduces the preplan-and-anchor rhythm concept based on attention patterns">It introduces the preplan-and-anchor rhythm concept based on attention patterns</div><div class="quiz-choice" data-value="It relies solely on output token probabilities">It relies solely on output token probabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Token Entropy Distribution (TED)">
+                        <div class="quiz-question">2. Which of the following metrics was NOT introduced by the paper to analyze attention patterns?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Windowed Average Attention Distance (WAAD)">Windowed Average Attention Distance (WAAD)</div><div class="quiz-choice" data-value="Future Attention Influence (FAI)">Future Attention Influence (FAI)</div><div class="quiz-choice" data-value="Token Entropy Distribution (TED)">Token Entropy Distribution (TED)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="+6.3 points on AMC23">
+                        <div class="quiz-question">3. What was the most significant improvement achieved by the paper's method on mathematical reasoning tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="+2.3 points on AIME24">+2.3 points on AIME24</div><div class="quiz-choice" data-value="+6.3 points on AMC23">+6.3 points on AMC23</div><div class="quiz-choice" data-value="+4.2 points on AIME25">+4.2 points on AIME25</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
