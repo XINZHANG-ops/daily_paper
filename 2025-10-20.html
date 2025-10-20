@@ -1,0 +1,1171 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-10-20 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-10-20 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Agentic Entropy-Balanced Policy Optimization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.14545" target="_blank">http://arxiv.org/pdf/2510.14545</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Agentic Entropy-Balanced Policy Optimization (AEPO) for reinforcement learning in large language models (LLMs), specifically focusing on web agent training and tool use capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous agentic RL methods that use entropy signals for tool exploration, but introduces novel entropy balancing in both rollout and policy update phases to address limitations of excessive entropy reliance.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses two key challenges in entropy-based RL: "High-Entropy Rollout Collapse" where excessive branching occurs along specific paths, and "High-Entropy Token Gradient Clipping" where valuable exploratory behaviors are lost during training.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements two core components: (1) Dynamic entropy-balanced rollout mechanism that adaptively allocates sampling budgets and penalizes consecutive high-entropy steps, and (2) Entropy-balanced policy optimization that preserves high-entropy token gradients through stop-gradient operations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperformed 7 mainstream RL algorithms across 14 datasets, achieving with Qwen3-14B: 47.6% on GAIA, 11.2% on HLE, and 43.0% on WebWalkerQA for Pass@1; 65.0%, 26.0%, and 70.0% respectively for Pass@5.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Agentic Entropy-Balanced Policy Optimization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    Agentic Entropy-Balanced Policy Optimization (AEPO) Workflow
+  </text>
+  
+  <!-- Main Problem Identification Box -->
+  <rect x="50" y="60" width="900" height="80" fill="#e74c3c" opacity="0.1" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="500" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#e74c3c">
+    Two Entropy-Driven Challenges in Agentic RL
+  </text>
+  <text x="250" y="110" text-anchor="middle" font-size="12" fill="#c0392b">
+    1. High-Entropy Rollout Collapse
+  </text>
+  <text x="750" y="110" text-anchor="middle" font-size="12" fill="#c0392b">
+    2. High-Entropy Token Gradient Clipping
+  </text>
+  
+  <!-- AEPO Framework -->
+  <rect x="50" y="170" width="900" height="40" fill="#3498db" opacity="0.2" stroke="#3498db" stroke-width="2" rx="8"/>
+  <text x="500" y="195" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">
+    AEPO: Two Core Components
+  </text>
+  
+  <!-- Component 1: Dynamic Entropy-Balanced Rollout -->
+  <rect x="70" y="240" width="400" height="260" fill="#27ae60" opacity="0.1" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="270" y="265" text-anchor="middle" font-size="14" font-weight="bold" fill="#27ae60">
+    Component 1: Dynamic Entropy-Balanced Rollout
+  </text>
+  
+  <!-- Entropy Pre-Monitoring -->
+  <rect x="90" y="280" width="160" height="60" fill="#f39c12" opacity="0.3" stroke="#f39c12" stroke-width="1" rx="5"/>
+  <text x="170" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#d68910">
+    Entropy Pre-Monitoring
+  </text>
+  <text x="170" y="315" text-anchor="middle" font-size="10" fill="#d68910">
+    Calculate H_root and H_tool
+  </text>
+  <text x="170" y="330" text-anchor="middle" font-size="10" fill="#d68910">
+    Adaptive Budget Allocation
+  </text>
+  
+  <!-- Entropy-Balanced Beaming -->
+  <rect x="280" y="280" width="160" height="60" fill="#8e44ad" opacity="0.3" stroke="#8e44ad" stroke-width="1" rx="5"/>
+  <text x="360" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d3c98">
+    Entropy-Balanced Beaming
+  </text>
+  <text x="360" y="315" text-anchor="middle" font-size="10" fill="#7d3c98">
+    Branch Probability P_t
+  </text>
+  <text x="360" y="330" text-anchor="middle" font-size="10" fill="#7d3c98">
+    Consecutive Branch Penalty
+  </text>
+  
+  <!-- Information Gain Formula -->
+  <rect x="90" y="360" width="350" height="40" fill="#16a085" opacity="0.2" stroke="#16a085" stroke-width="1" rx="5"/>
+  <text x="265" y="380" text-anchor="middle" font-size="11" fill="#138d75">
+    I_Gain = m · H_root + (k-m) · H_tool
+  </text>
+  <text x="265" y="395" text-anchor="middle" font-size="10" fill="#138d75">
+    m = k · σ(β(H_root - H_avg_tool))
+  </text>
+  
+  <!-- Rollout Process -->
+  <rect x="90" y="420" width="350" height="60" fill="#e67e22" opacity="0.2" stroke="#e67e22" stroke-width="1" rx="5"/>
+  <text x="265" y="440" text-anchor="middle" font-size="11" font-weight="bold" fill="#d35400">
+    Tree-Structured Rollout Process
+  </text>
+  <text x="265" y="455" text-anchor="middle" font-size="10" fill="#d35400">
+    Global Sampling (m) + Branch Sampling (k-m)
+  </text>
+  <text x="265" y="470" text-anchor="middle" font-size="10" fill="#d35400">
+    Prevent Over-branching via Penalty
+  </text>
+  
+  <!-- Component 2: Entropy-Balanced Policy Optimization -->
+  <rect x="520" y="240" width="400" height="260" fill="#9b59b6" opacity="0.1" stroke="#9b59b6" stroke-width="2" rx="10"/>
+  <text x="720" y="265" text-anchor="middle" font-size="14" font-weight="bold" fill="#8e44ad">
+    Component 2: Entropy-Balanced Policy Optimization
+  </text>
+  
+  <!-- Stop-Gradient Operation -->
+  <rect x="540" y="280" width="160" height="60" fill="#e74c3c" opacity="0.3" stroke="#e74c3c" stroke-width="1" rx="5"/>
+  <text x="620" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#c0392b">
+    Stop-Gradient Operation
+  </text>
+  <text x="620" y="315" text-anchor="middle" font-size="10" fill="#c0392b">
+    Preserve High-Entropy
+  </text>
+  <text x="620" y="330" text-anchor="middle" font-size="10" fill="#c0392b">
+    Token Gradients
+  </text>
+  
+  <!-- Entropy-Aware Advantage -->
+  <rect x="730" y="280" width="160" height="60" fill="#34495e" opacity="0.3" stroke="#34495e" stroke-width="1" rx="5"/>
+  <text x="810" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Entropy-Aware Advantage
+  </text>
+  <text x="810" y="315" text-anchor="middle" font-size="10" fill="#2c3e50">
+    Prioritize High-Uncertainty
+  </text>
+  <text x="810" y="330" text-anchor="middle" font-size="10" fill="#2c3e50">
+    Tokens
+  </text>
+  
+  <!-- Gradient Update Formula -->
+  <rect x="540" y="360" width="350" height="40" fill="#2980b9" opacity="0.2" stroke="#2980b9" stroke-width="1" rx="5"/>
+  <text x="715" y="380" text-anchor="middle" font-size="11" fill="#1f4e79">
+    F(θ) = {1+ε_h if δ>1+ε_h and A>0; 0 if δ&lt;1-ε_l and A&lt;0; δ otherwise}
+  </text>
+  
+  <!-- Advantage Estimation -->
+  <rect x="540" y="420" width="350" height="60" fill="#d35400" opacity="0.2" stroke="#d35400" stroke-width="1" rx="5"/>
+  <text x="715" y="440" text-anchor="middle" font-size="11" font-weight="bold" fill="#a93226">
+    Entropy-Aware Advantage Estimation
+  </text>
+  <text x="715" y="455" text-anchor="middle" font-size="10" fill="#a93226">
+    Ã(t) = Ã_Acc(t) × (1 + a·Ã_ΔH(t))
+  </text>
+  <text x="715" y="470" text-anchor="middle" font-size="10" fill="#a93226">
+    Integrate accuracy-based and entropy-based advantages
+  </text>
+  
+  <!-- Results Section -->
+  <rect x="50" y="530" width="900" height="80" fill="#27ae60" opacity="0.1" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="500" y="555" text-anchor="middle" font-size="16" font-weight="bold" fill="#27ae60">
+    Experimental Results
+  </text>
+  <text x="250" y="580" text-anchor="middle" font-size="12" fill="#229954">
+    GAIA: 47.6% (Pass@1), 65.0% (Pass@5)
+  </text>
+  <text x="500" y="580" text-anchor="middle" font-size="12" fill="#229954">
+    HLE: 11.2% (Pass@1), 26.0% (Pass@5)
+  </text>
+  <text x="750" y="580" text-anchor="middle" font-size="12" fill="#229954">
+    WebWalkerQA: 43.0% (Pass@1), 70.0% (Pass@5)
+  </text>
+  <text x="500" y="600" text-anchor="middle" font-size="11" fill="#1e8449">
+    Consistent outperformance across 14 datasets with only 1K RL samples
+  </text>
+  
+  <!-- Key Benefits -->
+  <rect x="50" y="640" width="900" height="120" fill="#f8c471" opacity="0.2" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="500" y="665" text-anchor="middle" font-size="16" font-weight="bold" fill="#d68910">
+    Key Benefits of AEPO
+  </text>
+  
+  <circle cx="150" cy="690" r="3" fill="#e74c3c"/>
+  <text x="170" y="695" font-size="11" fill="#2c3e50">
+    Improved rollout sampling diversity while maintaining stable policy entropy
+  </text>
+  
+  <circle cx="150" cy="715" r="3" fill="#e74c3c"/>
+  <text x="170" y="720" font-size="11" fill="#2c3e50">
+    Balanced exploration across tree-structured rollout via adaptive budget allocation
+  </text>
+  
+  <circle cx="150" cy="740" r="3" fill="#e74c3c"/>
+  <text x="170" y="745" font-size="11" fill="#2c3e50">
+    Enhanced tool-call efficiency and reduced financial costs in web agent training
+  </text>
+  
+  <!-- Connection Lines -->
+  <line x1="270" y1="230" x2="270" y2="240" stroke="#34495e" stroke-width="2"/>
+  <line x1="720" y1="230" x2="720" y2="240" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="500" x2="500" y2="530" stroke="#34495e" stroke-width="2"/>
+  <line x1="500" y1="610" x2="500" y2="640" stroke="#34495e" stroke-width="2"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It balances entropy in both rollout and policy update phases">
+                        <div class="quiz-question">1. What is the main innovation of AEPO compared to previous agentic RL methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It completely eliminates the use of entropy signals in training">It completely eliminates the use of entropy signals in training</div><div class="quiz-choice" data-value="It balances entropy in both rollout and policy update phases">It balances entropy in both rollout and policy update phases</div><div class="quiz-choice" data-value="It only focuses on policy update optimization">It only focuses on policy update optimization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Excessive branching occurring along specific paths while neglecting other potential paths">
+                        <div class="quiz-question">2. Which of the following best describes the 'High-Entropy Rollout Collapse' problem that AEPO addresses?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The complete failure of all rollout attempts during training">The complete failure of all rollout attempts during training</div><div class="quiz-choice" data-value="Excessive branching occurring along specific paths while neglecting other potential paths">Excessive branching occurring along specific paths while neglecting other potential paths</div><div class="quiz-choice" data-value="The inability to generate any high-entropy states during rollout">The inability to generate any high-entropy states during rollout</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="65.0%">
+                        <div class="quiz-question">3. What performance improvement did AEPO achieve with Qwen3-14B on the GAIA benchmark for Pass@5?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="47.6%">47.6%</div><div class="quiz-choice" data-value="65.0%">65.0%</div><div class="quiz-choice" data-value="70.0%">70.0%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/robots.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>WithAnyone: Towards Controllable and ID Consistent Image Generation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.14975" target="_blank">http://arxiv.org/pdf/2510.14975</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Identity-consistent image generation with a focus on controllable multi-person portrait synthesis in computer vision and AI image generation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous identity-consistent generation and customization models, it proposes a novel contrastive training approach using paired reference images rather than just reconstruction.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the "copy-paste" artifact problem where models directly replicate reference faces instead of preserving identity across natural variations in pose, expression and lighting.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces WithAnyone model built on FLUX architecture using: (1) MultiID-2M dataset with paired references, (2) GT-aligned ID loss, (3) ID contrastive loss with extended negatives, and (4) 4-phase training pipeline.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> WithAnyone achieves state-of-the-art identity similarity while significantly reducing copy-paste artifacts, evaluated through both quantitative metrics and user studies showing improved controllability and visual quality.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>WithAnyone: Towards Controllable and ID Consistent Image Generation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">WithAnyone: Controllable and ID Consistent Image Generation</text>
+  
+  <!-- Data Construction Pipeline -->
+  <rect x="50" y="60" width="200" height="300" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="150" y="80" text-anchor="middle" font-weight="bold" fill="#2980b9">Data Construction</text>
+  
+  <!-- Step 1 -->
+  <rect x="60" y="95" width="180" height="50" fill="#3498db" rx="5"/>
+  <text x="150" y="115" text-anchor="middle" font-size="12" fill="white">1. Single-ID Collection</text>
+  <text x="150" y="130" text-anchor="middle" font-size="10" fill="white">& Clustering</text>
+  
+  <!-- Step 2 -->
+  <rect x="60" y="155" width="180" height="50" fill="#5dade2" rx="5"/>
+  <text x="150" y="175" text-anchor="middle" font-size="12" fill="white">2. Multi-ID Collection</text>
+  <text x="150" y="190" text-anchor="middle" font-size="10" fill="white">+ 2/3/4 actors</text>
+  
+  <!-- Step 3 -->
+  <rect x="60" y="215" width="180" height="50" fill="#85c1e9" rx="5"/>
+  <text x="150" y="235" text-anchor="middle" font-size="12" fill="white">3. ID Image Pairing</text>
+  <text x="150" y="250" text-anchor="middle" font-size="10" fill="white">Embedding Retrieval</text>
+  
+  <!-- Step 4 -->
+  <rect x="60" y="275" width="180" height="50" fill="#aed6f1" rx="5"/>
+  <text x="150" y="295" text-anchor="middle" font-size="12" fill="white">4. Post-processing</text>
+  <text x="150" y="310" text-anchor="middle" font-size="10" fill="white">Filtering & Labelling</text>
+  
+  <!-- Dataset Output -->
+  <rect x="60" y="335" width="180" height="20" fill="#d5dbdb" rx="3"/>
+  <text x="150" y="348" text-anchor="middle" font-size="10" fill="#2c3e50">MultiID-2M Dataset</text>
+  
+  <!-- Training Pipeline -->
+  <rect x="300" y="60" width="350" height="300" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="475" y="80" text-anchor="middle" font-weight="bold" fill="#d35400">Training Pipeline</text>
+  
+  <!-- Phase 1 -->
+  <rect x="310" y="95" width="160" height="50" fill="#e67e22" rx="5"/>
+  <text x="390" y="115" text-anchor="middle" font-size="12" fill="white">Phase 1: Reconstruction</text>
+  <text x="390" y="130" text-anchor="middle" font-size="10" fill="white">Fixed Prompt</text>
+  
+  <!-- Phase 2 -->
+  <rect x="480" y="95" width="160" height="50" fill="#f39c12" rx="5"/>
+  <text x="560" y="115" text-anchor="middle" font-size="12" fill="white">Phase 2: Reconstruction</text>
+  <text x="560" y="130" text-anchor="middle" font-size="10" fill="white">Full Captions</text>
+  
+  <!-- Phase 3 -->
+  <rect x="310" y="155" width="160" height="50" fill="#f5b041" rx="5"/>
+  <text x="390" y="175" text-anchor="middle" font-size="12" fill="white">Phase 3: Paired</text>
+  <text x="390" y="190" text-anchor="middle" font-size="10" fill="white">Tuning</text>
+  
+  <!-- Phase 4 -->
+  <rect x="480" y="155" width="160" height="50" fill="#f8c471" rx="5"/>
+  <text x="560" y="175" text-anchor="middle" font-size="12" fill="white">Phase 4: Quality</text>
+  <text x="560" y="190" text-anchor="middle" font-size="10" fill="white">Tuning</text>
+  
+  <!-- Training Objectives -->
+  <rect x="310" y="220" width="330" height="135" fill="#fadbd8" stroke="#e74c3c" stroke-width="1" rx="5"/>
+  <text x="475" y="240" text-anchor="middle" font-weight="bold" fill="#c0392b">Training Objectives</text>
+  
+  <rect x="320" y="250" width="100" height="30" fill="#e74c3c" rx="3"/>
+  <text x="370" y="268" text-anchor="middle" font-size="11" fill="white">Diffusion Loss</text>
+  
+  <rect x="430" y="250" width="100" height="30" fill="#ec7063" rx="3"/>
+  <text x="480" y="268" text-anchor="middle" font-size="11" fill="white">GT-Aligned ID</text>
+  
+  <rect x="540" y="250" width="90" height="30" fill="#f1948a" rx="3"/>
+  <text x="585" y="268" text-anchor="middle" font-size="11" fill="white">ID Contrastive</text>
+  
+  <text x="475" y="300" text-anchor="middle" font-size="10" fill="#922b21">L = L_diff + λ_ID * L_ID + λ_CL * L_CL</text>
+  <text x="475" y="320" text-anchor="middle" font-size="9" fill="#922b21">Extended Negative Pool for Contrastive Learning</text>
+  <text x="475" y="335" text-anchor="middle" font-size="9" fill="#922b21">Ground Truth Landmark Alignment</text>
+  
+  <!-- Model Architecture -->
+  <rect x="700" y="60" width="250" height="180" fill="#eaf2f8" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="825" y="80" text-anchor="middle" font-weight="bold" fill="#2980b9">Model Architecture</text>
+  
+  <!-- FLUX Base -->
+  <rect x="710" y="95" width="230" height="30" fill="#3498db" rx="5"/>
+  <text x="825" y="113" text-anchor="middle" font-size="12" fill="white">FLUX DiT Backbone</text>
+  
+  <!-- Dual Encoding -->
+  <rect x="710" y="135" width="110" height="40" fill="#5dade2" rx="3"/>
+  <text x="765" y="150" text-anchor="middle" font-size="10" fill="white">Face Embedding</text>
+  <text x="765" y="165" text-anchor="middle" font-size="10" fill="white">(ArcFace)</text>
+  
+  <rect x="830" y="135" width="110" height="40" fill="#85c1e9" rx="3"/>
+  <text x="885" y="150" text-anchor="middle" font-size="10" fill="white">Image Embedding</text>
+  <text x="885" y="165" text-anchor="middle" font-size="10" fill="white">(SigLIP)</text>
+  
+  <!-- Cross Attention -->
+  <rect x="710" y="185" width="230" height="25" fill="#aed6f1" rx="3"/>
+  <text x="825" y="200" text-anchor="middle" font-size="11" fill="#2c3e50">Cross Attention with Location Control</text>
+  
+  <rect x="710" y="215" width="230" height="20" fill="#d5dbdb" rx="3"/>
+  <text x="825" y="228" text-anchor="middle" font-size="10" fill="#2c3e50">Attention Mask for Face Regions</text>
+  
+  <!-- Evaluation -->
+  <rect x="700" y="260" width="250" height="100" fill="#f4f6f6" stroke="#95a5a6" stroke-width="2" rx="10"/>
+  <text x="825" y="280" text-anchor="middle" font-weight="bold" fill="#7f8c8d">MultiID-Bench</text>
+  
+  <text x="825" y="300" text-anchor="middle" font-size="10" fill="#2c3e50">• Sim(GT) - Ground Truth Similarity</text>
+  <text x="825" y="315" text-anchor="middle" font-size="10" fill="#2c3e50">• Copy-Paste Metric</text>
+  <text x="825" y="330" text-anchor="middle" font-size="10" fill="#2c3e50">• Identity Blending</text>
+  <text x="825" y="345" text-anchor="middle" font-size="10" fill="#2c3e50">• Generation Quality</text>
+  
+  <!-- Key Innovation -->
+  <rect x="50" y="400" width="900" height="120" fill="#e8f8f5" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="500" y="425" text-anchor="middle" font-weight="bold" font-size="16" fill="#27ae60">Key Innovation: Breaking Copy-Paste vs Identity Fidelity Trade-off</text>
+  
+  <rect x="80" y="440" width="200" height="60" fill="#58d68d" rx="5"/>
+  <text x="180" y="460" text-anchor="middle" font-size="12" fill="white">Paired Training Data</text>
+  <text x="180" y="480" text-anchor="middle" font-size="10" fill="white">Different reference & target</text>
+  <text x="180" y="495" text-anchor="middle" font-size="10" fill="white">from same identity</text>
+  
+  <rect x="300" y="440" width="200" height="60" fill="#52c4a0" rx="5"/>
+  <text x="400" y="460" text-anchor="middle" font-size="12" fill="white">GT-Aligned Loss</text>
+  <text x="400" y="480" text-anchor="middle" font-size="10" fill="white">Accurate identity</text>
+  <text x="400" y="495" text-anchor="middle" font-size="10" fill="white">measurement</text>
+  
+  <rect x="520" y="440" width="200" height="60" fill="#48b393" rx="5"/>
+  <text x="620" y="460" text-anchor="middle" font-size="12" fill="white">Extended Negatives</text>
+  <text x="620" y="480" text-anchor="middle" font-size="10" fill="white">Rich contrastive</text>
+  <text x="620" y="495" text-anchor="middle" font-size="10" fill="white">learning</text>
+  
+  <rect x="740" y="440" width="180" height="60" fill="#3e9a85" rx="5"/>
+  <text x="830" y="460" text-anchor="middle" font-size="12" fill="white">Copy-Paste Metric</text>
+  <text x="830" y="480" text-anchor="middle" font-size="10" fill="white">Quantifies artifacts</text>
+  <text x="830" y="495" text-anchor="middle" font-size="10" fill="white">vs natural variation</text>
+  
+  <!-- Results -->
+  <rect x="50" y="550" width="900" height="100" fill="#fef9e7" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="500" y="575" text-anchor="middle" font-weight="bold" font-size="16" fill="#d68910">Results & Achievements</text>
+  
+  <rect x="80" y="590" width="180" height="50" fill="#f7dc6f" rx="5"/>
+  <text x="170" y="610" text-anchor="middle" font-size="11" fill="#7d6608">Higher GT Similarity</text>
+  <text x="170" y="625" text-anchor="middle" font-size="10" fill="#7d6608">Better identity match</text>
+  
+  <rect x="280" y="590" width="180" height="50" fill="#f4d03f" rx="5"/>
+  <text x="370" y="610" text-anchor="middle" font-size="11" fill="#7d6608">Lower Copy-Paste</text>
+  <text x="370" y="625" text-anchor="middle" font-size="10" fill="#7d6608">Natural variations</text>
+  
+  <rect x="480" y="590" width="180" height="50" fill="#f1c40f" rx="5"/>
+  <text x="570" y="610" text-anchor="middle" font-size="11" fill="#7d6608">Better Controllability</text>
+  <text x="570" y="625" text-anchor="middle" font-size="10" fill="#7d6608">Pose & expression</text>
+  
+  <rect x="680" y="590" width="180" height="50" fill="#d4ac0d" rx="5"/>
+  <text x="770" y="610" text-anchor="middle" font-size="11" fill="white">State-of-the-art</text>
+  <text x="770" y="625" text-anchor="middle" font-size="10" fill="white">Performance</text>
+  
+  <!-- Dataset Stats -->
+  <rect x="50" y="680" width="400" height="80" fill="#f8f9fa" stroke="#6c757d" stroke-width="1" rx="5"/>
+  <text x="250" y="700" text-anchor="middle" font-weight="bold" fill="#495057">MultiID-2M Dataset</text>
+  <text x="250" y="720" text-anchor="middle" font-size="11" fill="#6c757d">• 500K paired multi-ID images</text>
+  <text x="250" y="735" text-anchor="middle" font-size="11" fill="#6c757d">• 1.5M additional unpaired images</text>
+  <text x="250" y="750" text-anchor="middle" font-size="11" fill="#6c757d">• 3K identities, 400+ refs each</text>
+  
+  <!-- Benchmark Stats -->
+  <rect x="470" y="680" width="400" height="80" fill="#f8f9fa" stroke="#6c757d" stroke-width="1" rx="5"/>
+  <text x="670" y="700" text-anchor="middle" font-weight="bold" fill="#495057">MultiID-Bench</text>
+  <text x="670" y="720" text-anchor="middle" font-size="11" fill="#6c757d">• 435 test cases (1-4 people)</text>
+  <text x="670" y="735" text-anchor="middle" font-size="11" fill="#6c757d">• Long-tail identities</text>
+  <text x="670" y="750" text-anchor="middle" font-size="11" fill="#6c757d">• Comprehensive metrics</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The 'copy-paste' artifact where models directly replicate reference faces">
+                        <div class="quiz-question">1. What is the main problem that WithAnyone aims to solve in identity-consistent image generation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Low resolution output images">Low resolution output images</div><div class="quiz-choice" data-value="The 'copy-paste' artifact where models directly replicate reference faces">The 'copy-paste' artifact where models directly replicate reference faces</div><div class="quiz-choice" data-value="Slow generation speed and high computational costs">Slow generation speed and high computational costs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="4 phases - reconstruction pretraining with fixed prompt, reconstruction pretraining with captions, paired tuning, and quality tuning">
+                        <div class="quiz-question">2. How many phases are there in WithAnyone's training pipeline?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="2 phases - reconstruction and fine-tuning">2 phases - reconstruction and fine-tuning</div><div class="quiz-choice" data-value="3 phases - pretraining, paired tuning and quality tuning">3 phases - pretraining, paired tuning and quality tuning</div><div class="quiz-choice long-text" data-value="4 phases - reconstruction pretraining with fixed prompt, reconstruction pretraining with captions, paired tuning, and quality tuning">4 phases - reconstruction pretraining with fixed prompt, reconstruction pretraining with captions, paired tuning, and quality tuning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It provides multiple paired reference images for each identity in group photos">
+                        <div class="quiz-question">3. What is unique about the MultiID-2M dataset introduced in this paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only contains single-person portrait images">It only contains single-person portrait images</div><div class="quiz-choice" data-value="It focuses exclusively on synthetic faces">It focuses exclusively on synthetic faces</div><div class="quiz-choice" data-value="It provides multiple paired reference images for each identity in group photos">It provides multiple paired reference images for each identity in group photos</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>From Pixels to Words -- Towards Native Vision-Language Primitives at
+  Scale</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.14979" target="_blank">http://arxiv.org/pdf/2510.14979</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of native vision-language models (VLMs) that integrate vision and language processing in a unified architecture, in the domain of multimodal AI.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on modular VLMs that combine separate visual encoders and language models; proposes a novel unified architecture called NEO with native primitives that process vision and language jointly from the start.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses limitations of modular VLMs including complex multi-stage training, rigid visual biases, and inefficient vision-language alignment by developing a more integrated approach.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a unified architecture with native primitives including flexible position encoding, multi-head native attention, and native rotary position embeddings, trained end-to-end on 390M image-text pairs.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> NEO achieves competitive performance compared to top modular VLMs across diverse benchmarks despite using less training data, particularly strong in visual-centric tasks while showing some limitations in knowledge-intensive and OCR tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>From Pixels to Words -- Towards Native Vision-Language Primitives at
+  Scale</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#81C784;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#64B5F6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFB74D;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BA68C8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#333">
+    NEO: Native Vision-Language Model Workflow
+  </text>
+  
+  <!-- Input Layer -->
+  <rect x="50" y="70" width="120" height="60" rx="10" fill="url(#grad1)" stroke="#333" stroke-width="2"/>
+  <text x="110" y="95" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Image Input</text>
+  <text x="110" y="110" text-anchor="middle" font-family="Arial" font-size="10" fill="white">32×32 patches</text>
+  
+  <rect x="200" y="70" width="120" height="60" rx="10" fill="url(#grad1)" stroke="#333" stroke-width="2"/>
+  <text x="260" y="95" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Text Input</text>
+  <text x="260" y="110" text-anchor="middle" font-family="Arial" font-size="10" fill="white">Tokenized</text>
+  
+  <!-- Embedding Layers -->
+  <rect x="50" y="160" width="120" height="50" rx="8" fill="#E8F5E8" stroke="#4CAF50" stroke-width="2"/>
+  <text x="110" y="180" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#2E7D32">PEL</text>
+  <text x="110" y="195" text-anchor="middle" font-family="Arial" font-size="9" fill="#2E7D32">Patch Embedding</text>
+  
+  <rect x="200" y="160" width="120" height="50" rx="8" fill="#E8F5E8" stroke="#4CAF50" stroke-width="2"/>
+  <text x="260" y="180" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#2E7D32">WEL</text>
+  <text x="260" y="195" text-anchor="middle" font-family="Arial" font-size="9" fill="#2E7D32">Word Embedding</text>
+  
+  <!-- Native VLM Primitives -->
+  <rect x="400" y="70" width="200" height="140" rx="10" fill="url(#grad2)" stroke="#333" stroke-width="2"/>
+  <text x="500" y="95" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="white">Native VLM Primitives</text>
+  
+  <!-- MHNA -->
+  <rect x="420" y="110" width="160" height="30" rx="5" fill="#E3F2FD" stroke="#1976D2" stroke-width="1"/>
+  <text x="500" y="130" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#1976D2">Multi-Head Native Attention</text>
+  
+  <!-- Native-RoPE -->
+  <rect x="420" y="150" width="160" height="30" rx="5" fill="#E3F2FD" stroke="#1976D2" stroke-width="1"/>
+  <text x="500" y="170" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#1976D2">Native-RoPE (T,H,W)</text>
+  
+  <!-- Pre-Buffer -->
+  <rect x="100" y="280" width="150" height="80" rx="10" fill="url(#grad3)" stroke="#333" stroke-width="2"/>
+  <text x="175" y="305" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">Pre-Buffer</text>
+  <text x="175" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="white">L1 Primitive Layers</text>
+  <text x="175" y="335" text-anchor="middle" font-family="Arial" font-size="10" fill="white">Pixel-Word Alignment</text>
+  <text x="175" y="350" text-anchor="middle" font-family="Arial" font-size="10" fill="white">Visual Learning</text>
+  
+  <!-- Post-LLM -->
+  <rect x="300" y="280" width="150" height="80" rx="10" fill="url(#grad4)" stroke="#333" stroke-width="2"/>
+  <text x="375" y="305" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">Post-LLM</text>
+  <text x="375" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="white">L2 Primitive Layers</text>
+  <text x="375" y="335" text-anchor="middle" font-family="Arial" font-size="10" fill="white">Reasoning & Generation</text>
+  <text x="375" y="350" text-anchor="middle" font-family="Arial" font-size="10" fill="white">LLM Capabilities</text>
+  
+  <!-- Training Stages -->
+  <rect x="550" y="280" width="120" height="50" rx="8" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+  <text x="610" y="300" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#E65100">Stage 1</text>
+  <text x="610" y="315" text-anchor="middle" font-family="Arial" font-size="9" fill="#E65100">Pre-Training</text>
+  
+  <rect x="680" y="280" width="120" height="50" rx="8" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+  <text x="740" y="300" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#E65100">Stage 2</text>
+  <text x="740" y="315" text-anchor="middle" font-family="Arial" font-size="9" fill="#E65100">Mid-Training</text>
+  
+  <rect x="810" y="280" width="120" height="50" rx="8" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+  <text x="870" y="300" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#E65100">Stage 3</text>
+  <text x="870" y="315" text-anchor="middle" font-family="Arial" font-size="9" fill="#E65100">SFT</text>
+  
+  <!-- Training Data -->
+  <rect x="550" y="380" width="380" height="80" rx="10" fill="#F3E5F5" stroke="#9C27B0" stroke-width="2"/>
+  <text x="740" y="405" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#7B1FA2">Training Data</text>
+  <text x="740" y="425" text-anchor="middle" font-family="Arial" font-size="10" fill="#7B1FA2">345M Image-Text Pairs → 40M Multi-task → 4M Instructions</text>
+  <text x="740" y="440" text-anchor="middle" font-family="Arial" font-size="10" fill="#7B1FA2">Web-scale + Synthetic + High-quality</text>
+  
+  <!-- Key Features -->
+  <rect x="50" y="500" width="200" height="120" rx="10" fill="#E8F5E8" stroke="#4CAF50" stroke-width="2"/>
+  <text x="150" y="525" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#2E7D32">Key Features</text>
+  <text x="70" y="545" font-family="Arial" font-size="10" fill="#2E7D32">• Unified Architecture</text>
+  <text x="70" y="560" font-family="Arial" font-size="10" fill="#2E7D32">• End-to-end Training</text>
+  <text x="70" y="575" font-family="Arial" font-size="10" fill="#2E7D32">• Mixed Attention</text>
+  <text x="70" y="590" font-family="Arial" font-size="10" fill="#2E7D32">• Modality-specific RoPE</text>
+  <text x="70" y="605" font-family="Arial" font-size="10" fill="#2E7D32">• Scalable Design</text>
+  
+  <!-- Model Variants -->
+  <rect x="280" y="500" width="180" height="120" rx="10" fill="#E3F2FD" stroke="#2196F3" stroke-width="2"/>
+  <text x="370" y="525" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#1976D2">Model Variants</text>
+  <text x="370" y="545" text-anchor="middle" font-family="Arial" font-size="11" fill="#1976D2">NEO-2.2B</text>
+  <text x="370" y="560" text-anchor="middle" font-family="Arial" font-size="10" fill="#1976D2">Qwen3-1.7B + 12 Pre-Buffer</text>
+  <text x="370" y="580" text-anchor="middle" font-family="Arial" font-size="11" fill="#1976D2">NEO-9B</text>
+  <text x="370" y="595" text-anchor="middle" font-family="Arial" font-size="10" fill="#1976D2">Qwen3-8B + 6 Pre-Buffer</text>
+  
+  <!-- Performance -->
+  <rect x="490" y="500" width="200" height="120" rx="10" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+  <text x="590" y="525" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#E65100">Performance</text>
+  <text x="510" y="545" font-family="Arial" font-size="10" fill="#E65100">• Competitive with Modular VLMs</text>
+  <text x="510" y="560" font-family="Arial" font-size="10" fill="#E65100">• Superior to Native VLMs</text>
+  <text x="510" y="575" font-family="Arial" font-size="10" fill="#E65100">• Efficient Training</text>
+  <text x="510" y="590" font-family="Arial" font-size="10" fill="#E65100">• Reusable Components</text>
+  <text x="510" y="605" font-family="Arial" font-size="10" fill="#E65100">• Cost-effective</text>
+  
+  <!-- Applications -->
+  <rect x="720" y="500" width="200" height="120" rx="10" fill="#F3E5F5" stroke="#9C27B0" stroke-width="2"/>
+  <text x="820" y="525" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#7B1FA2">Applications</text>
+  <text x="740" y="545" font-family="Arial" font-size="10" fill="#7B1FA2">• Visual QA</text>
+  <text x="740" y="560" font-family="Arial" font-size="10" fill="#7B1FA2">• OCR & Document Understanding</text>
+  <text x="740" y="575" font-family="Arial" font-size="10" fill="#7B1FA2">• Chart & Diagram Analysis</text>
+  <text x="740" y="590" font-family="Arial" font-size="10" fill="#7B1FA2">• Multimodal Reasoning</text>
+  <text x="740" y="605" font-family="Arial" font-size="10" fill="#7B1FA2">• Vision-Language Generation</text>
+  
+  <!-- Output -->
+  <rect x="400" y="680" width="200" height="60" rx="10" fill="url(#grad1)" stroke="#333" stroke-width="2"/>
+  <text x="500" y="705" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">Unified Output</text>
+  <text x="500" y="720" text-anchor="middle" font-family="Arial" font-size="10" fill="white">Text Generation with</text>
+  <text x="500" y="735" text-anchor="middle" font-family="Arial" font-size="10" fill="white">Visual Understanding</text>
+  
+  <!-- Flow connections (using lines instead of arrows for cleaner look) -->
+  <line x1="110" y1="130" x2="110" y2="160" stroke="#666" stroke-width="2"/>
+  <line x1="260" y1="130" x2="260" y2="160" stroke="#666" stroke-width="2"/>
+  <line x1="170" y1="185" x2="400" y2="140" stroke="#666" stroke-width="2"/>
+  <line x1="320" y1="185" x2="400" y2="140" stroke="#666" stroke-width="2"/>
+  <line x1="500" y1="210" x2="175" y2="280" stroke="#666" stroke-width="2"/>
+  <line x1="500" y1="210" x2="375" y2="280" stroke="#666" stroke-width="2"/>
+  <line x1="375" y1="360" x2="500" y2="680" stroke="#666" stroke-width="2"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It integrates vision and language processing in a unified architecture from the start">
+                        <div class="quiz-question">1. What is the main innovation of NEO compared to traditional modular VLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses much more training data than other models">It uses much more training data than other models</div><div class="quiz-choice" data-value="It integrates vision and language processing in a unified architecture from the start">It integrates vision and language processing in a unified architecture from the start</div><div class="quiz-choice" data-value="It completely eliminates the need for visual encoding">It completely eliminates the need for visual encoding</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="390 million">
+                        <div class="quiz-question">2. How many image-text pairs were used to train NEO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="390 million">390 million</div><div class="quiz-choice" data-value="3.9 billion">3.9 billion</div><div class="quiz-choice" data-value="39 million">39 million</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It shows weaker performance on knowledge-intensive and OCR tasks">
+                        <div class="quiz-question">3. What is a limitation of NEO identified in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It performs poorly on basic visual recognition tasks">It performs poorly on basic visual recognition tasks</div><div class="quiz-choice" data-value="It requires more computational resources than modular VLMs">It requires more computational resources than modular VLMs</div><div class="quiz-choice" data-value="It shows weaker performance on knowledge-intensive and OCR tasks">It shows weaker performance on knowledge-intensive and OCR tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
