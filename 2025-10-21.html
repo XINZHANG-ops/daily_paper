@@ -1,0 +1,1238 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-10-21 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-10-21 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>PICABench: How Far Are We from Physically Realistic Image Editing?</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.17681" target="_blank">http://arxiv.org/pdf/2510.17681</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on evaluating physical realism in AI image editing models, within the domain of computer vision and image manipulation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> While previous research focused mainly on semantic accuracy and visual consistency, this paper proposes a new benchmark (PICABench) and evaluation protocol (PICAEval) specifically designed to assess physical realism in edited images.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of comprehensive evaluation methods for assessing whether AI image editing models can produce physically realistic edits that properly account for effects like shadows, reflections, and object interactions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created PICABench with 900 test cases across 8 physics-related categories, developed PICAEval using region-specific QA pairs, and constructed PICA-100K training dataset using synthetic video data.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> After evaluating 11 state-of-the-art image editing models, the results showed that current models still struggle with physical realism (most scoring below 60% on the benchmark), though fine-tuning on PICA-100K dataset improved performance.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>PICABench: How Far Are We from Physically Realistic Image Editing?</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">PICABench: Physically Realistic Image Editing Evaluation</text>
+  
+  <!-- Main Pipeline Sections -->
+  
+  <!-- 1. Data Curation -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-weight="bold" fill="#1976d2">Data Curation</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#333">Keyword Enrichment</text>
+  <text x="150" y="120" text-anchor="middle" font-size="12" fill="#333">Image Collection</text>
+  <text x="150" y="135" text-anchor="middle" font-size="12" fill="#333">Instruction Construction</text>
+  <text x="150" y="150" text-anchor="middle" font-size="12" fill="#333">3 Complexity Levels</text>
+  <text x="150" y="165" text-anchor="middle" font-size="12" fill="#333">(Superficial/Intermediate/Explicit)</text>
+  
+  <!-- 2. Physics Taxonomy -->
+  <rect x="300" y="60" width="200" height="120" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-weight="bold" fill="#7b1fa2">Physics Taxonomy</text>
+  <text x="400" y="105" text-anchor="middle" font-size="12" fill="#333">Optics (4 sub-dims)</text>
+  <text x="400" y="120" text-anchor="middle" font-size="12" fill="#333">Mechanics (2 sub-dims)</text>
+  <text x="400" y="135" text-anchor="middle" font-size="12" fill="#333">State Transition (2 sub-dims)</text>
+  <text x="400" y="150" text-anchor="middle" font-size="12" fill="#333">900 samples total</text>
+  
+  <!-- 3. PICAEval -->
+  <rect x="550" y="60" width="200" height="120" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="650" y="85" text-anchor="middle" font-weight="bold" fill="#388e3c">PICAEval Protocol</text>
+  <text x="650" y="105" text-anchor="middle" font-size="12" fill="#333">Region-grounded QA</text>
+  <text x="650" y="120" text-anchor="middle" font-size="12" fill="#333">Human-annotated ROIs</text>
+  <text x="650" y="135" text-anchor="middle" font-size="12" fill="#333">VLM-as-a-Judge</text>
+  <text x="650" y="150" text-anchor="middle" font-size="12" fill="#333">Binary Yes/No answers</text>
+  
+  <!-- 4. PICA-100K Dataset -->
+  <rect x="800" y="60" width="150" height="120" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="875" y="85" text-anchor="middle" font-weight="bold" fill="#f57c00">PICA-100K</text>
+  <text x="875" y="105" text-anchor="middle" font-size="12" fill="#333">Video-derived</text>
+  <text x="875" y="120" text-anchor="middle" font-size="12" fill="#333">Synthetic Dataset</text>
+  <text x="875" y="135" text-anchor="middle" font-size="12" fill="#333">105K samples</text>
+  <text x="875" y="150" text-anchor="middle" font-size="12" fill="#333">Physics Learning</text>
+  
+  <!-- Physics Sub-dimensions Detail -->
+  <rect x="50" y="220" width="280" height="160" rx="10" fill="#fff8e1" stroke="#fbc02d" stroke-width="2"/>
+  <text x="190" y="245" text-anchor="middle" font-weight="bold" fill="#f57f17">Optics Sub-dimensions</text>
+  <rect x="70" y="255" width="100" height="30" rx="5" fill="#fff59d"/>
+  <text x="120" y="275" text-anchor="middle" font-size="11" fill="#333">Light Propagation</text>
+  <rect x="190" y="255" width="100" height="30" rx="5" fill="#fff59d"/>
+  <text x="240" y="275" text-anchor="middle" font-size="11" fill="#333">Light Source Effects</text>
+  <rect x="70" y="295" width="100" height="30" rx="5" fill="#fff59d"/>
+  <text x="120" y="315" text-anchor="middle" font-size="11" fill="#333">Reflection</text>
+  <rect x="190" y="295" width="100" height="30" rx="5" fill="#fff59d"/>
+  <text x="240" y="315" text-anchor="middle" font-size="11" fill="#333">Refraction</text>
+  <text x="190" y="350" text-anchor="middle" font-size="12" fill="#666">Shadow consistency, reflective surfaces,</text>
+  <text x="190" y="365" text-anchor="middle" font-size="12" fill="#666">transparent media effects</text>
+  
+  <rect x="370" y="220" width="280" height="160" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="510" y="245" text-anchor="middle" font-weight="bold" fill="#558b2f">Mechanics Sub-dimensions</text>
+  <rect x="420" y="265" width="120" height="30" rx="5" fill="#c8e6c9"/>
+  <text x="480" y="285" text-anchor="middle" font-size="11" fill="#333">Deformation</text>
+  <rect x="420" y="305" width="120" height="30" rx="5" fill="#c8e6c9"/>
+  <text x="480" y="325" text-anchor="middle" font-size="11" fill="#333">Causality</text>
+  <text x="510" y="350" text-anchor="middle" font-size="12" fill="#666">Material properties, structural</text>
+  <text x="510" y="365" text-anchor="middle" font-size="12" fill="#666">stability, gravity effects</text>
+  
+  <rect x="690" y="220" width="260" height="160" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="820" y="245" text-anchor="middle" font-weight="bold" fill="#ad1457">State Transition Sub-dimensions</text>
+  <rect x="720" y="265" width="100" height="30" rx="5" fill="#f8bbd9"/>
+  <text x="770" y="285" text-anchor="middle" font-size="11" fill="#333">Global State</text>
+  <rect x="830" y="265" width="100" height="30" rx="5" fill="#f8bbd9"/>
+  <text x="880" y="285" text-anchor="middle" font-size="11" fill="#333">Local State</text>
+  <text x="820" y="315" text-anchor="middle" font-size="12" fill="#666">Weather/time changes,</text>
+  <text x="820" y="330" text-anchor="middle" font-size="12" fill="#666">material phase transitions</text>
+  
+  <!-- PICA-100K Generation Pipeline -->
+  <rect x="50" y="420" width="900" height="180" rx="10" fill="#f5f5f5" stroke="#757575" stroke-width="2"/>
+  <text x="500" y="445" text-anchor="middle" font-weight="bold" font-size="16" fill="#424242">PICA-100K Generation Pipeline</text>
+  
+  <!-- Step 1: T2I Generation -->
+  <rect x="80" y="460" width="150" height="80" rx="8" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="155" y="485" text-anchor="middle" font-weight="bold" fill="#0277bd">Text-to-Image</text>
+  <text x="155" y="505" text-anchor="middle" font-size="12" fill="#333">FLUX.1-Krea-dev</text>
+  <text x="155" y="520" text-anchor="middle" font-size="12" fill="#333">Scene Generation</text>
+  
+  <!-- Step 2: I2V Generation -->
+  <rect x="270" y="460" width="150" height="80" rx="8" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="345" y="485" text-anchor="middle" font-weight="bold" fill="#7b1fa2">Image-to-Video</text>
+  <text x="345" y="505" text-anchor="middle" font-size="12" fill="#333">Wan2.2-14B</text>
+  <text x="345" y="520" text-anchor="middle" font-size="12" fill="#333">Physics Simulation</text>
+  
+  <!-- Step 3: Frame Extraction -->
+  <rect x="460" y="460" width="150" height="80" rx="8" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="535" y="485" text-anchor="middle" font-weight="bold" fill="#388e3c">Frame Extraction</text>
+  <text x="535" y="505" text-anchor="middle" font-size="12" fill="#333">First & Last Frames</text>
+  <text x="535" y="520" text-anchor="middle" font-size="12" fill="#333">Edit Pairs</text>
+  
+  <!-- Step 4: Instruction Generation -->
+  <rect x="650" y="460" width="150" height="80" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="725" y="485" text-anchor="middle" font-weight="bold" fill="#f57c00">Instruction Gen</text>
+  <text x="725" y="505" text-anchor="middle" font-size="12" fill="#333">GPT-5 Annotation</text>
+  <text x="725" y="520" text-anchor="middle" font-size="12" fill="#333">Multi-level Prompts</text>
+  
+  <!-- Step 5: Training -->
+  <rect x="770" y="550" width="150" height="40" rx="8" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="845" y="575" text-anchor="middle" font-weight="bold" fill="#d32f2f">LoRA Fine-tuning</text>
+  
+  <!-- Evaluation Results Box -->
+  <rect x="50" y="640" width="400" height="120" rx="10" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="250" y="665" text-anchor="middle" font-weight="bold" fill="#3f51b5">Evaluation Results</text>
+  <text x="250" y="685" text-anchor="middle" font-size="12" fill="#333">11 Models Benchmarked</text>
+  <text x="250" y="700" text-anchor="middle" font-size="12" fill="#333">Most models score &lt;60%</text>
+  <text x="250" y="715" text-anchor="middle" font-size="12" fill="#333">Large gap in physics awareness</text>
+  <text x="250" y="730" text-anchor="middle" font-size="12" fill="#333">PICA-100K improves baseline +1.71%</text>
+  <text x="250" y="745" text-anchor="middle" font-size="12" fill="#333">High correlation with human preference</text>
+  
+  <!-- Key Findings Box -->
+  <rect x="500" y="640" width="450" height="120" rx="10" fill="#f9fbe7" stroke="#827717" stroke-width="2"/>
+  <text x="725" y="665" text-anchor="middle" font-weight="bold" fill="#827717">Key Contributions</text>
+  <text x="725" y="685" text-anchor="middle" font-size="12" fill="#333">• PICABench: 8 sub-dimensions, 900 samples</text>
+  <text x="725" y="700" text-anchor="middle" font-size="12" fill="#333">• PICAEval: Region-aware VQA evaluation</text>
+  <text x="725" y="715" text-anchor="middle" font-size="12" fill="#333">• PICA-100K: Video-derived training data</text>
+  <text x="725" y="730" text-anchor="middle" font-size="12" fill="#333">• Comprehensive model evaluation</text>
+  <text x="725" y="745" text-anchor="middle" font-size="12" fill="#333">• Physics-aware editing advancement</text>
+  
+  <!-- Flow connections -->
+  <path d="M250 120 L300 120" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M500 120 L550 120" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M750 120 L800 120" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M230 500 L270 500" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M420 500 L460 500" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M610 500 L650 500" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M725 540 L770 570" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses region-specific QA pairs to evaluate physical realism">
+                        <div class="quiz-question">1. What is the main innovation of PICAEval compared to traditional image editing evaluation methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses region-specific QA pairs to evaluate physical realism">It uses region-specific QA pairs to evaluate physical realism</div><div class="quiz-choice" data-value="It evaluates the semantic accuracy of edits">It evaluates the semantic accuracy of edits</div><div class="quiz-choice" data-value="It measures computational efficiency of editing models">It measures computational efficiency of editing models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Using synthetic video data and generative models">
+                        <div class="quiz-question">2. How was the PICA-100K training dataset created?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Through manual annotation of real-world photos">Through manual annotation of real-world photos</div><div class="quiz-choice" data-value="By collecting images from social media">By collecting images from social media</div><div class="quiz-choice" data-value="Using synthetic video data and generative models">Using synthetic video data and generative models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Most models scored below 60% on physical realism metrics">
+                        <div class="quiz-question">3. What was a key finding from evaluating current image editing models on PICABench?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="All models achieved near-perfect physical realism">All models achieved near-perfect physical realism</div><div class="quiz-choice" data-value="Most models scored below 60% on physical realism metrics">Most models scored below 60% on physical realism metrics</div><div class="quiz-choice" data-value="The models only struggled with semantic accuracy">The models only struggled with semantic accuracy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-orchid.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Glyph: Scaling Context Windows via Visual-Text Compression</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.17800" target="_blank">http://arxiv.org/pdf/2510.17800</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Visual-text compression approach for scaling context windows in large language models using vision-language models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in long-context modeling and vision-language models, proposes a novel approach of rendering text as images to achieve compression rather than extending token windows or modifying attention mechanisms.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the prohibitive computational and memory costs of scaling context windows to million-token level in large language models.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a three-stage framework: continual pre-training on rendered text, LLM-driven genetic search for optimal rendering configurations, and post-training with supervised fine-tuning and reinforcement learning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves 3-4× token compression while maintaining accuracy comparable to leading LLMs like Qwen3-8B, with 4× faster prefilling/decoding and 2× faster training, enabling a 128K-context VLM to handle 1M-token tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Glyph: Scaling Context Windows via Visual-Text Compression</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stage1Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e3f2fd;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#bbdefb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stage2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3e5f5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ce93d8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stage3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8f5e8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a5d6a7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1000" height="800" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">
+    Glyph: Scaling Context Windows via Visual-Text Compression
+  </text>
+  
+  <!-- Stage 1: Continual Pre-Training -->
+  <rect x="50" y="80" width="280" height="200" rx="15" fill="url(#stage1Grad)" stroke="#1976d2" stroke-width="2"/>
+  <text x="190" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1976d2">
+    Stage 1: Continual Pre-Training
+  </text>
+  
+  <!-- Input Data -->
+  <rect x="70" y="120" width="120" height="40" rx="8" fill="#ffffff" stroke="#1976d2" stroke-width="1"/>
+  <text x="130" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1976d2">
+    Long Context
+  </text>
+  <text x="130" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1976d2">
+    Text Dataset
+  </text>
+  
+  <!-- Rendering -->
+  <rect x="200" y="120" width="120" height="40" rx="8" fill="#ffffff" stroke="#1976d2" stroke-width="1"/>
+  <text x="260" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1976d2">
+    Text Rendering
+  </text>
+  <text x="260" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1976d2">
+    to Images
+  </text>
+  
+  <!-- Training Tasks -->
+  <rect x="70" y="175" width="240" height="50" rx="8" fill="#ffffff" stroke="#1976d2" stroke-width="1"/>
+  <text x="190" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1976d2">
+    OCR Tasks • Interleaved LM • Generation Tasks
+  </text>
+  <text x="190" y="208" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1976d2">
+    → Transfer long-context capability to visual tokens
+  </text>
+  
+  <!-- Output -->
+  <rect x="130" y="235" width="120" height="30" rx="8" fill="#42a5f5" stroke="#1976d2" stroke-width="1"/>
+  <text x="190" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Glyph-Base
+  </text>
+  
+  <!-- Stage 2: LLM-Driven Rendering Search -->
+  <rect x="360" y="80" width="280" height="200" rx="15" fill="url(#stage2Grad)" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="500" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#7b1fa2">
+    Stage 2: LLM-Driven Rendering Search
+  </text>
+  
+  <!-- Genetic Algorithm Components -->
+  <rect x="380" y="120" width="100" height="35" rx="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="430" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    Initial Config
+  </text>
+  <text x="430" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    Population
+  </text>
+  
+  <rect x="490" y="120" width="130" height="35" rx="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="555" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    Evaluation on
+  </text>
+  <text x="555" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    Validation Set
+  </text>
+  
+  <rect x="380" y="165" width="110" height="35" rx="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="435" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    LLM Analysis
+  </text>
+  <text x="435" y="193" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    & Critique
+  </text>
+  
+  <rect x="500" y="165" width="120" height="35" rx="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="560" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    Mutation &
+  </text>
+  <text x="560" y="193" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7b1fa2">
+    Crossover
+  </text>
+  
+  <!-- Optimization Goal -->
+  <rect x="380" y="210" width="240" height="25" rx="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="500" y="227" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#7b1fa2">
+    Optimize: Compression Ratio vs Performance
+  </text>
+  
+  <!-- Output -->
+  <rect x="440" y="245" width="120" height="30" rx="8" fill="#ab47bc" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="500" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Optimal Config θ*
+  </text>
+  
+  <!-- Stage 3: Post-Training -->
+  <rect x="670" y="80" width="280" height="200" rx="15" fill="url(#stage3Grad)" stroke="#388e3c" stroke-width="2"/>
+  <text x="810" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#388e3c">
+    Stage 3: Post-Training
+  </text>
+  
+  <!-- SFT -->
+  <rect x="690" y="120" width="110" height="40" rx="8" fill="#ffffff" stroke="#388e3c" stroke-width="1"/>
+  <text x="745" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#388e3c">
+    Supervised
+  </text>
+  <text x="745" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#388e3c">
+    Fine-Tuning
+  </text>
+  
+  <!-- RL -->
+  <rect x="810" y="120" width="120" height="40" rx="8" fill="#ffffff" stroke="#388e3c" stroke-width="1"/>
+  <text x="870" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#388e3c">
+    Reinforcement
+  </text>
+  <text x="870" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#388e3c">
+    Learning (GRPO)
+  </text>
+  
+  <!-- OCR Task -->
+  <rect x="690" y="170" width="240" height="35" rx="8" fill="#ffffff" stroke="#388e3c" stroke-width="1"/>
+  <text x="810" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#388e3c">
+    Auxiliary OCR Alignment Task
+  </text>
+  <text x="810" y="198" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#388e3c">
+    (Enhance visual-text alignment)
+  </text>
+  
+  <!-- Final Output -->
+  <rect x="750" y="220" width="120" height="40" rx="8" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/>
+  <text x="810" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    Final Glyph
+  </text>
+  <text x="810" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Model
+  </text>
+  
+  <!-- Key Benefits Section -->
+  <rect x="50" y="320" width="900" height="120" rx="15" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="500" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#f57c00">
+    Key Achievements
+  </text>
+  
+  <!-- Compression -->
+  <circle cx="150" cy="380" r="40" fill="#ffcc02" stroke="#ff9800" stroke-width="2"/>
+  <text x="150" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    3-4×
+  </text>
+  <text x="150" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Compression
+  </text>
+  
+  <!-- Speed -->
+  <circle cx="350" cy="380" r="40" fill="#4caf50" stroke="#388e3c" stroke-width="2"/>
+  <text x="350" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+    4×
+  </text>
+  <text x="350" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    Speedup
+  </text>
+  
+  <!-- Context Extension -->
+  <circle cx="550" cy="380" r="40" fill="#2196f3" stroke="#1976d2" stroke-width="2"/>
+  <text x="550" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">
+    128K→1M
+  </text>
+  <text x="550" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Context
+  </text>
+  
+  <!-- Competitive Performance -->
+  <circle cx="750" cy="380" r="40" fill="#9c27b0" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="750" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Competitive
+  </text>
+  <text x="750" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">
+    Performance
+  </text>
+  
+  <!-- Technical Details Section -->
+  <rect x="50" y="470" width="900" height="150" rx="15" fill="#f5f5f5" stroke="#757575" stroke-width="2"/>
+  <text x="500" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#424242">
+    Technical Components
+  </text>
+  
+  <!-- Rendering Parameters -->
+  <rect x="80" y="510" width="180" height="80" rx="8" fill="#ffffff" stroke="#757575" stroke-width="1"/>
+  <text x="170" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#424242">
+    Rendering Parameters
+  </text>
+  <text x="170" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • DPI, Font Size, Layout
+  </text>
+  <text x="170" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Page Size, Alignment
+  </text>
+  <text x="170" y="564" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Colors, Spacing
+  </text>
+  <text x="170" y="576" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Typography Settings
+  </text>
+  
+  <!-- Loss Functions -->
+  <rect x="280" y="510" width="180" height="80" rx="8" fill="#ffffff" stroke="#757575" stroke-width="1"/>
+  <text x="370" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#424242">
+    Loss Functions
+  </text>
+  <text x="370" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Cross-entropy (Pre-train)
+  </text>
+  <text x="370" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • SFT Loss
+  </text>
+  <text x="370" y="564" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • GRPO Objective
+  </text>
+  <text x="370" y="576" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • OCR Alignment
+  </text>
+  
+  <!-- Data Types -->
+  <rect x="480" y="510" width="180" height="80" rx="8" fill="#ffffff" stroke="#757575" stroke-width="1"/>
+  <text x="570" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#424242">
+    Training Data
+  </text>
+  <text x="570" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Rendered Long Texts
+  </text>
+  <text x="570" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Multiple Style Themes
+  </text>
+  <text x="570" y="564" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • OCR Training Data
+  </text>
+  <text x="570" y="576" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • SFT & RL Datasets
+  </text>
+  
+  <!-- Evaluation -->
+  <rect x="680" y="510" width="180" height="80" rx="8" fill="#ffffff" stroke="#757575" stroke-width="1"/>
+  <text x="770" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#424242">
+    Evaluation
+  </text>
+  <text x="770" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • LongBench, MRCR
+  </text>
+  <text x="770" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Ruler Benchmark
+  </text>
+  <text x="770" y="564" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Efficiency Metrics
+  </text>
+  <text x="770" y="576" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">
+    • Cross-modal Tasks
+  </text>
+  
+  <!-- Visual Flow Connections -->
+  <path d="M 330 180 Q 345 180 360 180" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 640 180 Q 655 180 670 180" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Core Innovation Highlight -->
+  <rect x="200" y="650" width="600" height="80" rx="15" fill="#e8f5e8" stroke="#4caf50" stroke-width="3"/>
+  <text x="500" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2e7d32">
+    Core Innovation: Visual-Text Compression
+  </text>
+  <text x="500" y="695" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#388e3c">
+    Transform long text sequences into compact visual representations
+  </text>
+  <text x="500" y="710" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#388e3c">
+    Process with Vision-Language Models for efficient long-context understanding
+  </text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Converting text into compressed visual representations">
+                        <div class="quiz-question">1. What is the main innovation of Glyph compared to traditional approaches for handling long contexts?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a new type of attention mechanism">Using a new type of attention mechanism</div><div class="quiz-choice" data-value="Converting text into compressed visual representations">Converting text into compressed visual representations</div><div class="quiz-choice" data-value="Extending the positional encoding scheme">Extending the positional encoding scheme</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="8×">
+                        <div class="quiz-question">2. What is the maximum compression ratio achieved by Glyph under extreme settings while maintaining comparable performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="3-4×">3-4×</div><div class="quiz-choice" data-value="5-6×">5-6×</div><div class="quiz-choice" data-value="8×">8×</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="LLM-Driven Genetic Search">
+                        <div class="quiz-question">3. Which stage of Glyph's framework is responsible for finding the optimal balance between compression and accuracy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Continual Pre-Training">Continual Pre-Training</div><div class="quiz-choice" data-value="LLM-Driven Genetic Search">LLM-Driven Genetic Search</div><div class="quiz-choice" data-value="Post-Training">Post-Training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>QueST: Incentivizing LLMs to Generate Difficult Problems</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.17715" target="_blank">http://arxiv.org/pdf/2510.17715</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing a framework for generating difficult coding problems using large language models in the domain of AI/ML education and assessment.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous synthetic data generation and augmentation methods, it proposes a novel framework called QueST that combines difficulty-aware graph sampling and rejection fine-tuning to generate challenging problems.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the scalability limitation of training LLMs due to the scarcity of human-labeled, challenging coding problem datasets.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a combination of difficulty-aware graph sampling to select concepts and difficulty-aware rejection fine-tuning to train specialized generators for creating challenging coding problems.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> After fine-tuning Qwen3-8B-base on 100K difficult problems generated by QueST plus 112K additional examples, the model matched the performance of the much larger DeepSeek-R1-671B on coding benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>QueST: Incentivizing LLMs to Generate Difficult Problems</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">QueST: Incentivizing LLMs to Generate Difficult Problems</text>
+  
+  <!-- Phase 1: Concept Extraction -->
+  <rect x="50" y="80" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="115" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Concept Extraction</text>
+  <text x="150" y="135" text-anchor="middle" font-size="12" fill="white">From Seed Problems</text>
+  
+  <!-- Seed Data -->
+  <rect x="50" y="200" width="150" height="60" rx="5" fill="#3498db" opacity="0.7"/>
+  <text x="125" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">TACO Dataset</text>
+  <text x="125" y="245" text-anchor="middle" font-size="11" fill="white">25.4K samples</text>
+  
+  <!-- Phase 2: Graph Construction -->
+  <rect x="300" y="80" width="250" height="120" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="425" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Difficulty-Aware Graph Construction</text>
+  <text x="425" y="130" text-anchor="middle" font-size="12" fill="white">w(u,v) = log(α·freq(u,v) + (1-α)·diff(u,v) + ε)</text>
+  <text x="425" y="150" text-anchor="middle" font-size="11" fill="white">Co-occurrence + Difficulty weighting</text>
+  <text x="425" y="170" text-anchor="middle" font-size="11" fill="white">Random walk sampling</text>
+  
+  <!-- Phase 3: Problem Generation -->
+  <rect x="600" y="80" width="200" height="80" rx="10" fill="#e67e22" opacity="0.8"/>
+  <text x="700" y="115" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Problem Generation</text>
+  <text x="700" y="135" text-anchor="middle" font-size="12" fill="white">Based on sampled concepts</text>
+  
+  <!-- Phase 4: Difficulty Estimation -->
+  <rect x="200" y="280" width="300" height="120" rx="10" fill="#27ae60" opacity="0.8"/>
+  <text x="350" y="310" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Difficulty Estimation</text>
+  <text x="350" y="330" text-anchor="middle" font-size="12" fill="white">δ(q) = 1 - (1/T) Σ f(ot,Ot)/M</text>
+  <text x="350" y="350" text-anchor="middle" font-size="11" fill="white">Generate M solutions</text>
+  <text x="350" y="370" text-anchor="middle" font-size="11" fill="white">Test on T inputs</text>
+  <text x="350" y="390" text-anchor="middle" font-size="11" fill="white">Majority voting rate</text>
+  
+  <!-- Phase 5: Rejection Fine-tuning -->
+  <rect x="550" y="280" width="250" height="100" rx="10" fill="#f39c12" opacity="0.8"/>
+  <text x="675" y="310" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Rejection Fine-tuning</text>
+  <text x="675" y="330" text-anchor="middle" font-size="12" fill="white">Sample K problems per prompt</text>
+  <text x="675" y="350" text-anchor="middle" font-size="12" fill="white">q* = argmax δ(qk)</text>
+  <text x="675" y="370" text-anchor="middle" font-size="11" fill="white">Keep most difficult only</text>
+  
+  <!-- Phase 6: Dataset Generation -->
+  <rect x="350" y="450" width="200" height="80" rx="10" fill="#8e44ad" opacity="0.8"/>
+  <text x="450" y="485" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Large-scale Generation</text>
+  <text x="450" y="505" text-anchor="middle" font-size="12" fill="white">100K difficult problems</text>
+  
+  <!-- Phase 7: Teacher Response -->
+  <rect x="100" y="580" width="200" height="80" rx="10" fill="#34495e" opacity="0.8"/>
+  <text x="200" y="615" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Teacher Model Response</text>
+  <text x="200" y="635" text-anchor="middle" font-size="12" fill="white">Qwen3-235B-A22B</text>
+  
+  <!-- Phase 8: Student Training -->
+  <rect x="400" y="580" width="180" height="80" rx="10" fill="#16a085" opacity="0.8"/>
+  <text x="490" y="615" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Student Training</text>
+  <text x="490" y="635" text-anchor="middle" font-size="12" fill="white">SFT + RL</text>
+  
+  <!-- Phase 9: Evaluation -->
+  <rect x="650" y="580" width="180" height="80" rx="10" fill="#c0392b" opacity="0.8"/>
+  <text x="740" y="610" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Evaluation</text>
+  <text x="740" y="630" text-anchor="middle" font-size="11" fill="white">LiveCodeBench-V5</text>
+  <text x="740" y="650" text-anchor="middle" font-size="11" fill="white">USACO</text>
+  
+  <!-- Results Box -->
+  <rect x="900" y="300" width="250" height="200" rx="10" fill="#2980b9" opacity="0.9"/>
+  <text x="1025" y="330" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Key Results</text>
+  <text x="1025" y="360" text-anchor="middle" font-size="12" fill="white">QueST-8B achieves</text>
+  <text x="1025" y="380" text-anchor="middle" font-size="12" fill="white">65.2% on LiveCodeBench</text>
+  <text x="1025" y="410" text-anchor="middle" font-size="12" fill="white">Matches DeepSeek-R1-671B</text>
+  <text x="1025" y="430" text-anchor="middle" font-size="12" fill="white">with 80x fewer parameters</text>
+  <text x="1025" y="460" text-anchor="middle" font-size="12" fill="white">212K training samples</text>
+  <text x="1025" y="480" text-anchor="middle" font-size="12" fill="white">New Pareto optimum</text>
+  
+  <!-- Data Flow Connections -->
+  <path d="M 250 120 Q 275 120 300 120" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 550 140 Q 575 140 600 140" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 425 200 Q 425 240 350 280" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 340 Q 525 340 550 340" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 600 380 Q 550 415 550 450" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400 530 Q 350 555 300 580" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 450 530 Q 450 555 490 580" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 580 620 Q 615 620 650 620" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Method Components Legend -->
+  <rect x="50" y="750" width="500" height="120" rx="5" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="300" y="775" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Method Components</text>
+  <circle cx="80" cy="800" r="8" fill="#e74c3c"/>
+  <text x="100" y="805" font-size="12" fill="#2c3e50">Concept Extraction & Graph Construction</text>
+  <circle cx="80" cy="825" r="8" fill="#27ae60"/>
+  <text x="100" y="830" font-size="12" fill="#2c3e50">Difficulty Estimation (Majority Voting)</text>
+  <circle cx="80" cy="850" r="8" fill="#f39c12"/>
+  <text x="100" y="855" font-size="12" fill="#2c3e50">Rejection Fine-tuning of Generator</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It directly trains specialized generators to create challenging problems">
+                        <div class="quiz-question">1. What is the primary innovation of QueST compared to previous synthetic data generation methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses existing human-labeled problems to create new ones">It uses existing human-labeled problems to create new ones</div><div class="quiz-choice" data-value="It directly trains specialized generators to create challenging problems">It directly trains specialized generators to create challenging problems</div><div class="quiz-choice" data-value="It only focuses on mathematical reasoning problems">It only focuses on mathematical reasoning problems</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By analyzing the consistency of multiple model outputs">
+                        <div class="quiz-question">2. How does QueST measure the difficulty of a generated problem?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By counting the number of concepts involved in the problem">By counting the number of concepts involved in the problem</div><div class="quiz-choice" data-value="By measuring the length of the problem statement">By measuring the length of the problem statement</div><div class="quiz-choice" data-value="By analyzing the consistency of multiple model outputs">By analyzing the consistency of multiple model outputs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It matched the performance of a 671B parameter model">
+                        <div class="quiz-question">3. What significant achievement did the QueST-trained 8B model accomplish?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It generated more problems than any previous model">It generated more problems than any previous model</div><div class="quiz-choice" data-value="It matched the performance of a 671B parameter model">It matched the performance of a 671B parameter model</div><div class="quiz-choice" data-value="It solved all competitive coding problems perfectly">It solved all competitive coding problems perfectly</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
