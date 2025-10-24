@@ -1,0 +1,1037 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-10-24 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-10-24 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Open-o3 Video: Grounded Video Reasoning with Explicit Spatio-Temporal
+  Evidence</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.20579" target="_blank">http://arxiv.org/pdf/2510.20579</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Video reasoning with explicit spatio-temporal evidence grounding, in the domain of multimodal AI and computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on OpenAI-o3's evidence-centered reasoning for images, proposes extending this to videos by integrating explicit spatio-temporal evidence into video reasoning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing video reasoning models only generate textual reasoning without indicating when and where key evidence appears, making it difficult to verify their reasoning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a two-stage approach: (1) curates high-quality spatio-temporal training data, and (2) applies reinforcement learning with adaptive temporal proximity and temporal gating mechanisms to optimize temporal and spatial grounding.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance on V-STAR benchmark, improving mAM by 14.4% and mLGM by 24.2% over baseline Qwen2.5-VL, with consistent gains on other video understanding benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Open-o3 Video: Grounded Video Reasoning with Explicit Spatio-Temporal
+  Evidence</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    Open-o3 Video: Grounded Video Reasoning Workflow
+  </text>
+  
+  <!-- Data Construction Phase -->
+  <rect x="50" y="60" width="280" height="140" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="190" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Construction</text>
+  
+  <circle cx="120" cy="110" r="15" fill="#3498db"/>
+  <text x="150" y="115" font-size="11" fill="#2c3e50">Temporal Grounding Sources</text>
+  
+  <circle cx="120" cy="135" r="15" fill="#9b59b6"/>
+  <text x="150" y="140" font-size="11" fill="#2c3e50">PLM-Rdcap Sources</text>
+  
+  <circle cx="120" cy="160" r="15" fill="#e74c3c"/>
+  <text x="150" y="165" font-size="11" fill="#2c3e50">5.9k Manual Annotations</text>
+  
+  <text x="190" y="185" text-anchor="middle" font-size="10" fill="#7f8c8d">STGR-CoT-30k + STGR-RL-36k</text>
+  
+  <!-- Annotation Pipeline -->
+  <rect x="380" y="60" width="240" height="140" rx="10" fill="#fff3cd" stroke="#f39c12" stroke-width="2"/>
+  <text x="500" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Annotation Pipeline</text>
+  
+  <rect x="400" y="95" width="200" height="20" rx="5" fill="#f39c12"/>
+  <text x="500" y="108" text-anchor="middle" font-size="10" fill="white">Gemini 2.5 Pro Initial Annotation</text>
+  
+  <rect x="400" y="125" width="200" height="20" rx="5" fill="#e67e22"/>
+  <text x="500" y="138" text-anchor="middle" font-size="10" fill="white">Bounding Box Filtering</text>
+  
+  <rect x="400" y="155" width="200" height="20" rx="5" fill="#d35400"/>
+  <text x="500" y="168" text-anchor="middle" font-size="10" fill="white">Self-consistency Checking</text>
+  
+  <!-- Cold Start Training -->
+  <rect x="670" y="60" width="280" height="140" rx="10" fill="#d5f4e6" stroke="#27ae60" stroke-width="2"/>
+  <text x="810" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Cold Start Training</text>
+  
+  <circle cx="730" cy="110" r="20" fill="#27ae60"/>
+  <text x="730" y="115" text-anchor="middle" font-size="10" fill="white">SFT</text>
+  
+  <text x="810" y="135" text-anchor="middle" font-size="11" fill="#2c3e50">Qwen2.5-VL-7B Base Model</text>
+  <text x="810" y="150" text-anchor="middle" font-size="11" fill="#2c3e50">+ STGR-CoT-30k</text>
+  <text x="810" y="165" text-anchor="middle" font-size="11" fill="#2c3e50">Learning Rate: 1×10⁻⁶</text>
+  <text x="810" y="180" text-anchor="middle" font-size="11" fill="#2c3e50">1 Epoch</text>
+  
+  <!-- Reinforcement Learning -->
+  <rect x="50" y="250" width="400" height="200" rx="10" fill="#fdeaea" stroke="#e74c3c" stroke-width="2"/>
+  <text x="250" y="270" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Reinforcement Learning (GSPO)</text>
+  
+  <!-- Reward Components -->
+  <rect x="70" y="290" width="110" height="60" rx="5" fill="#ff7675"/>
+  <text x="125" y="310" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Accuracy</text>
+  <text x="125" y="325" text-anchor="middle" font-size="9" fill="white">r_acc</text>
+  <text x="125" y="340" text-anchor="middle" font-size="8" fill="white">MCQ/ROUGE/IoU</text>
+  
+  <rect x="195" y="290" width="110" height="60" rx="5" fill="#fd79a8"/>
+  <text x="250" y="310" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Temporal</text>
+  <text x="250" y="325" text-anchor="middle" font-size="9" fill="white">r_t</text>
+  <text x="250" y="340" text-anchor="middle" font-size="8" fill="white">Adaptive Proximity</text>
+  
+  <rect x="320" y="290" width="110" height="60" rx="5" fill="#a29bfe"/>
+  <text x="375" y="310" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Spatial</text>
+  <text x="375" y="325" text-anchor="middle" font-size="9" fill="white">r_s</text>
+  <text x="375" y="340" text-anchor="middle" font-size="8" fill="white">Temporal Gating</text>
+  
+  <!-- Key Innovations -->
+  <rect x="70" y="370" width="360" height="70" rx="5" fill="#fab1a0"/>
+  <text x="250" y="390" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Key Innovations</text>
+  <text x="100" y="410" font-size="10" fill="#2c3e50">• Adaptive Temporal Proximity: σ = 4→1</text>
+  <text x="100" y="425" font-size="10" fill="#2c3e50">• Temporal Gating: τ = 3s threshold</text>
+  
+  <!-- Output Generation -->
+  <rect x="500" y="250" width="450" height="200" rx="10" fill="#e8f8f5" stroke="#16a085" stroke-width="2"/>
+  <text x="725" y="270" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Spatio-Temporal Output</text>
+  
+  <!-- Output Format Example -->
+  <rect x="520" y="290" width="410" height="100" rx="5" fill="#ffffff" stroke="#bdc3c7"/>
+  <text x="530" y="310" font-size="9" font-family="monospace" fill="#2c3e50">&lt;think&gt;</text>
+  <text x="530" y="325" font-size="9" font-family="monospace" fill="#2c3e50">The video shows &lt;obj&gt;woman&lt;/obj&gt;</text>
+  <text x="530" y="340" font-size="9" font-family="monospace" fill="#2c3e50">&lt;box&gt;[374,67,420,224]&lt;/box&gt;at&lt;t&gt;9.2&lt;/t&gt;s</text>
+  <text x="530" y="355" font-size="9" font-family="monospace" fill="#2c3e50">wearing a red vest...</text>
+  <text x="530" y="370" font-size="9" font-family="monospace" fill="#2c3e50">&lt;/think&gt;</text>
+  <text x="530" y="385" font-size="9" font-family="monospace" fill="#2c3e50">&lt;answer&gt;Red vest over white shirt&lt;/answer&gt;</text>
+  
+  <!-- Evaluation -->
+  <rect x="200" y="500" width="600" height="120" rx="10" fill="#f4f1fb" stroke="#8e44ad" stroke-width="2"/>
+  <text x="500" y="520" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Evaluation Results</text>
+  
+  <rect x="220" y="540" width="130" height="40" rx="5" fill="#9b59b6"/>
+  <text x="285" y="555" text-anchor="middle" font-size="10" fill="white">V-STAR</text>
+  <text x="285" y="570" text-anchor="middle" font-size="9" fill="white">+14.4% mAM</text>
+  
+  <rect x="370" y="540" width="130" height="40" rx="5" fill="#3498db"/>
+  <text x="435" y="555" text-anchor="middle" font-size="10" fill="white">VideoMME</text>
+  <text x="435" y="570" text-anchor="middle" font-size="9" fill="white">+1.2% Overall</text>
+  
+  <rect x="520" y="540" width="130" height="40" rx="5" fill="#e74c3c"/>
+  <text x="585" y="555" text-anchor="middle" font-size="10" fill="white">WorldSense</text>
+  <text x="585" y="570" text-anchor="middle" font-size="9" fill="white">+1.4% Overall</text>
+  
+  <rect x="670" y="540" width="110" height="40" rx="5" fill="#f39c12"/>
+  <text x="725" y="555" text-anchor="middle" font-size="10" fill="white">TVGBench</text>
+  <text x="725" y="570" text-anchor="middle" font-size="9" fill="white">+4.5 mIoU</text>
+  
+  <!-- Test-time Scaling -->
+  <rect x="250" y="650" width="500" height="100" rx="10" fill="#fcf3cf" stroke="#f1c40f" stroke-width="2"/>
+  <text x="500" y="670" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Test-time Scaling</text>
+  
+  <circle cx="350" cy="700" r="15" fill="#f1c40f"/>
+  <text x="380" y="705" font-size="11" fill="#2c3e50">Generate N=8 responses</text>
+  
+  <circle cx="350" cy="725" r="15" fill="#e67e22"/>
+  <text x="380" y="730" font-size="11" fill="#2c3e50">Confidence-aware voting with evidence</text>
+  
+  <text x="650" y="705" font-size="10" fill="#7f8c8d">+1.0% on VideoMMMU</text>
+  <text x="650" y="720" font-size="10" fill="#7f8c8d">+1.2% on WorldSense</text>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It incorporates explicit spatio-temporal evidence in its reasoning process">
+                        <div class="quiz-question">1. What is the main innovation of Open-o3 Video compared to previous video reasoning models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more advanced language models for reasoning">It uses more advanced language models for reasoning</div><div class="quiz-choice" data-value="It incorporates explicit spatio-temporal evidence in its reasoning process">It incorporates explicit spatio-temporal evidence in its reasoning process</div><div class="quiz-choice" data-value="It processes videos at a much faster speed">It processes videos at a much faster speed</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Two-stage approach with supervised fine-tuning and reinforcement learning">
+                        <div class="quiz-question">2. Which training strategy does Open-o3 Video use to improve its performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Single-stage end-to-end training">Single-stage end-to-end training</div><div class="quiz-choice" data-value="Unsupervised pre-training followed by fine-tuning">Unsupervised pre-training followed by fine-tuning</div><div class="quiz-choice" data-value="Two-stage approach with supervised fine-tuning and reinforcement learning">Two-stage approach with supervised fine-tuning and reinforcement learning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="14.4%">
+                        <div class="quiz-question">3. What was the improvement in mAM (mean Arithmetic Mean) achieved by Open-o3 Video over the Qwen2.5-VL baseline?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="5.2%">5.2%</div><div class="quiz-choice" data-value="14.4%">14.4%</div><div class="quiz-choice" data-value="24.2%">24.2%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>HoloCine: Holistic Generation of Cinematic Multi-Shot Long Video
+  Narratives</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.20822" target="_blank">http://arxiv.org/pdf/2510.20822</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Text-to-video generation focusing on creating coherent, multi-shot cinematic narratives using AI.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous single-shot video generation models and diffusion transformers, proposing a novel holistic approach that generates entire scenes in one pass rather than sequential or chunk-based generation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Bridging the "narrative gap" between current AI's ability to generate isolated video clips versus creating coherent, multi-shot narratives that maintain consistency across scenes.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Developed HoloCine framework with two key mechanisms: Window Cross-Attention for precise directorial control and Sparse Inter-Shot Self-Attention for efficient computation across long videos.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved state-of-the-art performance in narrative coherence, transition control, and character consistency, while demonstrating emergent capabilities like persistent memory for characters and intuitive grasp of cinematic techniques.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>HoloCine: Holistic Generation of Cinematic Multi-Shot Long Video
+  Narratives</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">HoloCine: Holistic Generation of Cinematic Multi-Shot Long Video Narratives</text>
+  
+  <!-- Data Curation Section -->
+  <rect x="50" y="60" width="200" height="120" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="150" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Curation</text>
+  <text x="150" y="100" text-anchor="middle" font-size="11" fill="#34495e">Shot Segmentation</text>
+  <text x="150" y="115" text-anchor="middle" font-size="11" fill="#34495e">Multi-Shot Assembly</text>
+  <text x="150" y="130" text-anchor="middle" font-size="11" fill="#34495e">Hierarchical Captioning</text>
+  <text x="150" y="145" text-anchor="middle" font-size="11" fill="#34495e">400k samples</text>
+  <text x="150" y="160" text-anchor="middle" font-size="11" fill="#34495e">with Gemini 2.5</text>
+  
+  <!-- Core Architecture Section -->
+  <rect x="300" y="60" width="400" height="300" fill="#fff2e8" stroke="#e67e22" stroke-width="3" rx="15"/>
+  <text x="500" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">HoloCine Architecture</text>
+  
+  <!-- Window Cross-Attention -->
+  <rect x="320" y="110" width="160" height="100" fill="#e8f8f5" stroke="#27ae60" stroke-width="2" rx="8"/>
+  <text x="400" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Window Cross-Attention</text>
+  <text x="400" y="150" text-anchor="middle" font-size="10" fill="#34495e">Localizes text prompts</text>
+  <text x="400" y="165" text-anchor="middle" font-size="10" fill="#34495e">to specific shots</text>
+  <text x="400" y="180" text-anchor="middle" font-size="10" fill="#34495e">Enables precise</text>
+  <text x="400" y="195" text-anchor="middle" font-size="10" fill="#34495e">directorial control</text>
+  
+  <!-- Sparse Inter-Shot Self-Attention -->
+  <rect x="520" y="110" width="160" height="100" fill="#fdf2e9" stroke="#d35400" stroke-width="2" rx="8"/>
+  <text x="600" y="125" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Sparse Inter-Shot</text>
+  <text x="600" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Self-Attention</text>
+  <text x="600" y="160" text-anchor="middle" font-size="10" fill="#34495e">Dense within shots</text>
+  <text x="600" y="175" text-anchor="middle" font-size="10" fill="#34495e">Sparse between shots</text>
+  <text x="600" y="190" text-anchor="middle" font-size="10" fill="#34495e">O(N×L²) → O(N×L)</text>
+  
+  <!-- Holistic Generation Process -->
+  <rect x="320" y="230" width="360" height="80" fill="#f4e6ff" stroke="#8e44ad" stroke-width="2" rx="8"/>
+  <text x="500" y="250" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Holistic Generation Process</text>
+  <text x="500" y="270" text-anchor="middle" font-size="10" fill="#34495e">All shots processed simultaneously in single diffusion pass</text>
+  <text x="500" y="285" text-anchor="middle" font-size="10" fill="#34495e">Built on DiT-based video diffusion model (Wan2.2 14B)</text>
+  <text x="500" y="300" text-anchor="middle" font-size="10" fill="#34495e">Joint self-attention for global consistency</text>
+  
+  <!-- Training Details -->
+  <rect x="750" y="60" width="200" height="120" fill="#fef9e7" stroke="#f39c12" stroke-width="2" rx="10"/>
+  <text x="850" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Training Setup</text>
+  <text x="850" y="100" text-anchor="middle" font-size="11" fill="#34495e">10k steps</text>
+  <text x="850" y="115" text-anchor="middle" font-size="11" fill="#34495e">128 NVIDIA H800 GPUs</text>
+  <text x="850" y="130" text-anchor="middle" font-size="11" fill="#34495e">480×832 resolution</text>
+  <text x="850" y="145" text-anchor="middle" font-size="11" fill="#34495e">Max 13 shots/video</text>
+  <text x="850" y="160" text-anchor="middle" font-size="11" fill="#34495e">FSDP + Context Parallelism</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="50" y="400" width="300" height="150" fill="#f0f3ff" stroke="#3742fa" stroke-width="2" rx="10"/>
+  <text x="200" y="420" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Evaluation Metrics</text>
+  <text x="200" y="445" text-anchor="middle" font-size="11" fill="#34495e">• Shot Cut Accuracy (SCA)</text>
+  <text x="200" y="460" text-anchor="middle" font-size="11" fill="#34495e">• Inter-shot Consistency</text>
+  <text x="200" y="475" text-anchor="middle" font-size="11" fill="#34495e">• Intra-shot Consistency</text>
+  <text x="200" y="490" text-anchor="middle" font-size="11" fill="#34495e">• Semantic Consistency</text>
+  <text x="200" y="505" text-anchor="middle" font-size="11" fill="#34495e">• Aesthetic Quality</text>
+  <text x="200" y="520" text-anchor="middle" font-size="11" fill="#34495e">• VBench benchmark</text>
+  <text x="200" y="535" text-anchor="middle" font-size="11" fill="#34495e">• 100 diverse test prompts</text>
+  
+  <!-- Emergent Capabilities -->
+  <rect x="400" y="400" width="250" height="150" fill="#f0fff4" stroke="#00b894" stroke-width="2" rx="10"/>
+  <text x="525" y="420" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Emergent Capabilities</text>
+  <text x="525" y="445" text-anchor="middle" font-size="11" fill="#34495e">• Persistent Memory</text>
+  <text x="525" y="460" text-anchor="middle" font-size="11" fill="#34495e">• Character Consistency</text>
+  <text x="525" y="475" text-anchor="middle" font-size="11" fill="#34495e">• Long-range Re-appearance</text>
+  <text x="525" y="490" text-anchor="middle" font-size="11" fill="#34495e">• Fine-grained Detail Persistence</text>
+  <text x="525" y="505" text-anchor="middle" font-size="11" fill="#34495e">• Cinematic Language Control</text>
+  <text x="525" y="520" text-anchor="middle" font-size="11" fill="#34495e">• Shot Scale/Angle/Movement</text>
+  
+  <!-- Comparison Results -->
+  <rect x="700" y="400" width="250" height="150" fill="#fff0f6" stroke="#e84393" stroke-width="2" rx="10"/>
+  <text x="825" y="420" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Comparison Results</text>
+  <text x="825" y="445" text-anchor="middle" font-size="11" fill="#34495e">vs Wan2.2 (pre-trained)</text>
+  <text x="825" y="460" text-anchor="middle" font-size="11" fill="#34495e">vs StoryDiffusion+Wan2.2</text>
+  <text x="825" y="475" text-anchor="middle" font-size="11" fill="#34495e">vs IC-LoRA+Wan2.2</text>
+  <text x="825" y="490" text-anchor="middle" font-size="11" fill="#34495e">vs CineTrans</text>
+  <text x="825" y="505" text-anchor="middle" font-size="11" fill="#34495e">vs Commercial models</text>
+  <text x="825" y="520" text-anchor="middle" font-size="11" fill="#34495e">(Vidu, Kling, Sora2)</text>
+  <text x="825" y="535" text-anchor="middle" font-size="11" font-weight="bold" fill="#e74c3c">State-of-the-art Results</text>
+  
+  <!-- Ablation Studies -->
+  <rect x="200" y="600" width="600" height="120" fill="#f8f9fa" stroke="#6c757d" stroke-width="2" rx="10"/>
+  <text x="500" y="620" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Ablation Studies</text>
+  
+  <rect x="220" y="640" width="170" height="60" fill="#fff5f5" stroke="#e74c3c" stroke-width="1" rx="5"/>
+  <text x="305" y="655" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">w/o Window</text>
+  <text x="305" y="670" text-anchor="middle" font-size="10" fill="#34495e">Lower SCA</text>
+  <text x="305" y="685" text-anchor="middle" font-size="10" fill="#34495e">Poor shot control</text>
+  
+  <rect x="415" y="640" width="170" height="60" fill="#f5f5ff" stroke="#6c5ce7" stroke-width="1" rx="5"/>
+  <text x="500" y="655" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Full vs Sparse</text>
+  <text x="500" y="670" text-anchor="middle" font-size="10" fill="#34495e">Similar quality</text>
+  <text x="500" y="685" text-anchor="middle" font-size="10" fill="#34495e">Much faster</text>
+  
+  <rect x="610" y="640" width="170" height="60" fill="#f0fff4" stroke="#00b894" stroke-width="1" rx="5"/>
+  <text x="695" y="655" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">w/o Summary</text>
+  <text x="695" y="670" text-anchor="middle" font-size="10" fill="#34495e">Loss of consistency</text>
+  <text x="695" y="685" text-anchor="middle" font-size="10" fill="#34495e">Character drift</text>
+  
+  <!-- Limitations -->
+  <rect x="350" y="750" width="300" height="40" fill="#ffe8e8" stroke="#ff6b6b" stroke-width="2" rx="8"/>
+  <text x="500" y="770" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Limitation: Causal Reasoning</text>
+  <text x="500" y="785" text-anchor="middle" font-size="10" fill="#34495e">Prioritizes visual consistency over logical consequences</text>
+  
+  <!-- Flow connections (minimal as requested) -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="700" y1="120" x2="750" y2="120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="360" x2="500" y2="400" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="550" x2="500" y2="600" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="720" x2="500" y2="750" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Sparse Inter-Shot Self-Attention pattern">
+                        <div class="quiz-question">1. What is the main technical innovation that allows HoloCine to maintain efficiency when generating long videos?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Window Cross-Attention mechanism">Window Cross-Attention mechanism</div><div class="quiz-choice" data-value="Sparse Inter-Shot Self-Attention pattern">Sparse Inter-Shot Self-Attention pattern</div><div class="quiz-choice" data-value="Hierarchical prompt structure">Hierarchical prompt structure</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Persistent memory for characters and scenes across shots">
+                        <div class="quiz-question">2. What unexpected capability emerged from HoloCine that wasn't explicitly designed for?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The ability to generate special effects">The ability to generate special effects</div><div class="quiz-choice" data-value="The ability to create original music scores">The ability to create original music scores</div><div class="quiz-choice" data-value="Persistent memory for characters and scenes across shots">Persistent memory for characters and scenes across shots</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The 'narrative gap' between single clips and coherent multi-shot stories">
+                        <div class="quiz-question">3. What fundamental problem in AI video generation does HoloCine address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The 'narrative gap' between single clips and coherent multi-shot stories">The 'narrative gap' between single clips and coherent multi-shot stories</div><div class="quiz-choice" data-value="The inability to generate high-resolution videos">The inability to generate high-resolution videos</div><div class="quiz-choice" data-value="The lack of realistic audio generation">The lack of realistic audio generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>AdaSPEC: Selective Knowledge Distillation for Efficient Speculative
+  Decoders</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-22</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.19779" target="_blank">http://arxiv.org/pdf/2510.19779</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Efficient speculative decoding for large language models through selective knowledge distillation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on conventional knowledge distillation and speculative decoding methods, proposes a novel selective token filtering approach for more efficient knowledge transfer.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the inefficiency in traditional knowledge distillation methods where draft models struggle to fully assimilate target model knowledge due to capacity constraints.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces AdaSPEC, a two-phase approach using reference model distillation to identify hard-to-fit tokens, then selectively distilling knowledge on easier tokens to the draft model.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Consistently outperformed state-of-the-art DistillSpec method across diverse tasks (arithmetic, instruction-following, coding, summarization), achieving up to 15% higher acceptance rates with model configurations of 31M/1.4B and 350M/2.7B parameters.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>AdaSPEC: Selective Knowledge Distillation for Efficient Speculative
+  Decoders</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">AdaSPEC: Selective Knowledge Distillation Workflow</text>
+  
+  <!-- Phase 1: Reference Model Construction -->
+  <rect x="50" y="80" width="400" height="200" rx="15" fill="#e8f4fd" stroke="#3498db" stroke-width="3"/>
+  <text x="250" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Phase 1: Reference Model Construction</text>
+  
+  <!-- Target Model -->
+  <rect x="70" y="130" width="120" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="130" y="155" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Target Model Mp</text>
+  <text x="130" y="170" text-anchor="middle" font-size="10" fill="white">(Fine-tuned)</text>
+  
+  <!-- KL Divergence Arrow -->
+  <path d="M 210 155 Q 250 155 290 155" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <text x="250" y="145" text-anchor="middle" font-size="10" fill="#e74c3c" font-weight="bold">KL Divergence</text>
+  
+  <!-- Reference Model -->
+  <rect x="310" y="130" width="120" height="50" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="370" y="155" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Reference Model</text>
+  <text x="370" y="170" text-anchor="middle" font-size="10" fill="white">Mref</text>
+  
+  <!-- Dataset -->
+  <rect x="70" y="210" width="120" height="40" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="130" y="235" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Dataset D</text>
+  
+  <!-- Phase 2: Token Filtering -->
+  <rect x="50" y="320" width="400" height="220" rx="15" fill="#fdf2e9" stroke="#e67e22" stroke-width="3"/>
+  <text x="250" y="345" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Phase 2: Token Filtering Process</text>
+  
+  <!-- Loss Computation -->
+  <rect x="70" y="370" width="160" height="80" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="150" y="390" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Compute Token Losses</text>
+  <text x="150" y="405" text-anchor="middle" font-size="9" fill="white">L_ref(w) = KL(P||R)</text>
+  <text x="150" y="420" text-anchor="middle" font-size="9" fill="white">L_draft(w) = KL(P||Q)</text>
+  <text x="150" y="435" text-anchor="middle" font-size="9" fill="white">ΔL(w) = L_draft - L_ref</text>
+  
+  <!-- Filter Decision -->
+  <polygon points="270,370 350,410 270,450 190,410" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="270" y="405" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Select Top k%</text>
+  <text x="270" y="420" text-anchor="middle" font-size="9" fill="white">tokens by ΔL(w)</text>
+  
+  <!-- Filtered Tokens -->
+  <rect x="270" y="480" width="160" height="40" rx="8" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="350" y="505" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Filtered Token Set S</text>
+  
+  <!-- Phase 3: Selective Distillation -->
+  <rect x="550" y="80" width="400" height="460" rx="15" fill="#eaf2f8" stroke="#5dade2" stroke-width="3"/>
+  <text x="750" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Phase 3: Selective Draft Model Distillation</text>
+  
+  <!-- Draft Model Initial -->
+  <rect x="570" y="140" width="120" height="50" rx="8" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="630" y="160" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Draft Model Mq</text>
+  <text x="630" y="175" text-anchor="middle" font-size="10" fill="white">(Initial)</text>
+  
+  <!-- Selective Loss Function -->
+  <rect x="570" y="220" width="360" height="120" rx="8" fill="#5dade2" stroke="#3498db" stroke-width="2"/>
+  <text x="750" y="245" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Selective Distillation Loss</text>
+  <text x="750" y="270" text-anchor="middle" font-size="12" fill="white">L_distill = (1/k·|y|) Σ I[y_i ∈ S] · L_draft(y_i)</text>
+  <text x="750" y="290" text-anchor="middle" font-size="11" fill="white">Focus only on filtered tokens</text>
+  <text x="750" y="310" text-anchor="middle" font-size="11" fill="white">Maximize limited capacity utilization</text>
+  <text x="750" y="330" text-anchor="middle" font-size="11" fill="white">Improve alignment on "easy" tokens</text>
+  
+  <!-- Final Draft Model -->
+  <rect x="720" y="380" width="120" height="50" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="780" y="400" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Optimized</text>
+  <text x="780" y="415" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Draft Model</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="570" y="460" width="360" height="60" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="750" y="485" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Enhanced Performance</text>
+  <text x="750" y="505" text-anchor="middle" font-size="12" fill="white">Higher Acceptance Rate (up to 15% improvement)</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="100" y="600" width="800" height="120" rx="15" fill="#fef9e7" stroke="#f4d03f" stroke-width="3"/>
+  <text x="500" y="625" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Innovation: Capacity-Aware Token Selection</text>
+  <text x="500" y="650" text-anchor="middle" font-size="13" fill="#2c3e50">Instead of learning all tokens uniformly, AdaSPEC identifies "hard" tokens that waste</text>
+  <text x="500" y="670" text-anchor="middle" font-size="13" fill="#2c3e50">the draft model's limited capacity and focuses training on "learnable" tokens</text>
+  <text x="500" y="690" text-anchor="middle" font-size="13" fill="#2c3e50">This selective approach maximizes alignment between draft and target models</text>
+  
+  <!-- Connection Lines -->
+  <path d="M 250 280 Q 250 300 250 320" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 450 410 Q 500 410 550 410" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 630 190 Q 630 205 630 220" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 750 340 Q 750 360 750 380" stroke="#34495e" stroke-width="2" fill="none"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It filters out hard-to-learn tokens and focuses on easier ones">
+                        <div class="quiz-question">1. What is the main innovation of AdaSPEC compared to traditional knowledge distillation methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger target model">It uses a larger target model</div><div class="quiz-choice" data-value="It filters out hard-to-learn tokens and focuses on easier ones">It filters out hard-to-learn tokens and focuses on easier ones</div><div class="quiz-choice" data-value="It increases the training epochs">It increases the training epochs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Token acceptance rate">
+                        <div class="quiz-question">2. What metric does AdaSPEC aim to optimize in speculative decoding?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Model size reduction">Model size reduction</div><div class="quiz-choice" data-value="Training speed">Training speed</div><div class="quiz-choice" data-value="Token acceptance rate">Token acceptance rate</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Up to 15%">
+                        <div class="quiz-question">3. In the experiments, what was the maximum improvement in acceptance rate achieved by AdaSPEC compared to DistillSpec?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Up to 15%">Up to 15%</div><div class="quiz-choice" data-value="Up to 25%">Up to 25%</div><div class="quiz-choice" data-value="Up to 5%">Up to 5%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
