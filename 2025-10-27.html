@@ -1,0 +1,1127 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-10-27 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-10-27 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>DeepAgent: A General Reasoning Agent with Scalable Toolsets</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-24</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.21618" target="_blank">http://arxiv.org/pdf/2510.21618</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces DeepAgent, an end-to-end deep reasoning agent that can autonomously use various tools and interact with environments, falling within the domain of AI agents and large language models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in LLM-powered agents like ReAct and Plan-and-Solve, it proposes a novel unified reasoning process that integrates tool discovery and execution, moving away from predefined workflows.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitations of existing agent frameworks that rely on predefined workflows and limited tool sets, which constrains their ability to handle real-world tasks requiring flexible tool use and long-horizon interactions.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper implements autonomous memory folding to compress interaction history, uses brain-inspired memory architecture (episodic, working, and tool memories), and develops ToolPO - an end-to-end reinforcement learning strategy with LLM-simulated APIs.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> DeepAgent consistently outperformed baseline methods across eight benchmarks, including general tool-use tasks (ToolBench, API-Bank, TMDB, Spotify, ToolHop) and downstream applications (ALFWorld, WebShop, GAIA, HLE), demonstrating superior performance in both labeled-tool and open-set tool retrieval scenarios.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>DeepAgent: A General Reasoning Agent with Scalable Toolsets</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1565C0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E65100;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6A1B9A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F44336;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C62828;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">DeepAgent: Methodology Flow Chart</text>
+  
+  <!-- Main Components -->
+  
+  <!-- 1. Data Collection -->
+  <rect x="50" y="80" width="180" height="80" rx="10" fill="url(#grad1)" stroke="#2E7D32" stroke-width="2"/>
+  <text x="140" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Training Data Collection</text>
+  <text x="140" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">ToolBench, ALFWorld</text>
+  <text x="140" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">WebShop, DeepMath</text>
+  
+  <!-- 2. Core Architecture -->
+  <rect x="280" y="80" width="200" height="120" rx="10" fill="url(#grad2)" stroke="#1565C0" stroke-width="2"/>
+  <text x="380" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">DeepAgent Architecture</text>
+  <text x="380" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Main Reasoning Process</text>
+  <text x="380" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">+ Auxiliary LLM</text>
+  <text x="380" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Unified Thinking Process</text>
+  <text x="380" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">QwQ-32B Backbone</text>
+  
+  <!-- 3. Tool Components -->
+  <rect x="520" y="80" width="180" height="80" rx="10" fill="url(#grad3)" stroke="#E65100" stroke-width="2"/>
+  <text x="610" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Tool Management</text>
+  <text x="610" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Dynamic Tool Search</text>
+  <text x="610" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Tool Call Execution</text>
+  
+  <!-- 4. Memory System -->
+  <rect x="750" y="80" width="180" height="120" rx="10" fill="url(#grad4)" stroke="#6A1B9A" stroke-width="2"/>
+  <text x="840" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Memory Folding</text>
+  <text x="840" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Episodic Memory</text>
+  <text x="840" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Working Memory</text>
+  <text x="840" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Tool Memory</text>
+  <text x="840" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">JSON Schema</text>
+  
+  <!-- Action Types -->
+  <g transform="translate(100, 250)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333">Four Action Types:</text>
+    
+    <circle cx="50" cy="30" r="25" fill="#4CAF50" stroke="#2E7D32" stroke-width="2"/>
+    <text x="50" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Think</text>
+    <text x="50" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Internal</text>
+    <text x="50" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Reasoning</text>
+    
+    <circle cx="150" cy="30" r="25" fill="#2196F3" stroke="#1565C0" stroke-width="2"/>
+    <text x="150" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Search</text>
+    <text x="150" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Tool</text>
+    <text x="150" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Discovery</text>
+    
+    <circle cx="250" cy="30" r="25" fill="#FF9800" stroke="#E65100" stroke-width="2"/>
+    <text x="250" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Call</text>
+    <text x="250" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Tool</text>
+    <text x="250" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Execution</text>
+    
+    <circle cx="350" cy="30" r="25" fill="#9C27B0" stroke="#6A1B9A" stroke-width="2"/>
+    <text x="350" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Fold</text>
+    <text x="350" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Memory</text>
+    <text x="350" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Compress</text>
+  </g>
+  
+  <!-- ToolPO Training -->
+  <rect x="150" y="400" width="700" height="100" rx="15" fill="url(#grad5)" stroke="#C62828" stroke-width="3"/>
+  <text x="500" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">ToolPO: End-to-End Reinforcement Learning</text>
+  
+  <rect x="180" y="440" width="150" height="50" rx="8" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1"/>
+  <text x="255" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">LLM-Simulated</text>
+  <text x="255" y="475" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">APIs</text>
+  
+  <rect x="350" y="440" width="150" height="50" rx="8" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1"/>
+  <text x="425" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Tool-Call</text>
+  <text x="425" y="475" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Advantage</text>
+  
+  <rect x="520" y="440" width="150" height="50" rx="8" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1"/>
+  <text x="595" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Fine-Grained</text>
+  <text x="595" y="475" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Credit Assignment</text>
+  
+  <rect x="690" y="440" width="150" height="50" rx="8" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1"/>
+  <text x="765" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Clipped Surrogate</text>
+  <text x="765" y="475" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Objective</text>
+  
+  <!-- Evaluation -->
+  <g transform="translate(50, 550)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333">Evaluation Benchmarks:</text>
+    
+    <rect x="0" y="20" width="400" height="60" rx="10" fill="#E3F2FD" stroke="#1976D2" stroke-width="2"/>
+    <text x="200" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1976D2">General Tool Usage Tasks</text>
+    <text x="200" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1976D2">ToolBench, API-Bank, TMDB, Spotify, ToolHop</text>
+    
+    <rect x="450" y="20" width="400" height="60" rx="10" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2"/>
+    <text x="650" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#7B1FA2">Downstream Applications</text>
+    <text x="650" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#7B1FA2">ALFWorld, WebShop, GAIA, HLE</text>
+  </g>
+  
+  <!-- Key Features -->
+  <g transform="translate(50, 680)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333">Key Innovations:</text>
+    
+    <circle cx="30" cy="25" r="4" fill="#4CAF50"/>
+    <text x="45" y="30" font-family="Arial, sans-serif" font-size="11" fill="#333">End-to-end reasoning with dynamic tool discovery</text>
+    
+    <circle cx="30" cy="45" r="4" fill="#2196F3"/>
+    <text x="45" y="50" font-family="Arial, sans-serif" font-size="11" fill="#333">Autonomous memory folding mechanism</text>
+    
+    <circle cx="30" cy="65" r="4" fill="#FF9800"/>
+    <text x="45" y="70" font-family="Arial, sans-serif" font-size="11" fill="#333">Brain-inspired structured memory (episodic, working, tool)</text>
+    
+    <circle cx="450" cy="25" r="4" fill="#9C27B0"/>
+    <text x="465" y="30" font-family="Arial, sans-serif" font-size="11" fill="#333">ToolPO training with LLM-simulated APIs</text>
+    
+    <circle cx="450" cy="45" r="4" fill="#F44336"/>
+    <text x="465" y="50" font-family="Arial, sans-serif" font-size="11" fill="#333">Fine-grained advantage attribution for tool calls</text>
+    
+    <circle cx="450" cy="65" r="4" fill="#795548"/>
+    <text x="465" y="70" font-family="Arial, sans-serif" font-size="11" fill="#333">Scalable to 16k+ tools with superior performance</text>
+  </g>
+  
+  <!-- Flow connections (minimal) -->
+  <line x1="230" y1="120" x2="280" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="480" y1="120" x2="520" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="700" y1="120" x2="750" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="380" y1="200" x2="380" y2="400" stroke="#666" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="500" x2="500" y2="550" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It integrates tool discovery and execution within a single reasoning process">
+                        <div class="quiz-question">1. What is the main innovation of DeepAgent compared to traditional agent frameworks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more advanced language models">It uses more advanced language models</div><div class="quiz-choice" data-value="It integrates tool discovery and execution within a single reasoning process">It integrates tool discovery and execution within a single reasoning process</div><div class="quiz-choice" data-value="It can handle more types of tasks">It can handle more types of tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Autonomous memory folding mechanism">
+                        <div class="quiz-question">2. Which component helps DeepAgent manage long interaction histories efficiently?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Autonomous memory folding mechanism">Autonomous memory folding mechanism</div><div class="quiz-choice" data-value="Tool simulator">Tool simulator</div><div class="quiz-choice" data-value="Web search capability">Web search capability</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="To enable more stable and efficient training without relying on unstable real-world APIs">
+                        <div class="quiz-question">3. What is the purpose of using LLM-simulated APIs in the ToolPO training strategy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To reduce computational costs">To reduce computational costs</div><div class="quiz-choice" data-value="To improve model accuracy">To improve model accuracy</div><div class="quiz-choice" data-value="To enable more stable and efficient training without relying on unstable real-world APIs">To enable more stable and efficient training without relying on unstable real-world APIs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Efficient Long-context Language Model Training by Core Attention
+  Disaggregation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.18121" target="_blank">http://arxiv.org/pdf/2510.18121</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents a technique called Core Attention Disaggregation (CAD) for improving long-context Large Language Model training efficiency.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in data parallelism and pipeline parallelism for LLM training, it proposes the novel idea of separating core attention computation from other model components to enable independent scaling.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the load imbalance issue in long-context LLM training caused by the quadratic growth of attention computation versus linear growth of other components.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implemented CAD in a system called DistCA that uses token-level task scheduling, ping-pong execution for overlapping communication with computation, and in-place attention servers to optimize memory usage.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Testing on up to 512 H200 GPUs with 512K context length showed up to 1.35x improvement in training throughput while eliminating data/pipeline parallelism stragglers and maintaining balanced compute and memory usage.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Efficient Long-context Language Model Training by Core Attention
+  Disaggregation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    Core Attention Disaggregation (CAD) Workflow
+  </text>
+  
+  <!-- Problem Identification -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Problem</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="white">Load Imbalance in</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="white">Long-context Training</text>
+  
+  <!-- Key Observations -->
+  <rect x="300" y="60" width="180" height="80" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="390" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Key Observations</text>
+  <text x="390" y="105" text-anchor="middle" font-size="10" fill="white">1. Statelessness</text>
+  <text x="390" y="120" text-anchor="middle" font-size="10" fill="white">2. Composability</text>
+  
+  <!-- Core Attention Disaggregation -->
+  <rect x="520" y="60" width="200" height="80" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="620" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Core Attention</text>
+  <text x="620" y="105" text-anchor="middle" font-size="10" fill="white">Disaggregation</text>
+  <text x="620" y="120" text-anchor="middle" font-size="10" fill="white">(CAD)</text>
+  
+  <!-- DistCA System Components -->
+  <rect x="750" y="60" width="200" height="80" rx="10" fill="#e67e22" opacity="0.8"/>
+  <text x="850" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="white">DistCA System</text>
+  <text x="850" y="105" text-anchor="middle" font-size="10" fill="white">Implementation</text>
+  
+  <!-- Document Processing -->
+  <rect x="100" y="180" width="150" height="60" rx="8" fill="#27ae60" opacity="0.8"/>
+  <text x="175" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Document</text>
+  <text x="175" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Processing</text>
+  
+  <!-- CA-Task Generation -->
+  <rect x="300" y="180" width="150" height="60" rx="8" fill="#16a085" opacity="0.8"/>
+  <text x="375" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="white">CA-Task</text>
+  <text x="375" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Generation</text>
+  
+  <!-- Scheduler -->
+  <rect x="500" y="180" width="150" height="60" rx="8" fill="#8e44ad" opacity="0.8"/>
+  <text x="575" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Communication-Aware</text>
+  <text x="575" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Scheduler</text>
+  
+  <!-- Attention Servers -->
+  <rect x="700" y="180" width="150" height="60" rx="8" fill="#d35400" opacity="0.8"/>
+  <text x="775" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Attention</text>
+  <text x="775" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Servers</text>
+  
+  <!-- Runtime Optimizations -->
+  <rect x="50" y="300" width="120" height="50" rx="8" fill="#f39c12" opacity="0.7"/>
+  <text x="110" y="320" text-anchor="middle" font-size="10" font-weight="bold" fill="white">In-place</text>
+  <text x="110" y="335" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Servers</text>
+  
+  <rect x="200" y="300" width="120" height="50" rx="8" fill="#f39c12" opacity="0.7"/>
+  <text x="260" y="320" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Ping-Pong</text>
+  <text x="260" y="335" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Execution</text>
+  
+  <rect x="350" y="300" width="120" height="50" rx="8" fill="#f39c12" opacity="0.7"/>
+  <text x="410" y="320" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Pipeline</text>
+  <text x="410" y="335" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Support</text>
+  
+  <!-- Core Attention Computation -->
+  <rect x="550" y="300" width="200" height="50" rx="8" fill="#34495e" opacity="0.8"/>
+  <text x="650" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Core Attention Computation</text>
+  <text x="650" y="335" text-anchor="middle" font-size="10" fill="white">softmax(QK^T)V</text>
+  
+  <!-- Results -->
+  <rect x="200" y="400" width="150" height="60" rx="8" fill="#2ecc71" opacity="0.8"/>
+  <text x="275" y="420" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Load Balance</text>
+  <text x="275" y="440" text-anchor="middle" font-size="10" fill="white">Near-perfect</text>
+  <text x="275" y="455" text-anchor="middle" font-size="10" fill="white">across servers</text>
+  
+  <rect x="400" y="400" width="150" height="60" rx="8" fill="#2ecc71" opacity="0.8"/>
+  <text x="475" y="420" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Communication</text>
+  <text x="475" y="440" text-anchor="middle" font-size="10" fill="white">Fully hidden</text>
+  <text x="475" y="455" text-anchor="middle" font-size="10" fill="white">overhead</text>
+  
+  <rect x="600" y="400" width="150" height="60" rx="8" fill="#2ecc71" opacity="0.8"/>
+  <text x="675" y="420" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Throughput</text>
+  <text x="675" y="440" text-anchor="middle" font-size="10" fill="white">Up to 1.35x</text>
+  <text x="675" y="455" text-anchor="middle" font-size="10" fill="white">improvement</text>
+  
+  <!-- Evaluation -->
+  <rect x="350" y="520" width="300" height="80" rx="10" fill="#95a5a6" opacity="0.8"/>
+  <text x="500" y="545" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Evaluation Results</text>
+  <text x="500" y="565" text-anchor="middle" font-size="11" fill="white">512 H200 GPUs, 512K context length</text>
+  <text x="500" y="580" text-anchor="middle" font-size="11" fill="white">Eliminates DP/PP stragglers</text>
+  
+  <!-- Flow connections (simplified lines instead of arrows) -->
+  <line x1="250" y1="100" x2="300" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="480" y1="100" x2="520" y2="100" stroke="#34495e" stroke-width="2"/>
+  <line x1="720" y1="100" x2="750" y2="100" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="175" y1="140" x2="175" y2="180" stroke="#34495e" stroke-width="2"/>
+  <line x1="250" y1="210" x2="300" y2="210" stroke="#34495e" stroke-width="2"/>
+  <line x1="450" y1="210" x2="500" y2="210" stroke="#34495e" stroke-width="2"/>
+  <line x1="650" y1="210" x2="700" y2="210" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="575" y1="240" x2="575" y2="300" stroke="#34495e" stroke-width="2"/>
+  <line x1="650" y1="300" x2="650" y2="400" stroke="#34495e" stroke-width="2"/>
+  
+  <line x1="275" y1="460" x2="350" y2="520" stroke="#34495e" stroke-width="2"/>
+  <line x1="475" y1="460" x2="450" y2="520" stroke="#34495e" stroke-width="2"/>
+  <line x1="675" y1="460" x2="550" y2="520" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Legend -->
+  <rect x="50" y="650" width="900" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <text x="500" y="675" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Components</text>
+  
+  <circle cx="80" cy="700" r="8" fill="#e74c3c"/>
+  <text x="100" y="705" font-size="10" fill="#2c3e50">Problem Identification</text>
+  
+  <circle cx="250" cy="700" r="8" fill="#3498db"/>
+  <text x="270" y="705" font-size="10" fill="#2c3e50">Observations & Analysis</text>
+  
+  <circle cx="450" cy="700" r="8" fill="#9b59b6"/>
+  <text x="470" y="705" font-size="10" fill="#2c3e50">Core Method</text>
+  
+  <circle cx="620" cy="700" r="8" fill="#e67e22"/>
+  <text x="640" y="705" font-size="10" fill="#2c3e50">System Implementation</text>
+  
+  <circle cx="80" cy="730" r="8" fill="#27ae60"/>
+  <text x="100" y="735" font-size="10" fill="#2c3e50">Processing Components</text>
+  
+  <circle cx="280" cy="730" r="8" fill="#f39c12"/>
+  <text x="300" y="735" font-size="10" fill="#2c3e50">Optimizations</text>
+  
+  <circle cx="480" cy="730" r="8" fill="#2ecc71"/>
+  <text x="500" y="735" font-size="10" fill="#2c3e50">Results & Benefits</text>
+  
+  <circle cx="650" cy="730" r="8" fill="#95a5a6"/>
+  <text x="670" y="735" font-size="10" fill="#2c3e50">Evaluation</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Load imbalance between quadratic attention and linear components">
+                        <div class="quiz-question">1. What is the main problem that Core Attention Disaggregation (CAD) aims to solve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High memory usage in LLM training">High memory usage in LLM training</div><div class="quiz-choice" data-value="Load imbalance between quadratic attention and linear components">Load imbalance between quadratic attention and linear components</div><div class="quiz-choice" data-value="Slow communication between GPUs">Slow communication between GPUs</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Its statelessness and composability at token level">
+                        <div class="quiz-question">2. What unique characteristic of core attention makes CAD effective?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Its ability to run on multiple GPUs simultaneously">Its ability to run on multiple GPUs simultaneously</div><div class="quiz-choice" data-value="Its requirement for large memory allocation">Its requirement for large memory allocation</div><div class="quiz-choice" data-value="Its statelessness and composability at token level">Its statelessness and composability at token level</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="1.35x">
+                        <div class="quiz-question">3. What was the maximum throughput improvement achieved by DistCA in the experiments?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1.35x">1.35x</div><div class="quiz-choice" data-value="2.5x">2.5x</div><div class="quiz-choice" data-value="1.15x">1.15x</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-lozenge.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Human-Agent Collaborative Paper-to-Page Crafting for Under $0.1</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-22</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.19600" target="_blank">http://arxiv.org/pdf/2510.19600</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Automated generation of academic project webpages from research papers using AI agents, in the domain of scientific communication and natural language processing.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on prior work in automated presentation generation (slides, posters, videos), this paper introduces a novel multi-agent collaborative approach for webpage generation with human-in-the-loop refinement.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Researchers spend significant time manually creating project webpages to communicate their work, which takes away from core research activities and results in inconsistent quality.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements AutoPage, a multi-agent system with three phases: narrative planning, multimodal content generation, and interactive page rendering, incorporating verification mechanisms and optional human feedback checkpoints.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> AutoPage generates high-quality webpages in under 15 minutes for less than $0.1, outperforming baselines across content accuracy, visual quality, and user preference metrics as evaluated on their new PageBench benchmark.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Human-Agent Collaborative Paper-to-Page Crafting for Under $0.1</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#50C878;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#32CD32;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8E53;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" style="font-size:20px;font-weight:bold;fill:#2C3E50">AutoPage: Human-Agent Collaborative Paper-to-Page Crafting</text>
+  
+  <!-- Input -->
+  <rect x="50" y="60" width="120" height="50" rx="10" fill="#E8F4FD" stroke="#4A90E2" stroke-width="2"/>
+  <text x="110" y="85" text-anchor="middle" style="font-size:12px;fill:#2C3E50;font-weight:bold">Input: Paper (PDF)</text>
+  
+  <!-- Phase 1: Narrative Planning -->
+  <rect x="50" y="150" width="280" height="160" rx="15" fill="url(#grad1)" opacity="0.1" stroke="#4A90E2" stroke-width="2"/>
+  <text x="190" y="175" text-anchor="middle" style="font-size:14px;font-weight:bold;fill:#4A90E2">Phase 1: Narrative Planning & Structuring</text>
+  
+  <rect x="70" y="190" width="100" height="40" rx="8" fill="#4A90E2" opacity="0.8"/>
+  <text x="120" y="210" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">Paper Content Parser</text>
+  
+  <rect x="190" y="190" width="100" height="40" rx="8" fill="#4A90E2" opacity="0.8"/>
+  <text x="240" y="210" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">Page Content Planner</text>
+  
+  <rect x="130" y="250" width="80" height="30" rx="5" fill="#FFE4B5" stroke="#FFA500"/>
+  <text x="170" y="268" text-anchor="middle" style="font-size:9px;fill:#8B4513">Content Checker</text>
+  
+  <!-- Phase 2: Multimodal Content Generation -->
+  <rect x="370" y="150" width="280" height="160" rx="15" fill="url(#grad2)" opacity="0.1" stroke="#50C878" stroke-width="2"/>
+  <text x="510" y="175" text-anchor="middle" style="font-size:14px;font-weight:bold;fill:#50C878">Phase 2: Multimodal Content Generation</text>
+  
+  <rect x="390" y="190" width="100" height="40" rx="8" fill="#50C878" opacity="0.8"/>
+  <text x="440" y="210" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">Text Content Generator</text>
+  
+  <rect x="510" y="190" width="100" height="40" rx="8" fill="#50C878" opacity="0.8"/>
+  <text x="560" y="210" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">Visual Content Generator</text>
+  
+  <rect x="450" y="250" width="80" height="30" rx="5" fill="#FFE4B5" stroke="#FFA500"/>
+  <text x="490" y="268" text-anchor="middle" style="font-size:9px;fill:#8B4513">Content Checker</text>
+  
+  <!-- Phase 3: Interactive Page Rendering -->
+  <rect x="690" y="150" width="280" height="160" rx="15" fill="url(#grad3)" opacity="0.1" stroke="#FF6B6B" stroke-width="2"/>
+  <text x="830" y="175" text-anchor="middle" style="font-size:14px;font-weight:bold;fill:#FF6B6B">Phase 3: Interactive Page Rendering</text>
+  
+  <rect x="710" y="190" width="100" height="40" rx="8" fill="#FF6B6B" opacity="0.8"/>
+  <text x="760" y="210" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">Page Template Matcher</text>
+  
+  <rect x="830" y="190" width="100" height="40" rx="8" fill="#FF6B6B" opacity="0.8"/>
+  <text x="880" y="210" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">HTML Generator</text>
+  
+  <rect x="770" y="250" width="80" height="30" rx="5" fill="#FFE4B5" stroke="#FFA500"/>
+  <text x="810" y="268" text-anchor="middle" style="font-size:9px;fill:#8B4513">HTML Checker</text>
+  
+  <!-- Human-in-the-Loop Feedback -->
+  <circle cx="190" cy="350" r="35" fill="#9370DB" opacity="0.8"/>
+  <text x="190" y="355" text-anchor="middle" style="font-size:9px;fill:white;font-weight:bold">Human Feedback</text>
+  
+  <circle cx="510" cy="350" r="35" fill="#9370DB" opacity="0.8"/>
+  <text x="510" y="355" text-anchor="middle" style="font-size:9px;fill:white;font-weight:bold">Human Feedback</text>
+  
+  <circle cx="830" cy="350" r="35" fill="#9370DB" opacity="0.8"/>
+  <text x="830" y="355" text-anchor="middle" style="font-size:9px;fill:white;font-weight:bold">Human Feedback</text>
+  
+  <!-- Output -->
+  <rect x="780" y="430" width="140" height="50" rx="10" fill="#98FB98" stroke="#32CD32" stroke-width="2"/>
+  <text x="850" y="455" text-anchor="middle" style="font-size:12px;fill:#2C3E50;font-weight:bold">Output: Project Page (HTML)</text>
+  
+  <!-- Flow connections -->
+  <path d="M 170 110 Q 190 130 190 150" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 330 230 Q 350 230 370 230" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 650 230 Q 670 230 690 230" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 850 310 Q 850 370 850 430" fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Feedback connections -->
+  <path d="M 190 315 Q 190 295 190 280" fill="none" stroke="#9370DB" stroke-width="2" stroke-dasharray="5,5"/>
+  <path d="M 510 315 Q 510 295 510 280" fill="none" stroke="#9370DB" stroke-width="2" stroke-dasharray="5,5"/>
+  <path d="M 830 315 Q 830 295 830 280" fill="none" stroke="#9370DB" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Key Features -->
+  <rect x="50" y="520" width="900" height="120" rx="15" fill="#F8F9FA" stroke="#E9ECEF" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" style="font-size:16px;font-weight:bold;fill:#2C3E50">Key Features of AutoPage</text>
+  
+  <rect x="70" y="560" width="180" height="60" rx="8" fill="#E3F2FD" stroke="#2196F3"/>
+  <text x="160" y="580" text-anchor="middle" style="font-size:11px;font-weight:bold;fill:#1976D2">Coarse-to-Fine Pipeline</text>
+  <text x="160" y="595" text-anchor="middle" style="font-size:9px;fill:#424242">Hierarchical generation from</text>
+  <text x="160" y="607" text-anchor="middle" style="font-size:9px;fill:#424242">narrative to visual elements</text>
+  
+  <rect x="270" y="560" width="180" height="60" rx="8" fill="#E8F5E8" stroke="#4CAF50"/>
+  <text x="360" y="580" text-anchor="middle" style="font-size:11px;font-weight:bold;fill:#388E3C">Multi-Agent System</text>
+  <text x="360" y="595" text-anchor="middle" style="font-size:9px;fill:#424242">Specialized agents for each</text>
+  <text x="360" y="607" text-anchor="middle" style="font-size:9px;fill:#424242">generation phase</text>
+  
+  <rect x="470" y="560" width="180" height="60" rx="8" fill="#FFF3E0" stroke="#FF9800"/>
+  <text x="560" y="580" text-anchor="middle" style="font-size:11px;font-weight:bold;fill:#F57C00">Quality Verification</text>
+  <text x="560" y="595" text-anchor="middle" style="font-size:9px;fill:#424242">Checker agents prevent</text>
+  <text x="560" y="607" text-anchor="middle" style="font-size:9px;fill:#424242">hallucination</text>
+  
+  <rect x="670" y="560" width="180" height="60" rx="8" fill="#F3E5F5" stroke="#9C27B0"/>
+  <text x="760" y="580" text-anchor="middle" style="font-size:11px;font-weight:bold;fill:#7B1FA2">Human Collaboration</text>
+  <text x="760" y="595" text-anchor="middle" style="font-size:9px;fill:#424242">Optional human checkpoints</text>
+  <text x="760" y="607" text-anchor="middle" style="font-size:9px;fill:#424242">for author alignment</text>
+  
+  <!-- Performance metrics -->
+  <rect x="50" y="660" width="900" height="80" rx="15" fill="#F0F8F0" stroke="#4CAF50" stroke-width="2"/>
+  <text x="500" y="685" text-anchor="middle" style="font-size:16px;font-weight:bold;fill:#2C3E50">Performance Highlights</text>
+  
+  <circle cx="150" cy="715" r="25" fill="#4CAF50"/>
+  <text x="150" y="720" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">&lt;15 min</text>
+  <text x="150" y="745" text-anchor="middle" style="font-size:9px;fill:#2C3E50">Generation Time</text>
+  
+  <circle cx="300" cy="715" r="25" fill="#2196F3"/>
+  <text x="300" y="720" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">&lt;$0.1</text>
+  <text x="300" y="745" text-anchor="middle" style="font-size:9px;fill:#2C3E50">Cost per Page</text>
+  
+  <circle cx="450" cy="715" r="25" fill="#FF9800"/>
+  <text x="450" y="720" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">1500+</text>
+  <text x="450" y="745" text-anchor="middle" style="font-size:9px;fill:#2C3E50">PageBench Dataset</text>
+  
+  <circle cx="600" cy="715" r="25" fill="#9C27B0"/>
+  <text x="600" y="720" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">7.16/10</text>
+  <text x="600" y="745" text-anchor="middle" style="font-size:9px;fill:#2C3E50">User Preference</text>
+  
+  <circle cx="750" cy="715" r="25" fill="#F44336"/>
+  <text x="750" y="720" text-anchor="middle" style="font-size:10px;fill:white;font-weight:bold">Model</text>
+  <text x="750" y="745" text-anchor="middle" style="font-size:9px;fill:#2C3E50">Agnostic</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It incorporates human feedback and verification in a multi-agent collaborative process">
+                        <div class="quiz-question">1. What is the main innovation of AutoPage compared to previous automated research communication tools?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It's the first system to generate any kind of research presentations">It's the first system to generate any kind of research presentations</div><div class="quiz-choice" data-value="It incorporates human feedback and verification in a multi-agent collaborative process">It incorporates human feedback and verification in a multi-agent collaborative process</div><div class="quiz-choice" data-value="It can generate webpages completely automatically without any human input">It can generate webpages completely automatically without any human input</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="15 minutes and $0.10">
+                        <div class="quiz-question">2. What is the approximate cost and time required for AutoPage to generate a project webpage?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1 hour and $1.00">1 hour and $1.00</div><div class="quiz-choice" data-value="30 minutes and $0.50">30 minutes and $0.50</div><div class="quiz-choice" data-value="15 minutes and $0.10">15 minutes and $0.10</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Narrative planning and structuring">
+                        <div class="quiz-question">3. Which phase of AutoPage's pipeline comes first in the generation process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Interactive page rendering">Interactive page rendering</div><div class="quiz-choice" data-value="Multimodal content generation">Multimodal content generation</div><div class="quiz-choice" data-value="Narrative planning and structuring">Narrative planning and structuring</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
