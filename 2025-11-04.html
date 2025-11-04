@@ -1,0 +1,1130 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-04 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-04 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>UniLumos: Fast and Unified Image and Video Relighting with
+  Physics-Plausible Feedback</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.01678" target="_blank">http://arxiv.org/pdf/2511.01678</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents UniLumos, a unified framework for image and video relighting that aims to achieve physically plausible lighting effects through AI-based methods.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous diffusion models for relighting that operate in semantic latent space, this paper introduces physics-plausible feedback by incorporating RGB-space geometry feedback into a flow-matching backbone.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the issue of unrealistic lighting effects in existing diffusion-based relighting methods, which often produce overexposed highlights, misaligned shadows, and incorrect occlusions due to lack of physical correctness.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement physics-plausible feedback using depth and normal maps extracted from outputs, employ path consistency learning for efficient training, and develop a structured six-dimensional annotation protocol for illumination attributes.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> UniLumos achieved state-of-the-art relighting quality with improved physical consistency while delivering a 20x speedup for both image and video relighting, evaluated through metrics like PSNR, SSIM, LPIPS, and a new LumosBench framework.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>UniLumos: Fast and Unified Image and Video Relighting with
+  Physics-Plausible Feedback</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dataGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ff8e8e;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="modelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#6ed6ce;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="feedbackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd93d;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffe066;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="outputGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6c5ce7;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#8b7ed8;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bgGradient)"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+    UniLumos: Unified Image and Video Relighting Workflow
+  </text>
+  
+  <!-- Data Construction Pipeline (LumosData) -->
+  <g id="data-pipeline">
+    <rect x="50" y="80" width="500" height="180" rx="15" fill="url(#dataGradient)" stroke="#e74c3c" stroke-width="2"/>
+    <text x="300" y="105" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      LumosData Construction Pipeline
+    </text>
+    
+    <!-- Step boxes -->
+    <rect x="70" y="120" width="100" height="50" rx="8" fill="white" stroke="#c0392b" stroke-width="1"/>
+    <text x="120" y="140" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Step 1</text>
+    <text x="120" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Subject Mask</text>
+    
+    <rect x="190" y="120" width="100" height="50" rx="8" fill="white" stroke="#c0392b" stroke-width="1"/>
+    <text x="240" y="140" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Step 2</text>
+    <text x="240" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Lumos Aug.</text>
+    
+    <rect x="310" y="120" width="100" height="50" rx="8" fill="white" stroke="#c0392b" stroke-width="1"/>
+    <text x="360" y="140" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Step 3</text>
+    <text x="360" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Gaussian BG</text>
+    
+    <rect x="430" y="120" width="100" height="50" rx="8" fill="white" stroke="#c0392b" stroke-width="1"/>
+    <text x="480" y="140" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Step 4</text>
+    <text x="480" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Caption Aug.</text>
+    
+    <!-- 6D Annotation Protocol -->
+    <rect x="70" y="190" width="460" height="50" rx="8" fill="rgba(255,255,255,0.9)" stroke="#c0392b" stroke-width="1"/>
+    <text x="300" y="210" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">6D Lighting Annotation Protocol:</text>
+    <text x="300" y="225" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Direction | Light Source | Intensity | Color Temp | Dynamics | Optical</text>
+  </g>
+  
+  <!-- Main Model Architecture -->
+  <g id="main-model">
+    <rect x="50" y="300" width="700" height="280" rx="15" fill="url(#modelGradient)" stroke="#16a085" stroke-width="2"/>
+    <text x="400" y="325" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      UniLumos Architecture
+    </text>
+    
+    <!-- Input Processing -->
+    <rect x="70" y="340" width="120" height="80" rx="8" fill="white" stroke="#0f7c6b" stroke-width="1"/>
+    <text x="130" y="365" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Input Video</text>
+    <text x="130" y="380" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">V_real</text>
+    <text x="130" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Wan-VAE</text>
+    <text x="130" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Encoder ❄</text>
+    
+    <!-- Flow Matching Core -->
+    <rect x="220" y="340" width="200" height="80" rx="8" fill="white" stroke="#0f7c6b" stroke-width="1"/>
+    <text x="320" y="365" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Flow Matching</text>
+    <text x="320" y="380" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Wan2.1 Backbone</text>
+    <text x="320" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">N × DiT Blocks 🔥</text>
+    <text x="320" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">+ umT5 Text Encoder</text>
+    
+    <!-- Path Consistency -->
+    <rect x="220" y="440" width="200" height="50" rx="8" fill="rgba(255,255,255,0.9)" stroke="#0f7c6b" stroke-width="1"/>
+    <text x="320" y="460" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Path Consistency Learning</text>
+    <text x="320" y="475" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Few-step Inference</text>
+    
+    <!-- Decoder -->
+    <rect x="450" y="340" width="120" height="80" rx="8" fill="white" stroke="#0f7c6b" stroke-width="1"/>
+    <text x="510" y="365" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Output</text>
+    <text x="510" y="380" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">V_relit</text>
+    <text x="510" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Wan-VAE</text>
+    <text x="510" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Decoder ❄</text>
+    
+    <!-- Joint Loss -->
+    <rect x="600" y="340" width="130" height="150" rx="8" fill="rgba(255,255,255,0.9)" stroke="#0f7c6b" stroke-width="1"/>
+    <text x="665" y="360" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Joint Loss</text>
+    <text x="665" y="380" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">L₀: Flow Matching</text>
+    <text x="665" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">L_fast: Path Consistency</text>
+    <text x="665" y="410" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">L_phy: Physics Feedback</text>
+    <text x="665" y="435" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Training Strategy:</text>
+    <text x="665" y="450" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2c3e50">80% → L₀</text>
+    <text x="665" y="465" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2c3e50">20% → L_fast</text>
+    <text x="665" y="480" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2c3e50">50% of L₀ → L_phy</text>
+  </g>
+  
+  <!-- Physics-Plausible Feedback -->
+  <g id="feedback">
+    <rect x="800" y="300" width="350" height="280" rx="15" fill="url(#feedbackGradient)" stroke="#f39c12" stroke-width="2"/>
+    <text x="975" y="325" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      Physics-Plausible Feedback
+    </text>
+    
+    <!-- Dense Estimator -->
+    <rect x="820" y="340" width="140" height="60" rx="8" fill="white" stroke="#d68910" stroke-width="1"/>
+    <text x="890" y="360" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Dense Estimator</text>
+    <text x="890" y="375" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">(e.g., Lotus) ❄</text>
+    <text x="890" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Frozen Weights</text>
+    
+    <!-- Depth and Normal -->
+    <rect x="980" y="340" width="150" height="60" rx="8" fill="white" stroke="#d68910" stroke-width="1"/>
+    <text x="1055" y="360" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Geometry Maps</text>
+    <text x="1055" y="375" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Depth D ∈ ℝ^[T,H,W]</text>
+    <text x="1055" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">Normal N ∈ ℝ^[T,H,W]</text>
+    
+    <!-- Feedback Loss -->
+    <rect x="820" y="420" width="310" height="80" rx="8" fill="rgba(255,255,255,0.9)" stroke="#d68910" stroke-width="1"/>
+    <text x="975" y="440" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Physics-Guided Loss L_phy</text>
+    <text x="975" y="460" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">L_phy = M ⊙ (||D̂ - D||₂/||D||₂ + ||N̂ - N||₂/||N||₂)</text>
+    <text x="975" y="480" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">• Aligns lighting with scene geometry</text>
+    <text x="975" y="495" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">• Improves shadow alignment & spatial coherence</text>
+    
+    <!-- Key Benefits -->
+    <rect x="820" y="520" width="310" height="50" rx="8" fill="rgba(255,255,255,0.9)" stroke="#d68910" stroke-width="1"/>
+    <text x="975" y="540" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#2c3e50">Key Benefits:</text>
+    <text x="975" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">RGB-space supervision | Geometry-free inference | Physical plausibility</text>
+  </g>
+  
+  <!-- Evaluation -->
+  <g id="evaluation">
+    <rect x="50" y="620" width="500" height="150" rx="15" fill="url(#outputGradient)" stroke="#5a4fcf" stroke-width="2"/>
+    <text x="300" y="645" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      LumosBench Evaluation
+    </text>
+    
+    <!-- Metrics -->
+    <rect x="70" y="660" width="460" height="100" rx="8" fill="rgba(255,255,255,0.9)" stroke="#4834d4" stroke-width="1"/>
+    <text x="300" y="680" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Evaluation Metrics</text>
+    
+    <text x="100" y="700" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">• Visual Fidelity: PSNR, SSIM, LPIPS</text>
+    <text x="100" y="715" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">• Temporal Consistency: R-Motion</text>
+    <text x="100" y="730" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">• Lumos Consistency: VLM-based attribute alignment</text>
+    <text x="100" y="745" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">• Dense L2 Error: Geometry alignment</text>
+    
+    <text x="350" y="700" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Results:</text>
+    <text x="350" y="715" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">• 20× speedup vs baselines</text>
+    <text x="350" y="730" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">• SOTA quality & consistency</text>
+    <text x="350" y="745" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">• Enhanced controllability</text>
+  </g>
+  
+  <!-- Applications -->
+  <g id="applications">
+    <rect x="600" y="620" width="550" height="150" rx="15" fill="rgba(46, 204, 113, 0.8)" stroke="#27ae60" stroke-width="2"/>
+    <text x="875" y="645" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      Applications & Contributions
+    </text>
+    
+    <rect x="620" y="660" width="510" height="100" rx="8" fill="rgba(255,255,255,0.9)" stroke="#229954" stroke-width="1"/>
+    <text x="875" y="680" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Key Contributions</text>
+    
+    <text x="640" y="700" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">1. Unified framework for image & video relighting</text>
+    <text x="640" y="715" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">2. Physics-plausible feedback with RGB-space geometry supervision</text>
+    <text x="640" y="730" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">3. Structured 6D illumination annotation protocol</text>
+    <text x="640" y="745" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">4. LumosBench: Attribute-level controllability evaluation</text>
+  </g>
+  
+  <!-- Flow connections -->
+  <path d="M 300 260 Q 400 280 400 300" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 570 380 Q 650 380 800 380" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 975 580 Q 975 600 800 650" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Legend -->
+  <g id="legend">
+    <rect x="50" y="820" width="600" height="60" rx="10" fill="rgba(255,255,255,0.9)" stroke="#bdc3c7" stroke-width="1"/>
+    <text x="350" y="840" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+      Legend: ❄ Frozen Weights | 🔥 Trainable Weights | Flow: Data → Model → Feedback → Evaluation
+    </text>
+    <text x="350" y="860" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#7f8c8d">
+      UniLumos achieves physically plausible relighting through structured data, flow-matching architecture, and geometry-aware feedback
+    </text>
+  </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It incorporates RGB-space geometry feedback into flow-matching">
+                        <div class="quiz-question">1. What is the main innovation of UniLumos compared to previous relighting methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a completely new diffusion architecture">It uses a completely new diffusion architecture</div><div class="quiz-choice" data-value="It incorporates RGB-space geometry feedback into flow-matching">It incorporates RGB-space geometry feedback into flow-matching</div><div class="quiz-choice" data-value="It relies solely on latent space optimization">It relies solely on latent space optimization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Six dimensions covering direction, source type, intensity, color temperature, dynamics and optical phenomena">
+                        <div class="quiz-question">2. How many dimensions does UniLumos's illumination annotation protocol contain?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Four dimensions covering basic lighting attributes">Four dimensions covering basic lighting attributes</div><div class="quiz-choice" data-value="Five dimensions including temporal dynamics">Five dimensions including temporal dynamics</div><div class="quiz-choice long-text" data-value="Six dimensions covering direction, source type, intensity, color temperature, dynamics and optical phenomena">Six dimensions covering direction, source type, intensity, color temperature, dynamics and optical phenomena</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="20x speedup for both image and video relighting">
+                        <div class="quiz-question">3. What is the performance improvement in terms of speed that UniLumos achieves?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="5x speedup compared to previous methods">5x speedup compared to previous methods</div><div class="quiz-choice" data-value="20x speedup for both image and video relighting">20x speedup for both image and video relighting</div><div class="quiz-choice" data-value="50x speedup but only for image relighting">50x speedup but only for image relighting</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/robots.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>UniREditBench: A Unified Reasoning-based Image Editing Benchmark</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.01295" target="_blank">http://arxiv.org/pdf/2511.01295</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents UniREditBench, a comprehensive benchmark for evaluating reasoning-based image editing models across both real-world and game-world scenarios.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous benchmarks focused mainly on single-object attribute transformations in realistic scenarios; this paper introduces new dimensions including multi-object interactions and game-world scenarios with human-defined rules, plus a dual-reference evaluation system.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of comprehensive benchmarks for evaluating complex reasoning-based image editing tasks and the limitations of text-only reference evaluation methods.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed a multi-scenario data synthesis pipeline to create 2,700 curated samples across 8 primary dimensions and 18 sub-dimensions, implemented dual-reference evaluation using both textual and ground-truth image references, and created UniREdit-Data-100K dataset with chain-of-thought reasoning annotations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The fine-tuned UniREdit-Bagel model showed substantial improvements over both open-source and closed-source models in handling complex reasoning-based image editing tasks, demonstrating the effectiveness of their benchmark and dataset.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>UniREditBench: A Unified Reasoning-based Image Editing Benchmark</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">UniREditBench: Methodology Flow</text>
+  
+  <!-- Main Pipeline Split -->
+  <rect x="50" y="80" width="400" height="680" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="250" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">Real-World Data Synthesis</text>
+  
+  <rect x="550" y="80" width="400" height="680" fill="#f0f8e8" stroke="#27ae60" stroke-width="2" rx="10"/>
+  <text x="750" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#27ae60">Game-World Data Synthesis</text>
+  
+  <!-- Real-World Pipeline -->
+  <!-- Step 1 -->
+  <rect x="80" y="130" width="340" height="60" fill="#3498db" rx="8"/>
+  <text x="250" y="155" text-anchor="middle" font-size="14" fill="white" font-weight="bold">1. Hand-crafted Reference Prompts</text>
+  <text x="250" y="175" text-anchor="middle" font-size="12" fill="white">Original image description, instruction, textual reference</text>
+  
+  <!-- Step 2 -->
+  <rect x="80" y="220" width="340" height="60" fill="#2980b9" rx="8"/>
+  <text x="250" y="245" text-anchor="middle" font-size="14" fill="white" font-weight="bold">2. VLM Scale-up (Gemini 2.5 Pro)</text>
+  <text x="250" y="265" text-anchor="middle" font-size="12" fill="white">Generate diverse text prompts</text>
+  
+  <!-- Step 3 -->
+  <rect x="80" y="310" width="340" height="60" fill="#1abc9c" rx="8"/>
+  <text x="250" y="335" text-anchor="middle" font-size="14" fill="white" font-weight="bold">3. Image Pair Generation</text>
+  <text x="250" y="355" text-anchor="middle" font-size="12" fill="white">Generate original & edited images</text>
+  
+  <!-- Step 4 -->
+  <rect x="80" y="400" width="340" height="60" fill="#e74c3c" rx="8"/>
+  <text x="250" y="425" text-anchor="middle" font-size="14" fill="white" font-weight="bold">4. Quality Filtering</text>
+  <text x="250" y="445" text-anchor="middle" font-size="12" fill="white">VLM-based filtering & CoT generation</text>
+  
+  <!-- Game-World Pipeline -->
+  <!-- Step 1 -->
+  <rect x="580" y="130" width="340" height="60" fill="#27ae60" rx="8"/>
+  <text x="750" y="155" text-anchor="middle" font-size="14" fill="white" font-weight="bold">1. Game Problem Design</text>
+  <text x="750" y="175" text-anchor="middle" font-size="12" fill="white">Maze, Sokoban, Sudoku, etc.</text>
+  
+  <!-- Step 2 -->
+  <rect x="580" y="220" width="340" height="60" fill="#229954" rx="8"/>
+  <text x="750" y="245" text-anchor="middle" font-size="14" fill="white" font-weight="bold">2. Python Program Generation</text>
+  <text x="750" y="265" text-anchor="middle" font-size="12" fill="white">Automatic image & instruction generation</text>
+  
+  <!-- Step 3 -->
+  <rect x="580" y="310" width="340" height="60" fill="#16a085" rx="8"/>
+  <text x="750" y="335" text-anchor="middle" font-size="14" fill="white" font-weight="bold">3. CoT Transformation</text>
+  <text x="750" y="355" text-anchor="middle" font-size="12" fill="white">Convert programmatic to natural language</text>
+  
+  <!-- Step 4 -->
+  <rect x="580" y="400" width="340" height="60" fill="#e67e22" rx="8"/>
+  <text x="750" y="425" text-anchor="middle" font-size="14" fill="white" font-weight="bold">4. Quality Assurance</text>
+  <text x="750" y="445" text-anchor="middle" font-size="12" fill="white">Logical & visual correctness validation</text>
+  
+  <!-- Data Processing Pipeline -->
+  <rect x="100" y="500" width="800" height="120" fill="#f39c12" rx="10"/>
+  <text x="500" y="525" text-anchor="middle" font-size="16" fill="white" font-weight="bold">Unified Data Processing Pipeline</text>
+  
+  <rect x="130" y="540" width="200" height="35" fill="#d68910" rx="5"/>
+  <text x="230" y="560" text-anchor="middle" font-size="12" fill="white">Instruction De-duplication</text>
+  
+  <rect x="400" y="540" width="200" height="35" fill="#d68910" rx="5"/>
+  <text x="500" y="560" text-anchor="middle" font-size="12" fill="white">Multi-dimensional Filtering</text>
+  
+  <rect x="670" y="540" width="200" height="35" fill="#d68910" rx="5"/>
+  <text x="770" y="560" text-anchor="middle" font-size="12" fill="white">Human Inspection</text>
+  
+  <text x="500" y="595" text-anchor="middle" font-size="12" fill="white">Text hallucination, Instruction adherence, Content preservation</text>
+  <text x="500" y="610" text-anchor="middle" font-size="12" fill="white">Visual quality, Image hallucination, CoT quality</text>
+  
+  <!-- Final Outputs -->
+  <rect x="150" y="650" width="250" height="80" fill="#8e44ad" rx="10"/>
+  <text x="275" y="675" text-anchor="middle" font-size="14" fill="white" font-weight="bold">UniREditBench</text>
+  <text x="275" y="695" text-anchor="middle" font-size="12" fill="white">2,700 samples</text>
+  <text x="275" y="710" text-anchor="middle" font-size="12" fill="white">8 dimensions, 18 sub-categories</text>
+  
+  <rect x="450" y="650" width="250" height="80" fill="#9b59b6" rx="10"/>
+  <text x="575" y="675" text-anchor="middle" font-size="14" fill="white" font-weight="bold">UniREdit-Data-100K</text>
+  <text x="575" y="695" text-anchor="middle" font-size="12" fill="white">100,421 training samples</text>
+  <text x="575" y="710" text-anchor="middle" font-size="12" fill="white">High-quality CoT annotations</text>
+  
+  <!-- Model Training -->
+  <rect x="750" y="650" width="200" height="80" fill="#e74c3c" rx="10"/>
+  <text x="850" y="675" text-anchor="middle" font-size="14" fill="white" font-weight="bold">UniREdit-Bagel</text>
+  <text x="850" y="695" text-anchor="middle" font-size="12" fill="white">Fine-tuned Model</text>
+  <text x="850" y="710" text-anchor="middle" font-size="12" fill="white">Enhanced Performance</text>
+  
+  <!-- Evaluation Framework -->
+  <ellipse cx="100" cy="770" rx="80" ry="20" fill="#34495e"/>
+  <text x="100" y="775" text-anchor="middle" font-size="12" fill="white">Dual-Reference</text>
+  
+  <ellipse cx="250" cy="770" rx="80" ry="20" fill="#34495e"/>
+  <text x="250" y="775" text-anchor="middle" font-size="12" fill="white">Instruction Following</text>
+  
+  <ellipse cx="400" cy="770" rx="80" ry="20" fill="#34495e"/>
+  <text x="400" y="775" text-anchor="middle" font-size="12" fill="white">Visual Consistency</text>
+  
+  <ellipse cx="550" cy="770" rx="80" ry="20" fill="#34495e"/>
+  <text x="550" y="775" text-anchor="middle" font-size="12" fill="white">Visual Quality</text>
+  
+  <!-- Connecting lines -->
+  <line x1="250" y1="190" x2="250" y2="220" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="250" y1="280" x2="250" y2="310" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="250" y1="370" x2="250" y2="400" stroke="#2c3e50" stroke-width="2"/>
+  
+  <line x1="750" y1="190" x2="750" y2="220" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="750" y1="280" x2="750" y2="310" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="750" y1="370" x2="750" y2="400" stroke="#2c3e50" stroke-width="2"/>
+  
+  <line x1="420" y1="460" x2="580" y2="500" stroke="#2c3e50" stroke-width="3"/>
+  <line x1="580" y1="460" x2="420" y2="500" stroke="#2c3e50" stroke-width="3"/>
+  
+  <line x1="500" y1="620" x2="275" y2="650" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="500" y1="620" x2="575" y2="650" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="575" y1="730" x2="750" y2="690" stroke="#2c3e50" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Using dual-reference evaluation with both text and ground-truth images">
+                        <div class="quiz-question">1. What key innovation does UniREditBench introduce in its evaluation methodology compared to previous benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using only textual references for evaluation">Using only textual references for evaluation</div><div class="quiz-choice" data-value="Using dual-reference evaluation with both text and ground-truth images">Using dual-reference evaluation with both text and ground-truth images</div><div class="quiz-choice" data-value="Using only numerical metrics for evaluation">Using only numerical metrics for evaluation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="2,700 samples across 8 primary dimensions and 18 sub-dimensions">
+                        <div class="quiz-question">2. How many total samples and dimensions does UniREditBench contain?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1,000 samples across 5 primary dimensions">1,000 samples across 5 primary dimensions</div><div class="quiz-choice" data-value="2,700 samples across 8 primary dimensions and 18 sub-dimensions">2,700 samples across 8 primary dimensions and 18 sub-dimensions</div><div class="quiz-choice" data-value="5,000 samples across 10 primary dimensions">5,000 samples across 10 primary dimensions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Logical and strategic reasoning governed by human-defined rules">
+                        <div class="quiz-question">3. What unique aspect of game-world scenarios does UniREditBench evaluate that previous benchmarks didn't cover?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Only basic game graphics quality">Only basic game graphics quality</div><div class="quiz-choice" data-value="Only game character animations">Only game character animations</div><div class="quiz-choice" data-value="Logical and strategic reasoning governed by human-defined rules">Logical and strategic reasoning governed by human-defined rules</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>TIR-Bench: A Comprehensive Benchmark for Agentic Thinking-with-Images
+  Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.01833" target="_blank">http://arxiv.org/pdf/2511.01833</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A comprehensive benchmark called TIR-Bench for evaluating agentic thinking-with-images reasoning capabilities in multimodal large language models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous visual search benchmarks that only test basic operations, this paper proposes a more comprehensive benchmark testing complex tool-based image manipulation and reasoning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Current benchmarks fail to fully evaluate advanced visual reasoning capabilities like intelligently creating and operating tools to transform images for problem-solving.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Created a 13-task benchmark requiring tool use for image processing, evaluated 22 multimodal language models including both open source and proprietary models with and without tool-use capabilities.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> TIR-Bench proved challenging with best performance at only 46%, models with tool-use capabilities significantly outperformed standard models, and agentic fine-tuning was shown more effective than direct fine-tuning.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>TIR-Bench: A Comprehensive Benchmark for Agentic Thinking-with-Images
+  Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">TIR-Bench: Methodology Flow Chart</text>
+  
+  <!-- Phase 1: Task Design -->
+  <rect x="50" y="80" width="200" height="120" rx="15" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="150" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Task Design</text>
+  <text x="150" y="130" text-anchor="middle" font-size="11" fill="white">13 Diverse Tasks</text>
+  <text x="150" y="145" text-anchor="middle" font-size="10" fill="white">• Tool-based reasoning</text>
+  <text x="150" y="160" text-anchor="middle" font-size="10" fill="white">• Multi-step manipulation</text>
+  <text x="150" y="175" text-anchor="middle" font-size="10" fill="white">• Dynamic visual processing</text>
+  
+  <!-- Phase 2: Data Collection -->
+  <rect x="300" y="80" width="200" height="120" rx="15" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="400" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Data Collection</text>
+  <text x="400" y="130" text-anchor="middle" font-size="11" fill="white">1,215 Total Examples</text>
+  <text x="400" y="145" text-anchor="middle" font-size="10" fill="white">• Human annotation</text>
+  <text x="400" y="160" text-anchor="middle" font-size="10" fill="white">• Synthetic generation</text>
+  <text x="400" y="175" text-anchor="middle" font-size="10" fill="white">• Web sourcing</text>
+  
+  <!-- Phase 3: Model Evaluation -->
+  <rect x="550" y="80" width="200" height="120" rx="15" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="650" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Model Evaluation</text>
+  <text x="650" y="130" text-anchor="middle" font-size="11" fill="white">22 MLLMs Tested</text>
+  <text x="650" y="145" text-anchor="middle" font-size="10" fill="white">• Open-source models</text>
+  <text x="650" y="160" text-anchor="middle" font-size="10" fill="white">• Proprietary models</text>
+  <text x="650" y="175" text-anchor="middle" font-size="10" fill="white">• Tool-using agents</text>
+  
+  <!-- Phase 4: Analysis -->
+  <rect x="800" y="80" width="150" height="120" rx="15" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="875" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Analysis</text>
+  <text x="875" y="130" text-anchor="middle" font-size="11" fill="white">Performance</text>
+  <text x="875" y="145" text-anchor="middle" font-size="10" fill="white">• Function calling</text>
+  <text x="875" y="160" text-anchor="middle" font-size="10" fill="white">• Fine-tuning study</text>
+  <text x="875" y="175" text-anchor="middle" font-size="10" fill="white">• Qualitative analysis</text>
+  
+  <!-- Task Categories -->
+  <rect x="100" y="250" width="800" height="180" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="275" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">13 Task Categories</text>
+  
+  <!-- Task boxes arranged in grid -->
+  <rect x="120" y="290" width="120" height="40" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="1"/>
+  <text x="180" y="315" text-anchor="middle" font-size="10" fill="white">Color VQA</text>
+  
+  <rect x="260" y="290" width="120" height="40" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="1"/>
+  <text x="320" y="315" text-anchor="middle" font-size="10" fill="white">Low-Light VQA</text>
+  
+  <rect x="400" y="290" width="120" height="40" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="1"/>
+  <text x="460" y="315" text-anchor="middle" font-size="10" fill="white">Instrument Reading</text>
+  
+  <rect x="540" y="290" width="120" height="40" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="1"/>
+  <text x="600" y="315" text-anchor="middle" font-size="10" fill="white">Jigsaw Puzzle</text>
+  
+  <rect x="680" y="290" width="120" height="40" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="1"/>
+  <text x="740" y="315" text-anchor="middle" font-size="10" fill="white">Math VQA</text>
+  
+  <rect x="120" y="340" width="120" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <text x="180" y="365" text-anchor="middle" font-size="10" fill="white">Maze</text>
+  
+  <rect x="260" y="340" width="120" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <text x="320" y="365" text-anchor="middle" font-size="10" fill="white">Rotated OCR</text>
+  
+  <rect x="400" y="340" width="120" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <text x="460" y="365" text-anchor="middle" font-size="10" fill="white">Proportion VQA</text>
+  
+  <rect x="540" y="340" width="120" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <text x="600" y="365" text-anchor="middle" font-size="10" fill="white">Rotation Game</text>
+  
+  <rect x="680" y="340" width="120" height="40" rx="5" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <text x="740" y="365" text-anchor="middle" font-size="10" fill="white">Spot Difference</text>
+  
+  <rect x="190" y="390" width="120" height="40" rx="5" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+  <text x="250" y="415" text-anchor="middle" font-size="10" fill="white">Symbolic Reasoning</text>
+  
+  <rect x="330" y="390" width="120" height="40" rx="5" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+  <text x="390" y="415" text-anchor="middle" font-size="10" fill="white">Visual Search</text>
+  
+  <rect x="470" y="390" width="120" height="40" rx="5" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+  <text x="530" y="415" text-anchor="middle" font-size="10" fill="white">Word Search</text>
+  
+  <!-- Evaluation Process -->
+  <rect x="100" y="480" width="800" height="120" rx="10" fill="#f8f9fa" stroke="#dee2e6" stroke-width="2"/>
+  <text x="500" y="505" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Evaluation Process</text>
+  
+  <circle cx="200" cy="540" r="30" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="200" y="545" text-anchor="middle" font-size="10" fill="white">Zero-shot</text>
+  
+  <circle cx="350" cy="540" r="30" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="350" y="545" text-anchor="middle" font-size="10" fill="white">GPT-4o Judge</text>
+  
+  <circle cx="500" cy="540" r="30" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-size="10" fill="white">Accuracy/IoU</text>
+  
+  <circle cx="650" cy="540" r="30" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="650" y="545" text-anchor="middle" font-size="10" fill="white">Analysis</text>
+  
+  <circle cx="800" cy="540" r="30" fill="#2980b9" stroke="#1f618d" stroke-width="2"/>
+  <text x="800" y="545" text-anchor="middle" font-size="10" fill="white">Comparison</text>
+  
+  <!-- Key Findings -->
+  <rect x="100" y="650" width="800" height="120" rx="10" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="500" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#856404">Key Findings</text>
+  
+  <text x="150" y="700" font-size="12" fill="#856404">• Best performance: 46% (o3-TU)</text>
+  <text x="150" y="720" font-size="12" fill="#856404">• Non-agentic models perform poorly (&lt;29%)</text>
+  <text x="150" y="740" font-size="12" fill="#856404">• Tool-use capabilities essential for success</text>
+  <text x="150" y="760" font-size="12" fill="#856404">• Agentic fine-tuning outperforms direct SFT</text>
+  
+  <text x="550" y="700" font-size="12" fill="#856404">• Function calling improves with guidance</text>
+  <text x="550" y="720" font-size="12" fill="#856404">• Recent models show better iterative calling</text>
+  <text x="550" y="740" font-size="12" fill="#856404">• TIR-Bench proves universally challenging</text>
+  <text x="550" y="760" font-size="12" fill="#856404">• Thinking-with-images capability crucial</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="They only tested basic operations like localization and cropping">
+                        <div class="quiz-question">1. What was the main limitation of previous visual reasoning benchmarks that TIR-Bench aimed to address?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They only tested basic operations like localization and cropping">They only tested basic operations like localization and cropping</div><div class="quiz-choice" data-value="They were too computationally expensive to run">They were too computationally expensive to run</div><div class="quiz-choice" data-value="They only worked with black and white images">They only worked with black and white images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Agentic fine-tuning showed significantly better performance that scaled with data size">
+                        <div class="quiz-question">2. When comparing agentic fine-tuning versus direct fine-tuning on the rotated OCR task, what was discovered?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Direct fine-tuning performed better with more data">Direct fine-tuning performed better with more data</div><div class="quiz-choice" data-value="Agentic fine-tuning showed significantly better performance that scaled with data size">Agentic fine-tuning showed significantly better performance that scaled with data size</div><div class="quiz-choice" data-value="Both methods performed equally well">Both methods performed equally well</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="46% by o3-TU">
+                        <div class="quiz-question">3. What was the highest accuracy achieved by any model on the TIR-Bench benchmark?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="28.9% by Gemini-2.5-Pro">28.9% by Gemini-2.5-Pro</div><div class="quiz-choice" data-value="46% by o3-TU">46% by o3-TU</div><div class="quiz-choice" data-value="67% by GPT-4">67% by GPT-4</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
