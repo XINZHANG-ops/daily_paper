@@ -1,0 +1,1085 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-05 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-05 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>VCode: a Multimodal Coding Benchmark with SVG as Symbolic Visual
+  Representation</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-04</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.02778" target="_blank">http://arxiv.org/pdf/2511.02778</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A multimodal coding benchmark called VCode that uses SVG (Scalable Vector Graphics) code as a symbolic visual representation method for translating images into executable code.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research focused mainly on linguistic-centric coding tasks and pixel-based image representations; this paper proposes using SVG code as a novel, compact, and interpretable way to represent visual information.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The gap between language-centric and visual-centric coding capabilities in AI models, particularly in their ability to represent and reason about visual information in a symbolic, executable format.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Developed VCoder framework with two key components: "Thinking with Revision" (iterative analysis and refinement of SVG code) and "Acting with Visual Tools" (using external detectors and parsers for structured visual cues), evaluated across three domains (general commonsense, professional disciplines, and visual-centric perception).</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> VCoder achieved a +12.3-point overall improvement over the top-performing baseline model (Claude-4-Opus), though human studies showed both humans and AI models performed worse on rendered SVGs compared to original images, indicating room for improvement in symbolic visual representation.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VCode: a Multimodal Coding Benchmark with SVG as Symbolic Visual
+  Representation</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">VCode: Multimodal Coding Benchmark with SVG Visual Representation</text>
+  
+  <!-- Main Process Flow -->
+  
+  <!-- Input Section -->
+  <rect x="50" y="80" width="150" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Input Image</text>
+  <text x="125" y="130" text-anchor="middle" font-size="12" fill="white">(RGB Pixels)</text>
+  
+  <!-- VCoder Framework -->
+  <rect x="250" y="60" width="300" height="350" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">VCoder Framework</text>
+  
+  <!-- Thinking with Revision -->
+  <rect x="270" y="100" width="260" height="120" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="400" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Thinking with Revision</text>
+  <text x="400" y="145" text-anchor="middle" font-size="11" fill="white">1. Initial Coding</text>
+  <text x="400" y="160" text-anchor="middle" font-size="11" fill="white">2. Comment Differences</text>
+  <text x="400" y="175" text-anchor="middle" font-size="11" fill="white">3. Iterative Refinement</text>
+  <text x="400" y="190" text-anchor="middle" font-size="11" fill="white">4. SVG Code Update</text>
+  
+  <!-- Acting with Visual Tools -->
+  <rect x="270" y="240" width="260" height="150" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="400" y="265" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Acting with Visual Tools</text>
+  <text x="400" y="285" text-anchor="middle" font-size="11" fill="white">• Object Detection (Category & Location)</text>
+  <text x="400" y="300" text-anchor="middle" font-size="11" fill="white">• Segmentation (Shape & Boundary)</text>
+  <text x="400" y="315" text-anchor="middle" font-size="11" fill="white">• OCR (Text Recognition)</text>
+  <text x="400" y="330" text-anchor="middle" font-size="11" fill="white">• Color & Attribute Analysis</text>
+  <text x="400" y="345" text-anchor="middle" font-size="11" fill="white">• Structured Visual Cues</text>
+  
+  <!-- SVG Code Output -->
+  <rect x="600" y="80" width="150" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="675" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">SVG Code</text>
+  <text x="675" y="130" text-anchor="middle" font-size="12" fill="white">(Vector Graphics)</text>
+  
+  <!-- Rendered Image -->
+  <rect x="800" y="80" width="150" height="80" rx="10" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="875" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Rendered Image</text>
+  <text x="875" y="130" text-anchor="middle" font-size="12" fill="white">(From Code)</text>
+  
+  <!-- Evaluation Framework -->
+  <rect x="50" y="200" width="150" height="300" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="125" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Evaluation</text>
+  <text x="125" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Framework</text>
+  
+  <!-- CodeVQA -->
+  <rect x="70" y="260" width="110" height="60" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="1"/>
+  <text x="125" y="280" text-anchor="middle" font-size="12" font-weight="bold" fill="white">CodeVQA</text>
+  <text x="125" y="295" text-anchor="middle" font-size="10" fill="white">Policy Model</text>
+  <text x="125" y="308" text-anchor="middle" font-size="10" fill="white">Q&A on SVG</text>
+  
+  <!-- SigLIP Score -->
+  <rect x="70" y="330" width="110" height="40" rx="5" fill="#e67e22" stroke="#d35400" stroke-width="1"/>
+  <text x="125" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="white">SigLIP Score</text>
+  <text x="125" y="358" text-anchor="middle" font-size="10" fill="white">Semantic Similarity</text>
+  
+  <!-- Code Efficiency -->
+  <rect x="70" y="380" width="110" height="40" rx="5" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+  <text x="125" y="395" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Code Length</text>
+  <text x="125" y="408" text-anchor="middle" font-size="10" fill="white">Token Efficiency</text>
+  
+  <!-- Benchmark Domains -->
+  <rect x="600" y="200" width="350" height="250" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="775" y="225" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">VCode Benchmark Domains</text>
+  
+  <!-- MM-Vet -->
+  <rect x="620" y="240" width="100" height="60" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="670" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MM-Vet</text>
+  <text x="670" y="275" text-anchor="middle" font-size="10" fill="white">General</text>
+  <text x="670" y="288" text-anchor="middle" font-size="10" fill="white">Commonsense</text>
+  
+  <!-- MMMU -->
+  <rect x="740" y="240" width="100" height="60" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="790" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="white">MMMU</text>
+  <text x="790" y="275" text-anchor="middle" font-size="10" fill="white">Professional</text>
+  <text x="790" y="288" text-anchor="middle" font-size="10" fill="white">Knowledge</text>
+  
+  <!-- CV-Bench -->
+  <rect x="860" y="240" width="100" height="60" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="910" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="white">CV-Bench</text>
+  <text x="910" y="275" text-anchor="middle" font-size="10" fill="white">Visual-Centric</text>
+  <text x="910" y="288" text-anchor="middle" font-size="10" fill="white">Perception</text>
+  
+  <!-- Key Challenges -->
+  <rect x="620" y="320" width="310" height="110" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="775" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Key Challenges Addressed</text>
+  <text x="775" y="360" text-anchor="middle" font-size="11" fill="white">• Long-Context Code Generation</text>
+  <text x="775" y="375" text-anchor="middle" font-size="11" fill="white">• Cross-Modal Visual-Code Translation</text>
+  <text x="775" y="390" text-anchor="middle" font-size="11" fill="white">• Fine-Grained Visual Detail Preservation</text>
+  <text x="775" y="405" text-anchor="middle" font-size="11" fill="white">• Symbolic Representation Fidelity</text>
+  
+  <!-- Results Summary -->
+  <rect x="50" y="520" width="900" height="120" rx="15" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Key Findings & Results</text>
+  
+  <rect x="70" y="560" width="200" height="60" rx="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+  <text x="170" y="580" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Performance Gap</text>
+  <text x="170" y="595" text-anchor="middle" font-size="10" fill="white">Best SVG: 46.8%</text>
+  <text x="170" y="608" text-anchor="middle" font-size="10" fill="white">vs Original: 61.7%</text>
+  
+  <rect x="290" y="560" width="200" height="60" rx="5" fill="#27ae60" stroke="#229954" stroke-width="1"/>
+  <text x="390" y="580" text-anchor="middle" font-size="12" font-weight="bold" fill="white">VCoder Improvement</text>
+  <text x="390" y="595" text-anchor="middle" font-size="10" fill="white">+12.3 Overall Gain</text>
+  <text x="390" y="608" text-anchor="middle" font-size="10" fill="white">Claude-4-Opus Base</text>
+  
+  <rect x="510" y="560" width="200" height="60" rx="5" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
+  <text x="610" y="580" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Human Alignment</text>
+  <text x="610" y="595" text-anchor="middle" font-size="10" fill="white">Consistent Patterns</text>
+  <text x="610" y="608" text-anchor="middle" font-size="10" fill="white">Human vs VLM SVG</text>
+  
+  <rect x="730" y="560" width="200" height="60" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+  <text x="830" y="580" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Code Complexity</text>
+  <text x="830" y="595" text-anchor="middle" font-size="10" fill="white">2K+ Tokens Needed</text>
+  <text x="830" y="608" text-anchor="middle" font-size="10" fill="white">for Quality Output</text>
+  
+  <!-- Innovation Badge -->
+  <circle cx="500" cy="720" r="40" fill="#1abc9c" stroke="#16a085" stroke-width="3"/>
+  <text x="500" y="715" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Novel</text>
+  <text x="500" y="730" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Paradigm</text>
+  
+  <!-- Connecting Lines -->
+  <line x1="200" y1="120" x2="250" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="550" y1="120" x2="600" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="750" y1="120" x2="800" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses SVG code as a symbolic visual representation">
+                        <div class="quiz-question">1. What is the main innovation of VCode compared to previous coding benchmarks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It focuses on generating Python code from images">It focuses on generating Python code from images</div><div class="quiz-choice" data-value="It uses SVG code as a symbolic visual representation">It uses SVG code as a symbolic visual representation</div><div class="quiz-choice" data-value="It introduces a new programming language for image processing">It introduces a new programming language for image processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Thinking with Revision">
+                        <div class="quiz-question">2. Which component of VCoder allows iterative analysis and refinement of generated SVG code?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Acting with Visual Tools">Acting with Visual Tools</div><div class="quiz-choice" data-value="Thinking with Revision">Thinking with Revision</div><div class="quiz-choice" data-value="CodeVQA Protocol">CodeVQA Protocol</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Both humans and AI models performed worse on rendered SVGs compared to original images">
+                        <div class="quiz-question">3. What interesting finding emerged from the human studies in the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Humans performed significantly better than AI models on SVG interpretation">Humans performed significantly better than AI models on SVG interpretation</div><div class="quiz-choice" data-value="Both humans and AI models performed equally well on SVG and original images">Both humans and AI models performed equally well on SVG and original images</div><div class="quiz-choice" data-value="Both humans and AI models performed worse on rendered SVGs compared to original images">Both humans and AI models performed worse on rendered SVGs compared to original images</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-orchid.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>When Modalities Conflict: How Unimodal Reasoning Uncertainty Governs
+  Preference Dynamics in MLLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-03</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.02243" target="_blank">http://arxiv.org/pdf/2511.02243</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper studies how multimodal large language models (MLLMs) handle conflicts between visual and textual information, specifically in the domain of AI and computer vision.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research focused on coarse dataset-level statistics of modality preferences, while this paper introduces a new framework that decomposes modality following into relative reasoning uncertainty and inherent modality preference.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to understand and explain why MLLMs prefer certain modalities over others when presented with conflicting information across different modalities.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created a controllable dataset with varying difficulty levels for visual and textual inputs, used entropy as an uncertainty metric, and analyzed layer-wise predictions to understand internal model behavior.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The study found that the probability of following a modality decreases monotonically as its relative uncertainty increases, with models showing internal "oscillations" between modalities when uncertainty levels are similar, and identified a balance point that indicates inherent modality preference.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>When Modalities Conflict: How Unimodal Reasoning Uncertainty Governs
+  Preference Dynamics in MLLMs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">
+    Modality Conflict Resolution in MLLMs: Methodology Framework
+  </text>
+  
+  <!-- Phase 1: Dataset Construction -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4f8" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Dataset Construction</text>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#34495e">Controllable Difficulty</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="#7f8c8d">Visual tier (dv): 0-13</text>
+  <text x="150" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">Text tier (dt): 0-2</text>
+  <text x="150" y="150" text-anchor="middle" font-size="10" fill="#7f8c8d">Color & Attribution tasks</text>
+  <text x="150" y="165" text-anchor="middle" font-size="10" fill="#7f8c8d">Conflicting inputs (I,T,Q)</text>
+  
+  <!-- Phase 2: Uncertainty Measurement -->
+  <rect x="300" y="60" width="200" height="120" rx="10" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Uncertainty Measurement</text>
+  <text x="400" y="105" text-anchor="middle" font-size="11" fill="#34495e">Output Entropy Analysis</text>
+  <text x="400" y="120" text-anchor="middle" font-size="10" fill="#7f8c8d">H(v) = Vision entropy</text>
+  <text x="400" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">H(t) = Text entropy</text>
+  <text x="400" y="150" text-anchor="middle" font-size="10" fill="#7f8c8d">Relative uncertainty:</text>
+  <text x="400" y="165" text-anchor="middle" font-size="10" fill="#7f8c8d">ΔH_rel = 2(H_t - H_v)/(H_t + H_v)</text>
+  
+  <!-- Phase 3: Behavioral Analysis -->
+  <rect x="550" y="60" width="200" height="120" rx="10" fill="#f4f1fb" stroke="#9b59b6" stroke-width="2"/>
+  <text x="650" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Behavioral Analysis</text>
+  <text x="650" y="105" text-anchor="middle" font-size="11" fill="#34495e">Monotonic Law Discovery</text>
+  <text x="650" y="120" text-anchor="middle" font-size="10" fill="#7f8c8d">Text following probability</text>
+  <text x="650" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">vs relative uncertainty</text>
+  <text x="650" y="150" text-anchor="middle" font-size="10" fill="#7f8c8d">Balance point identification</text>
+  <text x="650" y="165" text-anchor="middle" font-size="10" fill="#7f8c8d">Inherent preference measure</text>
+  
+  <!-- Phase 4: Internal Mechanism -->
+  <rect x="750" y="60" width="200" height="120" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="850" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Internal Mechanism</text>
+  <text x="850" y="105" text-anchor="middle" font-size="11" fill="#34495e">Layer-wise Analysis</text>
+  <text x="850" y="120" text-anchor="middle" font-size="10" fill="#7f8c8d">LogitLens probing</text>
+  <text x="850" y="135" text-anchor="middle" font-size="10" fill="#7f8c8d">Oscillation counting</text>
+  <text x="850" y="150" text-anchor="middle" font-size="10" fill="#7f8c8d">Clear vs ambiguous regions</text>
+  <text x="850" y="165" text-anchor="middle" font-size="10" fill="#7f8c8d">Logit difference heatmaps</text>
+  
+  <!-- Key Components Section -->
+  <text x="500" y="220" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Framework Components</text>
+  
+  <!-- Component 1: Relative Uncertainty -->
+  <rect x="100" y="250" width="250" height="100" rx="8" fill="#e8f8f5" stroke="#27ae60" stroke-width="2"/>
+  <text x="225" y="275" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Relative Reasoning Uncertainty</text>
+  <text x="225" y="295" text-anchor="middle" font-size="10" fill="#34495e">Case-specific confidence gap</text>
+  <text x="225" y="310" text-anchor="middle" font-size="10" fill="#7f8c8d">between unimodal predictions</text>
+  <text x="225" y="325" text-anchor="middle" font-size="10" fill="#7f8c8d">Measured via output entropy</text>
+  <text x="225" y="340" text-anchor="middle" font-size="10" fill="#7f8c8d">Dynamic factor</text>
+  
+  <!-- Component 2: Inherent Preference -->
+  <rect x="400" y="250" width="250" height="100" rx="8" fill="#fdf2e9" stroke="#d68910" stroke-width="2"/>
+  <text x="525" y="275" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Inherent Modality Preference</text>
+  <text x="525" y="295" text-anchor="middle" font-size="10" fill="#34495e">Stable bias when uncertainties</text>
+  <text x="525" y="310" text-anchor="middle" font-size="10" fill="#7f8c8d">are balanced</text>
+  <text x="525" y="325" text-anchor="middle" font-size="10" fill="#7f8c8d">Quantified via balance point</text>
+  <text x="525" y="340" text-anchor="middle" font-size="10" fill="#7f8c8d">Static factor</text>
+  
+  <!-- Component 3: Oscillation -->
+  <rect x="700" y="250" width="250" height="100" rx="8" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="825" y="275" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Internal Oscillation</text>
+  <text x="825" y="295" text-anchor="middle" font-size="10" fill="#34495e">Layer-wise prediction switching</text>
+  <text x="825" y="310" text-anchor="middle" font-size="10" fill="#7f8c8d">in ambiguous regions</text>
+  <text x="825" y="325" text-anchor="middle" font-size="10" fill="#7f8c8d">Explains external hesitation</text>
+  <text x="825" y="340" text-anchor="middle" font-size="10" fill="#7f8c8d">Mechanistic insight</text>
+  
+  <!-- Central Law -->
+  <rect x="200" y="380" width="600" height="80" rx="15" fill="#e74c3c" stroke="#c0392b" stroke-width="3"/>
+  <text x="500" y="405" text-anchor="middle" font-size="15" font-weight="bold" fill="white">Universal Monotonic Law</text>
+  <text x="500" y="425" text-anchor="middle" font-size="12" fill="white">Probability of following a modality decreases monotonically</text>
+  <text x="500" y="445" text-anchor="middle" font-size="12" fill="white">as its relative reasoning uncertainty increases</text>
+  
+  <!-- Analysis Process -->
+  <text x="500" y="500" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Analysis Process Flow</text>
+  
+  <!-- Step 1 -->
+  <circle cx="150" cy="540" r="30" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="150" y="547" text-anchor="middle" font-size="12" font-weight="bold" fill="white">1</text>
+  <text x="150" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">Generate</text>
+  <text x="150" y="595" text-anchor="middle" font-size="11" fill="#2c3e50">Conflicts</text>
+  
+  <!-- Step 2 -->
+  <circle cx="300" cy="540" r="30" fill="#f39c12" stroke="#d68910" stroke-width="2"/>
+  <text x="300" y="547" text-anchor="middle" font-size="12" font-weight="bold" fill="white">2</text>
+  <text x="300" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">Measure</text>
+  <text x="300" y="595" text-anchor="middle" font-size="11" fill="#2c3e50">Entropy</text>
+  
+  <!-- Step 3 -->
+  <circle cx="450" cy="540" r="30" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="450" y="547" text-anchor="middle" font-size="12" font-weight="bold" fill="white">3</text>
+  <text x="450" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">Calculate</text>
+  <text x="450" y="595" text-anchor="middle" font-size="11" fill="#2c3e50">Relative Δ</text>
+  
+  <!-- Step 4 -->
+  <circle cx="600" cy="540" r="30" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="600" y="547" text-anchor="middle" font-size="12" font-weight="bold" fill="white">4</text>
+  <text x="600" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">Plot</text>
+  <text x="600" y="595" text-anchor="middle" font-size="11" fill="#2c3e50">Curves</text>
+  
+  <!-- Step 5 -->
+  <circle cx="750" cy="540" r="30" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="750" y="547" text-anchor="middle" font-size="12" font-weight="bold" fill="white">5</text>
+  <text x="750" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">Probe</text>
+  <text x="750" y="595" text-anchor="middle" font-size="11" fill="#2c3e50">Layers</text>
+  
+  <!-- Step 6 -->
+  <circle cx="900" cy="540" r="30" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="900" y="547" text-anchor="middle" font-size="12" font-weight="bold" fill="white">6</text>
+  <text x="900" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">Find</text>
+  <text x="900" y="595" text-anchor="middle" font-size="11" fill="#2c3e50">Balance</text>
+  
+  <!-- Key Findings -->
+  <rect x="50" y="630" width="900" height="120" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="655" text-anchor="middle" font-size="15" font-weight="bold" fill="#2c3e50">Key Contributions</text>
+  
+  <text x="70" y="680" font-size="11" fill="#2c3e50">• Decomposed modality following into relative uncertainty + inherent preference</text>
+  <text x="70" y="700" font-size="11" fill="#2c3e50">• Discovered universal monotonic law across all models and datasets</text>
+  <text x="70" y="720" font-size="11" fill="#2c3e50">• Revealed internal oscillation mechanism explaining external hesitation behavior</text>
+  <text x="70" y="740" font-size="11" fill="#2c3e50">• Provided principled framework to disentangle capability from bias in MLLMs</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="980" cy="750" r="15" fill="#3498db" opacity="0.3"/>
+  <circle cx="950" cy="770" r="10" fill="#e74c3c" opacity="0.3"/>
+  <circle cx="20" cy="780" r="12" fill="#27ae60" opacity="0.3"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Previous studies only looked at success rates without considering model confidence">
+                        <div class="quiz-question">1. What key limitation did the authors identify in previous research approaches to studying modality conflicts in MLLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Previous studies only looked at success rates without considering model confidence">Previous studies only looked at success rates without considering model confidence</div><div class="quiz-choice" data-value="Previous approaches only used small datasets with limited examples">Previous approaches only used small datasets with limited examples</div><div class="quiz-choice" data-value="Previous research focused only on visual modality analysis">Previous research focused only on visual modality analysis</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It shows oscillation between modalities across layers">
+                        <div class="quiz-question">2. According to the paper, what happens when a model encounters conflicting information near its 'balance point'?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It immediately defaults to the visual modality">It immediately defaults to the visual modality</div><div class="quiz-choice" data-value="It shows oscillation between modalities across layers">It shows oscillation between modalities across layers</div><div class="quiz-choice" data-value="It randomly selects one modality to follow">It randomly selects one modality to follow</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By systematically varying both visual complexity (through distractors/occlusions) and textual reasoning steps">
+                        <div class="quiz-question">3. How did the researchers control the difficulty levels in their experimental dataset?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using only pre-existing datasets with known difficulty ratings">By using only pre-existing datasets with known difficulty ratings</div><div class="quiz-choice" data-value="By adjusting only the text complexity while keeping images constant">By adjusting only the text complexity while keeping images constant</div><div class="quiz-choice long-text" data-value="By systematically varying both visual complexity (through distractors/occlusions) and textual reasoning steps">By systematically varying both visual complexity (through distractors/occlusions) and textual reasoning steps</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/argyle.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>ThinkMorph: Emergent Properties in Multimodal Interleaved
+  Chain-of-Thought Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-10-30</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2510.27492" target="_blank">http://arxiv.org/pdf/2510.27492</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on multimodal reasoning through interleaved chain-of-thought approaches, combining text and visual modalities in artificial intelligence models.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research relied on tool-augmented designs or unified models with limited interleaving. This paper proposes treating text and images as complementary modalities that mutually advance reasoning, rather than isomorphic representations.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of effective multimodal reasoning, where current models struggle to coordinate between language and vision for complex problem-solving tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed ThinkMorph, a unified model fine-tuned on ~24K high-quality interleaved reasoning traces across four tasks with varying visual engagement levels, enabling text and image thoughts to function together.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> ThinkMorph achieved substantial improvements averaging 34.7% over the base model on vision-centric benchmarks, demonstrated emergent capabilities like unseen visual manipulations, and matched or exceeded larger proprietary models on out-of-domain tasks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ThinkMorph: Emergent Properties in Multimodal Interleaved
+  Chain-of-Thought Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">ThinkMorph: Multimodal Interleaved Chain-of-Thought Reasoning</text>
+  
+  <!-- Data Collection Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Data Collection</text>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#333">4 Tasks (~24K samples)</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="#666">• Jigsaw Assembly</text>
+  <text x="150" y="135" text-anchor="middle" font-size="10" fill="#666">• Spatial Navigation</text>
+  <text x="150" y="150" text-anchor="middle" font-size="10" fill="#666">• Visual Search</text>
+  <text x="150" y="165" text-anchor="middle" font-size="10" fill="#666">• Chart Refocus</text>
+  
+  <!-- Interleaved Training Section -->
+  <rect x="300" y="60" width="200" height="120" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#7b1fa2">Interleaved Training</text>
+  <text x="400" y="105" text-anchor="middle" font-size="11" fill="#333">Text + Image Tokens</text>
+  <text x="400" y="120" text-anchor="middle" font-size="10" fill="#666">MSE Loss (Images)</text>
+  <text x="400" y="135" text-anchor="middle" font-size="10" fill="#666">CE Loss (Text)</text>
+  <text x="400" y="155" text-anchor="middle" font-size="10" fill="#666">Base Model: Bagel-7B</text>
+  
+  <!-- ThinkMorph Model -->
+  <rect x="550" y="60" width="200" height="120" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="650" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">ThinkMorph Model</text>
+  <text x="650" y="105" text-anchor="middle" font-size="11" fill="#333">Unified Reasoning</text>
+  <text x="650" y="125" text-anchor="middle" font-size="10" fill="#666">Complementary</text>
+  <text x="650" y="140" text-anchor="middle" font-size="10" fill="#666">Text-Image Modalities</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="750" y="60" width="200" height="120" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="850" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">Evaluation</text>
+  <text x="850" y="105" text-anchor="middle" font-size="11" fill="#333">In-domain + Out-domain</text>
+  <text x="850" y="120" text-anchor="middle" font-size="10" fill="#666">34.7% avg improvement</text>
+  <text x="850" y="135" text-anchor="middle" font-size="10" fill="#666">vs base model</text>
+  <text x="850" y="155" text-anchor="middle" font-size="10" fill="#666">Rivals larger VLMs</text>
+  
+  <!-- Reasoning Modes Comparison -->
+  <rect x="100" y="220" width="800" height="80" rx="10" fill="#fff8e1" stroke="#ffa000" stroke-width="2"/>
+  <text x="500" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffa000">Reasoning Mode Comparison</text>
+  
+  <rect x="150" y="260" width="150" height="30" rx="5" fill="#ffcdd2"/>
+  <text x="225" y="280" text-anchor="middle" font-size="11" fill="#333">Text-Only</text>
+  
+  <rect x="350" y="260" width="150" height="30" rx="5" fill="#c8e6c9"/>
+  <text x="425" y="280" text-anchor="middle" font-size="11" fill="#333">Vision-Only</text>
+  
+  <rect x="550" y="260" width="150" height="30" rx="5" fill="#bbdefb"/>
+  <text x="625" y="280" text-anchor="middle" font-size="11" fill="#333">Interleaved</text>
+  <text x="625" y="295" text-anchor="middle" font-size="9" fill="#1976d2" font-weight="bold">+5.33% vs next best</text>
+  
+  <!-- Emergent Properties -->
+  <text x="500" y="340" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Emergent Properties</text>
+  
+  <!-- Property 1 -->
+  <rect x="50" y="360" width="280" height="100" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="190" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#0277bd">Property 1: Unseen Visual Manipulations</text>
+  <text x="190" y="405" text-anchor="middle" font-size="10" fill="#333">• Zoom-in operations</text>
+  <text x="190" y="420" text-anchor="middle" font-size="10" fill="#333">• Image inpainting</text>
+  <text x="190" y="435" text-anchor="middle" font-size="10" fill="#333">• Multi-box generation</text>
+  <text x="190" y="450" text-anchor="middle" font-size="10" fill="#333">Up to 10% of operations</text>
+  
+  <!-- Property 2 -->
+  <rect x="360" y="360" width="280" height="100" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="500" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b1fa2">Property 2: Autonomous Mode Switching</text>
+  <text x="500" y="405" text-anchor="middle" font-size="10" fill="#333">5.3% switch to text-only</text>
+  <text x="500" y="420" text-anchor="middle" font-size="10" fill="#333">+7.29% accuracy gain</text>
+  <text x="500" y="435" text-anchor="middle" font-size="10" fill="#333">Task-adaptive behavior</text>
+  <text x="500" y="450" text-anchor="middle" font-size="10" fill="#333">Front-loaded visual engagement</text>
+  
+  <!-- Property 3 -->
+  <rect x="670" y="360" width="280" height="100" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="810" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#388e3c">Property 3: Better Test-Time Scaling</text>
+  <text x="810" y="405" text-anchor="middle" font-size="10" fill="#333">Diversified thoughts</text>
+  <text x="810" y="420" text-anchor="middle" font-size="10" fill="#333">+8.0% on Jigsaw Assembly</text>
+  <text x="810" y="435" text-anchor="middle" font-size="10" fill="#333">Broader solution space</text>
+  <text x="810" y="450" text-anchor="middle" font-size="10" fill="#333">Best-of-N sampling</text>
+  
+  <!-- Key Findings -->
+  <rect x="100" y="500" width="800" height="120" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="500" y="525" text-anchor="middle" font-size="16" font-weight="bold" fill="#689f38">Key Findings</text>
+  
+  <text x="120" y="550" font-size="12" fill="#333">• Interleaved reasoning excels on vision-centric tasks (85.84% improvement on Spatial Navigation)</text>
+  <text x="120" y="570" font-size="12" fill="#333">• Visual manipulation essential vs supplementary depends on task complexity</text>
+  <text x="120" y="590" font-size="12" fill="#333">• Outperforms larger models: InternVL3.5-38B on SAT, matches Gemini 2.5 Flash on MMVP</text>
+  <text x="120" y="610" font-size="12" fill="#333">• Complementary text-image modalities > isomorphic representations</text>
+  
+  <!-- Methodology Flow -->
+  <rect x="100" y="650" width="800" height="80" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="500" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#c2185b">Methodology</text>
+  <text x="180" y="700" text-anchor="middle" font-size="11" fill="#333">Data Synthesis</text>
+  <text x="340" y="700" text-anchor="middle" font-size="11" fill="#333">Dual Loss Training</text>
+  <text x="500" y="700" text-anchor="middle" font-size="11" fill="#333">Interleaved Inference</text>
+  <text x="660" y="700" text-anchor="middle" font-size="11" fill="#333">Emergent Analysis</text>
+  <text x="820" y="700" text-anchor="middle" font-size="11" fill="#333">Benchmark Evaluation</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="120" x2="550" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="750" y1="120" x2="800" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <line x1="500" y1="180" x2="500" y2="220" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="300" x2="500" y2="340" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="460" x2="500" y2="500" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="500" y1="620" x2="500" y2="650" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Legend -->
+  <rect x="20" y="750" width="200" height="40" rx="5" fill="#ffffff" stroke="#ccc" stroke-width="1"/>
+  <text x="30" y="770" font-size="10" font-weight="bold" fill="#333">Key Innovation:</text>
+  <text x="30" y="785" font-size="9" fill="#666">Complementary text-image reasoning</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Treating text and images as complementary rather than isomorphic modalities">
+                        <div class="quiz-question">1. What is the key innovation in ThinkMorph's approach to multimodal reasoning compared to previous methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using external visual tools and modules">Using external visual tools and modules</div><div class="quiz-choice" data-value="Treating text and images as complementary rather than isomorphic modalities">Treating text and images as complementary rather than isomorphic modalities</div><div class="quiz-choice" data-value="Relying solely on language-driven reasoning">Relying solely on language-driven reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Ability to generate completely new image content">
+                        <div class="quiz-question">2. Which of the following emergent properties was NOT observed in ThinkMorph's behavior?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Autonomous switching between reasoning modes">Autonomous switching between reasoning modes</div><div class="quiz-choice" data-value="Generation of unseen visual manipulations">Generation of unseen visual manipulations</div><div class="quiz-choice" data-value="Ability to generate completely new image content">Ability to generate completely new image content</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="24,000 interleaved reasoning traces">
+                        <div class="quiz-question">3. What was the approximate size of the training dataset used to fine-tune ThinkMorph?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="12,000 interleaved reasoning traces">12,000 interleaved reasoning traces</div><div class="quiz-choice" data-value="24,000 interleaved reasoning traces">24,000 interleaved reasoning traces</div><div class="quiz-choice" data-value="48,000 interleaved reasoning traces">48,000 interleaved reasoning traces</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
