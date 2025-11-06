@@ -1,0 +1,1189 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-06 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-06 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Diffusion Language Models are Super Data Learners</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.03276" target="_blank">http://arxiv.org/pdf/2511.03276</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Research on comparing diffusion language models (DLMs) versus autoregressive (AR) models in language modeling, focusing on data efficiency and model performance.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in autoregressive language models and diffusion models, proposes that DLMs can extract more value from limited data through any-order modeling, super-dense compute, and built-in Monte Carlo augmentation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of maximizing model performance when high-quality training data is scarce but computational resources are abundant.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Conducted controlled experiments comparing DLMs and AR models across various settings (model sizes, data budgets, data quality) and analyzed three key factors: any-order modeling, super-dense compute, and Monte Carlo augmentation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Found that DLMs consistently outperform AR models when unique data is limited, achieving >3× data efficiency, with a 1B DLM reaching 56% accuracy on HellaSwag and 33% on MMLU using only 1B tokens.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Diffusion Language Models are Super Data Learners</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+    Diffusion Language Models are Super Data Learners - Methodology Flow
+  </text>
+  
+  <!-- Main Experimental Framework -->
+  <rect x="50" y="60" width="900" height="120" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="500" y="85" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+    Controlled Pre-training Comparison Framework
+  </text>
+  <text x="70" y="110" font-family="Arial, sans-serif" font-size="12" fill="#34495e">
+    • Same architecture (1B-8B params) • Same data corpus • Same hyperparameters
+  </text>
+  <text x="70" y="130" font-family="Arial, sans-serif" font-size="12" fill="#34495e">
+    • Varied: unique data budget (0.5B-96B tokens), data quality, model size, sparsity
+  </text>
+  <text x="70" y="150" font-family="Arial, sans-serif" font-size="12" fill="#34495e">
+    • Fixed total training tokens with repetition allowed
+  </text>
+  
+  <!-- Three Main Experimental Categories -->
+  
+  <!-- Data Budget Experiments -->
+  <rect x="50" y="200" width="280" height="140" fill="#fff2e6" stroke="#e67e22" stroke-width="2" rx="8"/>
+  <text x="190" y="220" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#d35400">
+    Data Budget Analysis
+  </text>
+  <text x="60" y="245" font-family="Arial, sans-serif" font-size="11" fill="#8b4513">
+    • Unique tokens: 0.5B → 96B
+  </text>
+  <text x="60" y="260" font-family="Arial, sans-serif" font-size="11" fill="#8b4513">
+    • Fixed total: 96B tokens
+  </text>
+  <text x="60" y="275" font-family="Arial, sans-serif" font-size="11" fill="#8b4513">
+    • Observe crossover timing
+  </text>
+  <text x="60" y="290" font-family="Arial, sans-serif" font-size="11" fill="#8b4513">
+    • DLM shows 3× data efficiency
+  </text>
+  <text x="60" y="315" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#c0392b">
+    Result: Earlier crossover with less data
+  </text>
+  
+  <!-- Model Scale Experiments -->
+  <rect x="360" y="200" width="280" height="140" fill="#f0f8e6" stroke="#27ae60" stroke-width="2" rx="8"/>
+  <text x="500" y="220" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#196f3d">
+    Model Scale Analysis
+  </text>
+  <text x="370" y="245" font-family="Arial, sans-serif" font-size="11" fill="#145a32">
+    • Model sizes: 1B → 8B params
+  </text>
+  <text x="370" y="260" font-family="Arial, sans-serif" font-size="11" fill="#145a32">
+    • Dense vs Sparse (MoE)
+  </text>
+  <text x="370" y="275" font-family="Arial, sans-serif" font-size="11" fill="#145a32">
+    • 1B unique tokens, 96 epochs
+  </text>
+  <text x="370" y="290" font-family="Arial, sans-serif" font-size="11" fill="#145a32">
+    • AR saturates quickly
+  </text>
+  <text x="370" y="315" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#c0392b">
+    Result: Larger models = earlier crossover
+  </text>
+  
+  <!-- Data Quality Experiments -->
+  <rect x="670" y="200" width="280" height="140" fill="#f3e6ff" stroke="#8e44ad" stroke-width="2" rx="8"/>
+  <text x="810" y="220" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#6a1b9a">
+    Data Quality Analysis
+  </text>
+  <text x="680" y="245" font-family="Arial, sans-serif" font-size="11" fill="#4a148c">
+    • Three quality tiers: low/med/high
+  </text>
+  <text x="680" y="260" font-family="Arial, sans-serif" font-size="11" fill="#4a148c">
+    • Same distribution source
+  </text>
+  <text x="680" y="275" font-family="Arial, sans-serif" font-size="11" fill="#4a148c">
+    • 1B unique tokens, 96 epochs
+  </text>
+  <text x="680" y="290" font-family="Arial, sans-serif" font-size="11" fill="#4a148c">
+    • AR more sensitive to quality
+  </text>
+  <text x="680" y="315" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#c0392b">
+    Result: Higher quality = later crossover
+  </text>
+  
+  <!-- Three Contributing Factors Analysis -->
+  <rect x="100" y="370" width="800" height="80" fill="#ffe6e6" stroke="#e74c3c" stroke-width="2" rx="10"/>
+  <text x="500" y="390" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#c0392b">
+    Three Factors Driving DLM Advantage
+  </text>
+  
+  <!-- Factor 1 -->
+  <rect x="120" y="410" width="220" height="60" fill="#e8f6f3" stroke="#16a085" stroke-width="1" rx="5"/>
+  <text x="230" y="425" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#0e6b5d">
+    Any-Order Modeling
+  </text>
+  <text x="130" y="440" font-family="Arial, sans-serif" font-size="10" fill="#0e6b5d">
+    • Removes causal bias
+  </text>
+  <text x="130" y="452" font-family="Arial, sans-serif" font-size="10" fill="#0e6b5d">
+    • 2^L vs L variations
+  </text>
+  <text x="130" y="464" font-family="Arial, sans-serif" font-size="10" fill="#0e6b5d">
+    • Bidirectional attention
+  </text>
+  
+  <!-- Factor 2 -->
+  <rect x="360" y="410" width="220" height="60" fill="#fef9e7" stroke="#f39c12" stroke-width="1" rx="5"/>
+  <text x="470" y="425" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#b7950b">
+    Super-Dense Compute
+  </text>
+  <text x="370" y="440" font-family="Arial, sans-serif" font-size="10" fill="#b7950b">
+    • 100× more training FLOPs
+  </text>
+  <text x="370" y="452" font-family="Arial, sans-serif" font-size="10" fill="#b7950b">
+    • Iterative refinement
+  </text>
+  <text x="370" y="464" font-family="Arial, sans-serif" font-size="10" fill="#b7950b">
+    • Parallelizable inference
+  </text>
+  
+  <!-- Factor 3 -->
+  <rect x="600" y="410" width="220" height="60" fill="#f4ecf7" stroke="#9b59b6" stroke-width="1" rx="5"/>
+  <text x="710" y="425" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#6c3483">
+    Monte Carlo Augmentation
+  </text>
+  <text x="610" y="440" font-family="Arial, sans-serif" font-size="10" fill="#6c3483">
+    • Built-in noise injection
+  </text>
+  <text x="610" y="452" font-family="Arial, sans-serif" font-size="10" fill="#6c3483">
+    • Expectation over corruptions
+  </text>
+  <text x="610" y="464" font-family="Arial, sans-serif" font-size="10" fill="#6c3483">
+    • Richer data variants
+  </text>
+  
+  <!-- Ablation Studies -->
+  <rect x="50" y="490" width="420" height="100" fill="#f8f9fa" stroke="#6c757d" stroke-width="2" rx="8"/>
+  <text x="260" y="510" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#495057">
+    Noise Injection Ablations
+  </text>
+  <text x="60" y="530" font-family="Arial, sans-serif" font-size="11" fill="#6c757d">
+    • Input masking (10%-90%) on AR models
+  </text>
+  <text x="60" y="545" font-family="Arial, sans-serif" font-size="11" fill="#6c757d">
+    • Parameter dropout (10%-90%) on AR models
+  </text>
+  <text x="60" y="560" font-family="Arial, sans-serif" font-size="11" fill="#6c757d">
+    • Both help AR but cannot close gap with DLM
+  </text>
+  <text x="60" y="575" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#dc3545">
+    Conclusion: Noise helps but other factors dominate
+  </text>
+  
+  <!-- Large Scale Validation -->
+  <rect x="500" y="490" width="450" height="100" fill="#e6f3ff" stroke="#007bff" stroke-width="2" rx="8"/>
+  <text x="725" y="510" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#0056b3">
+    Large-Scale Validation (1.7B Models)
+  </text>
+  <text x="510" y="530" font-family="Arial, sans-serif" font-size="11" fill="#004085">
+    • 10B unique Python tokens, ~150 epochs
+  </text>
+  <text x="510" y="545" font-family="Arial, sans-serif" font-size="11" fill="#004085">
+    • 1.5T total compute budget
+  </text>
+  <text x="510" y="560" font-family="Arial, sans-serif" font-size="11" fill="#004085">
+    • Clear crossovers on coding benchmarks
+  </text>
+  <text x="510" y="575" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#dc3545">
+    Result: DLM achieves SOTA performance
+  </text>
+  
+  <!-- Key Findings -->
+  <rect x="100" y="620" width="800" height="120" fill="#e8f5e8" stroke="#28a745" stroke-width="3" rx="10"/>
+  <text x="500" y="645" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#155724">
+    Key Empirical Findings
+  </text>
+  
+  <text x="120" y="670" font-family="Arial, sans-serif" font-size="12" fill="#155724">
+    • <tspan font-weight="bold">Intelligence Crossover:</tspan> DLMs consistently surpass AR under limited unique data
+  </text>
+  <text x="120" y="690" font-family="Arial, sans-serif" font-size="12" fill="#155724">
+    • <tspan font-weight="bold">3× Data Efficiency:</tspan> DLMs extract more signal per unique token
+  </text>
+  <text x="120" y="710" font-family="Arial, sans-serif" font-size="12" fill="#155724">
+    • <tspan font-weight="bold">Validation Loss Paradox:</tspan> Rising validation loss ≠ degraded performance
+  </text>
+  <text x="120" y="730" font-family="Arial, sans-serif" font-size="12" fill="#155724">
+    • <tspan font-weight="bold">Trade-off:</tspan> DLMs sacrifice compute efficiency for data potential
+  </text>
+  
+  <!-- Methodology Note -->
+  <rect x="200" y="760" width="600" height="30" fill="#fff3cd" stroke="#856404" stroke-width="1" rx="5"/>
+  <text x="500" y="780" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#856404">
+    All experiments use identical architectures, hyperparameters, and evaluation protocols for fair comparison
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="DLMs trade computational efficiency for better data efficiency">
+                        <div class="quiz-question">1. What is the primary trade-off between Diffusion Language Models (DLMs) and Autoregressive (AR) models according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="DLMs trade memory efficiency for better speed">DLMs trade memory efficiency for better speed</div><div class="quiz-choice" data-value="DLMs trade computational efficiency for better data efficiency">DLMs trade computational efficiency for better data efficiency</div><div class="quiz-choice" data-value="DLMs trade model size for better accuracy">DLMs trade model size for better accuracy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The crossover point occurs earlier">
+                        <div class="quiz-question">2. When training with limited unique data, what happens to the performance gap between DLMs and AR models as the model size increases?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The crossover point occurs later">The crossover point occurs later</div><div class="quiz-choice" data-value="The crossover point occurs earlier">The crossover point occurs earlier</div><div class="quiz-choice" data-value="There is no change in the crossover point">There is no change in the crossover point</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Rising validation loss did not necessarily imply degraded downstream performance">
+                        <div class="quiz-question">3. What surprising finding did the researchers make about validation loss in their experiments?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Higher validation loss always indicated worse model performance">Higher validation loss always indicated worse model performance</div><div class="quiz-choice" data-value="Validation loss had no correlation with model performance">Validation loss had no correlation with model performance</div><div class="quiz-choice" data-value="Rising validation loss did not necessarily imply degraded downstream performance">Rising validation loss did not necessarily imply degraded downstream performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>UniAVGen: Unified Audio and Video Generation with Asymmetric Cross-Modal
+  Interactions</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.03334" target="_blank">http://arxiv.org/pdf/2511.03334</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Joint audio and video generation using a unified framework called UniAVGen that enables synchronized audio-visual content creation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing dual-branch architectures and diffusion models, but introduces novel asymmetric cross-modal interactions, face-aware modulation, and modality-aware classifier-free guidance.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing audio-video generation methods suffer from poor lip synchronization, insufficient semantic consistency, and limited generalization due to decoupled pipelines or ineffective cross-modal modeling.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses dual-branch Diffusion Transformers with asymmetric cross-modal interaction mechanism, face-aware modulation module for facial region focus, and modality-aware classifier-free guidance for enhanced generation fidelity.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved superior performance in audio-video synchronization, timbre consistency, and emotion alignment compared to existing methods while using significantly fewer training samples (1.3M vs 30.1M).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>UniAVGen: Unified Audio and Video Generation with Asymmetric Cross-Modal
+  Interactions</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="videoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ff8e8e;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="audioGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#6ee6de;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="crossGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffe66d;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffed8a;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="faceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8e6cf;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#c7f0db;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="guidanceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff9ff3;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffb3f7;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c3e50">UniAVGen Method Workflow</text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="60" width="900" height="80" rx="10" fill="#3498db" opacity="0.2" stroke="#3498db" stroke-width="2"/>
+  <text x="500" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Input Components</text>
+  <rect x="80" y="90" width="100" height="40" rx="5" fill="#ecf0f1" stroke="#3498db"/>
+  <text x="130" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Reference Image</text>
+  <rect x="200" y="90" width="100" height="40" rx="5" fill="#ecf0f1" stroke="#3498db"/>
+  <text x="250" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Video Prompt</text>
+  <rect x="320" y="90" width="100" height="40" rx="5" fill="#ecf0f1" stroke="#3498db"/>
+  <text x="370" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Speech Content</text>
+  <rect x="440" y="90" width="100" height="40" rx="5" fill="#ecf0f1" stroke="#3498db"/>
+  <text x="490" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Reference Audio</text>
+  
+  <!-- Dual-Branch Architecture -->
+  <text x="500" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Dual-Branch Joint Synthesis Architecture</text>
+  
+  <!-- Video Branch -->
+  <rect x="100" y="200" width="300" height="120" rx="10" fill="url(#videoGrad)" stroke="#e74c3c" stroke-width="2"/>
+  <text x="250" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Video Branch (DiT)</text>
+  <rect x="120" y="230" width="80" height="30" rx="5" fill="#fff" stroke="#e74c3c"/>
+  <text x="160" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">VAE Encoder</text>
+  <rect x="220" y="230" width="80" height="30" rx="5" fill="#fff" stroke="#e74c3c"/>
+  <text x="260" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Flow Matching</text>
+  <rect x="320" y="230" width="60" height="30" rx="5" fill="#fff" stroke="#e74c3c"/>
+  <text x="350" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">umT5</text>
+  <text x="250" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Loss: ||v_t(z_v^t) - u_θv||²</text>
+  <text x="250" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Input: [z_v^ref, z_v^cond, z_v^t]</text>
+  
+  <!-- Audio Branch -->
+  <rect x="600" y="200" width="300" height="120" rx="10" fill="url(#audioGrad)" stroke="#16a085" stroke-width="2"/>
+  <text x="750" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Audio Branch (DiT)</text>
+  <rect x="620" y="230" width="80" height="30" rx="5" fill="#fff" stroke="#16a085"/>
+  <text x="660" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Mel Spectrogram</text>
+  <rect x="720" y="230" width="80" height="30" rx="5" fill="#fff" stroke="#16a085"/>
+  <text x="760" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Flow Matching</text>
+  <rect x="820" y="230" width="60" height="30" rx="5" fill="#fff" stroke="#16a085"/>
+  <text x="850" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">ConvNeXt</text>
+  <text x="750" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Loss: ||v_t(z_a^t) - u_θa||²</text>
+  <text x="750" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2c3e50">Input: [z_a^ref, z_a^cond, z_a^t]</text>
+  
+  <!-- Asymmetric Cross-Modal Interaction -->
+  <rect x="200" y="350" width="600" height="100" rx="10" fill="url(#crossGrad)" stroke="#f39c12" stroke-width="2"/>
+  <text x="500" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Asymmetric Cross-Modal Interaction</text>
+  
+  <!-- A2V Aligner -->
+  <rect x="220" y="380" width="120" height="60" rx="5" fill="#fff" stroke="#f39c12"/>
+  <text x="280" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#2c3e50">A2V Aligner</text>
+  <text x="280" y="408" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Audio Context</text>
+  <text x="280" y="418" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Window</text>
+  <text x="280" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Cross-Attention</text>
+  
+  <!-- V2A Aligner -->
+  <rect x="660" y="380" width="120" height="60" rx="5" fill="#fff" stroke="#f39c12"/>
+  <text x="720" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#2c3e50">V2A Aligner</text>
+  <text x="720" y="408" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Temporal</text>
+  <text x="720" y="418" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Interpolation</text>
+  <text x="720" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#2c3e50">Cross-Attention</text>
+  
+  <!-- Bidirectional flow -->
+  <path d="M 350 410 Q 500 390 650 410" stroke="#f39c12" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 650 410 Q 500 430 350 410" stroke="#f39c12" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Face-Aware Modulation -->
+  <rect x="100" y="480" width="350" height="80" rx="10" fill="url(#faceGrad)" stroke="#27ae60" stroke-width="2"/>
+  <text x="275" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Face-Aware Modulation (FAM)</text>
+  <rect x="120" y="510" width="100" height="40" rx="5" fill="#fff" stroke="#27ae60"/>
+  <text x="170" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Dynamic Mask</text>
+  <text x="170" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Prediction</text>
+  <rect x="240" y="510" width="100" height="40" rx="5" fill="#fff" stroke="#27ae60"/>
+  <text x="290" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Mask-Guided</text>
+  <text x="290" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Interaction</text>
+  <rect x="360" y="510" width="70" height="40" rx="5" fill="#fff" stroke="#27ae60"/>
+  <text x="395" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Decaying</text>
+  <text x="395" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">λ_m</text>
+  
+  <!-- Modality-Aware CFG -->
+  <rect x="550" y="480" width="350" height="80" rx="10" fill="url(#guidanceGrad)" stroke="#9b59b6" stroke-width="2"/>
+  <text x="725" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Modality-Aware CFG (MA-CFG)</text>
+  <rect x="570" y="510" width="120" height="40" rx="5" fill="#fff" stroke="#9b59b6"/>
+  <text x="630" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Cross-Modal</text>
+  <text x="630" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Amplification</text>
+  <rect x="710" y="510" width="120" height="40" rx="5" fill="#fff" stroke="#9b59b6"/>
+  <text x="770" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Enhanced</text>
+  <text x="770" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2c3e50">Guidance</text>
+  
+  <!-- Multi-Task Outputs -->
+  <rect x="150" y="590" width="700" height="120" rx="10" fill="#ecf0f1" stroke="#34495e" stroke-width="2"/>
+  <text x="500" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Multi-Task Capabilities</text>
+  
+  <rect x="170" y="620" width="120" height="35" rx="5" fill="#3498db" opacity="0.7"/>
+  <text x="230" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#fff">Joint A-V Generation</text>
+  <text x="230" y="647" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#fff">& Continuation</text>
+  
+  <rect x="310" y="620" width="120" height="35" rx="5" fill="#e74c3c" opacity="0.7"/>
+  <text x="370" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#fff">Video-to-Audio</text>
+  <text x="370" y="647" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#fff">Dubbing</text>
+  
+  <rect x="450" y="620" width="120" height="35" rx="5" fill="#27ae60" opacity="0.7"/>
+  <text x="510" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#fff">Audio-Driven</text>
+  <text x="510" y="647" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#fff">Video Synthesis</text>
+  
+  <!-- Training Strategy -->
+  <rect x="170" y="665" width="660" height="35" rx="5" fill="#f39c12" opacity="0.7"/>
+  <text x="500" y="680" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#fff">Three-Stage Training: Audio Pre-training → Joint Training → Multi-task Learning</text>
+  <text x="500" y="692" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#fff">Joint Loss: L_joint = L_v + L_a + λ_m * L_m</text>
+  
+  <!-- Output -->
+  <rect x="300" y="730" width="400" height="40" rx="10" fill="#2c3e50"/>
+  <text x="500" y="745" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#fff">High-Fidelity Synchronized Audio-Video Output</text>
+  <text x="500" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#fff">Enhanced Lip-Sync, Timbre & Emotion Consistency</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f39c12"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Implementing asymmetric temporal-aligned interactions with modal-specific aligners">
+                        <div class="quiz-question">1. What is the key innovation in UniAVGen's cross-modal interaction design compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using symmetric global interactions between audio and video">Using symmetric global interactions between audio and video</div><div class="quiz-choice" data-value="Implementing asymmetric temporal-aligned interactions with modal-specific aligners">Implementing asymmetric temporal-aligned interactions with modal-specific aligners</div><div class="quiz-choice" data-value="Applying random interactions between modalities">Applying random interactions between modalities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By combining face-aware modulation with asymmetric cross-modal interactions">
+                        <div class="quiz-question">2. How does UniAVGen achieve better training efficiency compared to other methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using much larger training datasets">By using much larger training datasets</div><div class="quiz-choice" data-value="By simplifying the model architecture">By simplifying the model architecture</div><div class="quiz-choice" data-value="By combining face-aware modulation with asymmetric cross-modal interactions">By combining face-aware modulation with asymmetric cross-modal interactions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It dynamically predicts facial regions with gradually relaxing constraints">
+                        <div class="quiz-question">3. What is unique about UniAVGen's Face-Aware Modulation (FAM) module?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses fixed facial region masks throughout training">It uses fixed facial region masks throughout training</div><div class="quiz-choice" data-value="It dynamically predicts facial regions with gradually relaxing constraints">It dynamically predicts facial regions with gradually relaxing constraints</div><div class="quiz-choice" data-value="It completely ignores facial regions during generation">It completely ignores facial regions during generation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Step-Audio-EditX Technical Report</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.03601" target="_blank">http://arxiv.org/pdf/2511.03601</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents Step-Audio-EditX, an open-source LLM-based audio model for expressive and iterative audio editing, including emotion, speaking style, and paralinguistics control in text-to-speech synthesis.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in zero-shot TTS systems and speech disentanglement methods, it introduces a novel approach using large-margin synthetic data training instead of conventional embedding-based priors or auxiliary modules.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of independently controlling speech attributes (emotion, style, accent) in synthesized speech while maintaining voice identity, which current zero-shot TTS systems struggle with.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The model uses a dual-codebook audio tokenizer, audio LLM, and audio decoder architecture, trained using large-margin synthetic data pairs and reinforcement learning with human preferences.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The model outperformed closed-source systems (MiniMax-2.6-hd and Doubao-Seed-TTS-2.0) in emotion editing and style control tasks, achieving significant improvements in accuracy through iterative editing (reaching 70.7% for emotion and 66.2% for style editing).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Step-Audio-EditX Technical Report</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">Step-Audio-EditX Workflow</text>
+  
+  <!-- Data Preparation Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Preparation</text>
+  <text x="150" y="100" text-anchor="middle" font-size="11" fill="#34495e">Zero-shot TTS Data</text>
+  <text x="150" y="115" text-anchor="middle" font-size="11" fill="#34495e">Large-margin Synthetic Data</text>
+  <text x="150" y="130" text-anchor="middle" font-size="11" fill="#34495e">Emotion/Style Triplets</text>
+  <text x="150" y="145" text-anchor="middle" font-size="11" fill="#34495e">Paralinguistic Quadruplets</text>
+  <text x="150" y="160" text-anchor="middle" font-size="11" fill="#34495e">RL Preference Data</text>
+  
+  <!-- Architecture Components -->
+  <rect x="300" y="60" width="150" height="80" rx="10" fill="#fff2e6" stroke="#f39c12" stroke-width="2"/>
+  <text x="375" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Audio Tokenizer</text>
+  <text x="375" y="100" text-anchor="middle" font-size="11" fill="#34495e">Dual-codebook</text>
+  <text x="375" y="115" text-anchor="middle" font-size="11" fill="#34495e">Linguistic (16.7Hz)</text>
+  <text x="375" y="130" text-anchor="middle" font-size="11" fill="#34495e">Semantic (25Hz)</text>
+  
+  <rect x="500" y="60" width="150" height="80" rx="10" fill="#e8f5e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="575" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Audio LLM</text>
+  <text x="575" y="100" text-anchor="middle" font-size="11" fill="#34495e">3B Parameters</text>
+  <text x="575" y="115" text-anchor="middle" font-size="11" fill="#34495e">Chat Format</text>
+  <text x="575" y="130" text-anchor="middle" font-size="11" fill="#34495e">Text + Audio Tokens</text>
+  
+  <rect x="700" y="60" width="150" height="80" rx="10" fill="#fdf2f2" stroke="#e74c3c" stroke-width="2"/>
+  <text x="775" y="80" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Audio Decoder</text>
+  <text x="775" y="100" text-anchor="middle" font-size="11" fill="#34495e">Flow Matching</text>
+  <text x="775" y="115" text-anchor="middle" font-size="11" fill="#34495e">BigVGANv2</text>
+  <text x="775" y="130" text-anchor="middle" font-size="11" fill="#34495e">Tokens → Waveform</text>
+  
+  <!-- Training Pipeline -->
+  <rect x="100" y="200" width="180" height="100" rx="10" fill="#f0e6ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="190" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Supervised Fine-tuning</text>
+  <text x="190" y="240" text-anchor="middle" font-size="11" fill="#34495e">Zero-shot TTS</text>
+  <text x="190" y="255" text-anchor="middle" font-size="11" fill="#34495e">Emotion Editing</text>
+  <text x="190" y="270" text-anchor="middle" font-size="11" fill="#34495e">Style Editing</text>
+  <text x="190" y="285" text-anchor="middle" font-size="11" fill="#34495e">Paralinguistic Editing</text>
+  
+  <rect x="320" y="200" width="160" height="100" rx="10" fill="#ffe6f0" stroke="#e91e63" stroke-width="2"/>
+  <text x="400" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Reward Model</text>
+  <text x="400" y="240" text-anchor="middle" font-size="11" fill="#34495e">3B Model</text>
+  <text x="400" y="255" text-anchor="middle" font-size="11" fill="#34495e">Bradley-Terry Loss</text>
+  <text x="400" y="270" text-anchor="middle" font-size="11" fill="#34495e">Large-margin Pairs</text>
+  <text x="400" y="285" text-anchor="middle" font-size="11" fill="#34495e">Token-level Rewards</text>
+  
+  <rect x="520" y="200" width="160" height="100" rx="10" fill="#e6ffe6" stroke="#4caf50" stroke-width="2"/>
+  <text x="600" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">PPO Training</text>
+  <text x="600" y="240" text-anchor="middle" font-size="11" fill="#34495e">Critic Warmup</text>
+  <text x="600" y="255" text-anchor="middle" font-size="11" fill="#34495e">Actor Training</text>
+  <text x="600" y="270" text-anchor="middle" font-size="11" fill="#34495e">KL Penalty β=0.05</text>
+  <text x="600" y="285" text-anchor="middle" font-size="11" fill="#34495e">Clip ε=0.2</text>
+  
+  <!-- Large-margin Data Generation -->
+  <rect x="50" y="340" width="900" height="120" rx="10" fill="#fff9e6" stroke="#ff9800" stroke-width="2"/>
+  <text x="500" y="360" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Large-margin Data Generation Pipeline</text>
+  
+  <rect x="70" y="380" width="120" height="60" rx="5" fill="#e3f2fd" stroke="#2196f3" stroke-width="1"/>
+  <text x="130" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Voice Actor</text>
+  <text x="130" y="415" text-anchor="middle" font-size="10" fill="#34495e">Recording</text>
+  <text x="130" y="430" text-anchor="middle" font-size="10" fill="#34495e">Multiple Emotions</text>
+  
+  <rect x="220" y="380" width="120" height="60" rx="5" fill="#f3e5f5" stroke="#9c27b0" stroke-width="1"/>
+  <text x="280" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Zero-shot</text>
+  <text x="280" y="415" text-anchor="middle" font-size="10" fill="#34495e">Cloning</text>
+  <text x="280" y="430" text-anchor="middle" font-size="10" fill="#34495e">Triplet Generation</text>
+  
+  <rect x="370" y="380" width="120" height="60" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="1"/>
+  <text x="430" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Margin</text>
+  <text x="430" y="415" text-anchor="middle" font-size="10" fill="#34495e">Scoring</text>
+  <text x="430" y="430" text-anchor="middle" font-size="10" fill="#34495e">1-10 Scale</text>
+  
+  <rect x="520" y="380" width="120" height="60" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="1"/>
+  <text x="580" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Margin</text>
+  <text x="580" y="415" text-anchor="middle" font-size="10" fill="#34495e">Selection</text>
+  <text x="580" y="430" text-anchor="middle" font-size="10" fill="#34495e">Threshold ≥ 6</text>
+  
+  <rect x="670" y="380" width="120" height="60" rx="5" fill="#fce4ec" stroke="#e91e63" stroke-width="1"/>
+  <text x="730" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Training</text>
+  <text x="730" y="415" text-anchor="middle" font-size="10" fill="#34495e">Data</text>
+  <text x="730" y="430" text-anchor="middle" font-size="10" fill="#34495e">High Quality</text>
+  
+  <rect x="820" y="380" width="120" height="60" rx="5" fill="#f1f8e9" stroke="#689f38" stroke-width="1"/>
+  <text x="880" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Model</text>
+  <text x="880" y="415" text-anchor="middle" font-size="10" fill="#34495e">Training</text>
+  <text x="880" y="430" text-anchor="middle" font-size="10" fill="#34495e">Attribute Control</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="100" y="500" width="800" height="100" rx="10" fill="#f5f5f5" stroke="#607d8b" stroke-width="2"/>
+  <text x="500" y="520" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Evaluation Framework</text>
+  
+  <rect x="120" y="540" width="150" height="50" rx="5" fill="#e1f5fe" stroke="#0288d1" stroke-width="1"/>
+  <text x="195" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Benchmark</text>
+  <text x="195" y="575" text-anchor="middle" font-size="10" fill="#34495e">Step-Audio-Edit-Test</text>
+  
+  <rect x="290" y="540" width="150" height="50" rx="5" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="365" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">LLM Judge</text>
+  <text x="365" y="575" text-anchor="middle" font-size="10" fill="#34495e">Gemini-2.5-Pro</text>
+  
+  <rect x="460" y="540" width="150" height="50" rx="5" fill="#fff8e1" stroke="#f57c00" stroke-width="1"/>
+  <text x="535" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Iterative</text>
+  <text x="535" y="575" text-anchor="middle" font-size="10" fill="#34495e">Editing (3 rounds)</text>
+  
+  <rect x="630" y="540" width="150" height="50" rx="5" fill="#e0f2f1" stroke="#00796b" stroke-width="1"/>
+  <text x="705" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Generalization</text>
+  <text x="705" y="575" text-anchor="middle" font-size="10" fill="#34495e">Closed-source TTS</text>
+  
+  <!-- Extensions Section -->
+  <rect x="150" y="630" width="700" height="80" rx="10" fill="#f9fbe7" stroke="#827717" stroke-width="2"/>
+  <text x="500" y="650" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Extensions</text>
+  
+  <rect x="180" y="665" width="120" height="35" rx="5" fill="#e8eaf6" stroke="#3f51b5" stroke-width="1"/>
+  <text x="240" y="685" text-anchor="middle" font-size="11" fill="#2c3e50">Speed Editing</text>
+  
+  <rect x="320" y="665" width="120" height="35" rx="5" fill="#fff3e0" stroke="#ff6f00" stroke-width="1"/>
+  <text x="380" y="685" text-anchor="middle" font-size="11" fill="#2c3e50">Denoising</text>
+  
+  <rect x="460" y="665" width="120" height="35" rx="5" fill="#f1f8e9" stroke="#33691e" stroke-width="1"/>
+  <text x="520" y="685" text-anchor="middle" font-size="11" fill="#2c3e50">Silence Trimming</text>
+  
+  <rect x="600" y="665" width="120" height="35" rx="5" fill="#fce4ec" stroke="#ad1457" stroke-width="1"/>
+  <text x="660" y="685" text-anchor="middle" font-size="11" fill="#2c3e50">Dialect/Accent</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="750" y="220" width="200" height="100" rx="10" fill="#fff3cd" stroke="#ffc107" stroke-width="3"/>
+  <text x="850" y="240" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Key Innovation</text>
+  <text x="850" y="260" text-anchor="middle" font-size="12" fill="#856404">Large-margin</text>
+  <text x="850" y="275" text-anchor="middle" font-size="12" fill="#856404">Synthetic Data</text>
+  <text x="850" y="295" text-anchor="middle" font-size="11" fill="#856404">No embedding priors</text>
+  <text x="850" y="310" text-anchor="middle" font-size="11" fill="#856404">No auxiliary modules</text>
+  
+  <!-- Flow indicators with subtle lines -->
+  <line x1="250" y1="120" x2="300" y2="100" stroke="#95a5a6" stroke-width="2" opacity="0.7"/>
+  <line x1="450" y1="100" x2="500" y2="100" stroke="#95a5a6" stroke-width="2" opacity="0.7"/>
+  <line x1="650" y1="100" x2="700" y2="100" stroke="#95a5a6" stroke-width="2" opacity="0.7"/>
+  <line x1="190" y1="300" x2="320" y2="200" stroke="#95a5a6" stroke-width="2" opacity="0.7"/>
+  <line x1="400" y1="300" x2="520" y2="200" stroke="#95a5a6" stroke-width="2" opacity="0.7"/>
+  <line x1="500" y1="460" x2="500" y2="500" stroke="#95a5a6" stroke-width="2" opacity="0.7"/>
+  <line x1="500" y1="600" x2="500" y2="630" stroke="#95a5a6" stroke-width="2" opacity="0.7"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Leveraging large-margin synthetic data training">
+                        <div class="quiz-question">1. What is the key innovation that distinguishes Step-Audio-EditX from previous approaches in speech synthesis?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using advanced embedding networks">Using advanced embedding networks</div><div class="quiz-choice" data-value="Leveraging large-margin synthetic data training">Leveraging large-margin synthetic data training</div><div class="quiz-choice" data-value="Implementing multiple auxiliary modules">Implementing multiple auxiliary modules</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Two iterations">
+                        <div class="quiz-question">2. How many iterations of editing are typically needed to achieve satisfactory emotion and style control in Step-Audio-EditX?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Five iterations">Five iterations</div><div class="quiz-choice" data-value="Three iterations">Three iterations</div><div class="quiz-choice" data-value="Two iterations">Two iterations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The dual-codebook audio tokenizer">
+                        <div class="quiz-question">3. What is the primary architecture component that enables Step-Audio-EditX to perform zero-shot TTS and editing tasks within a unified framework?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The dual-codebook audio tokenizer">The dual-codebook audio tokenizer</div><div class="quiz-choice" data-value="The reinforcement learning module">The reinforcement learning module</div><div class="quiz-choice" data-value="The audio decoder">The audio decoder</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
