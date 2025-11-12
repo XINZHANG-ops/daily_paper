@@ -1,0 +1,1188 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-12 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-12 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>IterResearch: Rethinking Long-Horizon Agents via Markovian State
+  Reconstruction</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.07327" target="_blank">http://arxiv.org/pdf/2511.07327</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents IterResearch, a novel paradigm for long-horizon deep research agents that can autonomously gather and synthesize information through iterative exploration in the domain of AI agents and information seeking.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous mono-contextual deep research approaches that accumulate all information in a single expanding context window, this paper proposes a new iterative paradigm that reconstructs the workspace after each interaction to maintain consistent reasoning capacity.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the limitations of existing deep research agents that suffer from context suffocation and noise contamination when handling long-horizon tasks requiring extensive information gathering and synthesis.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors reformulate long-horizon research as a Markov Decision Process with strategic workspace reconstruction and develop Efficiency-Aware Policy Optimization with geometric reward discounting for training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The approach achieved an average 14.5 percentage point improvement across six benchmarks compared to existing open-source agents, demonstrated unprecedented scaling to 2048 interactions, and improved frontier models by up to 19.2pp when used as a prompting strategy.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>IterResearch: Rethinking Long-Horizon Agents via Markovian State
+  Reconstruction</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    IterResearch: Markovian State Reconstruction Workflow
+  </text>
+  
+  <!-- Input Section -->
+  <rect x="50" y="70" width="180" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="140" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Input</text>
+  <text x="140" y="115" text-anchor="middle" font-size="12" fill="#34495e">Question (q)</text>
+  <text x="140" y="130" text-anchor="middle" font-size="12" fill="#34495e">Initial State s₀</text>
+  
+  <!-- MDP Components -->
+  <rect x="280" y="70" width="440" height="120" rx="15" fill="#fff3cd" stroke="#f39c12" stroke-width="3"/>
+  <text x="500" y="95" text-anchor="middle" font-size="16" font-weight="bold" fill="#d68910">Markov Decision Process Framework</text>
+  
+  <!-- State Space -->
+  <rect x="300" y="110" width="120" height="60" rx="8" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <text x="360" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">State Space S</text>
+  <text x="360" y="145" text-anchor="middle" font-size="10" fill="#34495e">(q, Mᵗ, {aᵗ⁻¹, TRᵗ⁻¹})</text>
+  <text x="360" y="160" text-anchor="middle" font-size="10" fill="#34495e">Bounded workspace</text>
+  
+  <!-- Decision Space -->
+  <rect x="440" y="110" width="120" height="60" rx="8" fill="#ffe6cc" stroke="#d79b00" stroke-width="2"/>
+  <text x="500" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Decision Space D</text>
+  <text x="500" y="145" text-anchor="middle" font-size="10" fill="#34495e">(Think, Report, Action)</text>
+  <text x="500" y="160" text-anchor="middle" font-size="10" fill="#34495e">Structured output</text>
+  
+  <!-- Environment -->
+  <rect x="580" y="110" width="120" height="60" rx="8" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
+  <text x="640" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Environment E</text>
+  <text x="640" y="145" text-anchor="middle" font-size="10" fill="#34495e">Tools: Search, Scholar</text>
+  <text x="640" y="160" text-anchor="middle" font-size="10" fill="#34495e">Browser, Python</text>
+  
+  <!-- Iterative Process Flow -->
+  <rect x="50" y="220" width="900" height="400" rx="15" fill="#f0f8ff" stroke="#4a90e2" stroke-width="2"/>
+  <text x="500" y="245" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Iterative Deep-Research Process</text>
+  
+  <!-- Round t Box -->
+  <rect x="80" y="270" width="200" height="320" rx="10" fill="#ffffff" stroke="#3498db" stroke-width="2"/>
+  <text x="180" y="295" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Round t</text>
+  
+  <!-- Workspace Reconstruction -->
+  <rect x="100" y="310" width="160" height="80" rx="8" fill="#e8f6f3" stroke="#16a085" stroke-width="2"/>
+  <text x="180" y="330" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Workspace</text>
+  <text x="180" y="345" text-anchor="middle" font-size="10" fill="#34495e">Question: q</text>
+  <text x="180" y="360" text-anchor="middle" font-size="10" fill="#34495e">Report: Mᵗ</text>
+  <text x="180" y="375" text-anchor="middle" font-size="10" fill="#34495e">Context: {aᵗ⁻¹, TRᵗ⁻¹}</text>
+  
+  <!-- Agent Policy -->
+  <rect x="100" y="410" width="160" height="60" rx="8" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="180" y="430" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Agent Policy π</text>
+  <text x="180" y="445" text-anchor="middle" font-size="10" fill="#34495e">Generate Decision dᵗ</text>
+  <text x="180" y="460" text-anchor="middle" font-size="10" fill="#34495e">(Think, Report, Action)</text>
+  
+  <!-- Decision Processing -->
+  <rect x="100" y="490" width="160" height="80" rx="8" fill="#eaf2f8" stroke="#5dade2" stroke-width="2"/>
+  <text x="180" y="510" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Decision Processing</text>
+  <text x="180" y="525" text-anchor="middle" font-size="10" fill="#34495e">Think: Reasoning</text>
+  <text x="180" y="540" text-anchor="middle" font-size="10" fill="#34495e">Report: Mᵗ⁺¹ (Updated)</text>
+  <text x="180" y="555" text-anchor="middle" font-size="10" fill="#34495e">Action: aᵗ</text>
+  
+  <!-- Tool Execution -->
+  <rect x="320" y="350" width="180" height="100" rx="10" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+  <text x="410" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Tool Execution</text>
+  <rect x="340" y="390" width="70" height="25" rx="5" fill="#d5e8d4" stroke="#82b366"/>
+  <text x="375" y="405" text-anchor="middle" font-size="9" fill="#2c3e50">Google Search</text>
+  <rect x="420" y="390" width="70" height="25" rx="5" fill="#ffe6cc" stroke="#d79b00"/>
+  <text x="455" y="405" text-anchor="middle" font-size="9" fill="#2c3e50">Web Browser</text>
+  <rect x="340" y="420" width="70" height="25" rx="5" fill="#f8cecc" stroke="#b85450"/>
+  <text x="375" y="435" text-anchor="middle" font-size="9" fill="#2c3e50">Scholar</text>
+  <rect x="420" y="420" width="70" height="25" rx="5" fill="#e1d5e7" stroke="#9673a6"/>
+  <text x="455" y="435" text-anchor="middle" font-size="9" fill="#2c3e50">Python</text>
+  
+  <!-- Transition Function -->
+  <rect x="550" y="350" width="180" height="100" rx="10" fill="#fce4ec" stroke="#ad1457" stroke-width="2"/>
+  <text x="640" y="375" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Transition Function T</text>
+  <text x="640" y="395" text-anchor="middle" font-size="11" fill="#34495e">Workspace Reconstruction</text>
+  <text x="640" y="410" text-anchor="middle" font-size="10" fill="#34495e">sᵗ⁺¹ = (q, Mᵗ⁺¹, {aᵗ, TRᵗ})</text>
+  <text x="640" y="425" text-anchor="middle" font-size="10" fill="#34495e">Strategic Forgetting</text>
+  <text x="640" y="440" text-anchor="middle" font-size="10" fill="#34495e">O(1) Complexity</text>
+  
+  <!-- EAPO Training -->
+  <rect x="770" y="270" width="160" height="320" rx="10" fill="#ffffff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="850" y="295" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">EAPO Training</text>
+  
+  <rect x="790" y="310" width="120" height="80" rx="8" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2"/>
+  <text x="850" y="330" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Efficiency-Aware</text>
+  <text x="850" y="345" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Reward Shaping</text>
+  <text x="850" y="365" text-anchor="middle" font-size="10" fill="#34495e">rₜ = γᵀ⁻ᵗ · Rᵀ</text>
+  <text x="850" y="380" text-anchor="middle" font-size="10" fill="#34495e">Geometric Discounting</text>
+  
+  <rect x="790" y="410" width="120" height="80" rx="8" fill="#eaf2f8" stroke="#3498db" stroke-width="2"/>
+  <text x="850" y="430" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Adaptive</text>
+  <text x="850" y="445" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Downsampling</text>
+  <text x="850" y="465" text-anchor="middle" font-size="10" fill="#34495e">Variable trajectory</text>
+  <text x="850" y="480" text-anchor="middle" font-size="10" fill="#34495e">lengths handling</text>
+  
+  <rect x="790" y="510" width="120" height="60" rx="8" fill="#e8f5e8" stroke="#27ae60" stroke-width="2"/>
+  <text x="850" y="530" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">GSPO</text>
+  <text x="850" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Integration</text>
+  <text x="850" y="560" text-anchor="middle" font-size="10" fill="#34495e">Policy optimization</text>
+  
+  <!-- Key Benefits -->
+  <rect x="50" y="650" width="900" height="120" rx="15" fill="#f8f9fa" stroke="#6c757d" stroke-width="2"/>
+  <text x="500" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Advantages</text>
+  
+  <rect x="80" y="690" width="200" height="60" rx="8" fill="#d1ecf1" stroke="#bee5eb" stroke-width="2"/>
+  <text x="180" y="710" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Interaction Scaling</text>
+  <text x="180" y="725" text-anchor="middle" font-size="10" fill="#34495e">Up to 2048 interactions</text>
+  <text x="180" y="740" text-anchor="middle" font-size="10" fill="#34495e">Constant workspace</text>
+  
+  <rect x="300" y="690" width="200" height="60" rx="8" fill="#d4edda" stroke="#c3e6cb" stroke-width="2"/>
+  <text x="400" y="710" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Context Management</text>
+  <text x="400" y="725" text-anchor="middle" font-size="10" fill="#34495e">No context suffocation</text>
+  <text x="400" y="740" text-anchor="middle" font-size="10" fill="#34495e">Noise filtering</text>
+  
+  <rect x="520" y="690" width="200" height="60" rx="8" fill="#fff3cd" stroke="#ffeaa7" stroke-width="2"/>
+  <text x="620" y="710" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Cross-Paradigm</text>
+  <text x="620" y="725" text-anchor="middle" font-size="10" fill="#34495e">Knowledge transfer</text>
+  <text x="620" y="740" text-anchor="middle" font-size="10" fill="#34495e">Prompting strategy</text>
+  
+  <rect x="740" y="690" width="200" height="60" rx="8" fill="#f8d7da" stroke="#f5c6cb" stroke-width="2"/>
+  <text x="840" y="710" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Performance Gains</text>
+  <text x="840" y="725" text-anchor="middle" font-size="10" fill="#34495e">+14.5pp improvement</text>
+  <text x="840" y="740" text-anchor="middle" font-size="10" fill="#34495e">Competitive results</text>
+  
+  <!-- Flow connections with curved lines -->
+  <path d="M 280 400 Q 300 400 320 400" stroke="#4a90e2" stroke-width="2" fill="none"/>
+  <path d="M 500 400 Q 520 400 550 400" stroke="#4a90e2" stroke-width="2" fill="none"/>
+  <path d="M 640 350 Q 640 320 640 290 Q 640 260 400 260 Q 180 260 180 310" stroke="#e74c3c" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  
+  <!-- Legend -->
+  <rect x="50" y="780" width="200" height="15" rx="3" fill="#e8f4fd" stroke="#3498db"/>
+  <text x="60" y="792" font-size="10" fill="#2c3e50">Markovian State Reconstruction</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Context suffocation and noise contamination in long-horizon tasks">
+                        <div class="quiz-question">1. What is the main limitation of mono-contextual deep research approaches that IterResearch aims to solve?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="High computational costs and slow processing speed">High computational costs and slow processing speed</div><div class="quiz-choice" data-value="Context suffocation and noise contamination in long-horizon tasks">Context suffocation and noise contamination in long-horizon tasks</div><div class="quiz-choice" data-value="Inability to handle multiple languages and data formats">Inability to handle multiple languages and data formats</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By reconstructing the workspace after each interaction with an evolving report">
+                        <div class="quiz-question">2. How does IterResearch maintain consistent reasoning capacity across extended interactions?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using larger context windows and more powerful models">By using larger context windows and more powerful models</div><div class="quiz-choice" data-value="By distributing the workload across multiple parallel agents">By distributing the workload across multiple parallel agents</div><div class="quiz-choice" data-value="By reconstructing the workspace after each interaction with an evolving report">By reconstructing the workspace after each interaction with an evolving report</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It scaled to handle 2048 interactions while maintaining performance">
+                        <div class="quiz-question">3. What impressive scaling capability did IterResearch demonstrate in the experiments?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It scaled to handle 2048 interactions while maintaining performance">It scaled to handle 2048 interactions while maintaining performance</div><div class="quiz-choice" data-value="It processed data 100 times faster than previous approaches">It processed data 100 times faster than previous approaches</div><div class="quiz-choice" data-value="It reduced memory usage by 90% compared to baseline methods">It reduced memory usage by 90% compared to baseline methods</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Wasm: A Pipeline for Constructing Structured Arabic Interleaved
+  Multimodal Corpora</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.07080" target="_blank">http://arxiv.org/pdf/2511.07080</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of Wasm, a data processing pipeline for creating structured Arabic multimodal corpora from web content, in the domain of natural language processing and multimodal machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on OBELICS framework for multimodal data processing, introducing new Arabic-specific adaptations and structural preservation techniques in Markdown format while maintaining document hierarchy.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The lack of high-quality Arabic multimodal datasets that preserve document structure, which limits the development of Arabic language models and multimodal models.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implements a multi-stage pipeline including metadata extraction, HTML processing, content structuring, and quality filtering with Arabic-specific adjustments to perplexity modeling and node-level deduplication.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Produced a flexible framework that successfully preserves both text and visual content structure, with comparative analysis showing improved filtering performance over existing approaches, though specific quantitative results were not extensively detailed.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Wasm: A Pipeline for Constructing Structured Arabic Interleaved
+  Multimodal Corpora</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#45a049;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F57C00;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7B1FA2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#F44336;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D32F2F;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">Wasm Pipeline for Arabic Multimodal Corpora</text>
+  
+  <!-- Step 1: Metadata Extraction -->
+  <rect x="50" y="70" width="180" height="80" rx="10" fill="url(#grad1)" stroke="#333" stroke-width="2"/>
+  <text x="140" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Metadata Extraction</text>
+  <text x="140" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Common Crawl Dumps</text>
+  <text x="140" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Arabic Content Filtering</text>
+  <text x="140" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">URL, WARC, Metadata</text>
+  
+  <!-- Step 2: HTML Processing -->
+  <rect x="270" y="70" width="180" height="80" rx="10" fill="url(#grad2)" stroke="#333" stroke-width="2"/>
+  <text x="360" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">HTML Processing</text>
+  <text x="360" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">WARC File Retrieval</text>
+  <text x="360" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Noise Removal</text>
+  <text x="360" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">CSS/Comments Cleanup</text>
+  
+  <!-- Step 3: Structure Conversion -->
+  <rect x="490" y="70" width="180" height="80" rx="10" fill="url(#grad3)" stroke="#333" stroke-width="2"/>
+  <text x="580" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Structure Conversion</text>
+  <text x="580" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">HTML to Markdown</text>
+  <text x="580" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Text/Visual Separation</text>
+  <text x="580" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Preserve Hierarchy</text>
+  
+  <!-- Step 4: Tag-Level Filtering -->
+  <rect x="50" y="200" width="200" height="120" rx="10" fill="url(#grad4)" stroke="#333" stroke-width="2"/>
+  <text x="150" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Tag-Level Filtering</text>
+  <text x="150" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Arabic-adapted thresholds:</text>
+  <text x="150" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Word Repetition (relaxed)</text>
+  <text x="150" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Language ID (stricter)</text>
+  <text x="150" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Custom KenLM Perplexity</text>
+  <text x="150" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Remove: Stopword/Punct ratio</text>
+  
+  <!-- Step 5: Visual Data Filtering -->
+  <rect x="280" y="200" width="180" height="120" rx="10" fill="url(#grad5)" stroke="#333" stroke-width="2"/>
+  <text x="370" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Visual Data Filtering</text>
+  <text x="370" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Image URL Collection</text>
+  <text x="370" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Site-level Blacklisting</text>
+  <text x="370" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Conservative Approach</text>
+  <text x="370" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Storage Optimization</text>
+  <text x="370" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Safety Filtering</text>
+  
+  <!-- Step 6: Tag Deduplication -->
+  <rect x="490" y="200" width="180" height="120" rx="10" fill="url(#grad1)" stroke="#333" stroke-width="2"/>
+  <text x="580" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Tag Deduplication</text>
+  <text x="580" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Needleman-Wunsch</text>
+  <text x="580" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Algorithm</text>
+  <text x="580" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">80% Similarity Threshold</text>
+  <text x="580" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Remove Duplicate Ads</text>
+  <text x="580" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Preserve Documents</text>
+  
+  <!-- Step 7: Document-Level Filtering -->
+  <rect x="700" y="200" width="180" height="120" rx="10" fill="url(#grad2)" stroke="#333" stroke-width="2"/>
+  <text x="790" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Document Filtering</text>
+  <text x="790" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Same Criteria as</text>
+  <text x="790" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Tag-level</text>
+  <text x="790" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Recalibrated Parameters</text>
+  <text x="790" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Document-wide</text>
+  <text x="790" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Characteristics</text>
+  
+  <!-- Final Output -->
+  <rect x="350" y="370" width="300" height="100" rx="15" fill="#34495e" stroke="#333" stroke-width="3"/>
+  <text x="500" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Structured Arabic</text>
+  <text x="500" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Multimodal Dataset</text>
+  <text x="500" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">Markdown Format</text>
+  <text x="500" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ecf0f1">Interleaved Text & Images</text>
+  
+  <!-- Key Innovations Box -->
+  <rect x="50" y="520" width="900" height="220" rx="10" fill="#ecf0f1" stroke="#333" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#333">Key Methodological Innovations</text>
+  
+  <!-- Innovation 1 -->
+  <rect x="80" y="570" width="260" height="140" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="210" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Structured Data</text>
+  <text x="210" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Preservation</text>
+  <text x="210" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Maintains DOM hierarchy</text>
+  <text x="210" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Preserves semantic relationships</text>
+  <text x="210" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Image-caption associations</text>
+  <text x="210" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Section hierarchies</text>
+  <text x="210" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Contextual dependencies</text>
+  
+  <!-- Innovation 2 -->
+  <rect x="370" y="570" width="260" height="140" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="500" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Enhanced Perplexity</text>
+  <text x="500" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Assessment</text>
+  <text x="500" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Custom KenLM model</text>
+  <text x="500" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Trained on curated corpus</text>
+  <text x="500" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Multiple Arabic dialects</text>
+  <text x="500" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Better quality filtering</text>
+  <text x="500" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Human-authored text focus</text>
+  
+  <!-- Innovation 3 -->
+  <rect x="660" y="570" width="260" height="140" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="790" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Granular Node-Level</text>
+  <text x="790" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Deduplication</text>
+  <text x="790" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• HTML node level processing</text>
+  <text x="790" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Preserves unique content</text>
+  <text x="790" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Removes boilerplate text</text>
+  <text x="790" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Improves content diversity</text>
+  <text x="790" y="685" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">• Processing efficiency</text>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 230 110 Q 250 110 270 110" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 450 110 Q 470 110 490 110" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 140 150 Q 140 175 140 200" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 360 150 Q 360 175 360 200" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 580 150 Q 580 175 580 200" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 580 150 Q 650 175 700 225" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Converging paths to final output -->
+  <path d="M 150 320 Q 300 350 350 420" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 370 320 Q 420 350 450 420" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 580 320 Q 550 350 550 420" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 790 320 Q 700 350 650 420" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It preserves document structure and interleaved text-image relationships">
+                        <div class="quiz-question">1. What is the main innovation of Wasm compared to existing Arabic corpora?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It processes data faster than other pipelines">It processes data faster than other pipelines</div><div class="quiz-choice" data-value="It preserves document structure and interleaved text-image relationships">It preserves document structure and interleaved text-image relationships</div><div class="quiz-choice" data-value="It handles a larger volume of Arabic text">It handles a larger volume of Arabic text</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It uses a custom KenLM model trained on diverse Arabic dialects">
+                        <div class="quiz-question">2. How does Wasm's approach to perplexity filtering differ from OBELICS?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a custom KenLM model trained on diverse Arabic dialects">It uses a custom KenLM model trained on diverse Arabic dialects</div><div class="quiz-choice" data-value="It completely removes perplexity filtering">It completely removes perplexity filtering</div><div class="quiz-choice" data-value="It applies the same English perplexity model to Arabic">It applies the same English perplexity model to Arabic</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Node-level deduplication using Needleman-Wunsch algorithm">
+                        <div class="quiz-question">3. What unique deduplication strategy does Wasm implement?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Document-level deduplication using MinHash">Document-level deduplication using MinHash</div><div class="quiz-choice" data-value="Global deduplication across all documents">Global deduplication across all documents</div><div class="quiz-choice" data-value="Node-level deduplication using Needleman-Wunsch algorithm">Node-level deduplication using Needleman-Wunsch algorithm</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/diagmonds.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Tiny Model, Big Logic: Diversity-Driven Optimization Elicits Large-Model
+  Reasoning Ability in VibeThinker-1.5B</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.06221" target="_blank">http://arxiv.org/pdf/2511.06221</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of VibeThinker-1.5B, a small language model for logical reasoning in mathematics and coding, challenging the assumption that large models are necessary for strong reasoning capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on OpenAI's o1 model's reasoning paradigm and various large language models, proposing a novel "Spectrum-to-Signal Principle" that enables small models to achieve comparable reasoning abilities to larger models.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the industry assumption that scaling model parameters is essential for enhancing logical reasoning capabilities, aiming to achieve comparable performance with a much smaller and cost-effective model.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Implemented a two-stage approach: "Two-Stage Diversity-Exploring Distillation" for SFT phase to generate diverse solutions, followed by "MaxEnt-Guided Policy Optimization" for RL phase to amplify correct reasoning paths.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> VibeThinker-1.5B outperformed larger models on mathematical benchmarks (AIME24: 80.3, AIME25: 74.4, HMMT25: 50.4) and coding tasks (LiveCodeBench V6: 51.1), surpassing models 400 times larger while costing only $7,800 to train.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Tiny Model, Big Logic: Diversity-Driven Optimization Elicits Large-Model
+  Reasoning Ability in VibeThinker-1.5B</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    VibeThinker-1.5B Training Pipeline
+  </text>
+  
+  <!-- Spectrum-to-Signal Principle Box -->
+  <rect x="350" y="50" width="300" height="60" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="500" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+    Spectrum-to-Signal Principle (SSP)
+  </text>
+  <text x="500" y="95" text-anchor="middle" font-size="12" fill="#2c3e50">
+    Diversity → Signal Amplification
+  </text>
+  
+  <!-- SFT Phase (Spectrum Phase) -->
+  <rect x="50" y="150" width="400" height="280" rx="15" fill="#e8f5e8" stroke="#27ae60" stroke-width="3"/>
+  <text x="250" y="180" text-anchor="middle" font-size="16" font-weight="bold" fill="#27ae60">
+    SFT Phase: Spectrum Generation
+  </text>
+  
+  <!-- Two-Stage Diversity-Exploring Distillation -->
+  <rect x="70" y="200" width="360" height="40" rx="8" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="250" y="225" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">
+    Two-Stage Diversity-Exploring Distillation
+  </text>
+  
+  <!-- Domain-Aware Diversity Probing -->
+  <rect x="80" y="260" width="150" height="80" rx="8" fill="#ffffff" stroke="#27ae60"/>
+  <text x="155" y="285" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Domain-Aware
+  </text>
+  <text x="155" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Diversity Probing
+  </text>
+  <text x="155" y="320" text-anchor="middle" font-size="10" fill="#34495e">
+    • Algebra • Geometry
+  </text>
+  <text x="155" y="332" text-anchor="middle" font-size="10" fill="#34495e">
+    • Calculus • Statistics
+  </text>
+  
+  <!-- Expert Model Fusion -->
+  <rect x="250" y="260" width="150" height="80" rx="8" fill="#ffffff" stroke="#27ae60"/>
+  <text x="325" y="285" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Expert Model
+  </text>
+  <text x="325" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Fusion
+  </text>
+  <text x="325" y="320" text-anchor="middle" font-size="10" fill="#34495e">
+    Weighted Linear
+  </text>
+  <text x="325" y="332" text-anchor="middle" font-size="10" fill="#34495e">
+    Combination
+  </text>
+  
+  <!-- Pass@K Optimization -->
+  <rect x="80" y="360" width="320" height="50" rx="8" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="240" y="380" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">
+    Maximize Pass@K (Diversity)</text>
+  <text x="240" y="395" text-anchor="middle" font-size="11" fill="#34495e">
+    Create broad spectrum of solutions
+  </text>
+  
+  <!-- RL Phase (Signal Phase) -->
+  <rect x="550" y="150" width="400" height="280" rx="15" fill="#fdf2e9" stroke="#e67e22" stroke-width="3"/>
+  <text x="750" y="180" text-anchor="middle" font-size="16" font-weight="bold" fill="#e67e22">
+    RL Phase: Signal Amplification
+  </text>
+  
+  <!-- MGPO Framework -->
+  <rect x="570" y="200" width="360" height="40" rx="8" fill="#fdeaa7" stroke="#e67e22"/>
+  <text x="750" y="225" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">
+    MaxEnt-Guided Policy Optimization (MGPO)
+  </text>
+  
+  <!-- Maximum Entropy Principle -->
+  <rect x="580" y="260" width="150" height="80" rx="8" fill="#ffffff" stroke="#e67e22"/>
+  <text x="655" y="280" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Maximum Entropy
+  </text>
+  <text x="655" y="295" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Principle
+  </text>
+  <text x="655" y="315" text-anchor="middle" font-size="10" fill="#34495e">
+    Target: p_c(q) = 0.5
+  </text>
+  <text x="655" y="327" text-anchor="middle" font-size="10" fill="#34495e">
+    Optimal uncertainty
+  </text>
+  
+  <!-- Entropy Deviation Regularization -->
+  <rect x="750" y="260" width="150" height="80" rx="8" fill="#ffffff" stroke="#e67e22"/>
+  <text x="825" y="280" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Entropy Deviation
+  </text>
+  <text x="825" y="295" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Regularization
+  </text>
+  <text x="825" y="315" text-anchor="middle" font-size="10" fill="#34495e">
+    KL divergence from
+  </text>
+  <text x="825" y="327" text-anchor="middle" font-size="10" fill="#34495e">
+    max-entropy state
+  </text>
+  
+  <!-- GRPO Enhancement -->
+  <rect x="580" y="360" width="320" height="50" rx="8" fill="#fdeaa7" stroke="#e67e22"/>
+  <text x="740" y="380" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">
+    Enhanced GRPO with Entropy Weighting
+  </text>
+  <text x="740" y="395" text-anchor="middle" font-size="11" fill="#34495e">
+    Amplify correct signals from spectrum
+  </text>
+  
+  <!-- Training Stages -->
+  <rect x="200" y="480" width="600" height="120" rx="15" fill="#f8f9fa" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="510" text-anchor="middle" font-size="15" font-weight="bold" fill="#2c3e50">
+    Multi-Stage Training Pipeline
+  </text>
+  
+  <!-- Math 16K -->
+  <rect x="220" y="530" width="120" height="50" rx="8" fill="#ecf0f1" stroke="#34495e"/>
+  <text x="280" y="550" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Math Reasoning
+  </text>
+  <text x="280" y="565" text-anchor="middle" font-size="10" fill="#34495e">
+    16K Context
+  </text>
+  
+  <!-- Math 32K -->
+  <rect x="360" y="530" width="120" height="50" rx="8" fill="#ecf0f1" stroke="#34495e"/>
+  <text x="420" y="550" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Math Reasoning
+  </text>
+  <text x="420" y="565" text-anchor="middle" font-size="10" fill="#34495e">
+    32K Context
+  </text>
+  
+  <!-- Code Generation -->
+  <rect x="500" y="530" width="120" height="50" rx="8" fill="#ecf0f1" stroke="#34495e"/>
+  <text x="560" y="550" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    Code Generation
+  </text>
+  <text x="560" y="565" text-anchor="middle" font-size="10" fill="#34495e">
+    Programming
+  </text>
+  
+  <!-- Final Model -->
+  <rect x="640" y="530" width="120" height="50" rx="8" fill="#dda0dd" stroke="#8e44ad"/>
+  <text x="700" y="550" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">
+    VibeThinker-1.5B
+  </text>
+  <text x="700" y="565" text-anchor="middle" font-size="10" fill="#34495e">
+    Final Model
+  </text>
+  
+  <!-- Results Box -->
+  <rect x="150" y="630" width="700" height="120" rx="15" fill="#f4f1de" stroke="#d4b106" stroke-width="2"/>
+  <text x="500" y="660" text-anchor="middle" font-size="16" font-weight="bold" fill="#d4b106">
+    Key Results
+  </text>
+  
+  <text x="200" y="685" font-size="12" fill="#2c3e50">
+    • AIME25: 74.4 (vs DeepSeek R1: 70.0)
+  </text>
+  <text x="200" y="705" font-size="12" fill="#2c3e50">
+    • HMMT25: 50.4 (vs DeepSeek R1: 41.7)
+  </text>
+  <text x="200" y="725" font-size="12" fill="#2c3e50">
+    • Training Cost: $7,800 (vs DeepSeek R1: $294K)
+  </text>
+  
+  <text x="550" y="685" font-size="12" fill="#2c3e50">
+    • LiveCodeBench V6: 51.1
+  </text>
+  <text x="550" y="705" font-size="12" fill="#2c3e50">
+    • 400× smaller than DeepSeek R1
+  </text>
+  <text x="550" y="725" font-size="12" fill="#2c3e50">
+    • Democratizes AI research access
+  </text>
+  
+  <!-- Flow connections -->
+  <path d="M 500 110 L 500 150" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 250 150 L 750 150" stroke="#34495e" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  <path d="M 250 430 L 250 480" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 750 430 L 750 480" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 600 L 500 630" stroke="#34495e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+     refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The Spectrum-to-Signal Principle with two-stage optimization">
+                        <div class="quiz-question">1. What is the primary innovation that allows VibeThinker-1.5B to achieve strong reasoning capabilities despite its small size?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using extremely large training datasets">Using extremely large training datasets</div><div class="quiz-choice" data-value="The Spectrum-to-Signal Principle with two-stage optimization">The Spectrum-to-Signal Principle with two-stage optimization</div><div class="quiz-choice" data-value="Copying the architecture of larger models">Copying the architecture of larger models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Its general knowledge capabilities on GPQA benchmark">
+                        <div class="quiz-question">2. What was the most significant limitation of VibeThinker-1.5B compared to larger models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Its performance on coding tasks">Its performance on coding tasks</div><div class="quiz-choice" data-value="Its mathematical reasoning abilities">Its mathematical reasoning abilities</div><div class="quiz-choice" data-value="Its general knowledge capabilities on GPQA benchmark">Its general knowledge capabilities on GPQA benchmark</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It could democratize AI research by making it more accessible to organizations with limited resources">
+                        <div class="quiz-question">3. What is the potential broader impact of VibeThinker-1.5B's success according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="It could democratize AI research by making it more accessible to organizations with limited resources">It could democratize AI research by making it more accessible to organizations with limited resources</div><div class="quiz-choice" data-value="It could make language models run faster on mobile devices">It could make language models run faster on mobile devices</div><div class="quiz-choice" data-value="It could reduce the environmental impact of AI training">It could reduce the environmental impact of AI training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
