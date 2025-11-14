@@ -1,0 +1,1032 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-14 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-14 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Black-Box On-Policy Distillation of Large Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-13</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.10643" target="_blank">http://arxiv.org/pdf/2511.10643</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper discusses black-box knowledge distillation of Large Language Models (LLMs), focusing on training smaller student models using only text outputs from teacher models without access to their internal parameters.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building upon previous work in knowledge distillation and generative adversarial networks, the paper introduces a novel Generative Adversarial Distillation (GAD) framework that enables on-policy learning in black-box settings.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of effectively distilling knowledge from proprietary LLMs when only their text outputs are available, without access to internal logits or parameters.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors implement GAD by framing the student model as a generator and training a discriminator to distinguish between teacher and student responses in a minimax game, using reinforcement learning techniques.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The results show GAD consistently outperforms sequence-level knowledge distillation across multiple datasets, with Qwen2.5-14B-Instruct achieving comparable performance to GPT-5-Chat teacher on LMSYS-Chat evaluation, validated through both automatic and human evaluations.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Black-Box On-Policy Distillation of Large Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">GAD: Generative Adversarial Distillation Workflow</text>
+  
+  <!-- Phase 1: Data Preparation -->
+  <rect x="50" y="80" width="200" height="60" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Data Preparation</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="#2c3e50">LMSYS-Chat-1M + GPT-5</text>
+  
+  <!-- Phase 2: Model Initialization -->
+  <rect x="300" y="80" width="200" height="60" rx="10" fill="#fff2e8" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Model Initialization</text>
+  <text x="400" y="120" text-anchor="middle" font-size="10" fill="#2c3e50">Student G + Discriminator D</text>
+  
+  <!-- Phase 3: Warmup Stage -->
+  <rect x="550" y="80" width="200" height="60" rx="10" fill="#f0e8ff" stroke="#9b59b6" stroke-width="2"/>
+  <text x="650" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Warmup Stage</text>
+  <text x="650" y="120" text-anchor="middle" font-size="10" fill="#2c3e50">1 Epoch Joint Training</text>
+  
+  <!-- Generator Training Box -->
+  <rect x="80" y="200" width="300" height="120" rx="15" fill="#e8f8f5" stroke="#27ae60" stroke-width="3"/>
+  <text x="230" y="225" text-anchor="middle" font-size="16" font-weight="bold" fill="#27ae60">Generator Training</text>
+  
+  <!-- Generator Components -->
+  <rect x="100" y="240" width="120" height="30" rx="5" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="160" y="258" text-anchor="middle" font-size="11" fill="#2c3e50">Cross-Entropy Loss</text>
+  
+  <rect x="240" y="240" width="120" height="30" rx="5" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="300" y="258" text-anchor="middle" font-size="11" fill="#2c3e50">Policy Gradient</text>
+  
+  <rect x="170" y="280" width="120" height="30" rx="5" fill="#d5f4e6" stroke="#27ae60"/>
+  <text x="230" y="298" text-anchor="middle" font-size="11" fill="#2c3e50">GRPO Algorithm</text>
+  
+  <!-- Discriminator Training Box -->
+  <rect x="450" y="200" width="300" height="120" rx="15" fill="#fdf2e9" stroke="#e67e22" stroke-width="3"/>
+  <text x="600" y="225" text-anchor="middle" font-size="16" font-weight="bold" fill="#e67e22">Discriminator Training</text>
+  
+  <!-- Discriminator Components -->
+  <rect x="470" y="240" width="120" height="30" rx="5" fill="#fae5d3" stroke="#e67e22"/>
+  <text x="530" y="258" text-anchor="middle" font-size="11" fill="#2c3e50">Bradley-Terry Loss</text>
+  
+  <rect x="610" y="240" width="120" height="30" rx="5" fill="#fae5d3" stroke="#e67e22"/>
+  <text x="670" y="258" text-anchor="middle" font-size="11" fill="#2c3e50">Pairwise Preference</text>
+  
+  <rect x="540" y="280" width="120" height="30" rx="5" fill="#fae5d3" stroke="#e67e22"/>
+  <text x="600" y="298" text-anchor="middle" font-size="11" fill="#2c3e50">Score Prediction</text>
+  
+  <!-- Minimax Game -->
+  <ellipse cx="500" cy="400" rx="180" ry="60" fill="#f4f1fb" stroke="#8e44ad" stroke-width="3"/>
+  <text x="500" y="390" text-anchor="middle" font-size="16" font-weight="bold" fill="#8e44ad">Minimax Game</text>
+  <text x="500" y="410" text-anchor="middle" font-size="12" fill="#2c3e50">max G min D V(G,D)</text>
+  <text x="500" y="425" text-anchor="middle" font-size="10" fill="#2c3e50">σ(D(y_t) - D(G(x)))</text>
+  
+  <!-- GAD Training Loop -->
+  <rect x="150" y="520" width="250" height="80" rx="15" fill="#ebf3fd" stroke="#3498db" stroke-width="3"/>
+  <text x="275" y="545" text-anchor="middle" font-size="16" font-weight="bold" fill="#3498db">GAD Training Loop</text>
+  <text x="275" y="565" text-anchor="middle" font-size="11" fill="#2c3e50">2 Epochs Adversarial Training</text>
+  <text x="275" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">On-Policy Reward Modeling</text>
+  
+  <!-- Evaluation -->
+  <rect x="500" y="520" width="250" height="80" rx="15" fill="#f0f9ff" stroke="#2980b9" stroke-width="3"/>
+  <text x="625" y="545" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Evaluation</text>
+  <text x="625" y="565" text-anchor="middle" font-size="11" fill="#2c3e50">GPT-4o Scoring</text>
+  <text x="625" y="580" text-anchor="middle" font-size="11" fill="#2c3e50">Human Assessment</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="780" y="200" width="180" height="180" rx="15" fill="#fef9e7" stroke="#f39c12" stroke-width="3"/>
+  <text x="870" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="#f39c12">Key Innovations</text>
+  
+  <circle cx="800" cy="250" r="3" fill="#e74c3c"/>
+  <text x="810" y="255" font-size="10" fill="#2c3e50">Black-box Access</text>
+  
+  <circle cx="800" cy="270" r="3" fill="#e74c3c"/>
+  <text x="810" y="275" font-size="10" fill="#2c3e50">On-Policy Learning</text>
+  
+  <circle cx="800" cy="290" r="3" fill="#e74c3c"/>
+  <text x="810" y="295" font-size="10" fill="#2c3e50">Adaptive Discriminator</text>
+  
+  <circle cx="800" cy="310" r="3" fill="#e74c3c"/>
+  <text x="810" y="315" font-size="10" fill="#2c3e50">Mode-Seeking Behavior</text>
+  
+  <circle cx="800" cy="330" r="3" fill="#e74c3c"/>
+  <text x="810" y="335" font-size="10" fill="#2c3e50">Reward Stability</text>
+  
+  <!-- Results -->
+  <rect x="300" y="650" width="400" height="60" rx="10" fill="#e8f8f5" stroke="#27ae60" stroke-width="2"/>
+  <text x="500" y="675" text-anchor="middle" font-size="14" font-weight="bold" fill="#27ae60">Results</text>
+  <text x="500" y="695" text-anchor="middle" font-size="11" fill="#2c3e50">Qwen2.5-14B-Instruct ≈ GPT-5-Chat Performance</text>
+  
+  <!-- Flow connections with curved lines -->
+  <path d="M 250 140 Q 275 160 300 110" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 500 140 Q 525 160 550 110" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 230 320 Q 230 350 320 400" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 600 320 Q 600 350 680 400" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 400 460 Q 350 490 300 520" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 600 460 Q 650 490 625 520" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 500 600 Q 500 620 500 650" stroke="#34495e" stroke-width="2" fill="none"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables on-policy learning through adversarial feedback">
+                        <div class="quiz-question">1. What is the main advantage of GAD over traditional black-box distillation methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires less computational resources">It requires less computational resources</div><div class="quiz-choice" data-value="It enables on-policy learning through adversarial feedback">It enables on-policy learning through adversarial feedback</div><div class="quiz-choice" data-value="It can work with any size of language models">It can work with any size of language models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It acts as an adaptive reward model that provides feedback to the student">
+                        <div class="quiz-question">2. In the GAD framework, what role does the discriminator play?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It generates new training data">It generates new training data</div><div class="quiz-choice" data-value="It evaluates the grammar of responses">It evaluates the grammar of responses</div><div class="quiz-choice" data-value="It acts as an adaptive reward model that provides feedback to the student">It acts as an adaptive reward model that provides feedback to the student</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Qwen2.5-3B with GAD matched Qwen2.5-7B with SeqKD">
+                        <div class="quiz-question">3. What surprising result did the experiments show about model performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Qwen2.5-3B with GAD matched Qwen2.5-7B with SeqKD">Qwen2.5-3B with GAD matched Qwen2.5-7B with SeqKD</div><div class="quiz-choice" data-value="GAD performed worse than baseline methods">GAD performed worse than baseline methods</div><div class="quiz-choice" data-value="The student models completely failed to learn">The student models completely failed to learn</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Time-to-Move: Training-Free Motion Controlled Video Generation via Dual-Clock Denoising</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-09</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.08633" target="_blank">http://arxiv.org/pdf/2511.08633</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Training-free motion-controlled video generation using dual-clock denoising in the domain of computer vision and AI-generated video.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on SDEdit's coarse layout cues for image editing and extends it to video, introducing a novel dual-clock denoising process that allows different regions to denoise at different rates.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing video generation methods lack precise motion control and require expensive model-specific fine-tuning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses crude reference animations as motion guides, employs image conditioning to preserve appearance, and introduces dual-clock denoising that applies different noise schedules to motion-specified regions versus background.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Outperformed existing training-based baselines on object and camera motion benchmarks, achieving better motion control and visual quality while being training-free and compatible with multiple video diffusion models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Time-to-Move: Training-Free Motion Controlled Video Generation via Dual-Clock Denoising</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2c3e50">
+    Time-to-Move: Training-Free Motion Controlled Video Generation
+  </text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="80" width="120" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="110" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">Input Image</text>
+  <text x="110" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">I ∈ R³×H×W</text>
+  
+  <rect x="200" y="80" width="120" height="60" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="260" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">Motion Control</text>
+  <text x="260" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">User Trajectory</text>
+  
+  <!-- Motion Signal Generation -->
+  <rect x="125" y="180" width="170" height="80" rx="15" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="210" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="white" font-weight="bold">Motion Signal Generation</text>
+  <text x="210" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Cut-and-Drag / Depth Warping</text>
+  <text x="210" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Creates Warped Video V^w</text>
+  
+  <!-- SDEdit Adaptation -->
+  <rect x="350" y="180" width="160" height="80" rx="15" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="430" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="white" font-weight="bold">SDEdit Adaptation</text>
+  <text x="430" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Noise Injection</text>
+  <text x="430" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">x_t* ~ q(x_t*|V^w)</text>
+  
+  <!-- Dual-Clock Denoising Core -->
+  <rect x="200" y="320" width="250" height="120" rx="20" fill="#27ae60" stroke="#229954" stroke-width="3"/>
+  <text x="325" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="white" font-weight="bold">Dual-Clock Denoising</text>
+  
+  <!-- Strong Alignment Box -->
+  <rect x="220" y="365" width="100" height="35" rx="8" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="270" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" font-weight="bold">Strong Alignment</text>
+  <text x="270" y="393" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">t_strong (Masked)</text>
+  
+  <!-- Weak Alignment Box -->
+  <rect x="330" y="365" width="100" height="35" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="380" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" font-weight="bold">Weak Alignment</text>
+  <text x="380" y="393" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">t_weak (Background)</text>
+  
+  <!-- Region Formula -->
+  <text x="325" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">x_{t-1} ← (1-M)⊙x̂_{t-1} + M⊙x^w_{t-1}</text>
+  
+  <!-- I2V Diffusion Model -->
+  <rect x="520" y="240" width="180" height="100" rx="15" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="610" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="white" font-weight="bold">I2V Diffusion Model</text>
+  <text x="610" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Image Conditioning</text>
+  <text x="610" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Preserves Appearance</text>
+  <text x="610" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">p_θ(x_0|x_t*, I)</text>
+  
+  <!-- Output -->
+  <rect x="750" y="320" width="120" height="80" rx="15" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  <text x="810" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="white" font-weight="bold">Output Video</text>
+  <text x="810" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Realistic Motion</text>
+  <text x="810" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Preserved Identity</text>
+  
+  <!-- Key Features -->
+  <rect x="50" y="500" width="180" height="80" rx="10" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="140" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="white" font-weight="bold">Training-Free</text>
+  <text x="140" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">No Model Retraining</text>
+  <text x="140" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Plug-and-Play</text>
+  
+  <rect x="260" y="500" width="180" height="80" rx="10" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="350" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="white" font-weight="bold">Region-Dependent</text>
+  <text x="350" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Spatial Varying Control</text>
+  <text x="350" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Dual Timesteps</text>
+  
+  <rect x="470" y="500" width="180" height="80" rx="10" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="560" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="white" font-weight="bold">Joint Control</text>
+  <text x="560" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Motion + Appearance</text>
+  <text x="560" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Pixel-Level Conditioning</text>
+  
+  <rect x="680" y="500" width="180" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="770" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="white" font-weight="bold">Architecture Agnostic</text>
+  <text x="770" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">SVD, CogVideoX</text>
+  <text x="770" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">WAN2.2 Compatible</text>
+  
+  <!-- Applications -->
+  <rect x="200" y="630" width="120" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="260" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">Object Motion</text>
+  <text x="260" y="665" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Local Control</text>
+  
+  <rect x="340" y="630" width="120" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">Camera Motion</text>
+  <text x="400" y="665" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Global Control</text>
+  
+  <rect x="480" y="630" width="120" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="540" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">Appearance Edit</text>
+  <text x="540" y="665" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Style Control</text>
+  
+  <!-- Flow Lines -->
+  <line x1="170" y1="110" x2="200" y2="110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="260" y1="140" x2="260" y2="180" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="210" y1="140" x2="210" y2="180" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="295" y1="220" x2="350" y2="220" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="430" y1="260" x2="430" y2="320" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="380" x2="520" y2="290" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="700" y1="290" x2="750" y2="360" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Process Flow Labels -->
+  <text x="500" y="750" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" font-weight="bold">
+    Crude Animation → Motion Injection → Region-Dependent Denoising → Realistic Video
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses dual-clock denoising with different noise schedules for different regions">
+                        <div class="quiz-question">1. What is the key innovation of the Time-to-Move framework compared to previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It requires extensive model training">It requires extensive model training</div><div class="quiz-choice" data-value="It uses dual-clock denoising with different noise schedules for different regions">It uses dual-clock denoising with different noise schedules for different regions</div><div class="quiz-choice" data-value="It only works with a single specific video diffusion model">It only works with a single specific video diffusion model</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="They are easier to produce and flexible for user intent">
+                        <div class="quiz-question">2. Why does the paper use crude reference animations as motion guides?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="They are easier to produce and flexible for user intent">They are easier to produce and flexible for user intent</div><div class="quiz-choice" data-value="They provide perfect visual quality">They provide perfect visual quality</div><div class="quiz-choice" data-value="They require specialized hardware to generate">They require specialized hardware to generate</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Joint control of both motion and appearance through pixel-level conditioning">
+                        <div class="quiz-question">3. What unique capability does Time-to-Move introduce that goes beyond existing methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Faster video generation speed">Faster video generation speed</div><div class="quiz-choice" data-value="Smaller model size requirements">Smaller model size requirements</div><div class="quiz-choice" data-value="Joint control of both motion and appearance through pixel-level conditioning">Joint control of both motion and appearance through pixel-level conditioning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Beyond English: Toward Inclusive and Scalable Multilingual Machine Translation with LLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-10</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.07003" target="_blank">http://arxiv.org/pdf/2511.07003</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Large-scale multilingual machine translation focused on both Chinese and English language pairs, covering 60 languages and 234 translation directions.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous LLM-based translation research but addresses English-centric bias by introducing Chinese as a second pivot language, while proposing Strategic Downsampling and Parallel Multilingual Prompting.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addressing the challenges of broad language coverage, consistent translation quality, and English-centric bias in multilingual machine translation systems.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Used a two-stage adaptation framework combining Continued Pre-training (CPT) and Supervised Fine-tuning (SFT), with Strategic Downsampling to prevent directional degeneration and Parallel Multilingual Prompting to enhance cross-lingual transfer.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The 4B model (LMT-60-4B) achieved state-of-the-art performance among comparable models, surpassing larger models like Aya-101-13B and NLLB-54B, with consistent performance across high, medium, and low-resource languages.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Beyond English: Toward Inclusive and Scalable Multilingual Machine Translation with LLMs</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="3" dy="3" stdDeviation="2" flood-color="#00000020"/>
+    </filter>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#2c3e50">LMT: Large-scale Multilingual Translation Framework</text>
+  
+  <!-- Data Curation Pipeline (Top Section) -->
+  <rect x="50" y="80" width="1100" height="180" fill="#e8f4f8" stroke="#3498db" stroke-width="2" rx="10" filter="url(#shadow)"/>
+  <text x="70" y="105" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2980b9">Data Curation Pipeline</text>
+  
+  <!-- Monolingual Data -->
+  <rect x="80" y="120" width="150" height="80" fill="#a8e6cf" stroke="#27ae60" stroke-width="2" rx="8"/>
+  <text x="155" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#27ae60">Monolingual</text>
+  <text x="155" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27ae60">SlimPajama (EN)</text>
+  <text x="155" y="170" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27ae60">Skywork (ZH)</text>
+  <text x="155" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27ae60">CulturaX (Others)</text>
+  
+  <!-- Bilingual Data -->
+  <rect x="280" y="120" width="150" height="80" fill="#ffd3a5" stroke="#f39c12" stroke-width="2" rx="8"/>
+  <text x="355" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#e67e22">Bilingual</text>
+  <text x="355" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#e67e22">OPUS Corpus</text>
+  <text x="355" y="170" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#e67e22">Pseudo-synthesis</text>
+  <text x="355" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#e67e22">2.1B EN-X, 2.9B ZH-X</text>
+  
+  <!-- Quality Control -->
+  <rect x="480" y="120" width="150" height="80" fill="#ffb3ba" stroke="#e74c3c" stroke-width="2" rx="8"/>
+  <text x="555" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#c0392b">Quality Control</text>
+  <text x="555" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#c0392b">OpusFilter</text>
+  <text x="555" y="170" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#c0392b">CometKiwi</text>
+  <text x="555" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#c0392b">Multi-dimensional</text>
+  
+  <!-- SFT Data -->
+  <rect x="680" y="120" width="150" height="80" fill="#dda0dd" stroke="#9b59b6" stroke-width="2" rx="8"/>
+  <text x="755" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#8e44ad">SFT Dataset</text>
+  <text x="755" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8e44ad">Flores-200</text>
+  <text x="755" y="170" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8e44ad">NTREX, SMol</text>
+  <text x="755" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8e44ad">596K pairs</text>
+  
+  <!-- Final Corpus -->
+  <rect x="880" y="120" width="150" height="80" fill="#87ceeb" stroke="#3498db" stroke-width="2" rx="8"/>
+  <text x="955" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#2980b9">Final Corpus</text>
+  <text x="955" y="155" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980b9">60 Languages</text>
+  <text x="955" y="170" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980b9">234 Directions</text>
+  <text x="955" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980b9">90B Tokens</text>
+  
+  <!-- Training Pipeline (Middle Section) -->
+  <rect x="50" y="300" width="1100" height="200" fill="#fff2e6" stroke="#f39c12" stroke-width="2" rx="10" filter="url(#shadow)"/>
+  <text x="70" y="325" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#e67e22">Two-Stage Training Pipeline</text>
+  
+  <!-- Base Model -->
+  <rect x="100" y="350" width="120" height="60" fill="#f0f0f0" stroke="#7f8c8d" stroke-width="2" rx="8"/>
+  <text x="160" y="375" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">Qwen3-Base</text>
+  <text x="160" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2c3e50">0.6B/1.7B/4B/8B</text>
+  
+  <!-- CPT Stage -->
+  <rect x="280" y="350" width="200" height="60" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2" rx="8"/>
+  <text x="380" y="370" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#16a085">Continued Pre-training (CPT)</text>
+  <text x="380" y="385" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#16a085">90B tokens (1:1:1 ratio)</text>
+  <text x="380" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#16a085">Informative Formatting</text>
+  
+  <!-- SFT Stage -->
+  <rect x="530" y="350" width="200" height="60" fill="#fef9e7" stroke="#f1c40f" stroke-width="2" rx="8"/>
+  <text x="630" y="370" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#f39c12">Supervised Fine-tuning (SFT)</text>
+  <text x="630" y="385" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#f39c12">Strategic Downsampling</text>
+  <text x="630" y="395" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#f39c12">PMP Integration</text>
+  
+  <!-- LMT Model -->
+  <rect x="780" y="350" width="120" height="60" fill="#e6f3ff" stroke="#3498db" stroke-width="2" rx="8"/>
+  <text x="840" y="375" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#2980b9">LMT Model</text>
+  <text x="840" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980b9">Final Output</text>
+  
+  <!-- Key Innovations (Bottom Section) -->
+  <rect x="50" y="540" width="1100" height="300" fill="#f8f9fa" stroke="#6c757d" stroke-width="2" rx="10" filter="url(#shadow)"/>
+  <text x="70" y="565" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#495057">Key Methodological Innovations</text>
+  
+  <!-- Strategic Downsampling -->
+  <rect x="80" y="590" width="320" height="120" fill="#ffebee" stroke="#e91e63" stroke-width="2" rx="8"/>
+  <text x="240" y="615" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#c2185b">Strategic Downsampling</text>
+  <text x="90" y="635" font-family="Arial, sans-serif" font-size="11" fill="#ad1457">Problem: Directional Degeneration</text>
+  <text x="90" y="650" font-family="Arial, sans-serif" font-size="10" fill="#880e4f">• Symmetric multi-way data causes</text>
+  <text x="90" y="665" font-family="Arial, sans-serif" font-size="10" fill="#880e4f">  excessive many-to-one mappings</text>
+  <text x="90" y="680" font-family="Arial, sans-serif" font-size="10" fill="#880e4f">• X→En/Zh performance degradation</text>
+  <text x="90" y="695" font-family="Arial, sans-serif" font-size="11" fill="#ad1457">Solution: Retain only 5% of X→En/Zh</text>
+  
+  <!-- PMP -->
+  <rect x="420" y="590" width="320" height="120" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="8"/>
+  <text x="580" y="615" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#388e3c">Parallel Multilingual Prompting</text>
+  <text x="430" y="635" font-family="Arial, sans-serif" font-size="11" fill="#2e7d32">Enhancement: Cross-lingual Transfer</text>
+  <text x="430" y="650" font-family="Arial, sans-serif" font-size="10" fill="#1b5e20">• Auxiliary language context</text>
+  <text x="430" y="665" font-family="Arial, sans-serif" font-size="10" fill="#1b5e20">• En↔X: Typologically similar</text>
+  <text x="430" y="680" font-family="Arial, sans-serif" font-size="10" fill="#1b5e20">• Zh↔X: English as pivot</text>
+  <text x="430" y="695" font-family="Arial, sans-serif" font-size="10" fill="#1b5e20">• 50% STP + 50% PMP mixing</text>
+  
+  <!-- Performance Results -->
+  <rect x="760" y="590" width="320" height="120" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" rx="8"/>
+  <text x="920" y="615" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#1976d2">Performance Results</text>
+  <text x="770" y="635" font-family="Arial, sans-serif" font-size="11" fill="#0d47a1">SOTA among similar coverage models</text>
+  <text x="770" y="650" font-family="Arial, sans-serif" font-size="10" fill="#1565c0">• LMT-60-4B > Aya-101-13B</text>
+  <text x="770" y="665" font-family="Arial, sans-serif" font-size="10" fill="#1565c0">• LMT-60-4B > NLLB-54B</text>
+  <text x="770" y="680" font-family="Arial, sans-serif" font-size="10" fill="#1565c0">• Strong parameter efficiency</text>
+  <text x="770" y="695" font-family="Arial, sans-serif" font-size="10" fill="#1565c0">• Robust across all directions</text>
+  
+  <!-- Ablation Study -->
+  <rect x="80" y="730" width="480" height="80" fill="#fff3e0" stroke="#ff9800" stroke-width="2" rx="8"/>
+  <text x="320" y="755" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#f57c00">Ablation Study Findings</text>
+  <text x="90" y="775" font-family="Arial, sans-serif" font-size="11" fill="#ef6c00">SD: +11.45 X→Zh, +5.83 X→En | CPT: +3.80 to +8.23 all directions | PMP: Steady boost across all</text>
+  <text x="90" y="790" font-family="Arial, sans-serif" font-size="10" fill="#e65100">Synergistic effect of all three components essential for robust MMT adaptation</text>
+  
+  <!-- Language Coverage -->
+  <rect x="580" y="730" width="520" height="80" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="8"/>
+  <text x="840" y="755" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#7b1fa2">Language Coverage & Evaluation</text>
+  <text x="590" y="775" font-family="Arial, sans-serif" font-size="11" fill="#6a1b9a">60 languages: 13 high, 18 medium, 29 low-resource | Chinese-English centric design</text>
+  <text x="590" y="790" font-family="Arial, sans-serif" font-size="10" fill="#4a148c">FLORES-200 devtest, COMET-22 metric, includes regional Chinese languages (Uyghur, Tibetan, Mongolian, Cantonese)</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Directional degeneration in X→En/Zh translations">
+                        <div class="quiz-question">1. What key phenomenon did the researchers identify and address in multilingual fine-tuning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Language drift in low-resource pairs">Language drift in low-resource pairs</div><div class="quiz-choice" data-value="Directional degeneration in X→En/Zh translations">Directional degeneration in X→En/Zh translations</div><div class="quiz-choice" data-value="Vocabulary interference between languages">Vocabulary interference between languages</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It centers on both Chinese and English as pivot languages">
+                        <div class="quiz-question">2. What is unique about the LMT model's approach compared to previous multilingual translation models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It only focuses on English-centric translation">It only focuses on English-centric translation</div><div class="quiz-choice" data-value="It uses Chinese as the sole pivot language">It uses Chinese as the sole pivot language</div><div class="quiz-choice" data-value="It centers on both Chinese and English as pivot languages">It centers on both Chinese and English as pivot languages</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="By adding auxiliary language context as semantic guidance">
+                        <div class="quiz-question">3. How does Parallel Multilingual Prompting (PMP) enhance translation quality?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using larger training datasets">By using larger training datasets</div><div class="quiz-choice" data-value="By adding auxiliary language context as semantic guidance">By adding auxiliary language context as semantic guidance</div><div class="quiz-choice" data-value="By increasing model parameters">By increasing model parameters</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
