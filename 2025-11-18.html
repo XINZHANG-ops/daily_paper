@@ -1,0 +1,1185 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-18 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-18 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/type.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>P1: Mastering Physics Olympiads with Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.13612" target="_blank">http://arxiv.org/pdf/2511.13612</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Development of large language models (P1) specialized in physics reasoning and solving Physics Olympiad problems, in the domain of artificial intelligence and scientific reasoning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on recent advances in LLMs for scientific reasoning, introduces new reinforcement learning techniques for physics problem-solving and proposes a novel multi-stage training framework with adaptive learnability adjustment.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the challenge of developing open-source language models capable of mastering complex physics problems at the Olympiad level, requiring deep scientific reasoning rather than simple pattern matching.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Employs reinforcement learning with Group Sequence Policy Optimization (GSPO), adaptive learnability adjustment, and test-time scaling through an agentic framework called PhysicsMinions.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> P1-235B-A22B achieved gold-medal performance at IPhO 2025, winning 12 gold medals out of 13 competitions, while P1-30B-A3B earned silver medal performance, surpassing most open-source models, with further improvements when combined with PhysicsMinions.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>P1: Mastering Physics Olympiads with Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dataGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#45a049;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="rlGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="agentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F57C00;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="evalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#7B1FA2;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="url(#bgGradient)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1a1a1a">
+    P1: Mastering Physics Olympiads with Reinforcement Learning
+  </text>
+  
+  <!-- Phase 1: Data Construction -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="200" height="120" rx="15" fill="url(#dataGradient)" stroke="#2E7D32" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      Physics Dataset
+    </text>
+    <text x="100" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      5,065 Problems
+    </text>
+    <text x="100" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Olympiads (81%)
+    </text>
+    <text x="100" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Textbooks (19%)
+    </text>
+    <text x="100" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Rule-Verifiable Answers
+    </text>
+    <text x="100" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Expert Solutions
+    </text>
+  </g>
+  
+  <!-- Phase 2: RL Formulation -->
+  <g transform="translate(50, 240)">
+    <rect x="0" y="0" width="200" height="100" rx="15" fill="url(#rlGradient)" stroke="#1565C0" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      RL Formulation
+    </text>
+    <text x="100" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      MDP: (S, A, P, r)
+    </text>
+    <text x="100" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      Binary Reward: r ∈ {0,1}
+    </text>
+    <text x="100" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      Policy Gradient
+    </text>
+    <text x="100" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      GSPO Algorithm
+    </text>
+  </g>
+  
+  <!-- Phase 3: Multi-Stage RL Training -->
+  <g transform="translate(300, 80)">
+    <rect x="0" y="0" width="400" height="260" rx="15" fill="url(#rlGradient)" stroke="#1565C0" stroke-width="3"/>
+    <text x="200" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">
+      Multi-Stage RL Training
+    </text>
+    
+    <!-- Stage boxes -->
+    <g transform="translate(20, 40)">
+      <rect x="0" y="0" width="80" height="60" rx="8" fill="#1976D2" stroke="white" stroke-width="1"/>
+      <text x="40" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Stage 1</text>
+      <text x="40" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">G=16</text>
+      <text x="40" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">48k tokens</text>
+    </g>
+    
+    <g transform="translate(120, 40)">
+      <rect x="0" y="0" width="80" height="60" rx="8" fill="#1976D2" stroke="white" stroke-width="1"/>
+      <text x="40" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Stage 2</text>
+      <text x="40" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">G=32</text>
+      <text x="40" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">48k tokens</text>
+    </g>
+    
+    <g transform="translate(220, 40)">
+      <rect x="0" y="0" width="80" height="60" rx="8" fill="#1976D2" stroke="white" stroke-width="1"/>
+      <text x="40" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Stage 3</text>
+      <text x="40" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">G=32</text>
+      <text x="40" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">64k tokens</text>
+    </g>
+    
+    <g transform="translate(320, 40)">
+      <rect x="0" y="0" width="60" height="60" rx="8" fill="#1976D2" stroke="white" stroke-width="1"/>
+      <text x="30" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Stage 4</text>
+      <text x="30" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">(235B only)</text>
+      <text x="30" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">80k tokens</text>
+    </g>
+    
+    <!-- Technical components -->
+    <text x="20" y="130" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      Adaptive Learnability Adjustment:
+    </text>
+    <text x="30" y="150" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Pass Rate Filtering (0 &lt; pass ≤ 0.7)
+    </text>
+    <text x="30" y="165" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Group Size Expansion
+    </text>
+    <text x="30" y="180" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Generation Window Expansion
+    </text>
+    
+    <text x="20" y="210" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      Training Stabilization:
+    </text>
+    <text x="30" y="230" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Truncated Importance Sampling (TIS)
+    </text>
+    <text x="30" y="245" font-family="Arial, sans-serif" font-size="12" fill="white">
+      • Train-Inference Mismatch Mitigation
+    </text>
+  </g>
+  
+  <!-- Phase 4: Model Variants -->
+  <g transform="translate(750, 80)">
+    <rect x="0" y="0" width="180" height="120" rx="15" fill="#FF5722" stroke="#D84315" stroke-width="2"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      P1 Models
+    </text>
+    <text x="90" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      P1-30B-A3B
+    </text>
+    <text x="90" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+      (Silver Medal)
+    </text>
+    <text x="90" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+      P1-235B-A22B
+    </text>
+    <text x="90" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">
+      (Gold Medal)
+    </text>
+  </g>
+  
+  <!-- Phase 5: Agentic Augmentation -->
+  <g transform="translate(300, 380)">
+    <rect x="0" y="0" width="400" height="120" rx="15" fill="url(#agentGradient)" stroke="#E65100" stroke-width="2"/>
+    <text x="200" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+      PhysicsMinions Agentic Framework
+    </text>
+    
+    <g transform="translate(30, 40)">
+      <rect x="0" y="0" width="100" height="60" rx="8" fill="#FF8F00" stroke="white" stroke-width="1"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Logic Studio</text>
+      <text x="50" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Solver +</text>
+      <text x="50" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Introspector</text>
+    </g>
+    
+    <g transform="translate(150, 40)">
+      <rect x="0" y="0" width="100" height="60" rx="8" fill="#FF8F00" stroke="white" stroke-width="1"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Review Studio</text>
+      <text x="50" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Physics +</text>
+      <text x="50" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">General Verifier</text>
+    </g>
+    
+    <g transform="translate(270, 40)">
+      <rect x="0" y="0" width="100" height="60" rx="8" fill="#FF8F00" stroke="white" stroke-width="1"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Iterative</text>
+      <text x="50" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Refinement</text>
+      <text x="50" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">CV=2</text>
+    </g>
+  </g>
+  
+  <!-- Phase 6: Evaluation -->
+  <g transform="translate(50, 540)">
+    <rect x="0" y="0" width="900" height="200" rx="15" fill="url(#evalGradient)" stroke="#6A1B9A" stroke-width="3"/>
+    <text x="450" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">
+      Evaluation on HiPhO Benchmark (13 Physics Olympiads 2024-2025)
+    </text>
+    
+    <!-- Results boxes -->
+    <g transform="translate(50, 50)">
+      <rect x="0" y="0" width="180" height="120" rx="10" fill="#8E24AA" stroke="white" stroke-width="1"/>
+      <text x="90" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">P1-235B-A22B</text>
+      <text x="90" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">IPhO 2025: 21.2/30</text>
+      <text x="90" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">12 Gold, 1 Silver</text>
+      <text x="90" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">First Open-Source</text>
+      <text x="90" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Gold Medal</text>
+      <text x="90" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Rank #3 globally</text>
+    </g>
+    
+    <g transform="translate(250, 50)">
+      <rect x="0" y="0" width="180" height="120" rx="10" fill="#8E24AA" stroke="white" stroke-width="1"/>
+      <text x="90" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">P1-30B-A3B</text>
+      <text x="90" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">IPhO 2025: 18.5/30</text>
+      <text x="90" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">8 Gold, 4 Silver, 1 Bronze</text>
+      <text x="90" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Silver Medal</text>
+      <text x="90" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Performance</text>
+      <text x="90" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Rank #8 overall</text>
+    </g>
+    
+    <g transform="translate(450, 50)">
+      <rect x="0" y="0" width="200" height="120" rx="10" fill="#8E24AA" stroke="white" stroke-width="1"/>
+      <text x="100" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">P1 + PhysicsMinions</text>
+      <text x="100" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">IPhO 2025: 23.2/30</text>
+      <text x="100" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Overall #1 Position</text>
+      <text x="100" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Beats Gemini-2.5-Pro</text>
+      <text x="100" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">and GPT-5</text>
+      <text x="100" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Avg Score: 38.4</text>
+    </g>
+    
+    <g transform="translate(670, 50)">
+      <rect x="0" y="0" width="180" height="120" rx="10" fill="#8E24AA" stroke="white" stroke-width="1"/>
+      <text x="90" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Generalizability</text>
+      <text x="90" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Superior performance</text>
+      <text x="90" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">on Math, STEM,</text>
+      <text x="90" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">and Coding tasks</text>
+      <text x="90" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">vs base models</text>
+      <text x="90" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Transferable reasoning</text>
+    </g>
+  </g>
+  
+  <!-- Flow connections with curved paths -->
+  <path d="M 150 200 Q 200 220 250 240" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 150 340 Q 200 360 300 360" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 340 Q 550 360 500 380" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 500 Q 450 520 450 540" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It was trained entirely through reinforcement learning with adaptive learnability adjustment">
+                        <div class="quiz-question">1. What unique approach did P1 take in its training process compared to other language models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It was trained exclusively using traditional supervised learning">It was trained exclusively using traditional supervised learning</div><div class="quiz-choice" data-value="It was trained entirely through reinforcement learning with adaptive learnability adjustment">It was trained entirely through reinforcement learning with adaptive learnability adjustment</div><div class="quiz-choice" data-value="It was trained using a combination of supervised learning and imitation learning">It was trained using a combination of supervised learning and imitation learning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It achieved the overall No.1 position across all models, outperforming leading closed-source models">
+                        <div class="quiz-question">2. When the P1-235B-A22B model was integrated with PhysicsMinions, what was its most significant achievement?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It reached bronze medal performance in Physics Olympiads">It reached bronze medal performance in Physics Olympiads</div><div class="quiz-choice" data-value="It matched human performance but couldn't exceed it">It matched human performance but couldn't exceed it</div><div class="quiz-choice" data-value="It achieved the overall No.1 position across all models, outperforming leading closed-source models">It achieved the overall No.1 position across all models, outperforming leading closed-source models</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It enhanced the model's reasoning abilities across multiple domains including mathematics and coding">
+                        <div class="quiz-question">3. What unexpected benefit was discovered about P1's training approach?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It improved the model's performance only in physics">It improved the model's performance only in physics</div><div class="quiz-choice" data-value="It made the model perform worse in other domains">It made the model perform worse in other domains</div><div class="quiz-choice" data-value="It enhanced the model's reasoning abilities across multiple domains including mathematics and coding">It enhanced the model's reasoning abilities across multiple domains including mathematics and coding</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-1.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Part-X-MLLM: Part-aware 3D Multimodal Large Language Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.13647" target="_blank">http://arxiv.org/pdf/2511.13647</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> A part-aware 3D multimodal large language model (Part-X-MLLM) for understanding and manipulating 3D shapes at the part level in computer vision and graphics.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Previous research focused on scene-level 3D understanding or holistic shape generation, while this paper proposes a unified framework that treats parts as first-class citizens and provides a single executable interface for part-based operations.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The lack of a native language model that can understand, name, and manipulate 3D object parts while providing precise spatial grounding and executable programs for downstream geometry tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a dual-encoder architecture (structure + semantics) with an autoregressive decoder to generate structured programs containing part-level bounding boxes and edit commands, followed by specialized geometry modules for execution.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved superior performance on UniPart-Bench across 11 task families, with significant improvements in bounding box generation (74.11% voxel recall, 48.74% voxel IoU) and consistent gains in part-level Q&A and grounding tasks over baseline models.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Part-X-MLLM: Part-aware 3D Multimodal Large Language Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Part-X-MLLM: Part-aware 3D Multimodal Large Language Model Workflow</text>
+  
+  <!-- Input Data Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-weight="bold" fill="#1976d2">Input Data</text>
+  <text x="150" y="105" text-anchor="middle" font-size="12" fill="#333">RGB Point Cloud</text>
+  <text x="150" y="120" text-anchor="middle" font-size="12" fill="#333">(40960,6) XYZ+Normal</text>
+  <text x="150" y="135" text-anchor="middle" font-size="12" fill="#333">(10240,6) XYZ+RGB</text>
+  <text x="150" y="150" text-anchor="middle" font-size="12" fill="#333">Natural Language Prompt</text>
+  
+  <!-- Dual Encoder Architecture -->
+  <rect x="300" y="60" width="150" height="80" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="375" y="85" text-anchor="middle" font-weight="bold" fill="#f57c00">Structure Encoder</text>
+  <text x="375" y="105" text-anchor="middle" font-size="12" fill="#333">XYZ + Normals</text>
+  <text x="375" y="120" text-anchor="middle" font-size="12" fill="#333">Geometry Features</text>
+  
+  <rect x="300" y="160" width="150" height="80" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="375" y="185" text-anchor="middle" font-weight="bold" fill="#7b1fa2">Semantic Encoder</text>
+  <text x="375" y="205" text-anchor="middle" font-size="12" fill="#333">XYZ + RGB</text>
+  <text x="375" y="220" text-anchor="middle" font-size="12" fill="#333">Appearance Features</text>
+  
+  <!-- Feature Fusion -->
+  <circle cx="500" cy="150" r="40" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="500" y="155" text-anchor="middle" font-weight="bold" font-size="12" fill="#4caf50">Feature Fusion</text>
+  
+  <!-- Autoregressive Decoder -->
+  <rect x="580" y="100" width="180" height="100" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="670" y="125" text-anchor="middle" font-weight="bold" fill="#c2185b">Autoregressive Decoder</text>
+  <text x="670" y="145" text-anchor="middle" font-size="12" fill="#333">Qwen 2.5 VL Model</text>
+  <text x="670" y="165" text-anchor="middle" font-size="12" fill="#333">Program Generation</text>
+  <text x="670" y="185" text-anchor="middle" font-size="12" fill="#333">&lt;box&gt; &lt;edit&gt; tokens</text>
+  
+  <!-- Training Stages -->
+  <rect x="50" y="280" width="220" height="100" rx="10" fill="#fff8e1" stroke="#ffa000" stroke-width="2"/>
+  <text x="160" y="305" text-anchor="middle" font-weight="bold" fill="#ffa000">Stage 1: Geometry Pretraining</text>
+  <text x="160" y="325" text-anchor="middle" font-size="11" fill="#333">3.6M objects, 10 epochs</text>
+  <text x="160" y="340" text-anchor="middle" font-size="11" fill="#333">BBox prediction task</text>
+  <text x="160" y="355" text-anchor="middle" font-size="11" fill="#333">Structure encoder only</text>
+  
+  <rect x="300" y="280" width="220" height="100" rx="10" fill="#e0f2f1" stroke="#00695c" stroke-width="2"/>
+  <text x="410" y="305" text-anchor="middle" font-weight="bold" fill="#00695c">Stage 2: Full Instruction Tuning</text>
+  <text x="410" y="325" text-anchor="middle" font-size="11" fill="#333">Dual-encoder + LLM</text>
+  <text x="410" y="340" text-anchor="middle" font-size="11" fill="#333">85,771 annotated objects</text>
+  <text x="410" y="355" text-anchor="middle" font-size="11" fill="#333">11 task families</text>
+  
+  <!-- Task Applications -->
+  <rect x="50" y="420" width="180" height="120" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="140" y="445" text-anchor="middle" font-weight="bold" fill="#0277bd">Part-Aware Generation</text>
+  <text x="140" y="465" text-anchor="middle" font-size="11" fill="#333">BBox-guided synthesis</text>
+  <text x="140" y="480" text-anchor="middle" font-size="11" fill="#333">OmniPart backend</text>
+  <text x="140" y="495" text-anchor="middle" font-size="11" fill="#333">High-fidelity mesh</text>
+  <text x="140" y="510" text-anchor="middle" font-size="11" fill="#333">Semantic granularity</text>
+  <text x="140" y="525" text-anchor="middle" font-size="11" fill="#333">control</text>
+  
+  <rect x="270" y="420" width="180" height="120" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="360" y="445" text-anchor="middle" font-weight="bold" fill="#689f38">Grounded Q&A</text>
+  <text x="360" y="465" text-anchor="middle" font-size="11" fill="#333">BBox token embedding</text>
+  <text x="360" y="480" text-anchor="middle" font-size="11" fill="#333">Persistent references</text>
+  <text x="360" y="495" text-anchor="middle" font-size="11" fill="#333">Part-level reasoning</text>
+  <text x="360" y="510" text-anchor="middle" font-size="11" fill="#333">Spatial understanding</text>
+  
+  <rect x="490" y="420" width="180" height="120" rx="10" fill="#fef7ff" stroke="#8e24aa" stroke-width="2"/>
+  <text x="580" y="445" text-anchor="middle" font-weight="bold" fill="#8e24aa">Localized Editing</text>
+  <text x="580" y="465" text-anchor="middle" font-size="11" fill="#333">Cuboid mask generation</text>
+  <text x="580" y="480" text-anchor="middle" font-size="11" fill="#333">Nano3D/VoxHammer</text>
+  <text x="580" y="495" text-anchor="middle" font-size="11" fill="#333">Add/Delete/Modify</text>
+  <text x="580" y="510" text-anchor="middle" font-size="11" fill="#333">Precise spatial control</text>
+  
+  <!-- Advanced Applications -->
+  <rect x="710" y="420" width="180" height="120" rx="10" fill="#fff3e0" stroke="#ef6c00" stroke-width="2"/>
+  <text x="800" y="445" text-anchor="middle" font-weight="bold" fill="#ef6c00">Advanced Applications</text>
+  <text x="800" y="465" text-anchor="middle" font-size="11" fill="#333">Confidence-aware</text>
+  <text x="800" y="480" text-anchor="middle" font-size="11" fill="#333">face segmentation</text>
+  <text x="800" y="495" text-anchor="middle" font-size="11" fill="#333">Part clustering</text>
+  <text x="800" y="510" text-anchor="middle" font-size="11" fill="#333">Hierarchical structure</text>
+  
+  <!-- Grammar System -->
+  <rect x="350" y="580" width="300" height="80" rx="10" fill="#f9f9f9" stroke="#666" stroke-width="2"/>
+  <text x="500" y="605" text-anchor="middle" font-weight="bold" fill="#333">Structured Planning Grammar</text>
+  <text x="500" y="625" text-anchor="middle" font-size="11" fill="#333">&lt;boxs&gt;...&lt;boxe&gt; for bounding boxes</text>
+  <text x="500" y="640" text-anchor="middle" font-size="11" fill="#333">&lt;adds&gt;/&lt;dels&gt;/&lt;mods&gt; for edit operations</text>
+  <text x="500" y="655" text-anchor="middle" font-size="11" fill="#333">Quantized coordinates (128 bins)</text>
+  
+  <!-- Evaluation -->
+  <rect x="750" y="60" width="200" height="120" rx="10" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="850" y="85" text-anchor="middle" font-weight="bold" fill="#3f51b5">UniPart-Bench</text>
+  <text x="850" y="105" text-anchor="middle" font-size="12" fill="#333">30k entries</text>
+  <text x="850" y="120" text-anchor="middle" font-size="12" fill="#333">11 task families</text>
+  <text x="850" y="135" text-anchor="middle" font-size="12" fill="#333">BBox IoU: 42.55%</text>
+  <text x="850" y="150" text-anchor="middle" font-size="12" fill="#333">Voxel Recall: 74.11%</text>
+  <text x="850" y="165" text-anchor="middle" font-size="12" fill="#333">SBERT: 78.98</text>
+  
+  <!-- Connection lines -->
+  <line x1="250" y1="120" x2="300" y2="100" stroke="#666" stroke-width="2"/>
+  <line x1="250" y1="120" x2="300" y2="200" stroke="#666" stroke-width="2"/>
+  <line x1="450" y1="100" x2="480" y2="130" stroke="#666" stroke-width="2"/>
+  <line x1="450" y1="200" x2="480" y2="170" stroke="#666" stroke-width="2"/>
+  <line x1="540" y1="150" x2="580" y2="150" stroke="#666" stroke-width="2"/>
+  <line x1="760" y1="150" x2="750" y2="150" stroke="#666" stroke-width="2"/>
+  
+  <line x1="160" y1="380" x2="140" y2="420" stroke="#666" stroke-width="2"/>
+  <line x1="410" y1="380" x2="360" y2="420" stroke="#666" stroke-width="2"/>
+  <line x1="670" y1="200" x2="580" y2="420" stroke="#666" stroke-width="2"/>
+  <line x1="670" y1="200" x2="800" y2="420" stroke="#666" stroke-width="2"/>
+  
+  <line x1="500" y1="540" x2="500" y2="580" stroke="#666" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="A dual-encoder design separating structure and semantics">
+                        <div class="quiz-question">1. What is the key innovation in Part-X-MLLM's architecture that helps it better understand both structure and appearance of 3D objects?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A single unified encoder for all features">A single unified encoder for all features</div><div class="quiz-choice" data-value="A dual-encoder design separating structure and semantics">A dual-encoder design separating structure and semantics</div><div class="quiz-choice" data-value="A triple-encoder system with dedicated texture analysis">A triple-encoder system with dedicated texture analysis</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By clustering part bounding boxes based on text similarity">
+                        <div class="quiz-question">2. How does Part-X-MLLM handle different levels of part detail in 3D objects?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By using fixed predefined part categories">By using fixed predefined part categories</div><div class="quiz-choice" data-value="Through manual user intervention">Through manual user intervention</div><div class="quiz-choice" data-value="By clustering part bounding boxes based on text similarity">By clustering part bounding boxes based on text similarity</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="About 4.5%">
+                        <div class="quiz-question">3. What percentage improvement did Part-X-MLLM achieve in Voxel recall compared to the PartField baseline?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="About 4.5%">About 4.5%</div><div class="quiz-choice" data-value="About 5.8%">About 5.8%</div><div class="quiz-choice" data-value="About 7.1%">About 7.1%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>PhysX-Anything: Simulation-Ready Physical 3D Assets from Single Image</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.13648" target="_blank">http://arxiv.org/pdf/2511.13648</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Generating simulation-ready 3D physical assets from single images, in the domain of computer vision and 3D graphics.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous 3D generation and physical modeling research, introduces a novel VLM-based approach with a new efficient 3D representation that reduces tokens by 193x while maintaining structural information.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing 3D generation methods lack physical and articulation properties needed for simulation, limiting their use in embodied AI applications.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a multi-round VLM conversation to generate physical descriptions and geometry, with a controllable flow transformer for fine-grained details, and introduces PhysX-Mobility dataset with rich physical annotations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves superior performance across geometric and physical metrics compared to state-of-the-art methods, with 99% improvement in absolute scale accuracy and strong generalization to real-world images.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>PhysX-Anything: Simulation-Ready Physical 3D Assets from Single Image</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">PhysX-Anything Workflow</text>
+  
+  <!-- Input Image -->
+  <rect x="50" y="70" width="120" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="110" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Input Image</text>
+  <text x="110" y="120" text-anchor="middle" font-size="10" fill="white">Single real-world</text>
+  <text x="110" y="135" text-anchor="middle" font-size="10" fill="white">image</text>
+  
+  <!-- VLM Multi-round Conversation -->
+  <rect x="220" y="60" width="200" height="100" rx="15" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="320" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">VLM Multi-round</text>
+  <text x="320" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Conversation</text>
+  <text x="320" y="125" text-anchor="middle" font-size="10" fill="white">Qwen2.5 Fine-tuned</text>
+  <text x="320" y="140" text-anchor="middle" font-size="10" fill="white">Physical 3D Generation</text>
+  
+  <!-- Physical Representation -->
+  <rect x="470" y="40" width="180" height="140" rx="12" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="560" y="65" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Physical Representation</text>
+  
+  <!-- Overall Information -->
+  <rect x="480" y="80" width="160" height="40" rx="8" fill="#af7ac5" stroke="#9b59b6"/>
+  <text x="560" y="95" text-anchor="middle" font-size="10" fill="white">Overall Information</text>
+  <text x="560" y="110" text-anchor="middle" font-size="9" fill="white">Structure, Scale, Materials</text>
+  
+  <!-- Geometry Information -->
+  <rect x="480" y="130" width="160" height="40" rx="8" fill="#af7ac5" stroke="#9b59b6"/>
+  <text x="560" y="145" text-anchor="middle" font-size="10" fill="white">Geometry Information</text>
+  <text x="560" y="160" text-anchor="middle" font-size="9" fill="white">32³ Voxel Grid (193x compression)</text>
+  
+  <!-- Controllable Flow Transformer -->
+  <rect x="50" y="220" width="200" height="100" rx="15" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="150" y="245" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Controllable Flow</text>
+  <text x="150" y="265" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Transformer</text>
+  <text x="150" y="285" text-anchor="middle" font-size="10" fill="white">Fine-grained geometry</text>
+  <text x="150" y="300" text-anchor="middle" font-size="10" fill="white">synthesis</text>
+  
+  <!-- Physical Representation Decoder -->
+  <rect x="300" y="220" width="200" height="100" rx="15" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="400" y="245" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Physical Representation</text>
+  <text x="400" y="265" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Decoder</text>
+  <text x="400" y="285" text-anchor="middle" font-size="10" fill="white">Mesh segmentation &</text>
+  <text x="400" y="300" text-anchor="middle" font-size="10" fill="white">format conversion</text>
+  
+  <!-- Output Formats -->
+  <rect x="550" y="200" width="400" height="140" rx="15" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="750" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Simulation-Ready Outputs</text>
+  
+  <!-- Individual outputs -->
+  <rect x="570" y="245" width="80" height="30" rx="5" fill="#5dade2" stroke="#3498db"/>
+  <text x="610" y="265" text-anchor="middle" font-size="10" fill="white">3D Mesh</text>
+  
+  <rect x="660" y="245" width="80" height="30" rx="5" fill="#5dade2" stroke="#3498db"/>
+  <text x="700" y="265" text-anchor="middle" font-size="10" fill="white">URDF Files</text>
+  
+  <rect x="750" y="245" width="80" height="30" rx="5" fill="#5dade2" stroke="#3498db"/>
+  <text x="790" y="265" text-anchor="middle" font-size="10" fill="white">XML Files</text>
+  
+  <rect x="840" y="245" width="80" height="30" rx="5" fill="#5dade2" stroke="#3498db"/>
+  <text x="880" y="265" text-anchor="middle" font-size="10" fill="white">3D Gaussians</text>
+  
+  <rect x="615" y="285" width="80" height="30" rx="5" fill="#5dade2" stroke="#3498db"/>
+  <text x="655" y="305" text-anchor="middle" font-size="10" fill="white">Radiance Fields</text>
+  
+  <rect x="705" y="285" width="80" height="30" rx="5" fill="#5dade2" stroke="#3498db"/>
+  <text x="745" y="305" text-anchor="middle" font-size="10" fill="white">Part-level Mesh</text>
+  
+  <!-- Dataset -->
+  <rect x="50" y="380" width="200" height="80" rx="12" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="150" y="405" text-anchor="middle" font-size="13" font-weight="bold" fill="white">PhysX-Mobility Dataset</text>
+  <text x="150" y="425" text-anchor="middle" font-size="10" fill="white">47 categories, 2K+ objects</text>
+  <text x="150" y="440" text-anchor="middle" font-size="10" fill="white">Rich physical annotations</text>
+  <text x="150" y="455" text-anchor="middle" font-size="10" fill="white">2x category expansion</text>
+  
+  <!-- Applications -->
+  <rect x="300" y="380" width="200" height="80" rx="12" fill="#8e44ad" stroke="#7d3c98" stroke-width="2"/>
+  <text x="400" y="405" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Applications</text>
+  <text x="400" y="425" text-anchor="middle" font-size="10" fill="white">Robotic Policy Learning</text>
+  <text x="400" y="440" text-anchor="middle" font-size="10" fill="white">Physics Simulation</text>
+  <text x="400" y="455" text-anchor="middle" font-size="10" fill="white">Embodied AI</text>
+  
+  <!-- Key Innovation -->
+  <rect x="550" y="380" width="180" height="80" rx="12" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+  <text x="640" y="405" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Key Innovation</text>
+  <text x="640" y="425" text-anchor="middle" font-size="10" fill="white">193x Token Compression</text>
+  <text x="640" y="440" text-anchor="middle" font-size="10" fill="white">No Special Tokens</text>
+  <text x="640" y="455" text-anchor="middle" font-size="10" fill="white">VLM-based Pipeline</text>
+  
+  <!-- Evaluation -->
+  <rect x="750" y="380" width="180" height="80" rx="12" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="840" y="405" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Evaluation</text>
+  <text x="840" y="425" text-anchor="middle" font-size="10" fill="white">PhysX-Mobility Benchmark</text>
+  <text x="840" y="440" text-anchor="middle" font-size="10" fill="white">In-the-wild Testing</text>
+  <text x="840" y="455" text-anchor="middle" font-size="10" fill="white">User Studies</text>
+  
+  <!-- Technical Details Box -->
+  <rect x="50" y="500" width="900" height="120" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  <text x="500" y="525" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Technical Architecture Details</text>
+  
+  <!-- Row 1 -->
+  <rect x="70" y="545" width="150" height="35" rx="8" fill="#3498db" stroke="#2980b9"/>
+  <text x="145" y="565" text-anchor="middle" font-size="11" fill="white">Voxel Tokenization</text>
+  
+  <rect x="240" y="545" width="150" height="35" rx="8" fill="#e74c3c" stroke="#c0392b"/>
+  <text x="315" y="565" text-anchor="middle" font-size="11" fill="white">Multi-round Dialogue</text>
+  
+  <rect x="410" y="545" width="150" height="35" rx="8" fill="#f39c12" stroke="#e67e22"/>
+  <text x="485" y="565" text-anchor="middle" font-size="11" fill="white">Flow Transformer</text>
+  
+  <rect x="580" y="545" width="150" height="35" rx="8" fill="#27ae60" stroke="#229954"/>
+  <text x="655" y="565" text-anchor="middle" font-size="11" fill="white">Format Decoder</text>
+  
+  <rect x="750" y="545" width="150" height="35" rx="8" fill="#9b59b6" stroke="#8e44ad"/>
+  <text x="825" y="565" text-anchor="middle" font-size="11" fill="white">URDF/XML Export</text>
+  
+  <!-- Performance metrics -->
+  <text x="500" y="605" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Performance Highlights: 99% improvement in absolute scale, Direct simulator deployment, Contact-rich manipulation tasks</text>
+  
+  <!-- Connection lines with reduced complexity -->
+  <line x1="170" y1="110" x2="220" y2="110" stroke="#34495e" stroke-width="2"/>
+  <line x1="420" y1="110" x2="470" y2="110" stroke="#34495e" stroke-width="2"/>
+  <line x1="560" y1="180" x2="560" y2="200" stroke="#34495e" stroke-width="2"/>
+  <line x1="560" y1="200" x2="750" y2="200" stroke="#34495e" stroke-width="2"/>
+  <line x1="750" y1="200" x2="750" y2="200" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Flow indicators -->
+  <circle cx="190" cy="110" r="3" fill="#e74c3c"/>
+  <circle cx="445" cy="110" r="3" fill="#e74c3c"/>
+  <circle cx="560" cy="190" r="3" fill="#e74c3c"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Converting meshes to 32³ voxel grid and merging neighboring indices">
+                        <div class="quiz-question">1. What is the main innovation in PhysX-Anything's token compression strategy?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using a new tokenizer and special tokens">Using a new tokenizer and special tokens</div><div class="quiz-choice" data-value="Converting meshes to 32³ voxel grid and merging neighboring indices">Converting meshes to 32³ voxel grid and merging neighboring indices</div><div class="quiz-choice" data-value="Applying vertex quantization only">Applying vertex quantization only</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Generates each part independently based only on shared overall information">
+                        <div class="quiz-question">2. How does PhysX-Anything generate the geometric information for different parts of an object?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Generates all parts simultaneously using parallel processing">Generates all parts simultaneously using parallel processing</div><div class="quiz-choice" data-value="Uses the previous part's information to generate the next part">Uses the previous part's information to generate the next part</div><div class="quiz-choice" data-value="Generates each part independently based only on shared overall information">Generates each part independently based only on shared overall information</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Direct deployment in physics simulators for robotic policy learning">
+                        <div class="quiz-question">3. What unique capability does PhysX-Anything demonstrate in the experimental results?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Fastest processing speed among all 3D generation methods">Fastest processing speed among all 3D generation methods</div><div class="quiz-choice" data-value="Direct deployment in physics simulators for robotic policy learning">Direct deployment in physics simulators for robotic policy learning</div><div class="quiz-choice" data-value="Perfect photorealistic rendering of 3D objects">Perfect photorealistic rendering of 3D objects</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
