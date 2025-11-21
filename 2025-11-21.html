@@ -1,0 +1,1211 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-21 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-21 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/office.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>V-ReasonBench: Toward Unified Reasoning Benchmark Suite for Video Generation Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.16668" target="_blank">http://arxiv.org/pdf/2511.16668</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces V-ReasonBench, a benchmark suite for evaluating reasoning capabilities in video generation models across four dimensions: structured problem-solving, spatial cognition, pattern-based inference, and physical dynamics.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Chain-of-Frame paradigm in video generation and Chain-of-Thought in language models, it proposes a new unified benchmark framework focusing specifically on evaluating reasoning abilities rather than just visual quality.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of systematic and reliable evaluation methods for assessing reasoning capabilities in video generation models.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The benchmark uses a hybrid evaluation strategy combining mask-based, grid-based, and VLM-based evaluation methods across 326 reasoning instances, with pass@k as the primary metric for assessment.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Testing six state-of-the-art video models revealed varying strengths across different reasoning dimensions, with Sora-2 leading overall (43.86% average), followed by Hailuo-02 (37.52%), while the benchmark achieved 97.09% alignment with human judgment.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>V-ReasonBench: Toward Unified Reasoning Benchmark Suite for Video Generation Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">V-ReasonBench: Video Generation Reasoning Evaluation Pipeline</text>
+  
+  <!-- Data Preparation Phase -->
+  <rect x="50" y="60" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Data Preparation</text>
+  <text x="150" y="110" text-anchor="middle" font-size="12" fill="#1976d2">326 instances</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#1976d2">652 image pairs</text>
+  
+  <!-- Four Reasoning Dimensions -->
+  <rect x="80" y="170" width="160" height="100" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="160" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Structured</text>
+  <text x="160" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Problem-Solving</text>
+  <text x="160" y="225" text-anchor="middle" font-size="10" fill="#f57c00">• Arithmetic Operation</text>
+  <text x="160" y="240" text-anchor="middle" font-size="10" fill="#f57c00">• Code Execution</text>
+  <text x="160" y="255" text-anchor="middle" font-size="10" fill="#f57c00">• Sudoku • Tic-Tac-Toe</text>
+  
+  <rect x="280" y="170" width="160" height="100" rx="8" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="360" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="#4caf50">Spatial</text>
+  <text x="360" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#4caf50">Cognition</text>
+  <text x="360" y="225" text-anchor="middle" font-size="10" fill="#4caf50">• Shape Fitting</text>
+  <text x="360" y="240" text-anchor="middle" font-size="10" fill="#4caf50">• Visual Symmetry</text>
+  <text x="360" y="255" text-anchor="middle" font-size="10" fill="#4caf50">• Color Connection</text>
+  
+  <rect x="480" y="170" width="160" height="100" rx="8" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="560" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="#9c27b0">Pattern-based</text>
+  <text x="560" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#9c27b0">Inference</text>
+  <text x="560" y="225" text-anchor="middle" font-size="10" fill="#9c27b0">• Sequence Completion</text>
+  <text x="560" y="240" text-anchor="middle" font-size="10" fill="#9c27b0">• Analogy Solving</text>
+  <text x="560" y="255" text-anchor="middle" font-size="10" fill="#9c27b0">• Rule Following</text>
+  
+  <rect x="680" y="170" width="160" height="100" rx="8" fill="#ffebee" stroke="#e91e63" stroke-width="2"/>
+  <text x="760" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="#e91e63">Physical</text>
+  <text x="760" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#e91e63">Dynamics</text>
+  <text x="760" y="225" text-anchor="middle" font-size="10" fill="#e91e63">• Block Sliding</text>
+  <text x="760" y="240" text-anchor="middle" font-size="10" fill="#e91e63">• Communicating Vessels</text>
+  <text x="760" y="255" text-anchor="middle" font-size="10" fill="#e91e63">• Temperature Deformation</text>
+  
+  <!-- Video Generation Models -->
+  <rect x="50" y="300" width="800" height="80" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="450" y="325" text-anchor="middle" font-size="14" font-weight="bold" fill="#0277bd">Video Generation Models</text>
+  
+  <rect x="70" y="340" width="110" height="30" rx="5" fill="#b3e5fc" stroke="#0277bd"/>
+  <text x="125" y="358" text-anchor="middle" font-size="11" fill="#0277bd">Sora-2</text>
+  
+  <rect x="200" y="340" width="110" height="30" rx="5" fill="#b3e5fc" stroke="#0277bd"/>
+  <text x="255" y="358" text-anchor="middle" font-size="11" fill="#0277bd">Veo-3.1</text>
+  
+  <rect x="330" y="340" width="110" height="30" rx="5" fill="#b3e5fc" stroke="#0277bd"/>
+  <text x="385" y="358" text-anchor="middle" font-size="11" fill="#0277bd">Hailuo-02</text>
+  
+  <rect x="460" y="340" width="110" height="30" rx="5" fill="#b3e5fc" stroke="#0277bd"/>
+  <text x="515" y="358" text-anchor="middle" font-size="11" fill="#0277bd">Kling-2.5</text>
+  
+  <rect x="590" y="340" width="110" height="30" rx="5" fill="#b3e5fc" stroke="#0277bd"/>
+  <text x="645" y="358" text-anchor="middle" font-size="11" fill="#0277bd">Vidu-Q2</text>
+  
+  <rect x="720" y="340" width="110" height="30" rx="5" fill="#b3e5fc" stroke="#0277bd"/>
+  <text x="775" y="358" text-anchor="middle" font-size="11" fill="#0277bd">Seedance-1.0</text>
+  
+  <!-- Chain-of-Frame Process -->
+  <rect x="300" y="410" width="400" height="60" rx="10" fill="#fff8e1" stroke="#ff8f00" stroke-width="2"/>
+  <text x="500" y="430" text-anchor="middle" font-size="14" font-weight="bold" fill="#ff8f00">Chain-of-Frame (CoF) Reasoning</text>
+  <text x="500" y="450" text-anchor="middle" font-size="12" fill="#ff8f00">Initial Image → Intermediate Frames → Final Frame</text>
+  <text x="500" y="465" text-anchor="middle" font-size="12" fill="#ff8f00">5 videos per instance (Pass@5 evaluation)</text>
+  
+  <!-- Evaluation Methods -->
+  <rect x="50" y="500" width="250" height="80" rx="8" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="175" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#689f38">Mask-based Evaluation</text>
+  <text x="175" y="535" text-anchor="middle" font-size="10" fill="#689f38">For clear object boundaries</text>
+  <text x="175" y="550" text-anchor="middle" font-size="10" fill="#689f38">Pixel-level MSE comparison</text>
+  <text x="175" y="565" text-anchor="middle" font-size="10" fill="#689f38">Used in: Sequence, Analogy, Physics</text>
+  
+  <rect x="350" y="500" width="250" height="80" rx="8" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="475" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2185b">Grid-based Evaluation</text>
+  <text x="475" y="535" text-anchor="middle" font-size="10" fill="#c2185b">For structured layouts</text>
+  <text x="475" y="550" text-anchor="middle" font-size="10" fill="#c2185b">Cell-wise accuracy comparison</text>
+  <text x="475" y="565" text-anchor="middle" font-size="10" fill="#c2185b">Used in: Symmetry, Rule Following</text>
+  
+  <rect x="650" y="500" width="250" height="80" rx="8" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="775" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#3f51b5">VLM-based Evaluation</text>
+  <text x="775" y="535" text-anchor="middle" font-size="10" fill="#3f51b5">For simple visual outputs</text>
+  <text x="775" y="550" text-anchor="middle" font-size="10" fill="#3f51b5">Gemini-2.5-Pro assessment</text>
+  <text x="775" y="565" text-anchor="middle" font-size="10" fill="#3f51b5">Used in: Math, Code, Shapes</text>
+  
+  <!-- Final Results -->
+  <rect x="200" y="620" width="600" height="100" rx="10" fill="#e8f5e8" stroke="#2e7d32" stroke-width="2"/>
+  <text x="500" y="645" text-anchor="middle" font-size="14" font-weight="bold" fill="#2e7d32">Performance Results & Analysis</text>
+  <text x="500" y="665" text-anchor="middle" font-size="12" fill="#2e7d32">Pass@5 scores across four reasoning dimensions</text>
+  <text x="500" y="680" text-anchor="middle" font-size="12" fill="#2e7d32">Human preference alignment: 97.09% accuracy</text>
+  <text x="500" y="695" text-anchor="middle" font-size="12" fill="#2e7d32">Duration effects, hallucination patterns, failure modes</text>
+  <text x="500" y="710" text-anchor="middle" font-size="12" fill="#2e7d32">9,780 total generated videos evaluated</text>
+  
+  <!-- Key Findings Box -->
+  <rect x="50" y="740" width="900" height="50" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="1"/>
+  <text x="500" y="760" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Key Findings: Sora-2 leads in structured reasoning (72%), Hailuo-02 excels in physical dynamics (36.67%)</text>
+  <text x="500" y="775" text-anchor="middle" font-size="12" fill="#f57c00">Video models show distinct reasoning patterns and systematic failure modes</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Longer durations often introduced irrelevant content without improving reasoning">
+                        <div class="quiz-question">1. What unexpected finding emerged regarding video duration in the Chain-of-Frame (CoF) reasoning process?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Longer durations consistently improved reasoning accuracy">Longer durations consistently improved reasoning accuracy</div><div class="quiz-choice" data-value="Longer durations often introduced irrelevant content without improving reasoning">Longer durations often introduced irrelevant content without improving reasoning</div><div class="quiz-choice" data-value="Video duration had no effect on reasoning performance">Video duration had no effect on reasoning performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="VLMs struggled with interpreting grid-structured and densely laid out visual content">
+                        <div class="quiz-question">2. Why did the benchmark avoid relying solely on Vision-Language Models (VLMs) for evaluation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="VLMs were too computationally expensive">VLMs were too computationally expensive</div><div class="quiz-choice" data-value="VLMs struggled with interpreting grid-structured and densely laid out visual content">VLMs struggled with interpreting grid-structured and densely laid out visual content</div><div class="quiz-choice" data-value="VLMs could not process video content">VLMs could not process video content</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Structured Problem-Solving (72% vs average ~16%)">
+                        <div class="quiz-question">3. Among the four reasoning dimensions tested, which showed the highest performance gap between top-performing Sora-2 and other models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Structured Problem-Solving (72% vs average ~16%)">Structured Problem-Solving (72% vs average ~16%)</div><div class="quiz-choice" data-value="Physical Dynamics (26.67% vs average ~32%)">Physical Dynamics (26.67% vs average ~32%)</div><div class="quiz-choice" data-value="Spatial Cognition (36.76% vs average ~17%)">Spatial Cognition (36.76% vs average ~17%)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Video-as-Answer: Predict and Generate Next Video Event with Joint-GRPO</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.16669" target="_blank">http://arxiv.org/pdf/2511.16669</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Video-Next-Event Prediction (VNEP), using video generation as an answer modality for predicting future events in video understanding and AI reasoning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on Next-Event Prediction (NEP) which generates textual descriptions of future events; introduces a novel paradigm of using generated videos instead of text to demonstrate predicted events.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The limitation of text-only answers in conveying complex physical actions and procedures, requiring a solution that can provide more intuitive and customized visual demonstrations.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Proposes VANS model using Joint-GRPO (Group Relative Policy Optimization) to align a Vision-Language Model with a Video Diffusion Model through reinforcement learning, trained on their newly created VANS-Data-100K dataset.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves state-of-the-art performance in both event prediction accuracy and video generation quality, with significant improvements in ROUGE-L scores (0.3631), CLIP-V scores (0.8021), and reduced FVD (78.32) compared to baseline methods.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Video-as-Answer: Predict and Generate Next Video Event with Joint-GRPO</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    VANS: Video-as-Answer Next Video Event Prediction Workflow
+  </text>
+  
+  <!-- Data Preparation Section -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="150" y="85" text-anchor="middle" font-weight="bold" font-size="12" fill="#2c3e50">Data Preparation</text>
+  <text x="150" y="105" text-anchor="middle" font-size="10" fill="#34495e">Raw Data Collection</text>
+  <text x="150" y="120" text-anchor="middle" font-size="10" fill="#34495e">Shot Split & Crop</text>
+  <text x="150" y="135" text-anchor="middle" font-size="10" fill="#34495e">Clip Selection</text>
+  <text x="150" y="150" text-anchor="middle" font-size="10" fill="#34495e">QA Pair Generation</text>
+  <text x="150" y="165" text-anchor="middle" font-size="10" font-weight="bold" fill="#e74c3c">VANS-Data-100K</text>
+  
+  <!-- Model Architecture Section -->
+  <rect x="300" y="60" width="180" height="120" rx="10" fill="#fff2e8" stroke="#f39c12" stroke-width="2"/>
+  <text x="390" y="85" text-anchor="middle" font-weight="bold" font-size="12" fill="#2c3e50">Model Architecture</text>
+  <text x="390" y="105" text-anchor="middle" font-size="10" fill="#34495e">VLM: Qwen2.5-VL-3B</text>
+  <text x="390" y="120" text-anchor="middle" font-size="10" fill="#34495e">VDM: Wan-2.1-1.3B</text>
+  <text x="390" y="135" text-anchor="middle" font-size="10" fill="#34495e">ViT + VAE Encoders</text>
+  <text x="390" y="150" text-anchor="middle" font-size="10" fill="#34495e">Cross-modal Conditioning</text>
+  
+  <!-- Training Pipeline -->
+  <rect x="50" y="220" width="900" height="450" rx="10" fill="#f4f4f4" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="500" y="245" text-anchor="middle" font-weight="bold" font-size="14" fill="#2c3e50">Joint-GRPO Training Pipeline</text>
+  
+  <!-- SFT Stage -->
+  <rect x="80" y="270" width="150" height="80" rx="8" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <text x="155" y="295" text-anchor="middle" font-weight="bold" font-size="11" fill="#2c3e50">Supervised Fine-Tuning</text>
+  <text x="155" y="310" text-anchor="middle" font-size="9" fill="#34495e">VLM: 10K steps</text>
+  <text x="155" y="325" text-anchor="middle" font-size="9" fill="#34495e">VDM: 20K steps</text>
+  <text x="155" y="340" text-anchor="middle" font-size="9" fill="#34495e">Learning Rate: 5e-5</text>
+  
+  <!-- Stage 1: VLM Tuning -->
+  <rect x="280" y="270" width="200" height="140" rx="8" fill="#ffe6cc" stroke="#d79b00" stroke-width="2"/>
+  <text x="380" y="295" text-anchor="middle" font-weight="bold" font-size="11" fill="#2c3e50">Stage 1: VLM Tuning</text>
+  <text x="380" y="315" text-anchor="middle" font-size="9" fill="#34495e">Visualization-Friendly</text>
+  <text x="380" y="330" text-anchor="middle" font-size="9" fill="#34495e">Caption Generation</text>
+  
+  <!-- Reward Components Stage 1 -->
+  <rect x="290" y="345" width="60" height="50" rx="5" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+  <text x="320" y="360" text-anchor="middle" font-size="8" fill="#2c3e50">Format</text>
+  <text x="320" y="372" text-anchor="middle" font-size="8" fill="#2c3e50">Reward</text>
+  <text x="320" y="384" text-anchor="middle" font-size="8" fill="#e74c3c">rf</text>
+  
+  <rect x="360" y="345" width="60" height="50" rx="5" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+  <text x="390" y="360" text-anchor="middle" font-size="8" fill="#2c3e50">Text</text>
+  <text x="390" y="372" text-anchor="middle" font-size="8" fill="#2c3e50">Fidelity</text>
+  <text x="390" y="384" text-anchor="middle" font-size="8" fill="#e74c3c">rt1</text>
+  
+  <rect x="430" y="345" width="60" height="50" rx="5" fill="#fff2cc" stroke="#d6b656" stroke-width="1"/>
+  <text x="460" y="360" text-anchor="middle" font-size="8" fill="#2c3e50">Video</text>
+  <text x="460" y="372" text-anchor="middle" font-size="8" fill="#2c3e50">Fidelity</text>
+  <text x="460" y="384" text-anchor="middle" font-size="8" fill="#e74c3c">rv1</text>
+  
+  <!-- Stage 2: VDM Adaptation -->
+  <rect x="530" y="270" width="200" height="140" rx="8" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
+  <text x="630" y="295" text-anchor="middle" font-weight="bold" font-size="11" fill="#2c3e50">Stage 2: VDM Adaptation</text>
+  <text x="630" y="315" text-anchor="middle" font-size="9" fill="#34495e">Context-Faithful</text>
+  <text x="630" y="330" text-anchor="middle" font-size="9" fill="#34495e">Video Generation</text>
+  
+  <!-- Reward Components Stage 2 -->
+  <rect x="550" y="345" width="70" height="50" rx="5" fill="#ffe6e6" stroke="#d79b9b" stroke-width="1"/>
+  <text x="585" y="360" text-anchor="middle" font-size="8" fill="#2c3e50">Video</text>
+  <text x="585" y="372" text-anchor="middle" font-size="8" fill="#2c3e50">Fidelity</text>
+  <text x="585" y="384" text-anchor="middle" font-size="8" fill="#e74c3c">rv2</text>
+  
+  <rect x="630" y="345" width="80" height="50" rx="5" fill="#ffe6e6" stroke="#d79b9b" stroke-width="1"/>
+  <text x="670" y="360" text-anchor="middle" font-size="8" fill="#2c3e50">Semantic</text>
+  <text x="670" y="372" text-anchor="middle" font-size="8" fill="#2c3e50">Alignment</text>
+  <text x="670" y="384" text-anchor="middle" font-size="8" fill="#e74c3c">rc2</text>
+  
+  <!-- Evaluation Section -->
+  <rect x="780" y="270" width="150" height="140" rx="8" fill="#e1d5e7" stroke="#9673a6" stroke-width="2"/>
+  <text x="855" y="295" text-anchor="middle" font-weight="bold" font-size="11" fill="#2c3e50">Evaluation Metrics</text>
+  <text x="855" y="315" text-anchor="middle" font-size="9" fill="#34495e">Text: BLEU, ROUGE-L</text>
+  <text x="855" y="330" text-anchor="middle" font-size="9" fill="#34495e">Video: FVD, CLIP-V</text>
+  <text x="855" y="345" text-anchor="middle" font-size="9" fill="#34495e">Semantic: CLIP-T</text>
+  <text x="855" y="370" text-anchor="middle" font-weight="bold" font-size="10" fill="#8e44ad">Procedural &</text>
+  <text x="855" y="385" text-anchor="middle" font-weight="bold" font-size="10" fill="#8e44ad">Predictive Tasks</text>
+  
+  <!-- Input/Output Flow -->
+  <rect x="100" y="460" width="800" height="80" rx="8" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="500" y="485" text-anchor="middle" font-weight="bold" font-size="12" fill="#2c3e50">Input/Output Flow</text>
+  
+  <!-- Input -->
+  <circle cx="150" cy="515" r="25" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="150" y="520" text-anchor="middle" font-size="9" fill="white">Input Video</text>
+  <text x="150" y="530" text-anchor="middle" font-size="8" fill="white">+ Question</text>
+  
+  <!-- VLM Processing -->
+  <rect x="220" y="495" width="80" height="40" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="260" y="510" text-anchor="middle" font-size="9" fill="white">VLM</text>
+  <text x="260" y="522" text-anchor="middle" font-size="8" fill="white">Reasoning</text>
+  
+  <!-- Caption -->
+  <ellipse cx="350" cy="515" rx="30" ry="15" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="350" y="520" text-anchor="middle" font-size="9" fill="white">Caption</text>
+  
+  <!-- VDM Processing -->
+  <rect x="420" y="495" width="80" height="40" rx="5" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="460" y="510" text-anchor="middle" font-size="9" fill="white">VDM</text>
+  <text x="460" y="522" text-anchor="middle" font-size="8" fill="white">Generation</text>
+  
+  <!-- Output -->
+  <circle cx="550" cy="515" r="25" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="550" y="520" text-anchor="middle" font-size="9" fill="white">Output</text>
+  <text x="550" y="530" text-anchor="middle" font-size="8" fill="white">Video</text>
+  
+  <!-- Key Innovation Box -->
+  <rect x="650" y="460" width="220" height="80" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="3"/>
+  <text x="760" y="485" text-anchor="middle" font-weight="bold" font-size="12" fill="white">Key Innovation</text>
+  <text x="760" y="505" text-anchor="middle" font-size="10" fill="white">Joint-GRPO bridges</text>
+  <text x="760" y="520" text-anchor="middle" font-size="10" fill="white">semantic-to-visual gap</text>
+  <text x="760" y="535" text-anchor="middle" font-size="10" fill="white">via coordinated RL training</text>
+  
+  <!-- Results Summary -->
+  <rect x="200" y="580" width="600" height="60" rx="8" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="500" y="605" text-anchor="middle" font-weight="bold" font-size="12" fill="white">Results: SOTA Performance on VNEP</text>
+  <text x="500" y="625" text-anchor="middle" font-size="10" fill="#ecf0f1">Procedural: ROUGE-L 0.3631 | Predictive: CLIP-V 0.7872</text>
+  
+  <!-- Flow connections with colored lines -->
+  <line x1="250" y1="120" x2="300" y2="120" stroke="#3498db" stroke-width="3"/>
+  <line x1="155" y1="350" x2="280" y2="320" stroke="#f39c12" stroke-width="3"/>
+  <line x1="480" y1="340" x2="530" y2="340" stroke="#e74c3c" stroke-width="3"/>
+  <line x1="730" y1="340" x2="780" y2="340" stroke="#9b59b6" stroke-width="3"/>
+  
+  <!-- Process flow connections -->
+  <line x1="175" y1="515" x2="220" y2="515" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="300" y1="515" x2="320" y2="515" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="380" y1="515" x2="420" y2="515" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="500" y1="515" x2="525" y2="515" stroke="#2c3e50" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It generates video demonstrations instead of text descriptions">
+                        <div class="quiz-question">1. What is the main innovation of VNEP compared to traditional Next-Event Prediction (NEP)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses more advanced language models for prediction">It uses more advanced language models for prediction</div><div class="quiz-choice" data-value="It generates video demonstrations instead of text descriptions">It generates video demonstrations instead of text descriptions</div><div class="quiz-choice" data-value="It processes videos at a higher resolution">It processes videos at a higher resolution</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Aligning the semantic understanding of VLM with visual generation of VDM">
+                        <div class="quiz-question">2. What is the key challenge addressed by the Joint-GRPO strategy in the VANS model?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Reducing computational costs of video generation">Reducing computational costs of video generation</div><div class="quiz-choice" data-value="Improving video resolution quality">Improving video resolution quality</div><div class="quiz-choice" data-value="Aligning the semantic understanding of VLM with visual generation of VDM">Aligning the semantic understanding of VLM with visual generation of VDM</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="30K : 70K">
+                        <div class="quiz-question">3. The VANS-Data-100K dataset contains what ratio of procedural to predictive samples?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="50K : 50K">50K : 50K</div><div class="quiz-choice" data-value="30K : 70K">30K : 70K</div><div class="quiz-choice" data-value="70K : 30K">70K : 30K</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>What Does It Take to Be a Good AI Research Agent? Studying the Role of Ideation Diversity</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.15593" target="_blank">http://arxiv.org/pdf/2511.15593</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Study of ideation diversity in AI research agents' performance on machine learning tasks using the MLE-bench benchmark.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work on AI research agents and automated machine learning tools, proposes new methods to quantify and control agents' ideation diversity.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Understanding what factors drive success in AI research agents' performance, specifically focusing on whether ideation diversity is a key bottleneck.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Analyzed 11,000 agent trajectories across different models and scaffolds, measured diversity using Shannon entropy of model architectures, and conducted controlled experiments by modifying prompts to affect diversity levels.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Found strong correlation between ideation diversity and agent performance, with higher-diversity agents achieving better results across multiple evaluation metrics, demonstrating that ideation diversity is indeed a key performance factor.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>What Does It Take to Be a Good AI Research Agent? Studying the Role of Ideation Diversity</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    AI Research Agent Ideation Diversity Study Workflow
+  </text>
+  
+  <!-- Phase 1: Data Collection -->
+  <rect x="50" y="80" width="300" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="200" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">
+    Large-Scale Data Collection
+  </text>
+  <text x="200" y="125" text-anchor="middle" font-size="12" fill="#333">
+    11,000 agent trajectories
+  </text>
+  <text x="200" y="140" text-anchor="middle" font-size="12" fill="#333">
+    6 LLM backbones × 2 scaffolds
+  </text>
+  <text x="200" y="155" text-anchor="middle" font-size="12" fill="#333">
+    75 MLE-bench tasks
+  </text>
+  <text x="200" y="170" text-anchor="middle" font-size="12" fill="#333">
+    264,000 GPU hours
+  </text>
+  <text x="200" y="185" text-anchor="middle" font-size="12" fill="#333">
+    10-20 random seeds
+  </text>
+  
+  <!-- Phase 2: Diversity Measurement -->
+  <rect x="400" y="80" width="300" height="120" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="550" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">
+    Ideation Diversity Measurement
+  </text>
+  <text x="550" y="125" text-anchor="middle" font-size="12" fill="#333">
+    Extract ML architectures from
+  </text>
+  <text x="550" y="140" text-anchor="middle" font-size="12" fill="#333">
+    initial 5 draft ideas
+  </text>
+  <text x="550" y="155" text-anchor="middle" font-size="12" fill="#333">
+    Calculate Shannon Entropy
+  </text>
+  <text x="550" y="170" text-anchor="middle" font-size="12" fill="#333">
+    on architecture distribution
+  </text>
+  <text x="550" y="185" text-anchor="middle" font-size="12" fill="#333">
+    Tree-level diversity metric
+  </text>
+  
+  <!-- Phase 3: Correlation Analysis -->
+  <rect x="750" y="80" width="300" height="120" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="900" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#7b1fa2">
+    Correlation Analysis
+  </text>
+  <text x="900" y="125" text-anchor="middle" font-size="12" fill="#333">
+    Diversity vs Performance
+  </text>
+  <text x="900" y="140" text-anchor="middle" font-size="12" fill="#333">
+    Pearson r = 0.57 (p &lt; 0.001)
+  </text>
+  <text x="900" y="155" text-anchor="middle" font-size="12" fill="#333">
+    Medal rate correlation
+  </text>
+  <text x="900" y="170" text-anchor="middle" font-size="12" fill="#333">
+    High-performing models show
+  </text>
+  <text x="900" y="185" text-anchor="middle" font-size="12" fill="#333">
+    higher diversity
+  </text>
+  
+  <!-- Phase 4: Controlled Experiment Setup -->
+  <rect x="50" y="250" width="300" height="120" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="200" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">
+    Controlled Experiment Setup
+  </text>
+  <text x="200" y="295" text-anchor="middle" font-size="12" fill="#333">
+    Baseline vs Low Diversity
+  </text>
+  <text x="200" y="310" text-anchor="middle" font-size="12" fill="#333">
+    Modify system prompts to
+  </text>
+  <text x="200" y="325" text-anchor="middle" font-size="12" fill="#333">
+    reduce diversity mechanisms
+  </text>
+  <text x="200" y="340" text-anchor="middle" font-size="12" fill="#333">
+    22 MLE-bench lite tasks
+  </text>
+  <text x="200" y="355" text-anchor="middle" font-size="12" fill="#333">
+    2 scaffolds × 10 seeds
+  </text>
+  
+  <!-- Phase 5: Diversity Control Methods -->
+  <rect x="400" y="250" width="300" height="120" rx="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="550" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#c2185b">
+    Diversity Control Methods
+  </text>
+  <text x="550" y="295" text-anchor="middle" font-size="12" fill="#333">
+    Remove: Sibling memory diversity
+  </text>
+  <text x="550" y="310" text-anchor="middle" font-size="12" fill="#333">
+    Remove: Prompt-adaptive complexity
+  </text>
+  <text x="550" y="325" text-anchor="middle" font-size="12" fill="#333">
+    Remove: Diversity mentions
+  </text>
+  <text x="550" y="340" text-anchor="middle" font-size="12" fill="#333">
+    Prompt for similar ideas
+  </text>
+  <text x="550" y="355" text-anchor="middle" font-size="12" fill="#333">
+    Temperature experiments
+  </text>
+  
+  <!-- Phase 6: Causal Validation -->
+  <rect x="750" y="250" width="300" height="120" rx="10" fill="#fff8e1" stroke="#fbc02d" stroke-width="2"/>
+  <text x="900" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#fbc02d">
+    Causal Validation Results
+  </text>
+  <text x="900" y="295" text-anchor="middle" font-size="12" fill="#333">
+    6.9% decrease (AIRAGreedy)
+  </text>
+  <text x="900" y="310" text-anchor="middle" font-size="12" fill="#333">
+    8.4% decrease (AIRAMCTS)
+  </text>
+  <text x="900" y="325" text-anchor="middle" font-size="12" fill="#333">
+    in medal rates
+  </text>
+  <text x="900" y="340" text-anchor="middle" font-size="12" fill="#333">
+    Reduced architecture usage:
+  </text>
+  <text x="900" y="355" text-anchor="middle" font-size="12" fill="#333">
+    40% → 70% use ≤2 architectures
+  </text>
+  
+  <!-- Phase 7: Alternative Metrics -->
+  <rect x="50" y="420" width="300" height="120" rx="10" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="200" y="445" text-anchor="middle" font-size="14" font-weight="bold" fill="#0277bd">
+    Alternative Metrics Validation
+  </text>
+  <text x="200" y="465" text-anchor="middle" font-size="12" fill="#333">
+    Valid Submission Rate
+  </text>
+  <text x="200" y="480" text-anchor="middle" font-size="12" fill="#333">
+    Average Normalized Score
+  </text>
+  <text x="200" y="495" text-anchor="middle" font-size="12" fill="#333">
+    Percentile Rankings
+  </text>
+  <text x="200" y="510" text-anchor="middle" font-size="12" fill="#333">
+    ELO-based Rankings
+  </text>
+  <text x="200" y="525" text-anchor="middle" font-size="12" fill="#333">
+    Higher correlations observed
+  </text>
+  
+  <!-- Phase 8: Implementation Analysis -->
+  <rect x="400" y="420" width="300" height="120" rx="10" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="550" y="445" text-anchor="middle" font-size="14" font-weight="bold" fill="#689f38">
+    Implementation Bottleneck
+  </text>
+  <text x="550" y="465" text-anchor="middle" font-size="12" fill="#333">
+    Diversity helps agents design
+  </text>
+  <text x="550" y="480" text-anchor="middle" font-size="12" fill="#333">
+    implementable solutions
+  </text>
+  <text x="550" y="495" text-anchor="middle" font-size="12" fill="#333">
+    Execution time correlation
+  </text>
+  <text x="550" y="510" text-anchor="middle" font-size="12" fill="#333">
+    with performance
+  </text>
+  <text x="550" y="525" text-anchor="middle" font-size="12" fill="#333">
+    De-risks implementation failures
+  </text>
+  
+  <!-- Phase 9: Key Findings -->
+  <rect x="750" y="420" width="300" height="120" rx="10" fill="#faf2ff" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="900" y="445" text-anchor="middle" font-size="14" font-weight="bold" fill="#6a1b9a">
+    Key Findings
+  </text>
+  <text x="900" y="465" text-anchor="middle" font-size="12" fill="#333">
+    Scaffold design impacts diversity
+  </text>
+  <text x="900" y="480" text-anchor="middle" font-size="12" fill="#333">
+    Higher diversity → Better performance
+  </text>
+  <text x="900" y="495" text-anchor="middle" font-size="12" fill="#333">
+    Causal relationship established
+  </text>
+  <text x="900" y="510" text-anchor="middle" font-size="12" fill="#333">
+    Robust across metrics
+  </text>
+  <text x="900" y="525" text-anchor="middle" font-size="12" fill="#333">
+    Implementation bottleneck identified
+  </text>
+  
+  <!-- Experimental Components -->
+  <rect x="100" y="600" width="200" height="80" rx="8" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="200" y="625" text-anchor="middle" font-size="13" font-weight="bold" fill="#d32f2f">
+    LLM Backbones
+  </text>
+  <text x="200" y="645" text-anchor="middle" font-size="11" fill="#333">
+    o3, GPT-OSS (20B/120B)
+  </text>
+  <text x="200" y="660" text-anchor="middle" font-size="11" fill="#333">
+    Llama Maverick, Devstral, CWM
+  </text>
+  <text x="200" y="675" text-anchor="middle" font-size="11" fill="#333">
+    DeepSeek-R1
+  </text>
+  
+  <rect x="350" y="600" width="200" height="80" rx="8" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="450" y="625" text-anchor="middle" font-size="13" font-weight="bold" fill="#3f51b5">
+    Agentic Scaffolds
+  </text>
+  <text x="450" y="645" text-anchor="middle" font-size="11" fill="#333">
+    AIDE (Greedy Tree Search)
+  </text>
+  <text x="450" y="660" text-anchor="middle" font-size="11" fill="#333">
+    AIRA Greedy
+  </text>
+  <text x="450" y="675" text-anchor="middle" font-size="11" fill="#333">
+    AIRA MCTS
+  </text>
+  
+  <rect x="600" y="600" width="200" height="80" rx="8" fill="#e0f2f1" stroke="#00796b" stroke-width="2"/>
+  <text x="700" y="625" text-anchor="middle" font-size="13" font-weight="bold" fill="#00796b">
+    Evaluation Framework
+  </text>
+  <text x="700" y="645" text-anchor="middle" font-size="11" fill="#333">
+    MLE-bench (75 tasks)
+  </text>
+  <text x="700" y="660" text-anchor="middle" font-size="11" fill="#333">
+    MLE-bench lite (22 tasks)
+  </text>
+  <text x="700" y="675" text-anchor="middle" font-size="11" fill="#333">
+    Kaggle medal system
+  </text>
+  
+  <rect x="850" y="600" width="200" height="80" rx="8" fill="#fff3e0" stroke="#ef6c00" stroke-width="2"/>
+  <text x="950" y="625" text-anchor="middle" font-size="13" font-weight="bold" fill="#ef6c00">
+    Architecture Types
+  </text>
+  <text x="950" y="645" text-anchor="middle" font-size="11" fill="#333">
+    CNN, Transformer, GBDT
+  </text>
+  <text x="950" y="660" text-anchor="middle" font-size="11" fill="#333">
+    EfficientNet, ResNet, ViT
+  </text>
+  <text x="950" y="675" text-anchor="middle" font-size="11" fill="#333">
+    LightGBM, ConvNeXt
+  </text>
+  
+  <!-- Results Summary -->
+  <rect x="200" y="720" width="800" height="100" rx="10" fill="#f5f5f5" stroke="#424242" stroke-width="2"/>
+  <text x="600" y="745" text-anchor="middle" font-size="16" font-weight="bold" fill="#424242">
+    Main Research Conclusion
+  </text>
+  <text x="600" y="770" text-anchor="middle" font-size="14" fill="#333">
+    Ideation diversity is a key bottleneck in AI research agent performance
+  </text>
+  <text x="600" y="790" text-anchor="middle" font-size="14" fill="#333">
+    Higher diversity in initial ML architecture ideas leads to better task performance
+  </text>
+  <text x="600" y="810" text-anchor="middle" font-size="14" fill="#333">
+    Causal relationship confirmed through controlled experimentation
+  </text>
+  
+  <!-- Flow connections with colored lines -->
+  <line x1="350" y1="140" x2="400" y2="140" stroke="#666" stroke-width="2"/>
+  <line x1="700" y1="140" x2="750" y2="140" stroke="#666" stroke-width="2"/>
+  <line x1="200" y1="200" x2="200" y2="250" stroke="#666" stroke-width="2"/>
+  <line x1="350" y1="310" x2="400" y2="310" stroke="#666" stroke-width="2"/>
+  <line x1="700" y1="310" x2="750" y2="310" stroke="#666" stroke-width="2"/>
+  <line x1="200" y1="370" x2="200" y2="420" stroke="#666" stroke-width="2"/>
+  <line x1="550" y1="370" x2="550" y2="420" stroke="#666" stroke-width="2"/>
+  <line x1="900" y1="370" x2="900" y2="420" stroke="#666" stroke-width="2"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="By calculating Shannon entropy on the distribution of model architectures">
+                        <div class="quiz-question">1. How did the researchers measure ideation diversity in AI research agents?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By counting the number of unique keywords in agent outputs">By counting the number of unique keywords in agent outputs</div><div class="quiz-choice" data-value="By calculating Shannon entropy on the distribution of model architectures">By calculating Shannon entropy on the distribution of model architectures</div><div class="quiz-choice" data-value="By measuring the time taken to generate different ideas">By measuring the time taken to generate different ideas</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The agents showed significant decrease in performance across multiple metrics">
+                        <div class="quiz-question">2. What happened when the researchers deliberately reduced ideation diversity in their controlled experiment?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The agents completed tasks faster but with lower accuracy">The agents completed tasks faster but with lower accuracy</div><div class="quiz-choice" data-value="The agents' performance improved slightly">The agents' performance improved slightly</div><div class="quiz-choice" data-value="The agents showed significant decrease in performance across multiple metrics">The agents showed significant decrease in performance across multiple metrics</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="AIRAGreedy, with a more balanced distribution of different architectures">
+                        <div class="quiz-question">3. Which of the following agent scaffolds demonstrated higher ideation diversity in the study?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="AIDE, with 70% of initial drafts using just GBDT and CNN">AIDE, with 70% of initial drafts using just GBDT and CNN</div><div class="quiz-choice" data-value="AIRAGreedy, with a more balanced distribution of different architectures">AIRAGreedy, with a more balanced distribution of different architectures</div><div class="quiz-choice" data-value="Both scaffolds showed equal levels of diversity">Both scaffolds showed equal levels of diversity</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
