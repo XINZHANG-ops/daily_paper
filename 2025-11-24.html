@@ -1,0 +1,1102 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-11-24 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-11-24 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Agent0: Unleashing Self-Evolving Agents from Zero Data via Tool-Integrated Reasoning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.16043" target="_blank">http://arxiv.org/pdf/2511.16043</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on developing self-evolving AI agents using Large Language Models (LLMs) without human-curated training data, in the domain of artificial intelligence and machine learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous self-play and self-challenging approaches for LLMs, it proposes a novel framework called Agent0 that introduces tool integration and multi-step co-evolution between two specialized agents.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the limitation of LLM agents requiring massive human-curated datasets for training, which creates scalability bottlenecks and tethers AI development to human knowledge boundaries.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses two co-evolving agents initialized from the same base LLM: a curriculum agent that generates increasingly challenging tasks and an executor agent that learns to solve them, with integrated tools and multi-turn interactions supported by Group Relative Policy Optimization (GRPO).</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Agent0 improved mathematical reasoning performance by 18% and general reasoning performance by 24% on the Qwen3-8B-Base model across ten benchmarks, demonstrating substantial capability gains through the co-evolutionary process.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Agent0: Unleashing Self-Evolving Agents from Zero Data via Tool-Integrated Reasoning</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Agent0: Self-Evolving Framework</text>
+  
+  <!-- Base Model Initialization -->
+  <rect x="400" y="60" width="200" height="40" rx="20" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="500" y="85" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Base LLM (πbase)</text>
+  
+  <!-- Agent Initialization -->
+  <rect x="200" y="140" width="180" height="50" rx="15" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="290" y="160" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Curriculum Agent</text>
+  <text x="290" y="175" text-anchor="middle" font-size="12" fill="white">(πθ)</text>
+  
+  <rect x="620" y="140" width="180" height="50" rx="15" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="710" y="160" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Executor Agent</text>
+  <text x="710" y="175" text-anchor="middle" font-size="12" fill="white">(πφ)</text>
+  
+  <!-- Co-Evolution Loop -->
+  <ellipse cx="500" cy="250" rx="450" ry="30" fill="#f39c12" stroke="#e67e22" stroke-width="3" opacity="0.3"/>
+  <text x="500" y="255" text-anchor="middle" font-size="16" fill="#d35400" font-weight="bold">Co-Evolutionary Loop</text>
+  
+  <!-- Curriculum Evolution Phase -->
+  <rect x="50" y="320" width="400" height="180" rx="10" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="250" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#34495e">Curriculum Evolution</text>
+  
+  <!-- Task Generation -->
+  <rect x="70" y="360" width="140" height="30" rx="5" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
+  <text x="140" y="380" text-anchor="middle" font-size="10" fill="white">Task Generation</text>
+  
+  <!-- Reward Components -->
+  <rect x="70" y="400" width="100" height="25" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+  <text x="120" y="417" text-anchor="middle" font-size="9" fill="#8b4513">Uncertainty Runc</text>
+  
+  <rect x="180" y="400" width="100" height="25" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+  <text x="230" y="417" text-anchor="middle" font-size="9" fill="#8b4513">Tool Use Rtool</text>
+  
+  <rect x="290" y="400" width="100" height="25" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+  <text x="340" y="417" text-anchor="middle" font-size="9" fill="#8b4513">Repetition Rrep</text>
+  
+  <!-- GRPO Update -->
+  <rect x="150" y="440" width="100" height="30" rx="5" fill="#e67e22" stroke="#d35400" stroke-width="1"/>
+  <text x="200" y="460" text-anchor="middle" font-size="10" fill="white">GRPO Update</text>
+  
+  <!-- Executor Evolution Phase -->
+  <rect x="550" y="320" width="400" height="180" rx="10" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/>
+  <text x="750" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#34495e">Executor Evolution</text>
+  
+  <!-- Dataset Filtering -->
+  <rect x="570" y="360" width="120" height="30" rx="5" fill="#16a085" stroke="#138d75" stroke-width="1"/>
+  <text x="630" y="380" text-anchor="middle" font-size="10" fill="white">Dataset Filtering</text>
+  
+  <!-- Multi-turn Rollout -->
+  <rect x="700" y="360" width="120" height="30" rx="5" fill="#16a085" stroke="#138d75" stroke-width="1"/>
+  <text x="760" y="380" text-anchor="middle" font-size="10" fill="white">Multi-turn Rollout</text>
+  
+  <!-- Tool Integration -->
+  <rect x="830" y="360" width="100" height="30" rx="5" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+  <text x="880" y="380" text-anchor="middle" font-size="10" fill="white">Tool Integration</text>
+  
+  <!-- ADPO -->
+  <rect x="650" y="440" width="140" height="30" rx="5" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+  <text x="720" y="460" text-anchor="middle" font-size="10" fill="white">ADPO Update</text>
+  
+  <!-- Tool Component -->
+  <rect x="400" y="550" width="200" height="60" rx="10" fill="#2c3e50" stroke="#1b2631" stroke-width="2"/>
+  <text x="500" y="570" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Code Interpreter</text>
+  <text x="500" y="590" text-anchor="middle" font-size="10" fill="#bdc3c7">External Tool</text>
+  
+  <!-- Virtuous Cycle Indicator -->
+  <path d="M 450 320 Q 500 280 550 320" stroke="#e74c3c" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+  <text x="500" y="295" text-anchor="middle" font-size="12" fill="#e74c3c" font-weight="bold">Virtuous Cycle</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="150" y="650" width="700" height="120" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="500" y="675" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Performance Improvements</text>
+  
+  <!-- Math Results -->
+  <rect x="200" y="690" width="150" height="30" rx="5" fill="#27ae60" stroke="#229954" stroke-width="1"/>
+  <text x="275" y="710" text-anchor="middle" font-size="11" fill="white">Math: +18%</text>
+  
+  <!-- General Results -->
+  <rect x="370" y="690" width="150" height="30" rx="5" fill="#27ae60" stroke="#229954" stroke-width="1"/>
+  <text x="445" y="710" text-anchor="middle" font-size="11" fill="white">General: +24%</text>
+  
+  <!-- Zero Data -->
+  <rect x="540" y="690" width="150" height="30" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+  <text x="615" y="710" text-anchor="middle" font-size="11" fill="white">Zero Human Data</text>
+  
+  <!-- Iteration Indicator -->
+  <circle cx="100" cy="400" r="20" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="100" y="407" text-anchor="middle" font-size="12" fill="white" font-weight="bold">t</text>
+  
+  <circle cx="900" cy="400" r="20" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="900" y="407" text-anchor="middle" font-size="12" fill="white" font-weight="bold">t+1</text>
+  
+  <!-- Connection Lines -->
+  <line x1="500" y1="100" x2="290" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="500" y1="100" x2="710" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  
+  <line x1="500" y1="610" x2="500" y2="650" stroke="#7f8c8d" stroke-width="2"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It combines tool integration with multi-round co-evolution between specialized agents">
+                        <div class="quiz-question">1. What is the main innovation of Agent0 compared to previous self-evolving frameworks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses human-curated datasets for training">It uses human-curated datasets for training</div><div class="quiz-choice" data-value="It combines tool integration with multi-round co-evolution between specialized agents">It combines tool integration with multi-round co-evolution between specialized agents</div><div class="quiz-choice" data-value="It relies on single-round interactions between identical agents">It relies on single-round interactions between identical agents</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="By using executor's uncertainty and tool-use frequency as reward signals">
+                        <div class="quiz-question">2. How does the curriculum agent determine the quality of its generated tasks?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="By measuring how many tasks the executor agent completes successfully">By measuring how many tasks the executor agent completes successfully</div><div class="quiz-choice" data-value="By checking if tasks match predefined templates">By checking if tasks match predefined templates</div><div class="quiz-choice" data-value="By using executor's uncertainty and tool-use frequency as reward signals">By using executor's uncertainty and tool-use frequency as reward signals</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="24% improvement in general reasoning">
+                        <div class="quiz-question">3. What was the most significant performance improvement achieved by Agent0 in the experiments?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="18% improvement in general reasoning">18% improvement in general reasoning</div><div class="quiz-choice" data-value="24% improvement in mathematical reasoning">24% improvement in mathematical reasoning</div><div class="quiz-choice" data-value="24% improvement in general reasoning">24% improvement in general reasoning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>OpenMMReasoner: Pushing the Frontiers for Multimodal Reasoning with an Open and General Recipe</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-20</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.16334" target="_blank">http://arxiv.org/pdf/2511.16334</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Large multimodal reasoning models (LMRMs) and training recipes for combining supervised fine-tuning (SFT) and reinforcement learning (RL) to enhance visual-language reasoning capabilities.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on recent advances in reinforcement learning with verifiable rewards (RLVR) for language models, proposes a novel transparent and reproducible training recipe combining SFT and RL specifically for multimodal reasoning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The lack of transparent, reproducible training pipelines and data curation processes for building multimodal reasoning models, which limits understanding of how these models are developed.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Developed a two-stage recipe: 1) SFT stage using 874K high-quality samples with step-by-step validation, and 2) RL stage using 74K samples across diverse domains with carefully designed reward functions and optimization strategies.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieved 11.6% improvement over Qwen2.5-VL-7B-Instruct baseline across nine multimodal reasoning benchmarks, with particularly strong performance on benchmarks like MathVista (79.5%), WeMath (79.0%), and LogicVista (72.6%).</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>OpenMMReasoner: Pushing the Frontiers for Multimodal Reasoning with an Open and General Recipe</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">OpenMMReasoner: Multimodal Reasoning Training Recipe</text>
+  
+  <!-- SFT Pipeline -->
+  <rect x="50" y="60" width="400" height="320" fill="#e8f4fd" stroke="#3498db" stroke-width="2" rx="10"/>
+  <text x="250" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Supervised Fine-tuning (SFT) Pipeline</text>
+  
+  <!-- Data Sources -->
+  <rect x="70" y="100" width="120" height="60" fill="#fff3cd" stroke="#f39c12" stroke-width="1" rx="5"/>
+  <text x="130" y="125" text-anchor="middle" font-size="10" fill="#d68910">Data Sources</text>
+  <text x="130" y="140" text-anchor="middle" font-size="9" fill="#d68910">103k raw</text>
+  <text x="130" y="150" text-anchor="middle" font-size="9" fill="#d68910">questions</text>
+  
+  <!-- Teacher Model Selection -->
+  <rect x="210" y="100" width="120" height="60" fill="#d4edda" stroke="#28a745" stroke-width="1" rx="5"/>
+  <text x="270" y="120" text-anchor="middle" font-size="10" fill="#155724">Teacher Model</text>
+  <text x="270" y="135" text-anchor="middle" font-size="10" fill="#155724">Selection</text>
+  <text x="270" y="150" text-anchor="middle" font-size="9" fill="#155724">Qwen3-VL-235B</text>
+  
+  <!-- Data Distillation -->
+  <rect x="70" y="180" width="120" height="60" fill="#f8d7da" stroke="#dc3545" stroke-width="1" rx="5"/>
+  <text x="130" y="200" text-anchor="middle" font-size="10" fill="#721c24">Data Distillation</text>
+  <text x="130" y="215" text-anchor="middle" font-size="10" fill="#721c24">×8 Sampling</text>
+  <text x="130" y="230" text-anchor="middle" font-size="9" fill="#721c24">583k samples</text>
+  
+  <!-- Answer Verification -->
+  <rect x="210" y="180" width="120" height="60" fill="#d1ecf1" stroke="#17a2b8" stroke-width="1" rx="5"/>
+  <text x="270" y="200" text-anchor="middle" font-size="10" fill="#0c5460">Answer</text>
+  <text x="270" y="215" text-anchor="middle" font-size="10" fill="#0c5460">Verification</text>
+  <text x="270" y="230" text-anchor="middle" font-size="9" fill="#0c5460">Step-by-step</text>
+  
+  <!-- Domain Mixing -->
+  <rect x="70" y="260" width="260" height="60" fill="#e2e3e5" stroke="#6c757d" stroke-width="1" rx="5"/>
+  <text x="200" y="280" text-anchor="middle" font-size="10" fill="#495057">Cross-Domain Mixing</text>
+  <text x="200" y="295" text-anchor="middle" font-size="10" fill="#495057">General VQA + Math VQA + Text QA</text>
+  <text x="200" y="310" text-anchor="middle" font-size="9" fill="#495057">Final 874k SFT Dataset</text>
+  
+  <!-- Cold Start Model -->
+  <rect x="150" y="340" width="100" height="30" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2" rx="5"/>
+  <text x="200" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3436">Cold Start Model</text>
+  
+  <!-- RL Pipeline -->
+  <rect x="550" y="60" width="400" height="320" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" rx="10"/>
+  <text x="750" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#d35400">Reinforcement Learning (RL) Pipeline</text>
+  
+  <!-- RL Data Sources -->
+  <rect x="570" y="100" width="120" height="60" fill="#fff3cd" stroke="#f39c12" stroke-width="1" rx="5"/>
+  <text x="630" y="120" text-anchor="middle" font-size="10" fill="#d68910">RL Data Sources</text>
+  <text x="630" y="135" text-anchor="middle" font-size="10" fill="#d68910">74k samples</text>
+  <text x="630" y="150" text-anchor="middle" font-size="9" fill="#d68910">Multi-domain</text>
+  
+  <!-- Algorithm Selection -->
+  <rect x="710" y="100" width="120" height="60" fill="#d4edda" stroke="#28a745" stroke-width="1" rx="5"/>
+  <text x="770" y="120" text-anchor="middle" font-size="10" fill="#155724">Algorithm</text>
+  <text x="770" y="135" text-anchor="middle" font-size="10" fill="#155724">Selection</text>
+  <text x="770" y="150" text-anchor="middle" font-size="9" fill="#155724">GSPO</text>
+  
+  <!-- Reward Function -->
+  <rect x="570" y="180" width="120" height="60" fill="#f8d7da" stroke="#dc3545" stroke-width="1" rx="5"/>
+  <text x="630" y="200" text-anchor="middle" font-size="10" fill="#721c24">Reward Function</text>
+  <text x="630" y="215" text-anchor="middle" font-size="10" fill="#721c24">R = (1-λ)R_acc</text>
+  <text x="630" y="230" text-anchor="middle" font-size="9" fill="#721c24">+ λR_fmt</text>
+  
+  <!-- Training Strategy -->
+  <rect x="710" y="180" width="120" height="60" fill="#d1ecf1" stroke="#17a2b8" stroke-width="1" rx="5"/>
+  <text x="770" y="200" text-anchor="middle" font-size="10" fill="#0c5460">Training Strategy</text>
+  <text x="770" y="215" text-anchor="middle" font-size="10" fill="#0c5460">×16 Rollout</text>
+  <text x="770" y="230" text-anchor="middle" font-size="9" fill="#0c5460">Temp = 1.0</text>
+  
+  <!-- Optimization -->
+  <rect x="570" y="260" width="260" height="60" fill="#e2e3e5" stroke="#6c757d" stroke-width="1" rx="5"/>
+  <text x="700" y="280" text-anchor="middle" font-size="10" fill="#495057">RL Optimization</text>
+  <text x="700" y="295" text-anchor="middle" font-size="10" fill="#495057">Stability + Efficiency Balance</text>
+  <text x="700" y="310" text-anchor="middle" font-size="9" fill="#495057">Enhanced Reasoning</text>
+  
+  <!-- Final Model -->
+  <rect x="650" y="340" width="100" height="30" fill="#74b9ff" stroke="#0984e3" stroke-width="2" rx="5"/>
+  <text x="700" y="360" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">Final Model</text>
+  
+  <!-- Key Insights -->
+  <rect x="100" y="420" width="800" height="120" fill="#f1f2f6" stroke="#57606f" stroke-width="2" rx="10"/>
+  <text x="500" y="445" text-anchor="middle" font-size="16" font-weight="bold" fill="#2f3542">Key Insights</text>
+  
+  <!-- SFT Insights -->
+  <circle cx="150" cy="470" r="5" fill="#3498db"/>
+  <text x="170" y="475" font-size="11" fill="#2c3e50">Answer diversity enhances reasoning performance</text>
+  
+  <circle cx="150" cy="490" r="5" fill="#e74c3c"/>
+  <text x="170" y="495" font-size="11" fill="#2c3e50">Teacher model selection is crucial for data quality</text>
+  
+  <circle cx="150" cy="510" r="5" fill="#27ae60"/>
+  <text x="170" y="515" font-size="11" fill="#2c3e50">Cross-domain knowledge improves generalization</text>
+  
+  <!-- RL Insights -->
+  <circle cx="550" cy="470" r="5" fill="#f39c12"/>
+  <text x="570" y="475" font-size="11" fill="#2c3e50">GSPO outperforms other RL algorithms</text>
+  
+  <circle cx="550" cy="490" r="5" fill="#9b59b6"/>
+  <text x="570" y="495" font-size="11" fill="#2c3e50">Token efficiency is crucial for practical deployment</text>
+  
+  <circle cx="550" cy="510" r="5" fill="#1abc9c"/>
+  <text x="570" y="515" font-size="11" fill="#2c3e50">Reasoning ability transfers across domains</text>
+  
+  <!-- Performance Results -->
+  <rect x="200" y="570" width="600" height="100" fill="#dff0d8" stroke="#5cb85c" stroke-width="2" rx="10"/>
+  <text x="500" y="595" text-anchor="middle" font-size="16" font-weight="bold" fill="#3c763d">Performance Results</text>
+  
+  <text x="250" y="620" font-size="12" fill="#3c763d">MathVista: 79.5% (+10.3% vs baseline)</text>
+  <text x="250" y="640" font-size="12" fill="#3c763d">MathVerse: 63.8% (+38.2% vs baseline)</text>
+  <text x="250" y="660" font-size="12" fill="#3c763d">WeMath: 79.0% (+57.2% vs baseline)</text>
+  
+  <text x="550" y="620" font-size="12" fill="#3c763d">Average: 11.6% improvement</text>
+  <text x="550" y="640" font-size="12" fill="#3c763d">Consistent SOTA performance</text>
+  <text x="550" y="660" font-size="12" fill="#3c763d">Fully open-sourced pipeline</text>
+  
+  <!-- Flow connections -->
+  <path d="M 190 130 L 210 130" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 130 160 L 130 180" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 270 160 L 270 180" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 200 240 L 200 260" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 200 320 L 200 340" stroke="#34495e" stroke-width="2" fill="none"/>
+  
+  <path d="M 690 130 L 710 130" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 630 160 L 630 180" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 770 160 L 770 180" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 700 240 L 700 260" stroke="#34495e" stroke-width="2" fill="none"/>
+  <path d="M 700 320 L 700 340" stroke="#34495e" stroke-width="2" fill="none"/>
+  
+  <!-- Connection between SFT and RL -->
+  <path d="M 250 355 L 650 355" stroke="#e74c3c" stroke-width="3" fill="none" stroke-dasharray="10,5"/>
+  <text x="450" y="350" text-anchor="middle" font-size="12" fill="#e74c3c" font-weight="bold">Transfer</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It provides a fully transparent and reproducible training pipeline combining SFT and RL">
+                        <div class="quiz-question">1. What is the main innovation that distinguishes OpenMMReasoner from previous approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger dataset than previous models">It uses a larger dataset than previous models</div><div class="quiz-choice" data-value="It provides a fully transparent and reproducible training pipeline combining SFT and RL">It provides a fully transparent and reproducible training pipeline combining SFT and RL</div><div class="quiz-choice" data-value="It achieves better performance through a more complex model architecture">It achieves better performance through a more complex model architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Over-filtering reduced diversity and actually hurt performance">
+                        <div class="quiz-question">2. During the SFT stage, what was discovered about data filtering strategies?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Strict filtering of data improved model performance significantly">Strict filtering of data improved model performance significantly</div><div class="quiz-choice" data-value="Length-based filtering was more effective than difficulty-based filtering">Length-based filtering was more effective than difficulty-based filtering</div><div class="quiz-choice" data-value="Over-filtering reduced diversity and actually hurt performance">Over-filtering reduced diversity and actually hurt performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The model showed improved textual reasoning abilities without specific training">
+                        <div class="quiz-question">3. What unexpected benefit emerged during the RL training phase?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The model developed faster processing speeds">The model developed faster processing speeds</div><div class="quiz-choice" data-value="The model showed improved textual reasoning abilities without specific training">The model showed improved textual reasoning abilities without specific training</div><div class="quiz-choice" data-value="The model required less computational resources than expected">The model required less computational resources than expected</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>First Frame Is the Place to Go for Video Content Customization</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-11-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2511.15700" target="_blank">http://arxiv.org/pdf/2511.15700</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper explores video content customization through a novel perspective on the role of first frames in video generation models, focusing on computer vision and deep learning.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing video generation models like Wan2.2, the paper proposes a new perspective that the first frame acts as a conceptual memory buffer for storing visual entities, rather than just being a starting point.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of incorporating multiple reference images into pre-trained video generation models without architectural modifications or large-scale fine-tuning.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop FFGo, a lightweight add-on that uses Vision-Language Models for data curation and LoRA adaptation with just 20-50 training examples to invoke the model's innate ability to mix subjects through the first frame.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Through user studies across 200 annotations, FFGo outperformed baseline models in object identity, scene identity, and overall quality, with 81.2% of users ranking it as their top choice despite using minimal training data.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>First Frame Is the Place to Go for Video Content Customization</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f3ff;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="3" dy="3" stdDeviation="2" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <rect width="1000" height="800" fill="url(#bg)"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2c3e50">FFGo: First Frame Video Content Customization Pipeline</text>
+  
+  <!-- Phase 1: Dataset Curation -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="280" height="200" rx="15" fill="#ff7f7f" opacity="0.8" filter="url(#shadow)"/>
+    <text x="140" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Phase 1: Dataset Curation</text>
+    
+    <!-- Input videos -->
+    <rect x="20" y="40" width="80" height="30" rx="5" fill="#ffb3b3" opacity="0.9"/>
+    <text x="60" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">2000 Videos</text>
+    
+    <!-- Manual selection -->
+    <rect x="120" y="40" width="80" height="30" rx="5" fill="#ffb3b3" opacity="0.9"/>
+    <text x="160" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Manual Select</text>
+    
+    <!-- Element identification -->
+    <rect x="20" y="85" width="100" height="30" rx="5" fill="#ff9999" opacity="0.9"/>
+    <text x="70" y="103" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Element ID</text>
+    
+    <!-- VLM extraction -->
+    <rect x="140" y="85" width="100" height="30" rx="5" fill="#ff9999" opacity="0.9"/>
+    <text x="190" y="103" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">VLM Extract</text>
+    
+    <!-- SAM 2 processing -->
+    <rect x="80" y="130" width="100" height="30" rx="5" fill="#ff8080" opacity="0.9"/>
+    <text x="130" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">SAM 2 Process</text>
+    
+    <!-- Output: 50 training examples -->
+    <rect x="70" y="170" width="120" height="20" rx="5" fill="#ff6666" opacity="0.9"/>
+    <text x="130" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">50 Training Examples</text>
+  </g>
+  
+  <!-- Phase 2: Few-shot LoRA Adaptation -->
+  <g transform="translate(380, 80)">
+    <rect x="0" y="0" width="280" height="200" rx="15" fill="#7fbf7f" opacity="0.8" filter="url(#shadow)"/>
+    <text x="140" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Phase 2: Few-shot LoRA Adaptation</text>
+    
+    <!-- Base model -->
+    <rect x="20" y="40" width="100" height="30" rx="5" fill="#b3ffb3" opacity="0.9"/>
+    <text x="70" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Wan2.2-I2V-A14B</text>
+    
+    <!-- LoRA training -->
+    <rect x="140" y="40" width="100" height="30" rx="5" fill="#b3ffb3" opacity="0.9"/>
+    <text x="190" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">LoRA Rank 128</text>
+    
+    <!-- Transition phrase -->
+    <rect x="20" y="85" width="220" height="30" rx="5" fill="#99ff99" opacity="0.9"/>
+    <text x="130" y="103" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">&lt;transition&gt; + Text Prompt</text>
+    
+    <!-- Mixed image input -->
+    <rect x="20" y="130" width="100" height="30" rx="5" fill="#80ff80" opacity="0.9"/>
+    <text x="70" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">I_mix Input</text>
+    
+    <!-- Training process -->
+    <rect x="140" y="130" width="100" height="30" rx="5" fill="#80ff80" opacity="0.9"/>
+    <text x="190" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">5hrs, 2xH200</text>
+    
+    <!-- Output -->
+    <rect x="70" y="170" width="120" height="20" rx="5" fill="#66ff66" opacity="0.9"/>
+    <text x="130" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Adapted Model θ+Δθ</text>
+  </g>
+  
+  <!-- Phase 3: Clean Customized Video Inference -->
+  <g transform="translate(720, 80)">
+    <rect x="0" y="0" width="230" height="200" rx="15" fill="#7f7fbf" opacity="0.8" filter="url(#shadow)"/>
+    <text x="115" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Phase 3: Inference</text>
+    
+    <!-- Video generation -->
+    <rect x="20" y="40" width="180" height="30" rx="5" fill="#b3b3ff" opacity="0.9"/>
+    <text x="110" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">V_mix = g(I_mix, C_trans)</text>
+    
+    <!-- Frame structure -->
+    <rect x="20" y="85" width="80" height="30" rx="5" fill="#9999ff" opacity="0.9"/>
+    <text x="60" y="103" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">F_c frames</text>
+    
+    <rect x="120" y="85" width="80" height="30" rx="5" fill="#9999ff" opacity="0.9"/>
+    <text x="160" y="103" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">F_g frames</text>
+    
+    <!-- Clean output -->
+    <rect x="20" y="130" width="180" height="30" rx="5" fill="#8080ff" opacity="0.9"/>
+    <text x="110" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Remove F_c, Keep F_g</text>
+    
+    <!-- Final result -->
+    <rect x="50" y="170" width="120" height="20" rx="5" fill="#6666ff" opacity="0.9"/>
+    <text x="110" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Clean Customized Video</text>
+  </g>
+  
+  <!-- Key Innovation Box -->
+  <g transform="translate(200, 320)">
+    <rect x="0" y="0" width="600" height="120" rx="15" fill="#ffd700" opacity="0.8" filter="url(#shadow)"/>
+    <text x="300" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333">Key Innovation: First Frame as Conceptual Memory Buffer</text>
+    
+    <text x="50" y="50" font-family="Arial, sans-serif" font-size="12" fill="#333">• First frame stores visual entities for later reuse during generation</text>
+    <text x="50" y="70" font-family="Arial, sans-serif" font-size="12" fill="#333">• No architectural modifications to pre-trained models</text>
+    <text x="50" y="90" font-family="Arial, sans-serif" font-size="12" fill="#333">• Only 20-50 training examples needed via LoRA adaptation</text>
+    <text x="50" y="110" font-family="Arial, sans-serif" font-size="12" fill="#333">• Preserves rich generative priors of pre-trained models</text>
+  </g>
+  
+  <!-- Applications -->
+  <g transform="translate(50, 480)">
+    <rect x="0" y="0" width="900" height="80" rx="15" fill="#ff69b4" opacity="0.7" filter="url(#shadow)"/>
+    <text x="450" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Applications</text>
+    
+    <rect x="20" y="35" width="120" height="25" rx="5" fill="#ffb3d9" opacity="0.9"/>
+    <text x="80" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Robot Manipulation</text>
+    
+    <rect x="160" y="35" width="120" height="25" rx="5" fill="#ffb3d9" opacity="0.9"/>
+    <text x="220" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Driving Simulation</text>
+    
+    <rect x="300" y="35" width="120" height="25" rx="5" fill="#ffb3d9" opacity="0.9"/>
+    <text x="360" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Filmmaking</text>
+    
+    <rect x="440" y="35" width="120" height="25" rx="5" fill="#ffb3d9" opacity="0.9"/>
+    <text x="500" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Aerial View Sim</text>
+    
+    <rect x="580" y="35" width="120" height="25" rx="5" fill="#ffb3d9" opacity="0.9"/>
+    <text x="640" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Product Demo</text>
+    
+    <rect x="720" y="35" width="120" height="25" rx="5" fill="#ffb3d9" opacity="0.9"/>
+    <text x="780" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Multi-object Mix</text>
+  </g>
+  
+  <!-- Evaluation Results -->
+  <g transform="translate(150, 600)">
+    <rect x="0" y="0" width="700" height="120" rx="15" fill="#20b2aa" opacity="0.8" filter="url(#shadow)"/>
+    <text x="350" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Evaluation Results</text>
+    
+    <text x="50" y="50" font-family="Arial, sans-serif" font-size="12" fill="white">• User Study: 200 annotations across 40 users</text>
+    <text x="50" y="70" font-family="Arial, sans-serif" font-size="12" fill="white">• FFGo ranked 1st in 81.2% of cases</text>
+    <text x="400" y="50" font-family="Arial, sans-serif" font-size="12" fill="white">• Outperforms VACE and SkyReels-A2</text>
+    <text x="400" y="70" font-family="Arial, sans-serif" font-size="12" fill="white">• Superior object & scene identity preservation</text>
+    
+    <rect x="50" y="85" width="150" height="20" rx="5" fill="#48d1cc" opacity="0.9"/>
+    <text x="125" y="97" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Overall Quality: 4.28/5</text>
+    
+    <rect x="220" y="85" width="150" height="20" rx="5" fill="#48d1cc" opacity="0.9"/>
+    <text x="295" y="97" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Object Identity: 4.53/5</text>
+    
+    <rect x="390" y="85" width="150" height="20" rx="5" fill="#48d1cc" opacity="0.9"/>
+    <text x="465" y="97" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Scene Identity: 4.58/5</text>
+    
+    <rect x="560" y="85" width="120" height="20" rx="5" fill="#48d1cc" opacity="0.9"/>
+    <text x="620" y="97" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Avg Rank: 1.21</text>
+  </g>
+  
+  <!-- Flow connections -->
+  <line x1="330" y1="180" x2="380" y2="180" stroke="#666" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="660" y1="180" x2="720" y2="180" stroke="#666" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It acts as a conceptual memory buffer for storing visual entities">
+                        <div class="quiz-question">1. What is the key insight about the first frame's role in video generation that this paper introduces?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It serves only as a temporal starting point">It serves only as a temporal starting point</div><div class="quiz-choice" data-value="It acts as a conceptual memory buffer for storing visual entities">It acts as a conceptual memory buffer for storing visual entities</div><div class="quiz-choice" data-value="It determines the video's final resolution">It determines the video's final resolution</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Only 20-50 examples">
+                        <div class="quiz-question">2. How many training examples did FFGo require to achieve state-of-the-art performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Over 1 million examples">Over 1 million examples</div><div class="quiz-choice" data-value="500-1000 examples">500-1000 examples</div><div class="quiz-choice" data-value="Only 20-50 examples">Only 20-50 examples</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It requires no architectural modifications to the base model">
+                        <div class="quiz-question">3. What unique advantage does FFGo have over baseline models like VACE and SkyReels-A2?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It runs much faster on standard hardware">It runs much faster on standard hardware</div><div class="quiz-choice" data-value="It can handle an unlimited number of reference inputs">It can handle an unlimited number of reference inputs</div><div class="quiz-choice" data-value="It requires no architectural modifications to the base model">It requires no architectural modifications to the base model</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
