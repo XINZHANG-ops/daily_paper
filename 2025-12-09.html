@@ -1,0 +1,1281 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-12-09 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+            
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+            
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+            
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2025-12-09 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Beyond Real: Imaginary Extension of Rotary Position Embeddings for Long-Context LLMs</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-12-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2512.07525" target="_blank">http://arxiv.org/pdf/2512.07525</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Improving Rotary Position Embeddings (RoPE) for long-context Large Language Models by utilizing complex-valued attention calculations.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on standard RoPE which only uses real components of complex-valued dot products; proposes incorporating the previously discarded imaginary components to enhance position encoding.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Standard RoPE implementations discard imaginary components of complex attention calculations, potentially losing valuable positional information needed for modeling long-range dependencies.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Introduces RoPE++ with two configurations: RoPE++EH (equal heads with halved cache) and RoPE++EC (equal cache with doubled heads), which reincorporates imaginary components into attention calculations.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Both RoPE++ configurations outperformed standard RoPE across short and long-context tasks in 376M and 776M models, with RoPE++EH achieving comparable results using half the cache and RoPE++EC showing significant improvements with the same cache size.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Beyond Real: Imaginary Extension of Rotary Position Embeddings for Long-Context LLMs</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7ED321;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5BA517;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5A623;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D68910;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D0021B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A30015;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9013FE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6A0DAD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa" stroke="none"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2C3E50">
+    RoPE++ Methodology Flow Chart
+  </text>
+  
+  <!-- Step 1: Problem Identification -->
+  <rect x="50" y="70" width="180" height="80" rx="10" fill="url(#redGrad)" stroke="#A30015" stroke-width="2"/>
+  <text x="140" y="95" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">
+    Problem Identification
+  </text>
+  <text x="140" y="110" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Standard RoPE discards
+  </text>
+  <text x="140" y="125" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    imaginary component
+  </text>
+  <text x="140" y="140" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    of complex attention
+  </text>
+  
+  <!-- Step 2: Mathematical Analysis -->
+  <rect x="280" y="70" width="180" height="80" rx="10" fill="url(#blueGrad)" stroke="#357ABD" stroke-width="2"/>
+  <text x="370" y="95" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">
+    Mathematical Analysis
+  </text>
+  <text x="370" y="110" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Recover imaginary part:
+  </text>
+  <text x="370" y="125" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    A_Im = -Im(q*k*)
+  </text>
+  <text x="370" y="140" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Sine integral function
+  </text>
+  
+  <!-- Step 3: RoPE++ Design -->
+  <rect x="510" y="70" width="180" height="80" rx="10" fill="url(#greenGrad)" stroke="#5BA517" stroke-width="2"/>
+  <text x="600" y="95" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">
+    RoPE++ Design
+  </text>
+  <text x="600" y="110" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Real + Imaginary
+  </text>
+  <text x="600" y="125" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Attention Heads
+  </text>
+  <text x="600" y="140" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Rotate q_t by -π/2
+  </text>
+  
+  <!-- Step 4: Two Configurations -->
+  <rect x="120" y="200" width="160" height="90" rx="10" fill="url(#orangeGrad)" stroke="#D68910" stroke-width="2"/>
+  <text x="200" y="225" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">
+    RoPE++ EH
+  </text>
+  <text x="200" y="240" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Equal Heads
+  </text>
+  <text x="200" y="255" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Half KV Cache
+  </text>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Half Parameters
+  </text>
+  
+  <rect x="420" y="200" width="160" height="90" rx="10" fill="url(#purpleGrad)" stroke="#6A0DAD" stroke-width="2"/>
+  <text x="500" y="225" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">
+    RoPE++ EC
+  </text>
+  <text x="500" y="240" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Equal Cache
+  </text>
+  <text x="500" y="255" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Double Heads
+  </text>
+  <text x="500" y="270" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Better Performance
+  </text>
+  
+  <!-- Step 5: Key Properties -->
+  <rect x="50" y="340" width="150" height="100" rx="10" fill="#E8F4FD" stroke="#4A90E2" stroke-width="2"/>
+  <text x="125" y="365" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#2C3E50">
+    Long Dependency
+  </text>
+  <text x="125" y="380" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    Imaginary attention
+  </text>
+  <text x="125" y="395" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    captures longer
+  </text>
+  <text x="125" y="410" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    context dependencies
+  </text>
+  <text x="125" y="425" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    via sine function
+  </text>
+  
+  <rect x="250" y="340" width="150" height="100" rx="10" fill="#F0F8E8" stroke="#7ED321" stroke-width="2"/>
+  <text x="325" y="365" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#2C3E50">
+    Cache Efficiency
+  </text>
+  <text x="325" y="380" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    No extra KV cache
+  </text>
+  <text x="325" y="395" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    Shared parameters
+  </text>
+  <text x="325" y="410" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    FlashAttention
+  </text>
+  <text x="325" y="425" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    compatible
+  </text>
+  
+  <rect x="450" y="340" width="150" height="100" rx="10" fill="#FFF5E6" stroke="#F5A623" stroke-width="2"/>
+  <text x="525" y="365" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#2C3E50">
+    Length Extrapolation
+  </text>
+  <text x="525" y="380" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    Wider positional
+  </text>
+  <text x="525" y="395" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    information range
+  </text>
+  <text x="525" y="410" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    Full cos/sin values
+  </text>
+  <text x="525" y="425" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    Better extrapolation
+  </text>
+  
+  <!-- Step 6: Training and Evaluation -->
+  <rect x="150" y="490" width="200" height="80" rx="10" fill="url(#blueGrad)" stroke="#357ABD" stroke-width="2"/>
+  <text x="250" y="515" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">
+    Pre-training Setup
+  </text>
+  <text x="250" y="530" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    376M, 776M, 1.5B models
+  </text>
+  <text x="250" y="545" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    DCLM-Baseline corpus
+  </text>
+  <text x="250" y="560" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    50B tokens, 4k → 32k context
+  </text>
+  
+  <rect x="400" y="490" width="200" height="80" rx="10" fill="url(#greenGrad)" stroke="#5BA517" stroke-width="2"/>
+  <text x="500" y="515" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">
+    Evaluation Benchmarks
+  </text>
+  <text x="500" y="530" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Short: WikiText, LAMBADA
+  </text>
+  <text x="500" y="545" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Long: RULER, BABILong
+  </text>
+  <text x="500" y="560" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    Up to 64k context length
+  </text>
+  
+  <!-- Step 7: Results -->
+  <rect x="200" y="620" width="250" height="100" rx="10" fill="url(#purpleGrad)" stroke="#6A0DAD" stroke-width="2"/>
+  <text x="325" y="645" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">
+    Key Results
+  </text>
+  <text x="325" y="665" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    ✓ RoPE++_EH: Comparable performance with half cache
+  </text>
+  <text x="325" y="680" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    ✓ RoPE++_EC: Superior performance at same cache
+  </text>
+  <text x="325" y="695" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    ✓ Better long-context modeling capabilities
+  </text>
+  <text x="325" y="710" text-anchor="middle" font-family="Arial" font-size="9" fill="white">
+    ✓ Compatible with other long-context techniques
+  </text>
+  
+  <!-- Step 8: Additional Analysis -->
+  <rect x="650" y="340" width="150" height="100" rx="10" fill="#FDE8F0" stroke="#D0021B" stroke-width="2"/>
+  <text x="725" y="365" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#2C3E50">
+    Attention Analysis
+  </text>
+  <text x="725" y="380" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    Imaginary heads focus
+  </text>
+  <text x="725" y="395" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    on global information
+  </text>
+  <text x="725" y="410" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    Real heads focus
+  </text>
+  <text x="725" y="425" text-anchor="middle" font-family="Arial" font-size="9" fill="#2C3E50">
+    on local context
+  </text>
+  
+  <!-- Connecting elements -->
+  <circle cx="140" cy="180" r="5" fill="#34495E"/>
+  <circle cx="370" cy="180" r="5" fill="#34495E"/>
+  <circle cx="600" cy="180" r="5" fill="#34495E"/>
+  
+  <circle cx="200" cy="320" r="5" fill="#34495E"/>
+  <circle cx="500" cy="320" r="5" fill="#34495E"/>
+  
+  <circle cx="125" cy="460" r="5" fill="#34495E"/>
+  <circle cx="325" cy="460" r="5" fill="#34495E"/>
+  <circle cx="525" cy="460" r="5" fill="#34495E"/>
+  <circle cx="725" cy="460" r="5" fill="#34495E"/>
+  
+  <circle cx="250" cy="590" r="5" fill="#34495E"/>
+  <circle cx="500" cy="590" r="5" fill="#34495E"/>
+  
+  <circle cx="325" cy="740" r="5" fill="#34495E"/>
+  
+  <!-- Flow indicators -->
+  <text x="750" y="750" font-family="Arial" font-size="10" fill="#7F8C8D" font-style="italic">
+    Flow: Problem → Analysis → Design → Implementation → Evaluation → Results
+  </text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses both real and imaginary components of complex attention calculations">
+                        <div class="quiz-question">1. What is the main innovation of RoPE++ compared to standard RoPE?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It completely replaces real components with imaginary components">It completely replaces real components with imaginary components</div><div class="quiz-choice" data-value="It uses both real and imaginary components of complex attention calculations">It uses both real and imaginary components of complex attention calculations</div><div class="quiz-choice" data-value="It adds more rotary matrices to the position embeddings">It adds more rotary matrices to the position embeddings</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It uses half the cache size while achieving comparable results">
+                        <div class="quiz-question">2. What unique advantage does RoPE++EH configuration offer?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It doubles the cache size while maintaining performance">It doubles the cache size while maintaining performance</div><div class="quiz-choice" data-value="It uses half the cache size while achieving comparable results">It uses half the cache size while achieving comparable results</div><div class="quiz-choice" data-value="It triples the attention heads with no additional cost">It triples the attention heads with no additional cost</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Imaginary attention attends more to distant positions">
+                        <div class="quiz-question">3. How does the imaginary attention component in RoPE++ differ from real attention in terms of context handling?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Imaginary attention focuses only on local context">Imaginary attention focuses only on local context</div><div class="quiz-choice" data-value="Imaginary attention completely ignores distant positions">Imaginary attention completely ignores distant positions</div><div class="quiz-choice" data-value="Imaginary attention attends more to distant positions">Imaginary attention attends more to distant positions</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tasky.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Native Parallel Reasoner: Reasoning in Parallelism via Self-Distilled Reinforcement Learning</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-12-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2512.07461" target="_blank">http://arxiv.org/pdf/2512.07461</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces Native Parallel Reasoner (NPR), a framework for enabling Large Language Models to perform parallel reasoning, falling within the domain of artificial intelligence and language model optimization.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work in parallel reasoning like Multiverse and MapReduce paradigms, it proposes a novel teacher-free approach where models self-evolve parallel reasoning capabilities without external supervision.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of enabling language models to perform genuine parallel reasoning rather than sequential emulation, while avoiding reliance on external teacher models or supervised distillation.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper implements a three-stage progressive training paradigm: (1) Format-follow RL to discover parallel structures, (2) Parallel warmup through self-distilled data, and (3) Native-parallel RL using a novel Parallel-Aware Policy Optimization algorithm and NPR Engine.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Testing on eight reasoning benchmarks showed performance gains up to 24.5%, inference speedups up to 4.6×, and achieved 100% genuine parallel execution, with consistent improvements over baseline models like Multiverse-32B and Multiverse-4B.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Native Parallel Reasoner: Reasoning in Parallelism via Self-Distilled Reinforcement Learning</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    Native Parallel Reasoner (NPR) Workflow
+  </text>
+  
+  <!-- Stage 1: Format-follow RL -->
+  <g transform="translate(50, 80)">
+    <rect width="300" height="200" rx="15" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#1976d2">Stage 1: Format-follow RL</text>
+    
+    <!-- Input -->
+    <rect x="20" y="40" width="80" height="30" rx="5" fill="#fff3e0" stroke="#f57c00"/>
+    <text x="60" y="58" text-anchor="middle" font-size="12" fill="#f57c00">Task Data</text>
+    
+    <!-- Base Model -->
+    <rect x="20" y="80" width="100" height="30" rx="5" fill="#fce4ec" stroke="#c2185b"/>
+    <text x="70" y="98" text-anchor="middle" font-size="12" fill="#c2185b">Instruct Model</text>
+    
+    <!-- DAPO -->
+    <rect x="140" y="80" width="80" height="30" rx="5" fill="#e8f5e8" stroke="#388e3c"/>
+    <text x="180" y="98" text-anchor="middle" font-size="12" fill="#388e3c">DAPO</text>
+    
+    <!-- Reward -->
+    <rect x="240" y="80" width="40" height="30" rx="5" fill="#fff8e1" stroke="#ffa000"/>
+    <text x="260" y="88" text-anchor="middle" font-size="10" fill="#ffa000">Format</text>
+    <text x="260" y="100" text-anchor="middle" font-size="10" fill="#ffa000">+ Acc.</text>
+    
+    <!-- Output -->
+    <rect x="100" y="140" width="100" height="30" rx="5" fill="#f3e5f5" stroke="#7b1fa2"/>
+    <text x="150" y="158" text-anchor="middle" font-size="12" fill="#7b1fa2">NPR-ZERO</text>
+  </g>
+  
+  <!-- Stage 2: Parallel SFT -->
+  <g transform="translate(450, 80)">
+    <rect width="300" height="200" rx="15" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#388e3c">Stage 2: Parallel SFT</text>
+    
+    <!-- Rejection Sampling -->
+    <rect x="20" y="40" width="120" height="30" rx="5" fill="#fff3e0" stroke="#f57c00"/>
+    <text x="80" y="58" text-anchor="middle" font-size="12" fill="#f57c00">Rejection Sampling</text>
+    
+    <!-- Self-Distilled Data -->
+    <rect x="160" y="40" width="120" height="30" rx="5" fill="#e3f2fd" stroke="#1976d2"/>
+    <text x="220" y="58" text-anchor="middle" font-size="12" fill="#1976d2">Self-Distilled Data</text>
+    
+    <!-- Parallel Attention -->
+    <rect x="20" y="80" width="100" height="30" rx="5" fill="#fce4ec" stroke="#c2185b"/>
+    <text x="70" y="88" text-anchor="middle" font-size="10" fill="#c2185b">Parallel Attention</text>
+    <text x="70" y="100" text-anchor="middle" font-size="10" fill="#c2185b">Mask & PosEnc</text>
+    
+    <!-- Parallel SFT -->
+    <rect x="140" y="80" width="80" height="30" rx="5" fill="#e8f5e8" stroke="#388e3c"/>
+    <text x="180" y="98" text-anchor="middle" font-size="12" fill="#388e3c">Parallel SFT</text>
+    
+    <!-- Output -->
+    <rect x="100" y="140" width="100" height="30" rx="5" fill="#f3e5f5" stroke="#7b1fa2"/>
+    <text x="150" y="158" text-anchor="middle" font-size="12" fill="#7b1fa2">NPR-BETA</text>
+  </g>
+  
+  <!-- Stage 3: Native Parallel RL -->
+  <g transform="translate(850, 80)">
+    <rect width="300" height="200" rx="15" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#f57c00">Stage 3: Native Parallel RL</text>
+    
+    <!-- NPR Engine -->
+    <rect x="20" y="40" width="80" height="30" rx="5" fill="#e3f2fd" stroke="#1976d2"/>
+    <text x="60" y="58" text-anchor="middle" font-size="12" fill="#1976d2">NPR Engine</text>
+    
+    <!-- Parallel Rollout -->
+    <rect x="120" y="40" width="90" height="30" rx="5" fill="#fce4ec" stroke="#c2185b"/>
+    <text x="165" y="58" text-anchor="middle" font-size="12" fill="#c2185b">Parallel Rollout</text>
+    
+    <!-- PAPO -->
+    <rect x="230" y="40" width="50" height="30" rx="5" fill="#e8f5e8" stroke="#388e3c"/>
+    <text x="255" y="58" text-anchor="middle" font-size="12" fill="#388e3c">PAPO</text>
+    
+    <!-- Accuracy Reward -->
+    <rect x="80" y="80" width="80" height="30" rx="5" fill="#fff8e1" stroke="#ffa000"/>
+    <text x="120" y="98" text-anchor="middle" font-size="12" fill="#ffa000">Accuracy r</text>
+    
+    <!-- Output -->
+    <rect x="100" y="140" width="100" height="30" rx="5" fill="#f3e5f5" stroke="#7b1fa2"/>
+    <text x="150" y="158" text-anchor="middle" font-size="12" fill="#7b1fa2">NPR</text>
+  </g>
+  
+  <!-- NPR Engine Details -->
+  <g transform="translate(50, 320)">
+    <rect width="500" height="180" rx="15" fill="#f5f5f5" stroke="#616161" stroke-width="2"/>
+    <text x="250" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#616161">NPR Engine Enhancements</text>
+    
+    <!-- KV-cache -->
+    <rect x="20" y="40" width="100" height="25" rx="5" fill="#ffebee" stroke="#d32f2f"/>
+    <text x="70" y="55" text-anchor="middle" font-size="10" fill="#d32f2f">KV-cache Fix</text>
+    
+    <!-- Token Budget -->
+    <rect x="140" y="40" width="100" height="25" rx="5" fill="#e8eaf6" stroke="#3f51b5"/>
+    <text x="190" y="55" text-anchor="middle" font-size="10" fill="#3f51b5">Token Budget</text>
+    
+    <!-- Schema Validation -->
+    <rect x="260" y="40" width="100" height="25" rx="5" fill="#e0f2f1" stroke="#00796b"/>
+    <text x="310" y="55" text-anchor="middle" font-size="10" fill="#00796b">Schema Valid.</text>
+    
+    <!-- Repetition Control -->
+    <rect x="380" y="40" width="100" height="25" rx="5" fill="#fff3e0" stroke="#ff9800"/>
+    <text x="430" y="55" text-anchor="middle" font-size="10" fill="#ff9800">Repetition Ctrl</text>
+    
+    <!-- Description -->
+    <text x="250" y="85" text-anchor="middle" font-size="12" fill="#424242">• Memory corruption prevention</text>
+    <text x="250" y="105" text-anchor="middle" font-size="12" fill="#424242">• Global token ledger management</text>
+    <text x="250" y="125" text-anchor="middle" font-size="12" fill="#424242">• Structural invariant enforcement</text>
+    <text x="250" y="145" text-anchor="middle" font-size="12" fill="#424242">• Selective repetition penalty in &lt;step&gt; blocks</text>
+  </g>
+  
+  <!-- PAPO Algorithm Details -->
+  <g transform="translate(650, 320)">
+    <rect width="500" height="180" rx="15" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+    <text x="250" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#7b1fa2">PAPO Algorithm Features</text>
+    
+    <!-- Structural Filtering -->
+    <rect x="20" y="40" width="100" height="25" rx="5" fill="#e8f5e8" stroke="#388e3c"/>
+    <text x="70" y="55" text-anchor="middle" font-size="10" fill="#388e3c">Structural Filter</text>
+    
+    <!-- Batch Normalization -->
+    <rect x="140" y="40" width="100" height="25" rx="5" fill="#e3f2fd" stroke="#1976d2"/>
+    <text x="190" y="55" text-anchor="middle" font-size="10" fill="#1976d2">Batch Norm</text>
+    
+    <!-- Special Tokens -->
+    <rect x="260" y="40" width="100" height="25" rx="5" fill="#fff8e1" stroke="#ffa000"/>
+    <text x="310" y="55" text-anchor="middle" font-size="10" fill="#ffa000">Special Tokens</text>
+    
+    <!-- On-Policy -->
+    <rect x="380" y="40" width="100" height="25" rx="5" fill="#ffebee" stroke="#d32f2f"/>
+    <text x="430" y="55" text-anchor="middle" font-size="10" fill="#d32f2f">On-Policy</text>
+    
+    <!-- Description -->
+    <text x="250" y="85" text-anchor="middle" font-size="12" fill="#424242">• Schema-level filtering during rollout</text>
+    <text x="250" y="105" text-anchor="middle" font-size="12" fill="#424242">• Batch-level advantage normalization</text>
+    <text x="250" y="125" text-anchor="middle" font-size="12" fill="#424242">• Preserve gradients on special tokens</text>
+    <text x="250" y="145" text-anchor="middle" font-size="12" fill="#424242">• Eliminate importance sampling for stability</text>
+  </g>
+  
+  <!-- Parallel Format Schema -->
+  <g transform="translate(50, 550)">
+    <rect width="1100" height="120" rx="15" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+    <text x="550" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#3f51b5">Parallel Reasoning Format</text>
+    
+    <!-- Guideline -->
+    <rect x="50" y="40" width="150" height="60" rx="5" fill="#e8f5e8" stroke="#388e3c"/>
+    <text x="125" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#388e3c">&lt;guideline&gt;</text>
+    <text x="125" y="70" text-anchor="middle" font-size="10" fill="#388e3c">&lt;plan&gt;1: Strategy&lt;/plan&gt;</text>
+    <text x="125" y="85" text-anchor="middle" font-size="10" fill="#388e3c">&lt;plan&gt;2: Strategy&lt;/plan&gt;</text>
+    
+    <!-- Steps -->
+    <rect x="250" y="40" width="300" height="60" rx="5" fill="#fff3e0" stroke="#f57c00"/>
+    <text x="400" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Parallel Processing</text>
+    <text x="400" y="70" text-anchor="middle" font-size="10" fill="#f57c00">&lt;step&gt;1: Independent analysis for plan 1&lt;/step&gt;</text>
+    <text x="400" y="85" text-anchor="middle" font-size="10" fill="#f57c00">&lt;step&gt;2: Independent analysis for plan 2&lt;/step&gt;</text>
+    
+    <!-- Takeaway -->
+    <rect x="600" y="40" width="200" height="60" rx="5" fill="#fce4ec" stroke="#c2185b"/>
+    <text x="700" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2185b">&lt;takeaway&gt;</text>
+    <text x="700" y="70" text-anchor="middle" font-size="10" fill="#c2185b">Compare steps,</text>
+    <text x="700" y="85" text-anchor="middle" font-size="10" fill="#c2185b">synthesize findings</text>
+    
+    <!-- Final Answer -->
+    <rect x="850" y="40" width="200" height="60" rx="5" fill="#f3e5f5" stroke="#7b1fa2"/>
+    <text x="950" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#7b1fa2">Final Answer</text>
+    <text x="950" y="70" text-anchor="middle" font-size="10" fill="#7b1fa2">User-facing summary</text>
+    <text x="950" y="85" text-anchor="middle" font-size="10" fill="#7b1fa2">\boxed{answer}</text>
+  </g>
+  
+  <!-- Evaluation Results -->
+  <g transform="translate(200, 720)">
+    <rect width="800" height="120" rx="15" fill="#e0f2f1" stroke="#00796b" stroke-width="2"/>
+    <text x="400" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#00796b">Key Results</text>
+    
+    <!-- Performance -->
+    <rect x="50" y="40" width="150" height="60" rx="5" fill="#fff8e1" stroke="#ffa000"/>
+    <text x="125" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa000">Performance</text>
+    <text x="125" y="70" text-anchor="middle" font-size="10" fill="#ffa000">Up to 24.5% gain</text>
+    <text x="125" y="85" text-anchor="middle" font-size="10" fill="#ffa000">AIME25: 50.4%</text>
+    
+    <!-- Speed -->
+    <rect x="225" y="40" width="150" height="60" rx="5" fill="#e3f2fd" stroke="#1976d2"/>
+    <text x="300" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#1976d2">Speed</text>
+    <text x="300" y="70" text-anchor="middle" font-size="10" fill="#1976d2">Up to 4.6× speedup</text>
+    <text x="300" y="85" text-anchor="middle" font-size="10" fill="#1976d2">vs AR decoding</text>
+    
+    <!-- Parallelism -->
+    <rect x="400" y="40" width="150" height="60" rx="5" fill="#e8f5e8" stroke="#388e3c"/>
+    <text x="475" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#388e3c">Parallelism</text>
+    <text x="475" y="70" text-anchor="middle" font-size="10" fill="#388e3c">100% genuine</text>
+    <text x="475" y="85" text-anchor="middle" font-size="10" fill="#388e3c">parallel execution</text>
+    
+    <!-- Self-Distillation -->
+    <rect x="575" y="40" width="150" height="60" rx="5" fill="#fce4ec" stroke="#c2185b"/>
+    <text x="650" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2185b">Self-Distillation</text>
+    <text x="650" y="70" text-anchor="middle" font-size="10" fill="#c2185b">+10.1 points over</text>
+    <text x="650" y="85" text-anchor="middle" font-size="10" fill="#c2185b">teacher-generated</text>
+  </g>
+  
+  <!-- Flow indicators -->
+  <polygon points="370,180 390,170 390,185 430,185 430,200 390,200 390,215 370,205" fill="#666" opacity="0.7"/>
+  <polygon points="770,180 790,170 790,185 830,185 830,200 790,200 790,215 770,205" fill="#666" opacity="0.7"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables self-evolution of parallel capabilities without external teachers">
+                        <div class="quiz-question">1. What is the main innovation in NPR's approach compared to previous parallel reasoning methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses multiple teacher models to guide parallel reasoning">It uses multiple teacher models to guide parallel reasoning</div><div class="quiz-choice" data-value="It enables self-evolution of parallel capabilities without external teachers">It enables self-evolution of parallel capabilities without external teachers</div><div class="quiz-choice" data-value="It focuses solely on sequential reasoning with faster processing">It focuses solely on sequential reasoning with faster processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Supervised fine-tuning on self-distilled parallel trajectories">
+                        <div class="quiz-question">2. In the NPR framework's three-stage training process, what happens during Stage 2?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Direct reinforcement learning to optimize parallel reasoning">Direct reinforcement learning to optimize parallel reasoning</div><div class="quiz-choice" data-value="Initial format discovery using DAPO algorithm">Initial format discovery using DAPO algorithm</div><div class="quiz-choice" data-value="Supervised fine-tuning on self-distilled parallel trajectories">Supervised fine-tuning on self-distilled parallel trajectories</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Up to 24.5% performance gain and 4.6× inference speedup">
+                        <div class="quiz-question">3. What was the most significant performance improvement achieved by NPR compared to baseline models?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="100% accuracy improvement across all benchmarks">100% accuracy improvement across all benchmarks</div><div class="quiz-choice" data-value="Up to 24.5% performance gain and 4.6× inference speedup">Up to 24.5% performance gain and 4.6× inference speedup</div><div class="quiz-choice" data-value="2× reduction in computational resources">2× reduction in computational resources</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/tileable-wood-colored.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Voxify3D: Pixel Art Meets Volumetric Rendering</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2025-12-08</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2512.07834" target="_blank">http://arxiv.org/pdf/2512.07834</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents Voxify3D, a framework for converting 3D meshes into stylized voxel art with controllable abstraction, operating in the domain of 3D graphics and neural rendering.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on neural radiance fields and pixel art generation research, it introduces new techniques for combining 2D pixel art supervision with 3D voxel optimization using orthographic projection and palette-constrained color quantization.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge of automatically generating high-quality voxel art from 3D meshes while maintaining semantic features, geometric consistency, and discrete color palettes.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Uses a two-stage pipeline: first initializes coarse voxel geometry using neural volume rendering, then refines it using orthographic pixel art supervision with CLIP-based semantic loss and Gumbel-Softmax for palette quantization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Achieves superior performance with CLIP-IQA score of 37.12 and 77.90% user preference, demonstrating better semantic preservation and visual quality compared to existing methods across diverse character models and controllable abstraction levels.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Voxify3D: Pixel Art Meets Volumetric Rendering</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Voxify3D: Pixel Art Meets Volumetric Rendering</text>
+  
+  <!-- Stage 1: Coarse Voxel Grid Training -->
+  <rect x="50" y="80" width="200" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="150" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#1976d2">Stage 1</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="#1976d2">Coarse Voxel Grid</text>
+  <text x="150" y="140" text-anchor="middle" font-size="12" fill="#1976d2">Training (DVGO)</text>
+  <text x="150" y="160" text-anchor="middle" font-size="10" fill="#666">8000 iterations</text>
+  <text x="150" y="175" text-anchor="middle" font-size="10" fill="#666">MSE + Density + BG loss</text>
+  
+  <!-- Input Mesh -->
+  <rect x="50" y="230" width="120" height="60" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="110" y="255" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57c00">Input</text>
+  <text x="110" y="270" text-anchor="middle" font-size="12" fill="#f57c00">3D Mesh</text>
+  
+  <!-- Multi-view Rendering -->
+  <rect x="200" y="230" width="120" height="60" rx="8" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="260" y="250" text-anchor="middle" font-size="11" fill="#c2185b">Multi-view</text>
+  <text x="260" y="265" text-anchor="middle" font-size="11" fill="#c2185b">Rendering</text>
+  <text x="260" y="280" text-anchor="middle" font-size="10" fill="#666">6 canonical views</text>
+  
+  <!-- Pixel Art Generation -->
+  <rect x="350" y="230" width="120" height="60" rx="8" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="410" y="250" text-anchor="middle" font-size="11" fill="#7b1fa2">Pixel Art</text>
+  <text x="410" y="265" text-anchor="middle" font-size="11" fill="#7b1fa2">Generation</text>
+  <text x="410" y="280" text-anchor="middle" font-size="10" fill="#666">MYOS stylization</text>
+  
+  <!-- Stage 2: Orthographic Pixel Art Fine-tuning -->
+  <rect x="520" y="80" width="220" height="120" rx="10" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="630" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">Stage 2</text>
+  <text x="630" y="125" text-anchor="middle" font-size="12" fill="#388e3c">Orthographic Pixel Art</text>
+  <text x="630" y="140" text-anchor="middle" font-size="12" fill="#388e3c">Fine-tuning</text>
+  <text x="630" y="160" text-anchor="middle" font-size="10" fill="#666">6500 iterations</text>
+  <text x="630" y="175" text-anchor="middle" font-size="10" fill="#666">Multi-loss optimization</text>
+  
+  <!-- Orthographic Projection -->
+  <rect x="500" y="230" width="140" height="60" rx="8" fill="#e1f5fe" stroke="#0288d1" stroke-width="2"/>
+  <text x="570" y="250" text-anchor="middle" font-size="11" fill="#0288d1">Orthographic</text>
+  <text x="570" y="265" text-anchor="middle" font-size="11" fill="#0288d1">Projection</text>
+  <text x="570" y="280" text-anchor="middle" font-size="10" fill="#666">Pixel-voxel alignment</text>
+  
+  <!-- Loss Components -->
+  <rect x="680" y="230" width="100" height="140" rx="8" fill="#fff8e1" stroke="#fbc02d" stroke-width="2"/>
+  <text x="730" y="250" text-anchor="middle" font-size="12" font-weight="bold" fill="#fbc02d">Losses</text>
+  <text x="730" y="270" text-anchor="middle" font-size="10" fill="#666">• Pixel Loss</text>
+  <text x="730" y="285" text-anchor="middle" font-size="10" fill="#666">• Depth Loss</text>
+  <text x="730" y="300" text-anchor="middle" font-size="10" fill="#666">• Alpha Loss</text>
+  <text x="730" y="315" text-anchor="middle" font-size="10" fill="#666">• CLIP Loss</text>
+  <text x="730" y="340" text-anchor="middle" font-size="9" fill="#888">Semantic</text>
+  <text x="730" y="355" text-anchor="middle" font-size="9" fill="#888">preservation</text>
+  
+  <!-- CLIP-based Semantic Loss -->
+  <rect x="50" y="320" width="180" height="80" rx="8" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="140" y="340" text-anchor="middle" font-size="11" font-weight="bold" fill="#3f51b5">CLIP Semantic Loss</text>
+  <text x="140" y="355" text-anchor="middle" font-size="10" fill="#666">Patch-based alignment</text>
+  <text x="140" y="370" text-anchor="middle" font-size="10" fill="#666">80×80 patches</text>
+  <text x="140" y="385" text-anchor="middle" font-size="10" fill="#666">Cosine similarity</text>
+  
+  <!-- Color Palette Extraction -->
+  <rect x="260" y="320" width="180" height="80" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="350" y="340" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff9800">Palette Extraction</text>
+  <text x="350" y="355" text-anchor="middle" font-size="10" fill="#666">K-means, Max-Min</text>
+  <text x="350" y="370" text-anchor="middle" font-size="10" fill="#666">Median Cut, SA</text>
+  <text x="350" y="385" text-anchor="middle" font-size="10" fill="#666">2-8 colors</text>
+  
+  <!-- Gumbel-Softmax Quantization -->
+  <rect x="470" y="320" width="200" height="80" rx="8" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="570" y="340" text-anchor="middle" font-size="11" font-weight="bold" fill="#d32f2f">Gumbel-Softmax</text>
+  <text x="570" y="355" text-anchor="middle" font-size="10" fill="#666">Differentiable quantization</text>
+  <text x="570" y="370" text-anchor="middle" font-size="10" fill="#666">Temperature annealing</text>
+  <text x="570" y="385" text-anchor="middle" font-size="10" fill="#666">τ: 1.0 → 0.1</text>
+  
+  <!-- Voxel Logit Grid -->
+  <rect x="700" y="320" width="140" height="80" rx="8" fill="#e0f2f1" stroke="#00796b" stroke-width="2"/>
+  <text x="770" y="340" text-anchor="middle" font-size="11" font-weight="bold" fill="#00796b">Voxel Logit Grid</text>
+  <text x="770" y="355" text-anchor="middle" font-size="10" fill="#666">Color logits λᵢⱼₖ</text>
+  <text x="770" y="370" text-anchor="middle" font-size="10" fill="#666">Discrete assignment</text>
+  <text x="770" y="385" text-anchor="middle" font-size="10" fill="#666">Palette selection</text>
+  
+  <!-- Final Output -->
+  <rect x="400" y="450" width="200" height="80" rx="10" fill="#e8f5e8" stroke="#4caf50" stroke-width="3"/>
+  <text x="500" y="475" text-anchor="middle" font-size="16" font-weight="bold" fill="#4caf50">Stylized Voxel Art</text>
+  <text x="500" y="495" text-anchor="middle" font-size="12" fill="#666">Controllable abstraction</text>
+  <text x="500" y="510" text-anchor="middle" font-size="12" fill="#666">Discrete color palette</text>
+  <text x="500" y="525" text-anchor="middle" font-size="12" fill="#666">Semantic preservation</text>
+  
+  <!-- Control Parameters -->
+  <rect x="50" y="580" width="120" height="100" rx="8" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="110" y="600" text-anchor="middle" font-size="11" font-weight="bold" fill="#9c27b0">Resolution</text>
+  <text x="110" y="615" text-anchor="middle" font-size="11" font-weight="bold" fill="#9c27b0">Control</text>
+  <text x="110" y="635" text-anchor="middle" font-size="10" fill="#666">20×, 30×, 40×, 50×</text>
+  <text x="110" y="650" text-anchor="middle" font-size="10" fill="#666">voxel grids</text>
+  <text x="110" y="665" text-anchor="middle" font-size="10" fill="#666">Detail vs abstraction</text>
+  
+  <rect x="200" y="580" width="120" height="100" rx="8" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="260" y="600" text-anchor="middle" font-size="11" font-weight="bold" fill="#2196f3">Color</text>
+  <text x="260" y="615" text-anchor="middle" font-size="11" font-weight="bold" fill="#2196f3">Control</text>
+  <text x="260" y="635" text-anchor="middle" font-size="10" fill="#666">2, 3, 4, 8 colors</text>
+  <text x="260" y="650" text-anchor="middle" font-size="10" fill="#666">Palette strategies</text>
+  <text x="260" y="665" text-anchor="middle" font-size="10" fill="#666">Style variation</text>
+  
+  <rect x="350" y="580" width="120" height="100" rx="8" fill="#fff8e1" stroke="#ff9800" stroke-width="2"/>
+  <text x="410" y="600" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff9800">Semantic</text>
+  <text x="410" y="615" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff9800">Fidelity</text>
+  <text x="410" y="635" text-anchor="middle" font-size="10" fill="#666">CLIP guidance</text>
+  <text x="410" y="650" text-anchor="middle" font-size="10" fill="#666">Feature preservation</text>
+  <text x="410" y="665" text-anchor="middle" font-size="10" fill="#666">Identity maintenance</text>
+  
+  <!-- Key Innovation Highlights -->
+  <ellipse cx="850" cy="150" rx="80" ry="40" fill="#ffecb3" stroke="#ff8f00" stroke-width="2"/>
+  <text x="850" y="145" text-anchor="middle" font-size="10" font-weight="bold" fill="#ff8f00">Key Innovation</text>
+  <text x="850" y="160" text-anchor="middle" font-size="9" fill="#666">Orthographic alignment</text>
+  
+  <ellipse cx="850" cy="250" rx="80" ry="40" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="850" y="245" text-anchor="middle" font-size="10" font-weight="bold" fill="#0277bd">Differentiable</text>
+  <text x="850" y="260" text-anchor="middle" font-size="9" fill="#666">Discrete optimization</text>
+  
+  <ellipse cx="850" cy="350" rx="80" ry="40" fill="#f3e5f5" stroke="#8e24aa" stroke-width="2"/>
+  <text x="850" y="345" text-anchor="middle" font-size="10" font-weight="bold" fill="#8e24aa">End-to-End</text>
+  <text x="850" y="360" text-anchor="middle" font-size="9" fill="#666">Pipeline</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="650" y="580" width="300" height="100" rx="8" fill="#e8f5e8" stroke="#388e3c" stroke-width="2"/>
+  <text x="800" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#388e3c">Performance Results</text>
+  <text x="800" y="620" text-anchor="middle" font-size="11" fill="#666">CLIP-IQA: 37.12 (best)</text>
+  <text x="800" y="635" text-anchor="middle" font-size="11" fill="#666">User Preference: 77.90%</text>
+  <text x="800" y="650" text-anchor="middle" font-size="11" fill="#666">Training Time: ~2 hours</text>
+  <text x="800" y="665" text-anchor="middle" font-size="11" fill="#666">Superior to all baselines</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Employing six-view orthographic rendering">
+                        <div class="quiz-question">1. What is the main technical innovation that allows Voxify3D to achieve precise pixel-voxel alignment?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Using perspective projection with multiple cameras">Using perspective projection with multiple cameras</div><div class="quiz-choice" data-value="Employing six-view orthographic rendering">Employing six-view orthographic rendering</div><div class="quiz-choice" data-value="Applying random view sampling during training">Applying random view sampling during training</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To establish coarse voxel geometry and color foundations using DVGO">
+                        <div class="quiz-question">2. In the two-stage pipeline of Voxify3D, what is the primary purpose of Stage 1?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To apply CLIP-based semantic loss">To apply CLIP-based semantic loss</div><div class="quiz-choice" data-value="To establish coarse voxel geometry and color foundations using DVGO">To establish coarse voxel geometry and color foundations using DVGO</div><div class="quiz-choice" data-value="To perform palette-based color quantization">To perform palette-based color quantization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="2-8 colors">
+                        <div class="quiz-question">3. What range of colors does Voxify3D typically work with in its palette-constrained optimization?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="15-20 colors">15-20 colors</div><div class="quiz-choice" data-value="10-15 colors">10-15 colors</div><div class="quiz-choice" data-value="2-8 colors">2-8 colors</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
