@@ -319,7 +319,7 @@ def start_thread(current_date, additional_content, thread_key_value):
     reminder = """Treat it as a tool for selecting papers rather than for fully understanding them. It will help you understand the standing of a paper in the field, and once you’ve chosen one, you’ll read it more efficiently with a questioning mindset."""
 
     # Construct the correct GitHub Pages subpage URL
-    link = f"https://xinzhang-ops.github.io/daily_paper/{current_date}.html"
+    link = f"https://xinzhang-ops.github.io/daily_paper/dailies/{current_date}.html"
     link = f"""<a href="{link}" target="_blank"> link </a>"""
 
     # Create the structured message with sections and widgets
