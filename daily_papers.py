@@ -176,7 +176,7 @@ def update_index_page(dates):
     """更新主页面，添加日期链接"""
     date_links = ""
     for d in sorted(dates, reverse=True):  # 按日期降序排列
-        date_links += f'<li><a href="{d}.html">{d}</a></li>\n'
+        date_links += f'<li><a href="dailies/{d}.html">{d}</a></li>\n'
     
     # 使用 Template 进行替换
     template = Template(INDEX_TEMPLATE)
@@ -191,7 +191,11 @@ def create_subpage(date_str, articles):
     # 使用 Template 进行替换
     template = Template(SUBPAGE_TEMPLATE)
     subpage_html = template.substitute(date=date_str, paper_content=paper_content)
-    with open(f'{date_str}.html', 'w', encoding='utf-8') as f:
+
+    # Ensure dailies directory exists
+    os.makedirs('dailies', exist_ok=True)
+
+    with open(f'dailies/{date_str}.html', 'w', encoding='utf-8') as f:
         f.write(subpage_html)
 
 # 主流程
@@ -282,7 +286,7 @@ if __name__ == "__main__":
                 max_tokens=1024
             ).strip()
         additional_content = f"{additional_content}"
-        link = f"https://xinzhang-ops.github.io/daily_paper/{current_date}.html"
+        link = f"https://xinzhang-ops.github.io/daily_paper/dailies/{current_date}.html"
     
         start_thread(current_date, additional_content, THREAD_KEY_VALUE)
         time.sleep(0.2)
@@ -293,13 +297,17 @@ if __name__ == "__main__":
         create_subpage(current_date, articles)
 
         # 2. 更新主页面
-        existing_dates = [f.split('.html')[0] for f in os.listdir() if f.endswith('.html') and f != 'index.html']
+        dailies_dir = 'dailies'
+        if os.path.exists(dailies_dir):
+            existing_dates = [f.split('.html')[0] for f in os.listdir(dailies_dir) if f.endswith('.html')]
+        else:
+            existing_dates = []
         if current_date not in existing_dates:
             existing_dates.append(current_date)
         update_index_page(existing_dates)
 
     def push_to_github():
-        subprocess.run(["git", "add", "index.html", "*.html"])
+        subprocess.run(["git", "add", "index.html", "dailies/*.html"])
         subprocess.run(["git", "add", "summaries.jsonl"])
         subprocess.run(["git", "commit", "-m", "Daily Paper Push"])
         subprocess.run(["git", "push", "origin", "main"])
