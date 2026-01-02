@@ -3,6 +3,7 @@
 An automated system for fetching, summarizing, and publishing daily AI research papers.
 
 https://xinzhang-ops.github.io/daily_paper/index.html
+
 https://xinzhang-ops.github.io/daily_paper/dailies/pages/2026-01-02.html
 
 ## 🎯 Features
