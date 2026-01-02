@@ -176,8 +176,8 @@ def update_index_page(dates):
     """更新主页面，添加日期链接"""
     date_links = ""
     for d in sorted(dates, reverse=True):  # 按日期降序排列
-        date_links += f'<li><a href="dailies/{d}.html">{d}</a></li>\n'
-    
+        date_links += f'<li><a href="dailies/pages/{d}.html">{d}</a></li>\n'
+
     # 使用 Template 进行替换
     template = Template(INDEX_TEMPLATE)
     index_html = template.substitute(date_links=date_links)
@@ -187,15 +187,18 @@ def update_index_page(dates):
 def create_subpage(date_str, articles):
     """创建子页面，展示当天的论文内容"""
     paper_content = generate_paper_html(articles)
-    
+
     # 使用 Template 进行替换
     template = Template(SUBPAGE_TEMPLATE)
-    subpage_html = template.substitute(date=date_str, paper_content=paper_content)
+    subpage_html = template.substitute(
+        date=date_str,
+        paper_content=paper_content
+    )
 
-    # Ensure dailies directory exists
-    os.makedirs('dailies', exist_ok=True)
+    # Ensure dailies/pages directory exists
+    os.makedirs('dailies/pages', exist_ok=True)
 
-    with open(f'dailies/{date_str}.html', 'w', encoding='utf-8') as f:
+    with open(f'dailies/pages/{date_str}.html', 'w', encoding='utf-8') as f:
         f.write(subpage_html)
 
 # 主流程
@@ -297,9 +300,9 @@ if __name__ == "__main__":
         create_subpage(current_date, articles)
 
         # 2. 更新主页面
-        dailies_dir = 'dailies'
-        if os.path.exists(dailies_dir):
-            existing_dates = [f.split('.html')[0] for f in os.listdir(dailies_dir) if f.endswith('.html')]
+        pages_dir = 'dailies/pages'
+        if os.path.exists(pages_dir):
+            existing_dates = [f.split('.html')[0] for f in os.listdir(pages_dir) if f.endswith('.html')]
         else:
             existing_dates = []
         if current_date not in existing_dates:
@@ -307,7 +310,7 @@ if __name__ == "__main__":
         update_index_page(existing_dates)
 
     def push_to_github():
-        subprocess.run(["git", "add", "index.html", "dailies/*.html"])
+        subprocess.run(["git", "add", "index.html", "dailies/pages/", "dailies/notes/", "dailies/images/"])
         subprocess.run(["git", "add", "summaries.jsonl"])
         subprocess.run(["git", "commit", "-m", "Daily Paper Push"])
         subprocess.run(["git", "push", "origin", "main"])

@@ -12,6 +12,11 @@ from datetime import datetime, timezone
 from models import (
     model_response
 )
+try:
+    import markdown
+except ImportError:
+    markdown = None
+    logger.warning("markdown library not installed. Install with: pip install markdown")
 
 
 load_dotenv()
@@ -316,10 +321,10 @@ def send_articles(articles, thread_id):
 def start_thread(current_date, additional_content, thread_key_value):
     """Google Chat incoming webhook that starts or replies to a message thread."""
     url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
-    reminder = """Treat it as a tool for selecting papers rather than for fully understanding them. It will help you understand the standing of a paper in the field, and once you’ve chosen one, you’ll read it more efficiently with a questioning mindset."""
+    reminder = """Treat it as a tool for selecting papers rather than for fully understanding them. It will help you understand the standing of a paper in the field, and once you've chosen one, you'll read it more efficiently with a questioning mindset."""
 
     # Construct the correct GitHub Pages subpage URL
-    link = f"https://xinzhang-ops.github.io/daily_paper/dailies/{current_date}.html"
+    link = f"https://xinzhang-ops.github.io/daily_paper/dailies/pages/{current_date}.html"
     link = f"""<a href="{link}" target="_blank"> link </a>"""
 
     # Create the structured message with sections and widgets
@@ -637,13 +642,13 @@ def process_paper(paper, queue, max_paper_length):
 def extract_categories(text):
     """
     Extract the 5 categories and their content from a formatted text string.
-    
+
     Each category is identified by its unique emoji (📘, 💡, ❓, 🛠️, 📊) regardless of the
     exact title text. The function maps these to standardized category names.
-    
+
     Args:
         text (str): The input text containing the 5 categories
-        
+
     Returns:
         dict: A dictionary with standardized category titles as keys and their content as values
     """
@@ -655,13 +660,76 @@ def extract_categories(text):
         (r'\d+\.\s+\*\*🛠️.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "🛠️ Methods"),
         (r'\d+\.\s+\*\*📊.*?\*\*\s+(.*?)(?=\n\n|\Z)', "📊 Results and Evaluation")
     ]
-    
+
     # Create a dictionary to store results
     results = []
-    
+
     # Apply each pattern and store results with standardized category names
     for pattern, category_name in patterns:
         match = re.search(pattern, text, re.DOTALL)
         if match:
-            results.append((category_name, match.group(1).strip()))    
+            results.append((category_name, match.group(1).strip()))
     return results
+
+
+def load_daily_takeaways(date_str):
+    """
+    Load personal takeaways from markdown file for a specific date.
+
+    Args:
+        date_str (str): Date in format YYYY-MM-DD
+
+    Returns:
+        str: HTML content of the takeaways, or empty string if no file exists
+    """
+    takeaway_file = f'dailies/notes/{date_str}.md'
+
+    if not os.path.exists(takeaway_file):
+        logger.debug(f"No takeaway file found for {date_str}")
+        return ""
+
+    try:
+        with open(takeaway_file, 'r', encoding='utf-8') as f:
+            markdown_content = f.read()
+
+        if not markdown_content.strip():
+            return ""
+
+        # Convert markdown to HTML
+        if markdown is None:
+            logger.warning("markdown library not available, returning raw text")
+            # Fallback: wrap in <pre> tags if markdown not available
+            return f"<pre>{markdown_content}</pre>"
+
+        # Convert markdown to HTML with extensions for better formatting
+        html_content = markdown.markdown(
+            markdown_content,
+            extensions=['extra', 'nl2br', 'sane_lists']
+        )
+
+        # Fix image paths to use relative paths
+        # Since HTML is in dailies/pages/, images are in dailies/images/
+        # Relative path from pages/ to images/ is ../images/
+        # Handle markdown's output format: src="filename.jpg"
+        html_content = re.sub(
+            r'src="(?!http://|https://|/|\.\./)([^"]+)"',
+            f'src="../images/{date_str}/\\1"',
+            html_content
+        )
+
+        # Wrap in styled divs
+        wrapped_html = f"""
+    <div class="takeaways-section">
+        <h2>📝 My Takeaways</h2>
+        <div class="takeaways-content">
+            {html_content}
+        </div>
+    </div>
+        """
+
+        logger.debug(f"Loaded takeaways for {date_str}")
+        return wrapped_html
+
+    except Exception as e:
+        logger.error(f"Error loading takeaways for {date_str}: {e}")
+        return ""
