@@ -99,8 +99,8 @@ INDEX_TEMPLATE = """
         }
         .content {
             display: block;
-            max-height: 2000px;
-            overflow: hidden;
+            max-height: none;
+            overflow: visible;
             transition: max-height 0.3s ease-out;
         }
         .content.collapsed {
