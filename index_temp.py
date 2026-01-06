@@ -112,6 +112,15 @@ INDEX_TEMPLATE = """
             margin-bottom: 20px;
             font-size: 0.9em;
         }
+        .note-badge {
+            font-size: 0.9em;
+            margin-left: 8px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .day-list a:hover .note-badge {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>

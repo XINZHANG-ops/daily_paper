@@ -226,7 +226,10 @@ def update_index_page(dates):
 
             # 按日期降序排列
             for date_str in sorted(days, reverse=True):
-                html_content += f'                        <li><a href="dailies/pages/{date_str}.html">{date_str}</a></li>\n'
+                # Check if this date has notes
+                has_notes = os.path.exists(f'dailies/notes/{date_str}.md')
+                note_indicator = ' <span class="note-badge">📝</span>' if has_notes else ''
+                html_content += f'                        <li><a href="dailies/pages/{date_str}.html">{date_str}{note_indicator}</a></li>\n'
 
             html_content += '''                        </ul>
                     </div>
