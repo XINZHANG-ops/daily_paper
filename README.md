@@ -2,7 +2,7 @@
 
 An automated system for fetching, summarizing, and publishing daily AI research papers.
 
-https://xinzhang-ops.github.io/daily_paper/index.html
+https://xinzhang-ops.github.io/daily_paper/
 
 https://xinzhang-ops.github.io/daily_paper/dailies/pages/2026-01-02.html
 
@@ -12,7 +12,7 @@ https://xinzhang-ops.github.io/daily_paper/dailies/pages/2026-01-02.html
 - **AI-Powered Summaries**: Uses Claude AI to generate 5-point structured summaries
 - **Interactive Quizzes**: Auto-generated questions to test understanding
 - **Visual Flowcharts**: SVG diagrams showing paper methodology
-- **Personal Takeaways**: Add your own notes in markdown (NEW! ✨)
+- **Personal Takeaways**: Add your own notes in markdown
 - **Multi-Platform**: Posts to Google Chat + generates GitHub Pages website
 
 ## 📁 Repository Structure
