@@ -273,6 +273,9 @@ def create_subpage(date_str, articles):
 
 # 主流程
 if __name__ == "__main__":
+    subprocess.run(["git", "switch", "main"])
+    subprocess.run(["git", "pull"])
+
     max_paper_length = 12000
     rank_method = 'hot'
     paper_counts = 3
