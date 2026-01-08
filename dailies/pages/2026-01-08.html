@@ -1,0 +1,1245 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-01-08 Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            height: 600px; /* 固定高度 */
+            cursor: pointer; /* 增加指针样式提示可点击 */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow: auto !important;
+            padding-bottom: 50px; /* 添加底部填充 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-height: none; /* 移除任何高度限制 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .paper-card p {
+            margin: 5px 0;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                height: 650px; /* 移动设备上高度调整 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>2026-01-08 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/broken-noise.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Benchmark^2: Systematic Evaluation of LLM Benchmarks</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-01-07</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2601.03986" target="_blank">http://arxiv.org/pdf/2601.03986</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Systematic evaluation of Large Language Model (LLM) benchmarks through a new framework called BENCHMARK², focusing on benchmark quality assessment in AI evaluation.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on previous work on benchmark evaluation and data contamination studies, proposes three new metrics to assess benchmark quality: Cross-Benchmark Ranking Consistency, Discriminability Score, and Capability Alignment Deviation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Addresses the lack of systematic methods to evaluate the quality and reliability of LLM benchmarks themselves, as current practice often treats benchmarks as ground truth without questioning their validity.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> Evaluates 15 benchmarks across mathematics, reasoning, and knowledge domains using 11 LLMs from four model families, applying their three proposed metrics to assess benchmark quality and consistency.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Found significant quality variations among existing benchmarks and demonstrated that selective benchmark construction based on their metrics can achieve comparable evaluation performance with only 35% of the original test sets.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Benchmark^2: Systematic Evaluation of LLM Benchmarks</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">
+    Benchmark² Methodology Flow
+  </text>
+  
+  <!-- Input Data Section -->
+  <rect x="50" y="60" width="180" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="140" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Input Data</text>
+  <text x="140" y="105" text-anchor="middle" font-size="10" fill="#34495e">15 Benchmarks</text>
+  <text x="140" y="120" text-anchor="middle" font-size="10" fill="#34495e">11 Models (4 Families)</text>
+  
+  <!-- Three Main Metrics -->
+  
+  <!-- CBRC Section -->
+  <rect x="80" y="180" width="200" height="120" rx="10" fill="#fdf2e9" stroke="#e67e22" stroke-width="2"/>
+  <text x="180" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">Cross-Benchmark</text>
+  <text x="180" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">Ranking Consistency</text>
+  <text x="180" y="240" text-anchor="middle" font-size="12" fill="#8b4513">(CBRC)</text>
+  
+  <circle cx="180" cy="265" r="15" fill="#f39c12"/>
+  <text x="180" y="270" text-anchor="middle" font-size="10" fill="white">τ</text>
+  
+  <!-- DS Section -->
+  <rect x="320" y="180" width="200" height="120" rx="10" fill="#eaf2f8" stroke="#3498db" stroke-width="2"/>
+  <text x="420" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9">Discriminability</text>
+  <text x="420" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9">Score</text>
+  <text x="420" y="240" text-anchor="middle" font-size="12" fill="#1f4e79">(DS)</text>
+  
+  <circle cx="420" cy="265" r="15" fill="#3498db"/>
+  <text x="420" y="270" text-anchor="middle" font-size="10" fill="white">σ</text>
+  
+  <!-- CAD Section -->
+  <rect x="560" y="180" width="200" height="120" rx="10" fill="#f4f6f7" stroke="#95a5a6" stroke-width="2"/>
+  <text x="660" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="#5d6d7e">Capability Alignment</text>
+  <text x="660" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="#5d6d7e">Deviation</text>
+  <text x="660" y="240" text-anchor="middle" font-size="12" fill="#34495e">(CAD)</text>
+  
+  <circle cx="660" cy="265" r="15" fill="#95a5a6"/>
+  <text x="660" y="270" text-anchor="middle" font-size="10" fill="white">e^-λ</text>
+  
+  <!-- Formula Boxes -->
+  <rect x="80" y="320" width="200" height="60" rx="5" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+  <text x="180" y="340" text-anchor="middle" font-size="11" fill="#856404">CBRC = (1/n-1) Σ τ(ri, rj)</text>
+  <text x="180" y="355" text-anchor="middle" font-size="9" fill="#856404">Measures ranking</text>
+  <text x="180" y="368" text-anchor="middle" font-size="9" fill="#856404">correlation with peers</text>
+  
+  <rect x="320" y="320" width="200" height="60" rx="5" fill="#d1ecf1" stroke="#17a2b8" stroke-width="1"/>
+  <text x="420" y="340" text-anchor="middle" font-size="11" fill="#0c5460">DS = (σ/μ) × significance</text>
+  <text x="420" y="355" text-anchor="middle" font-size="9" fill="#0c5460">Quantifies performance</text>
+  <text x="420" y="368" text-anchor="middle" font-size="9" fill="#0c5460">spread between models</text>
+  
+  <rect x="560" y="320" width="200" height="60" rx="5" fill="#f8d7da" stroke="#dc3545" stroke-width="1"/>
+  <text x="660" y="340" text-anchor="middle" font-size="11" fill="#721c24">CAD = e^(-λ × inv_rate)</text>
+  <text x="660" y="355" text-anchor="middle" font-size="9" fill="#721c24">Penalizes capability</text>
+  <text x="660" y="368" text-anchor="middle" font-size="9" fill="#721c24">hierarchy violations</text>
+  
+  <!-- Combination Section -->
+  <rect x="300" y="420" width="250" height="80" rx="10" fill="#e8f5e8" stroke="#28a745" stroke-width="2"/>
+  <text x="425" y="445" text-anchor="middle" font-size="14" font-weight="bold" fill="#155724">Benchmark Quality Score</text>
+  <text x="425" y="465" text-anchor="middle" font-size="12" fill="#155724">BQS = α·CBRC + β·DS + γ·CAD</text>
+  <text x="425" y="485" text-anchor="middle" font-size="10" fill="#155724">α=0.3, β=0.3, γ=0.4</text>
+  
+  <!-- Applications -->
+  <rect x="100" y="540" width="180" height="80" rx="10" fill="#f0e6ff" stroke="#6f42c1" stroke-width="2"/>
+  <text x="190" y="565" text-anchor="middle" font-size="12" font-weight="bold" fill="#4c2a85">Quality Assessment</text>
+  <text x="190" y="585" text-anchor="middle" font-size="10" fill="#4c2a85">Identify problematic</text>
+  <text x="190" y="600" text-anchor="middle" font-size="10" fill="#4c2a85">benchmarks & instances</text>
+  
+  <rect x="320" y="540" width="180" height="80" rx="10" fill="#fff0f5" stroke="#e91e63" stroke-width="2"/>
+  <text x="410" y="565" text-anchor="middle" font-size="12" font-weight="bold" fill="#ad1457">Selective Construction</text>
+  <text x="410" y="585" text-anchor="middle" font-size="10" fill="#ad1457">Filter to 35% of instances</text>
+  <text x="410" y="600" text-anchor="middle" font-size="10" fill="#ad1457">while maintaining quality</text>
+  
+  <rect x="540" y="540" width="180" height="80" rx="10" fill="#f0fff0" stroke="#20c997" stroke-width="2"/>
+  <text x="630" y="565" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d7377">Stability Analysis</text>
+  <text x="630" y="585" text-anchor="middle" font-size="10" fill="#0d7377">Bootstrap validation</text>
+  <text x="630" y="600" text-anchor="middle" font-size="10" fill="#0d7377">ranking consistency</text>
+  
+  <!-- Results Box -->
+  <rect x="780" y="180" width="180" height="300" rx="10" fill="#fff8e1" stroke="#ff9800" stroke-width="2"/>
+  <text x="870" y="205" text-anchor="middle" font-size="14" font-weight="bold" fill="#e65100">Key Findings</text>
+  
+  <text x="870" y="230" text-anchor="middle" font-size="10" fill="#bf360c">Quality varies significantly</text>
+  <text x="870" y="245" text-anchor="middle" font-size="10" fill="#bf360c">across benchmarks</text>
+  
+  <text x="870" y="270" text-anchor="middle" font-size="10" fill="#bf360c">AIME 2024: BQS=0.79</text>
+  <text x="870" y="285" text-anchor="middle" font-size="10" fill="#bf360c">(High quality)</text>
+  
+  <text x="870" y="310" text-anchor="middle" font-size="10" fill="#bf360c">SIQA: BQS=0.40</text>
+  <text x="870" y="325" text-anchor="middle" font-size="10" fill="#bf360c">(Low quality)</text>
+  
+  <text x="870" y="350" text-anchor="middle" font-size="10" fill="#bf360c">Selective benchmarks</text>
+  <text x="870" y="365" text-anchor="middle" font-size="10" fill="#bf360c">achieve τ=0.93 ranking</text>
+  <text x="870" y="380" text-anchor="middle" font-size="10" fill="#bf360c">consistency</text>
+  
+  <text x="870" y="405" text-anchor="middle" font-size="10" fill="#bf360c">Mathematics shows</text>
+  <text x="870" y="420" text-anchor="middle" font-size="10" fill="#bf360c">highest quality</text>
+  <text x="870" y="435" text-anchor="middle" font-size="10" fill="#bf360c">variation</text>
+  
+  <text x="870" y="460" text-anchor="middle" font-size="10" fill="#bf360c">Held-out validation</text>
+  <text x="870" y="475" text-anchor="middle" font-size="10" fill="#bf360c">confirms generalization</text>
+  
+  <!-- Final Output -->
+  <rect x="350" y="660" width="200" height="60" rx="10" fill="#e1f5fe" stroke="#0288d1" stroke-width="2"/>
+  <text x="450" y="685" text-anchor="middle" font-size="12" font-weight="bold" fill="#01579b">Systematic Framework</text>
+  <text x="450" y="705" text-anchor="middle" font-size="10" fill="#01579b">for LLM Benchmark Evaluation</text>
+  
+  <!-- Connecting lines -->
+  <line x1="140" y1="140" x2="140" y2="160" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="140" y1="160" x2="180" y2="180" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="140" y1="160" x2="420" y2="180" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="140" y1="160" x2="660" y2="180" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <line x1="180" y1="380" x2="350" y2="440" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="420" y1="380" x2="425" y2="420" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="660" y1="380" x2="500" y2="440" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <line x1="425" y1="500" x2="425" y2="520" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="425" y1="520" x2="190" y2="540" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="425" y1="520" x2="410" y2="540" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="425" y1="520" x2="630" y2="540" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <line x1="410" y1="620" x2="450" y2="660" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It introduces three complementary metrics to systematically assess benchmark quality">
+                        <div class="quiz-question">1. What is the primary innovation of the BENCHMARK² framework compared to traditional benchmark evaluation approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It evaluates benchmarks across multiple languages">It evaluates benchmarks across multiple languages</div><div class="quiz-choice" data-value="It introduces three complementary metrics to systematically assess benchmark quality">It introduces three complementary metrics to systematically assess benchmark quality</div><div class="quiz-choice" data-value="It focuses only on mathematical reasoning tasks">It focuses only on mathematical reasoning tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="35%">
+                        <div class="quiz-question">2. When using the selective benchmark construction approach proposed in the paper, what percentage of original test sets was sufficient to achieve comparable evaluation performance?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="15%">15%</div><div class="quiz-choice" data-value="35%">35%</div><div class="quiz-choice" data-value="55%">55%</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Mathematics">
+                        <div class="quiz-question">3. In the study's findings about benchmark quality, which domain showed the widest variation in Benchmark Quality Score (BQS)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Knowledge & Understanding">Knowledge & Understanding</div><div class="quiz-choice" data-value="General Reasoning">General Reasoning</div><div class="quiz-choice" data-value="Mathematics">Mathematics</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Entropy-Adaptive Fine-Tuning: Resolving Confident Conflicts to Mitigate Forgetting</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-01-05</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2601.02151" target="_blank">http://arxiv.org/pdf/2601.02151</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on entropy-adaptive fine-tuning of large language models, specifically addressing the issue of catastrophic forgetting during model adaptation across mathematical, medical, and agent domains.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on research showing that on-policy Reinforcement Learning preserves general capabilities better than Supervised Fine-Tuning (SFT), the paper proposes using entropy as a novel gating mechanism to identify and handle "confident conflicts" during training.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses catastrophic forgetting in Supervised Fine-Tuning, where models lose their general capabilities while adapting to specific domains.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors developed Entropy-Adaptive Fine-Tuning (EAFT), which uses token-level entropy as a gating mechanism to modulate training loss, down-weighting destructive updates from conflicting data while maintaining learning from uncertain samples.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> EAFT matched or exceeded baseline performance on target tasks while significantly reducing catastrophic forgetting across multiple model families (Qwen, GLM) and scales (4B-32B parameters), demonstrating effectiveness in mathematical, medical, and agent domains.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Entropy-Adaptive Fine-Tuning: Resolving Confident Conflicts to Mitigate Forgetting</h2>
+                        <svg width="100%" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    EAFT Workflow: Entropy-Adaptive Fine-Tuning
+  </text>
+  
+  <!-- Problem Identification Section -->
+  <rect x="50" y="80" width="300" height="120" fill="#ffebee" stroke="#e91e63" stroke-width="2" rx="10"/>
+  <text x="200" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#c2185b">Problem Identification</text>
+  <text x="200" y="125" text-anchor="middle" font-size="11" fill="#ad1457">Standard SFT causes</text>
+  <text x="200" y="140" text-anchor="middle" font-size="11" fill="#ad1457">catastrophic forgetting</text>
+  <text x="200" y="155" text-anchor="middle" font-size="11" fill="#ad1457">in domain adaptation</text>
+  <text x="200" y="180" text-anchor="middle" font-size="10" fill="#880e4f">• General capabilities degradation</text>
+  
+  <!-- Data Analysis Section -->
+  <rect x="400" y="80" width="350" height="120" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="10"/>
+  <text x="575" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#388e3c">Token-Level Analysis</text>
+  <text x="575" y="125" text-anchor="middle" font-size="11" fill="#2e7d32">Compare SFT vs On-policy RL data</text>
+  <text x="575" y="145" text-anchor="middle" font-size="10" fill="#1b5e20">• Probability: P(y_t|x,y_&lt;t)</text>
+  <text x="575" y="160" text-anchor="middle" font-size="10" fill="#1b5e20">• Entropy: H_t = -Σ P(v)log P(v)</text>
+  <text x="575" y="180" text-anchor="middle" font-size="10" fill="#1b5e20">• Identify distributional gaps</text>
+  
+  <!-- Key Finding Section -->
+  <rect x="800" y="80" width="350" height="120" fill="#fff3e0" stroke="#ff9800" stroke-width="2" rx="10"/>
+  <text x="975" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57c00">Key Discovery</text>
+  <text x="975" y="125" text-anchor="middle" font-size="12" font-weight="bold" fill="#ef6c00">"Confident Conflicts"</text>
+  <text x="975" y="145" text-anchor="middle" font-size="10" fill="#e65100">Low Entropy + Low Probability</text>
+  <text x="975" y="160" text-anchor="middle" font-size="10" fill="#e65100">Model confident but wrong</text>
+  <text x="975" y="180" text-anchor="middle" font-size="10" fill="#e65100">→ Destructive gradient updates</text>
+  
+  <!-- Pilot Experiment -->
+  <rect x="200" y="240" width="300" height="100" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2" rx="10"/>
+  <text x="350" y="265" text-anchor="middle" font-size="14" font-weight="bold" fill="#0277bd">Pilot Experiment</text>
+  <text x="350" y="285" text-anchor="middle" font-size="11" fill="#01579b">Mask bottom 15% tokens</text>
+  <text x="350" y="300" text-anchor="middle" font-size="11" fill="#01579b">(entropy + probability)</text>
+  <text x="350" y="320" text-anchor="middle" font-size="10" fill="#0d47a1">Result: Forgetting mitigated!</text>
+  
+  <!-- EAFT Method -->
+  <rect x="600" y="220" width="400" height="140" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="10"/>
+  <text x="800" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#7b1fa2">EAFT Method</text>
+  <text x="800" y="270" text-anchor="middle" font-size="12" fill="#6a1b9a">L_EAFT = -Σ H̃_t · log P(y_t|x,y_&lt;t)</text>
+  
+  <rect x="620" y="285" width="160" height="60" fill="#e8eaf6" stroke="#3f51b5" stroke-width="1" rx="5"/>
+  <text x="700" y="305" text-anchor="middle" font-size="10" font-weight="bold" fill="#303f9f">Adaptive Gating</text>
+  <text x="700" y="320" text-anchor="middle" font-size="9" fill="#1a237e">H̃_t = H_top-20 / ln(20)</text>
+  <text x="700" y="335" text-anchor="middle" font-size="9" fill="#1a237e">Normalized [0,1]</text>
+  
+  <rect x="820" y="285" width="160" height="60" fill="#fce4ec" stroke="#e91e63" stroke-width="1" rx="5"/>
+  <text x="900" y="305" text-anchor="middle" font-size="10" font-weight="bold" fill="#c2185b">Mechanism</text>
+  <text x="900" y="320" text-anchor="middle" font-size="9" fill="#ad1457">H̃→0: Suppress conflicts</text>
+  <text x="900" y="335" text-anchor="middle" font-size="9" fill="#ad1457">H̃→1: Learn uncertainty</text>
+  
+  <!-- Experimental Validation -->
+  <rect x="100" y="400" width="200" height="120" fill="#e0f2f1" stroke="#009688" stroke-width="2" rx="10"/>
+  <text x="200" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#00695c">Math Domain</text>
+  <text x="200" y="445" text-anchor="middle" font-size="10" fill="#004d40">AIME24/25, GSM8K</text>
+  <text x="200" y="460" text-anchor="middle" font-size="10" fill="#004d40">Models: Qwen, GLM</text>
+  <text x="200" y="475" text-anchor="middle" font-size="10" fill="#004d40">4B-32B parameters</text>
+  <text x="200" y="500" text-anchor="middle" font-size="9" font-weight="bold" fill="#00251a">✓ Target performance</text>
+  <text x="200" y="515" text-anchor="middle" font-size="9" font-weight="bold" fill="#00251a">✓ General capability preserved</text>
+  
+  <rect x="350" y="400" width="200" height="120" fill="#fff8e1" stroke="#ffc107" stroke-width="2" rx="10"/>
+  <text x="450" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57f17">Medical Domain</text>
+  <text x="450" y="445" text-anchor="middle" font-size="10" fill="#e65100">MedMCQA, PubMedQA</text>
+  <text x="450" y="460" text-anchor="middle" font-size="10" fill="#e65100">MedQA, Huatuo-O1</text>
+  <text x="450" y="475" text-anchor="middle" font-size="10" fill="#e65100">Knowledge-intensive</text>
+  <text x="450" y="500" text-anchor="middle" font-size="9" font-weight="bold" fill="#bf360c">✓ Domain adaptation</text>
+  <text x="450" y="515" text-anchor="middle" font-size="9" font-weight="bold" fill="#bf360c">✓ Forgetting mitigation</text>
+  
+  <rect x="600" y="400" width="200" height="120" fill="#f1f8e9" stroke="#8bc34a" stroke-width="2" rx="10"/>
+  <text x="700" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#689f38">Agent Domain</text>
+  <text x="700" y="445" text-anchor="middle" font-size="10" fill="#33691e">BFCL, Tool-use</text>
+  <text x="700" y="460" text-anchor="middle" font-size="10" fill="#33691e">Syntax-intensive</text>
+  <text x="700" y="475" text-anchor="middle" font-size="10" fill="#33691e">Function calling</text>
+  <text x="700" y="500" text-anchor="middle" font-size="9" font-weight="bold" fill="#1b5e20">✓ Tool capabilities</text>
+  <text x="700" y="515" text-anchor="middle" font-size="9" font-weight="bold" fill="#1b5e20">✓ General robustness</text>
+  
+  <!-- Analysis Section -->
+  <rect x="850" y="400" width="300" height="120" fill="#fafafa" stroke="#607d8b" stroke-width="2" rx="10"/>
+  <text x="1000" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#37474f">Mechanism Analysis</text>
+  <text x="1000" y="445" text-anchor="middle" font-size="10" fill="#263238">Gradient landscape visualization</text>
+  <text x="1000" y="460" text-anchor="middle" font-size="10" fill="#263238">Training dynamics tracking</text>
+  <text x="1000" y="475" text-anchor="middle" font-size="10" fill="#263238">Entropy gating verification</text>
+  <text x="1000" y="500" text-anchor="middle" font-size="9" font-weight="bold" fill="#102027">✓ Conflicts suppressed</text>
+  <text x="1000" y="515" text-anchor="middle" font-size="9" font-weight="bold" fill="#102027">✓ Learning preserved</text>
+  
+  <!-- Results Summary -->
+  <rect x="300" y="560" width="600" height="100" fill="#e8f5e8" stroke="#4caf50" stroke-width="3" rx="15"/>
+  <text x="600" y="585" text-anchor="middle" font-size="16" font-weight="bold" fill="#1b5e20">Key Results</text>
+  <text x="600" y="610" text-anchor="middle" font-size="12" fill="#2e7d32">✓ Pareto improvement: Target performance + General capability preservation</text>
+  <text x="600" y="630" text-anchor="middle" font-size="12" fill="#2e7d32">✓ Domain-agnostic solution across Math, Medical, Agent tasks</text>
+  <text x="600" y="650" text-anchor="middle" font-size="12" fill="#2e7d32">✓ Efficient Top-K entropy approximation with minimal overhead</text>
+  
+  <!-- Efficiency Analysis -->
+  <rect x="100" y="700" width="250" height="80" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" rx="10"/>
+  <text x="225" y="725" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d47a1">Efficiency Analysis</text>
+  <text x="225" y="745" text-anchor="middle" font-size="10" fill="#1565c0">Top-20 approximation</text>
+  <text x="225" y="760" text-anchor="middle" font-size="10" fill="#1565c0">Correlation: 0.999</text>
+  <text x="225" y="775" text-anchor="middle" font-size="10" fill="#1565c0">Overhead: &lt;0.4KB</text>
+  
+  <!-- Robustness Analysis -->
+  <rect x="400" y="700" width="250" height="80" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="10"/>
+  <text x="525" y="725" text-anchor="middle" font-size="12" font-weight="bold" fill="#6a1b9a">Robustness Analysis</text>
+  <text x="525" y="745" text-anchor="middle" font-size="10" fill="#7b1fa2">Multiple gating functions</text>
+  <text x="525" y="760" text-anchor="middle" font-size="10" fill="#7b1fa2">Linear, Polynomial, Sigmoid</text>
+  <text x="525" y="775" text-anchor="middle" font-size="10" fill="#7b1fa2">Consistent improvements</text>
+  
+  <!-- Baselines Comparison -->
+  <rect x="700" y="700" width="400" height="80" fill="#fff3e0" stroke="#ff9800" stroke-width="2" rx="10"/>
+  <text x="900" y="725" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">Baseline Comparison</text>
+  <text x="900" y="745" text-anchor="middle" font-size="10" fill="#f57c00">vs SFT, SFT_KL, FLOW, DFT, TALR</text>
+  <text x="900" y="760" text-anchor="middle" font-size="10" fill="#f57c00">Superior forgetting mitigation</text>
+  <text x="900" y="775" text-anchor="middle" font-size="10" fill="#f57c00">Competitive target performance</text>
+  
+  <!-- Connecting lines with gentle curves -->
+  <path d="M 350 200 Q 400 220 450 240" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 650 200 Q 700 220 750 240" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 975 200 Q 900 300 800 340" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 500 340 Q 400 370 350 400" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 700 360 Q 650 380 600 400" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 800 360 Q 850 380 900 400" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 400 520 Q 500 540 500 560" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 600 520 Q 650 540 700 560" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 900 520 Q 800 540 700 560" stroke="#666" stroke-width="2" fill="none"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses token-level entropy as a gating mechanism">
+                        <div class="quiz-question">1. What is the main innovation of EAFT compared to traditional fine-tuning approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger batch size during training">It uses a larger batch size during training</div><div class="quiz-choice" data-value="It uses token-level entropy as a gating mechanism">It uses token-level entropy as a gating mechanism</div><div class="quiz-choice" data-value="It requires multiple GPUs for parallel processing">It requires multiple GPUs for parallel processing</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Tokens with low probability and low entropy where model confidence contradicts training data">
+                        <div class="quiz-question">2. What are 'Confident Conflicts' according to the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Tokens with high probability but high entropy">Tokens with high probability but high entropy</div><div class="quiz-choice" data-value="Tokens with high probability and low entropy">Tokens with high probability and low entropy</div><div class="quiz-choice" data-value="Tokens with low probability and low entropy where model confidence contradicts training data">Tokens with low probability and low entropy where model confidence contradicts training data</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It matched baseline performance on target tasks while preserving general capabilities">
+                        <div class="quiz-question">3. Which of the following best describes the performance impact of EAFT?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It improved target task performance but worsened general capabilities">It improved target task performance but worsened general capabilities</div><div class="quiz-choice" data-value="It matched baseline performance on target tasks while preserving general capabilities">It matched baseline performance on target tasks while preserving general capabilities</div><div class="quiz-choice" data-value="It significantly reduced performance on both target tasks and general capabilities">It significantly reduced performance on both target tasks and general capabilities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>SOP: A Scalable Online Post-Training System for Vision-Language-Action Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-01-06</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2601.03044" target="_blank">http://arxiv.org/pdf/2601.03044</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents SOP (Scalable Online Post-training), a system for improving pretrained vision-language-action (VLA) robot models through real-world interaction.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Based on existing post-training methods like HG-DAgger and RECAP which were limited to offline or single-robot settings, this paper proposes a novel online distributed architecture for fleet-scale robot learning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses how to efficiently adapt pretrained VLA models to achieve expert-level task proficiency while maintaining generalization capabilities across multiple tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> SOP uses a closed-loop architecture where multiple robots continuously stream experience data to a cloud server while receiving updated policies, integrating both interactive imitation learning and reinforcement learning approaches.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The system achieved substantial performance improvements across manipulation tasks (94-98% success rates), with near-linear scaling as robot fleet size increased, and effective post-training achieved within hours rather than days.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SOP: A Scalable Online Post-Training System for Vision-Language-Action Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">SOP: Scalable Online Post-Training System Workflow</text>
+  
+  <!-- Robot Fleet Section -->
+  <rect x="50" y="80" width="200" height="150" rx="10" fill="#3498db" opacity="0.8"/>
+  <text x="150" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Robot Fleet</text>
+  <text x="150" y="125" text-anchor="middle" font-size="12" fill="white">Distributed Actors</text>
+  <text x="150" y="140" text-anchor="middle" font-size="11" fill="white">N=1,2,4...10 robots</text>
+  
+  <!-- Individual robots -->
+  <circle cx="100" cy="170" r="15" fill="#2980b9"/>
+  <text x="100" y="175" text-anchor="middle" font-size="10" fill="white">R1</text>
+  <circle cx="130" cy="170" r="15" fill="#2980b9"/>
+  <text x="130" y="175" text-anchor="middle" font-size="10" fill="white">R2</text>
+  <circle cx="160" cy="170" r="15" fill="#2980b9"/>
+  <text x="160" y="175" text-anchor="middle" font-size="10" fill="white">R3</text>
+  <circle cx="200" cy="170" r="15" fill="#2980b9"/>
+  <text x="200" y="175" text-anchor="middle" font-size="10" fill="white">RN</text>
+  
+  <!-- Tasks Section -->
+  <rect x="50" y="260" width="200" height="120" rx="10" fill="#e74c3c" opacity="0.8"/>
+  <text x="150" y="285" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Multi-Task Environment</text>
+  <text x="70" y="305" font-size="11" fill="white">• Grocery Restocking</text>
+  <text x="70" y="320" font-size="11" fill="white">• Laundry Folding</text>
+  <text x="70" y="335" font-size="11" fill="white">• Box Assembly</text>
+  <text x="70" y="355" font-size="11" fill="white">+ Human Interventions</text>
+  
+  <!-- Data Collection -->
+  <rect x="300" y="80" width="180" height="100" rx="10" fill="#9b59b6" opacity="0.8"/>
+  <text x="390" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Data Collection</text>
+  <text x="320" y="125" font-size="11" fill="white">• On-policy rollouts τ_π</text>
+  <text x="320" y="140" font-size="11" fill="white">• Human corrections τ_H</text>
+  <text x="320" y="155" font-size="11" fill="white">• Streaming to cloud</text>
+  
+  <!-- Experience Buffer -->
+  <rect x="300" y="200" width="180" height="80" rx="10" fill="#f39c12" opacity="0.8"/>
+  <text x="390" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Experience Buffer</text>
+  <text x="320" y="245" font-size="11" fill="white">Online Buffer B_on</text>
+  <text x="320" y="260" font-size="11" fill="white">Offline Buffer B_off</text>
+  
+  <!-- Adaptive Sampling -->
+  <rect x="300" y="300" width="180" height="80" rx="10" fill="#1abc9c" opacity="0.8"/>
+  <text x="390" y="325" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Adaptive Sampling</text>
+  <text x="320" y="345" font-size="11" fill="white">Task-balanced strategy</text>
+  <text x="320" y="360" font-size="11" fill="white">Online/Offline mixing</text>
+  
+  <!-- Cloud Learner Section -->
+  <rect x="550" y="80" width="200" height="200" rx="10" fill="#34495e" opacity="0.8"/>
+  <text x="650" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Cloud Learner</text>
+  <text x="650" y="125" text-anchor="middle" font-size="12" fill="white">Centralized Training</text>
+  
+  <!-- Post-training Algorithms -->
+  <rect x="570" y="140" width="160" height="60" rx="5" fill="#27ae60" opacity="0.9"/>
+  <text x="650" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Post-training Module</text>
+  <text x="650" y="175" text-anchor="middle" font-size="11" fill="white">HG-DAgger</text>
+  <text x="650" y="190" text-anchor="middle" font-size="11" fill="white">RECAP</text>
+  
+  <!-- Parameter Update -->
+  <rect x="570" y="220" width="160" height="50" rx="5" fill="#8e44ad" opacity="0.9"/>
+  <text x="650" y="240" text-anchor="middle" font-size="12" fill="white">Parameter Update</text>
+  <text x="650" y="255" text-anchor="middle" font-size="11" fill="white">θ ← arg min L_PT</text>
+  
+  <!-- Policy Deployment -->
+  <rect x="800" y="80" width="150" height="120" rx="10" fill="#e67e22" opacity="0.8"/>
+  <text x="875" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Policy Deployment</text>
+  <text x="820" y="125" font-size="11" fill="white">• Asynchronous update</text>
+  <text x="820" y="140" font-size="11" fill="white">• Low-latency sync</text>
+  <text x="820" y="155" font-size="11" fill="white">• Shared generalist</text>
+  <text x="820" y="170" font-size="11" fill="white">  policy π_θ</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="550" y="320" width="200" height="100" rx="10" fill="#16a085" opacity="0.8"/>
+  <text x="650" y="345" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Performance Metrics</text>
+  <text x="570" y="365" font-size="11" fill="white">• Success Rate: 0.94-0.98</text>
+  <text x="570" y="380" font-size="11" fill="white">• 2× Throughput Improvement</text>
+  <text x="570" y="395" font-size="11" fill="white">• Near-linear Fleet Scaling</text>
+  
+  <!-- System Infrastructure -->
+  <rect x="50" y="450" width="900" height="120" rx="10" fill="#95a5a6" opacity="0.3"/>
+  <text x="500" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">System Infrastructure</text>
+  
+  <!-- Infrastructure components -->
+  <rect x="80" y="490" width="120" height="60" rx="5" fill="#7f8c8d" opacity="0.8"/>
+  <text x="140" y="510" text-anchor="middle" font-size="11" fill="white">Edge Client</text>
+  <text x="140" y="525" text-anchor="middle" font-size="10" fill="white">Local buffering</text>
+  <text x="140" y="540" text-anchor="middle" font-size="10" fill="white">Episode upload</text>
+  
+  <rect x="230" y="490" width="120" height="60" rx="5" fill="#7f8c8d" opacity="0.8"/>
+  <text x="290" y="510" text-anchor="middle" font-size="11" fill="white">Object Storage</text>
+  <text x="290" y="525" text-anchor="middle" font-size="10" fill="white">S3-compatible</text>
+  <text x="290" y="540" text-anchor="middle" font-size="10" fill="white">Persistent data</text>
+  
+  <rect x="380" y="490" width="120" height="60" rx="5" fill="#7f8c8d" opacity="0.8"/>
+  <text x="440" y="510" text-anchor="middle" font-size="11" fill="white">Message Queue</text>
+  <text x="440" y="525" text-anchor="middle" font-size="10" fill="white">Event notifications</text>
+  <text x="440" y="540" text-anchor="middle" font-size="10" fill="white">Fault tolerance</text>
+  
+  <rect x="530" y="490" width="120" height="60" rx="5" fill="#7f8c8d" opacity="0.8"/>
+  <text x="590" y="510" text-anchor="middle" font-size="11" fill="white">Data Consumer</text>
+  <text x="590" y="525" text-anchor="middle" font-size="10" fill="white">In-memory index</text>
+  <text x="590" y="540" text-anchor="middle" font-size="10" fill="white">Batch sampling</text>
+  
+  <rect x="680" y="490" width="120" height="60" rx="5" fill="#7f8c8d" opacity="0.8"/>
+  <text x="740" y="510" text-anchor="middle" font-size="11" fill="white">Pub-Sub Channel</text>
+  <text x="740" y="525" text-anchor="middle" font-size="10" fill="white">Model broadcast</text>
+  <text x="740" y="540" text-anchor="middle" font-size="10" fill="white">Low latency</text>
+  
+  <!-- Key Features -->
+  <rect x="50" y="600" width="900" height="150" rx="10" fill="#ecf0f1" opacity="0.8"/>
+  <text x="500" y="625" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key SOP Features</text>
+  
+  <rect x="80" y="640" width="160" height="80" rx="5" fill="#3498db" opacity="0.7"/>
+  <text x="160" y="665" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Online Learning</text>
+  <text x="100" y="680" font-size="10" fill="white">• On-policy correction</text>
+  <text x="100" y="695" font-size="10" fill="white">• Continuous updates</text>
+  <text x="100" y="710" font-size="10" fill="white">• Real-time feedback</text>
+  
+  <rect x="270" y="640" width="160" height="80" rx="5" fill="#e74c3c" opacity="0.7"/>
+  <text x="350" y="665" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Distributed</text>
+  <text x="290" y="680" font-size="10" fill="white">• Fleet scalability</text>
+  <text x="290" y="695" font-size="10" fill="white">• Parallel experience</text>
+  <text x="290" y="710" font-size="10" fill="white">• Elastic scaling</text>
+  
+  <rect x="460" y="640" width="160" height="80" rx="5" fill="#27ae60" opacity="0.7"/>
+  <text x="540" y="665" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Multi-task</text>
+  <text x="480" y="680" font-size="10" fill="white">• Shared policy</text>
+  <text x="480" y="695" font-size="10" fill="white">• Generality preserved</text>
+  <text x="480" y="710" font-size="10" fill="white">• Cross-task learning</text>
+  
+  <rect x="650" y="640" width="160" height="80" rx="5" fill="#9b59b6" opacity="0.7"/>
+  <text x="730" y="665" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Algorithm Agnostic</text>
+  <text x="670" y="680" font-size="10" fill="white">• Pluggable modules</text>
+  <text x="670" y="695" font-size="10" fill="white">• HG-DAgger/RECAP</text>
+  <text x="670" y="710" font-size="10" fill="white">• Extensible framework</text>
+  
+  <!-- Flow connections (simplified curved lines) -->
+  <path d="M 250 155 Q 275 155 300 155" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 480 155 Q 525 155 550 155" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 750 180 Q 825 180 825 200 Q 825 400 100 400 Q 100 300 100 230" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  <path d="M 390 280 L 390 300" stroke="#2c3e50" stroke-width="2"/>
+  <path d="M 480 340 Q 525 340 550 340" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It enables online, distributed, multi-task post-training in the physical world">
+                        <div class="quiz-question">1. What is the main innovation of SOP compared to previous post-training approaches?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It introduces a new type of robot hardware">It introduces a new type of robot hardware</div><div class="quiz-choice" data-value="It enables online, distributed, multi-task post-training in the physical world">It enables online, distributed, multi-task post-training in the physical world</div><div class="quiz-choice" data-value="It creates a new type of neural network architecture">It creates a new type of neural network architecture</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Hours of real-world interaction">
+                        <div class="quiz-question">2. In the experimental evaluation, how long did it typically take for SOP to achieve effective post-training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Several weeks of continuous training">Several weeks of continuous training</div><div class="quiz-choice" data-value="Multiple days of training">Multiple days of training</div><div class="quiz-choice" data-value="Hours of real-world interaction">Hours of real-world interaction</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Training time decreased by 2.4x (near-linear scaling)">
+                        <div class="quiz-question">3. What happened to training efficiency when the number of robots in the fleet was increased from 1 to 4?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Training time decreased by 2.4x (near-linear scaling)">Training time decreased by 2.4x (near-linear scaling)</div><div class="quiz-choice" data-value="Training time remained the same">Training time remained the same</div><div class="quiz-choice" data-value="Training time increased due to coordination overhead">Training time increased due to coordination overhead</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为卡片容器添加点击事件
+                cardDeck.addEventListener('click', function(e) {
+                    // 检查点击是否发生在流程图卡片内部的滚动区域
+                    // 如果是在滚动条上点击，不切换卡片
+                    const targetCard = e.target.closest('.paper-card');
+                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
+                        // 计算点击位置是否在滚动条区域
+                        const rect = targetCard.getBoundingClientRect();
+                        const isScrollbarClick = 
+                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+                        
+                        if (!isScrollbarClick) {
+                            nextCard(e);
+                        }
+                    } else {
+                        nextCard(e);
+                    }
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
