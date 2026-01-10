@@ -567,7 +567,7 @@ SUBPAGE_TEMPLATE = """
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <!-- MathJax for LaTeX rendering -->
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
     <script>
         MathJax = {
             tex: {
@@ -578,6 +578,12 @@ SUBPAGE_TEMPLATE = """
             },
             options: {
                 skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
             }
         };
     </script>
