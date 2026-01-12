@@ -44,7 +44,7 @@ SUBPAGE_TEMPLATE = """
             min-height: 600px; /* 改为最小高度而不是固定高度 */
             max-height: 90vh; /* 限制最大高度防止溢出 */
             height: auto; /* 自适应内容高度 */
-            cursor: pointer; /* 增加指针样式提示可点击 */
+            /* cursor removed - only cards should show pointer */
         }
         
         /* 卡片通用样式 */
@@ -60,6 +60,7 @@ SUBPAGE_TEMPLATE = """
             background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
             background-blend-mode: overlay;
             overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
         }
         
         /* 轮播卡片样式 - 新增 */
@@ -571,8 +572,8 @@ SUBPAGE_TEMPLATE = """
     <script>
         MathJax = {
             tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                inlineMath: [['$$', '$$'], ['\\(', '\\)']],
+                displayMath: [['$$$$', '$$$$'], ['\\[', '\\]']],
                 processEscapes: true,
                 processEnvironments: true
             },
@@ -789,24 +790,24 @@ SUBPAGE_TEMPLATE = """
                     showCard(currentIndex + 1);
                 }
                 
-                // 为卡片容器添加点击事件
-                cardDeck.addEventListener('click', function(e) {
-                    // 检查点击是否发生在流程图卡片内部的滚动区域
-                    // 如果是在滚动条上点击，不切换卡片
-                    const targetCard = e.target.closest('.paper-card');
-                    if (targetCard && targetCard.classList.contains('flowchart-card')) {
-                        // 计算点击位置是否在滚动条区域
-                        const rect = targetCard.getBoundingClientRect();
-                        const isScrollbarClick = 
-                            (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
-                            (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
-                        
-                        if (!isScrollbarClick) {
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
                             nextCard(e);
                         }
-                    } else {
-                        nextCard(e);
-                    }
+                    });
                 });
                 
                 // 键盘导航
