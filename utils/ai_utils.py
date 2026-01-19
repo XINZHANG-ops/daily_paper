@@ -9,7 +9,7 @@ analyze academic papers and create structured outputs.
 import re
 import json
 from loguru import logger
-from models import model_response
+from .models import model_response
 
 
 # Prompts for AI generation
@@ -155,7 +155,7 @@ def summary_paper(paper_title, paper_content):
 
     summary = model_response(
         prompt,
-        'claude35',
+        'claude4',
         max_tokens=8000
 
     )
@@ -186,7 +186,7 @@ def create_question(paper_title, paper_content, summary):
 
     questions_content = model_response(
         prompt,
-        'claude35',
+        'claude4',
         max_tokens=8000
 
     )
