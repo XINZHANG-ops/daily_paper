@@ -1,3 +1,8 @@
+"""
+AI model configuration and abstraction layer.
+
+Provides unified interface for multiple AI models including Claude and Gemini variants.
+"""
 import os
 from geotab_genai.genai_gateway_client import GenaiGatewayClient
 
@@ -82,6 +87,17 @@ model_map = {
 
 
 def model_response(prompt, model_name, max_tokens=8192):
+    """
+    Get response from specified AI model.
+
+    Args:
+        prompt: The prompt to send to the model
+        model_name: Name of the model (key in model_map)
+        max_tokens: Maximum tokens in response
+
+    Returns:
+        str: Model response content
+    """
     model = model_map[model_name]
     version = None
     if model_name == 'gemini_20_flash':

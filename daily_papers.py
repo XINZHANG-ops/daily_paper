@@ -7,38 +7,25 @@ import subprocess
 from tqdm import tqdm
 from loguru import logger
 from datetime import date
-from string import Template 
 from threading import Thread
 from queue import Queue, Empty
 from dotenv import load_dotenv
 from inspirational_quotes import quote
 
 
-from daily_paper_utils import (
+from utils import (
     find_not_proposed_papers,
     get_huggingface_papers,
     extract_categories,
-    process_paper,
     send_articles,
     start_thread,
-    fetch_data
+    model_response,
+    process_paper
 )
 
-from models import (
-    model_response
-)
-
-from daily_paper_utils import (
-    quotes_prompt
-)
-
-from index_temp import (
-    INDEX_TEMPLATE
-)
-
-from html_temps import (
-    SUBPAGE_TEMPLATE
-)
+from utils.file_utils import fetch_data
+from utils.ai_utils import quotes_prompt
+from utils.template_loader import get_index_template, get_subpage_template
 
 
 load_dotenv()
@@ -246,7 +233,7 @@ def update_index_page(dates):
     stats = f"Total: {total_papers} papers across {total_years} year{'s' if total_years > 1 else ''}"
 
     # 使用 Template 进行替换
-    template = Template(INDEX_TEMPLATE)
+    template = get_index_template()
     index_html = template.substitute(
         date_structure=html_content,
         stats=stats
@@ -259,7 +246,7 @@ def create_subpage(date_str, articles):
     paper_content = generate_paper_html(articles)
 
     # 使用 Template 进行替换
-    template = Template(SUBPAGE_TEMPLATE)
+    template = get_subpage_template()
     subpage_html = template.substitute(
         date=date_str,
         paper_content=paper_content
