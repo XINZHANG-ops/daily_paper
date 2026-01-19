@@ -123,31 +123,114 @@ def save_notes(date, md_text, image_files):
 def update_index_html():
     """Update index.html with note indicators"""
     try:
-        # Get all existing dates from summaries.jsonl
-        dates = set()
-        summaries_file = Path('summaries.jsonl')
-
-        if summaries_file.exists():
-            with open(summaries_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    if line.strip():
-                        try:
-                            entry = json.loads(line)
-                            if 'published_at' in entry:
-                                dates.add(entry['published_at'])
-                        except json.JSONDecodeError:
-                            continue
-
-        # Import the update function from daily_papers
+        from collections import defaultdict
+        from string import Template
         import sys
         sys.path.insert(0, str(Path(__file__).parent))
-        from daily_papers import update_index_page
 
-        # Update the index
-        update_index_page(sorted(dates))
+        # Import template loader directly to avoid loading utils package
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "template_loader",
+            Path(__file__).parent / "utils" / "template_loader.py"
+        )
+        template_loader = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(template_loader)
+        get_index_template = template_loader.get_index_template
+
+        # Get all existing dates from dailies/pages/ directory
+        # This is more reliable than reading from summaries.jsonl
+        dates = set()
+        pages_dir = Path('dailies/pages')
+
+        if pages_dir.exists():
+            for page_file in pages_dir.glob('*.html'):
+                date_str = page_file.stem  # filename without extension
+                dates.add(date_str)
+
+        # Organize dates by year -> month -> days
+        date_structure = defaultdict(lambda: defaultdict(list))
+
+        for date_str in dates:
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                year = date_obj.year
+                month = date_obj.month
+                date_structure[year][month].append(date_str)
+            except ValueError:
+                continue
+
+        # Generate HTML structure
+        html_content = ""
+        month_names = {
+            1: "January", 2: "February", 3: "March", 4: "April",
+            5: "May", 6: "June", 7: "July", 8: "August",
+            9: "September", 10: "October", 11: "November", 12: "December"
+        }
+
+        # Sort by year descending
+        for year in sorted(date_structure.keys(), reverse=True):
+            year_papers = sum(len(days) for days in date_structure[year].values())
+            html_content += f'''
+        <div class="year-container">
+            <div class="year-header">
+                <span>{year} ({year_papers} papers)</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="content">
+        '''
+
+            # Sort by month descending
+            for month in sorted(date_structure[year].keys(), reverse=True):
+                days = date_structure[year][month]
+                month_name = month_names[month]
+                html_content += f'''
+                <div class="month-container">
+                    <div class="month-header">
+                        <span>{month_name} {year} ({len(days)} papers)</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="content">
+                        <ul class="day-list">
+            '''
+
+                # Sort by date descending
+                for date_str in sorted(days, reverse=True):
+                    # Check if this date has notes
+                    has_notes = os.path.exists(f'dailies/notes/{date_str}.md')
+                    note_indicator = ' <span class="note-badge">📝</span>' if has_notes else ''
+                    html_content += f'                        <li><a href="dailies/pages/{date_str}.html">{date_str}{note_indicator}</a></li>\n'
+
+                html_content += '''                        </ul>
+                    </div>
+                </div>
+            '''
+
+            html_content += '''            </div>
+        </div>
+        '''
+
+        # Generate stats
+        total_papers = len(dates)
+        total_years = len(date_structure)
+        stats = f"Total: {total_papers} papers across {total_years} year{'s' if total_years > 1 else ''}"
+
+        # Use template to generate index
+        template = get_index_template()
+        index_html = template.substitute(
+            date_structure=html_content,
+            stats=stats
+        )
+
+        # Write to index.html
+        with open('index.html', 'w', encoding='utf-8') as f:
+            f.write(index_html)
+
         return True
     except Exception as e:
         print(f"Error updating index: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
