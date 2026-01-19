@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 import shutil
 from datetime import datetime
+import json
 
 
 def get_image_tag(filename):
@@ -119,12 +120,50 @@ def save_notes(date, md_text, image_files):
     return result
 
 
+def update_index_html():
+    """Update index.html with note indicators"""
+    try:
+        # Get all existing dates from summaries.jsonl
+        dates = set()
+        summaries_file = Path('summaries.jsonl')
+
+        if summaries_file.exists():
+            with open(summaries_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if line.strip():
+                        try:
+                            entry = json.loads(line)
+                            if 'published_at' in entry:
+                                dates.add(entry['published_at'])
+                        except json.JSONDecodeError:
+                            continue
+
+        # Import the update function from daily_papers
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent))
+        from daily_papers import update_index_page
+
+        # Update the index
+        update_index_page(sorted(dates))
+        return True
+    except Exception as e:
+        print(f"Error updating index: {e}")
+        return False
+
+
 def upload_to_git(date):
-    """Git add, commit, and push"""
+    """Git add, commit, and push - also updates index.html"""
     if not date:
         return "❌ Error: Please enter a date for commit message"
 
     try:
+        # First, update index.html to include note indicators
+        result_msg = "📋 Updating index.html...\n"
+        if update_index_html():
+            result_msg += "✅ Index updated with note indicators\n\n"
+        else:
+            result_msg += "⚠️ Could not update index (will continue with git)\n\n"
+
         # Check if there are changes
         status_result = subprocess.run(
             ['git', 'status', '--porcelain'],
@@ -134,7 +173,7 @@ def upload_to_git(date):
         )
 
         if not status_result.stdout.strip():
-            return "ℹ️ No changes to commit"
+            return result_msg + "ℹ️ No changes to commit"
 
         # Git add all
         subprocess.run(['git', 'add', '-A'], check=True)
@@ -155,14 +194,36 @@ def upload_to_git(date):
             check=True
         )
 
-        result = "✅ Successfully uploaded to Git!\n\n"
-        result += f"📤 Commit: {date}\n"
-        result += f"🔄 Pushed to remote"
+        result_msg += "✅ Successfully uploaded to Git!\n\n"
+        result_msg += f"📤 Commit: {date}\n"
+        result_msg += f"🔄 Pushed to remote"
 
-        return result
+        return result_msg
 
     except subprocess.CalledProcessError as e:
         return f"❌ Git error: {e.stderr if e.stderr else str(e)}"
+
+
+def get_default_date():
+    """Get the most recent date without notes from dailies/pages/"""
+    pages_dir = Path('dailies/pages')
+    notes_dir = Path('dailies/notes')
+
+    if not pages_dir.exists():
+        return datetime.now().strftime('%Y-%m-%d')
+
+    # Get all page dates (without .html extension)
+    page_files = sorted(pages_dir.glob('*.html'), reverse=True)
+
+    for page_file in page_files:
+        date_str = page_file.stem  # filename without extension
+        # Check if this date has notes
+        notes_file = notes_dir / f'{date_str}.md'
+        if not notes_file.exists():
+            return date_str
+
+    # If all pages have notes, return today's date
+    return datetime.now().strftime('%Y-%m-%d')
 
 
 def load_existing_notes(date):
@@ -189,8 +250,8 @@ with gr.Blocks(title="Daily Paper Notes Editor", theme=gr.themes.Soft()) as app:
             date_input = gr.Textbox(
                 label="📅 Date",
                 placeholder="2026-01-10",
-                value=datetime.now().strftime('%Y-%m-%d'),
-                info="Format: YYYY-MM-DD"
+                value=get_default_date(),
+                info="Format: YYYY-MM-DD (Default: latest date without notes)"
             )
 
             load_btn = gr.Button("📂 Load Existing Notes", variant="secondary")
