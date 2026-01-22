@@ -9,6 +9,7 @@ analyze academic papers and create structured outputs.
 import re
 import json
 from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_exponential
 from .models import model_response
 
 
@@ -132,7 +133,8 @@ Now Output Your Quote(do not output anything else exception for the Quote):
 """.strip()
 
 
-def summary_paper(paper_title, paper_content):
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def summary_paper(paper_title, paper_content, model_name='claude4'):
     """
     Generate a structured summary of an academic paper.
 
@@ -142,11 +144,12 @@ def summary_paper(paper_title, paper_content):
     Args:
         paper_title (str): The title of the paper
         paper_content (str): The full text content of the paper
+        model_name (str): The model to use ('claude4' or 'claude35')
 
     Returns:
         str: A formatted summary with five categorized sections
     """
-    logger.debug(f'Creating summary for "{paper_title}"')
+    logger.debug(f'Creating summary for "{paper_title}" using {model_name}')
     prompt = PROMPT.format(
         title=paper_title,
         content=paper_content
@@ -155,14 +158,15 @@ def summary_paper(paper_title, paper_content):
 
     summary = model_response(
         prompt,
-        'claude4',
+        model_name,
         max_tokens=8000
 
     )
     return summary
 
 
-def create_question(paper_title, paper_content, summary):
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def create_question(paper_title, paper_content, summary, model_name='claude4'):
     """
     Generate quiz questions about an academic paper.
 
@@ -173,11 +177,12 @@ def create_question(paper_title, paper_content, summary):
         paper_title (str): The title of the paper
         paper_content (str): The full text content of the paper
         summary (str): A summary of the paper
+        model_name (str): The model to use ('claude4' or 'claude35')
 
     Returns:
         dict: A dictionary containing three questions with options and answers
     """
-    logger.debug(f'Creating question for "{paper_title}"')
+    logger.debug(f'Creating question for "{paper_title}" using {model_name}')
     prompt = QUESTION_PROMPT.format(
         title = paper_title,
         content = paper_content,
@@ -186,7 +191,7 @@ def create_question(paper_title, paper_content, summary):
 
     questions_content = model_response(
         prompt,
-        'claude4',
+        model_name,
         max_tokens=8000
 
     )
@@ -195,7 +200,8 @@ def create_question(paper_title, paper_content, summary):
     return questions
 
 
-def create_flow_chart(paper_title, paper_content):
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def create_flow_chart(paper_title, paper_content, model_name='claude4'):
     """
     Generate an SVG flowchart visualizing the paper's methodology.
 
@@ -205,18 +211,19 @@ def create_flow_chart(paper_title, paper_content):
     Args:
         paper_title (str): The title of the paper
         paper_content (str): The full text content of the paper
+        model_name (str): The model to use ('claude4' or 'claude35')
 
     Returns:
         str: SVG markup representing the flowchart
     """
-    logger.debug(f'Creating flow chart for "{paper_title}"')
+    logger.debug(f'Creating flow chart for "{paper_title}" using {model_name}')
     prompt = FLOW_CHART_PROMPT.format(
         title=paper_title,
         article_content=paper_content
     )
     flow_chart = model_response(
         prompt,
-        'claude4',
+        model_name,
         max_tokens=8192
 
     )
@@ -334,7 +341,7 @@ def parse_flowchart(output: str) -> str:
     return output
 
 
-def process_paper(paper, queue, max_paper_length):
+def process_paper(paper, queue, max_paper_length, model_name='claude4'):
     """
     Process a single paper: download, summarize, create quiz, generate flowchart.
 
@@ -344,6 +351,7 @@ def process_paper(paper, queue, max_paper_length):
         paper (dict): Paper information from HuggingFace
         queue (Queue): Thread-safe queue to store results
         max_paper_length (int): Maximum word count for papers
+        model_name (str): The model to use ('claude4' or 'claude35')
     """
     from .arxiv_utils import download_paper_text
 
@@ -358,15 +366,17 @@ def process_paper(paper, queue, max_paper_length):
             queue.put(None)  # Signal to skip this paper
             return
 
-        summary = summary_paper(title, content)
+        summary = summary_paper(title, content, model_name)
         questions = create_question(
             paper_title=title,
             paper_content=content,
-            summary=summary
+            summary=summary,
+            model_name=model_name
         )
         flow_chart = create_flow_chart(
             paper_title=title,
-            paper_content=content
+            paper_content=content,
+            model_name=model_name
         )
 
         paper_info = {
