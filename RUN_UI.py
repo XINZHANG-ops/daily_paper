@@ -5,9 +5,11 @@ Run this file to start the Gradio interface
 
 import os
 import sys
+from dotenv import load_dotenv
 
-# Set to TEST mode by default - change to 'FALSE' for production
-os.environ['TEST'] = 'TRUE'
+load_dotenv()
+
+TEST = os.getenv("TEST")
 
 print("""
 ╔══════════════════════════════════════════════╗
