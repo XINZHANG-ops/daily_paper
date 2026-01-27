@@ -33,6 +33,12 @@ def push_to_github():
     subprocess.run(["git", "push", "origin", "main"])
 
 
+def pull_github():
+    import subprocess
+    subprocess.run(["git", "switch", "main"])
+    subprocess.run(["git", "pull"])
+
+
 def get_arxiv_abstract(arxiv_id: str) -> str:
     """Get abstract from arXiv API."""
     try:
@@ -391,6 +397,7 @@ def create_ui():
 
 if __name__ == "__main__":
     logger.add(sys.stderr, format="{time} {level} {message}", level="INFO")
+    pull_github()
 
     ui = create_ui()
     logger.info("Starting UI on http://localhost:7860")
