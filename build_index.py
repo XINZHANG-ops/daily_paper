@@ -6,6 +6,7 @@ Supports incremental updates - only processes new papers not in the existing ind
 """
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import List, Dict, Any, Set
 from loguru import logger
@@ -18,6 +19,36 @@ from langchain_ollama import OllamaEmbeddings
 
 from utils.arxiv_utils import download_paper_text
 from search_engine_utils.config import SearchEngineConfig
+
+
+def clean_text(text: str) -> str:
+    """
+    Clean text by removing problematic Unicode characters.
+
+    Handles:
+    - Surrogate pairs (U+D800 to U+DFFF) that cause UTF-8 encoding errors
+    - Mathematical alphanumeric symbols that may use surrogates
+    - Other special characters that might cause encoding issues
+    """
+    if not text:
+        return text
+
+    # Remove surrogate pairs (U+D800-U+DFFF)
+    text = re.sub(r'[\ud800-\udfff]', '', text)
+
+    # Replace mathematical symbols that might be problematic
+    text = re.sub(r'[\U0001D400-\U0001D7FF]', '?', text)
+
+    # Remove control characters
+    text = re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]', '', text)
+
+    # Ensure valid UTF-8
+    try:
+        text = text.encode('utf-8', errors='ignore').decode('utf-8', errors='ignore')
+    except Exception:
+        text = text.encode('ascii', errors='ignore').decode('ascii', errors='ignore')
+
+    return text
 
 
 def load_summaries(summaries_file: Path) -> List[Dict[str, Any]]:
@@ -82,7 +113,14 @@ def create_chunks_from_paper(
     )
 
     # Create metadata with all possible fields (None if missing)
-    metadata = {field: summary.get(field, None) for field in all_fields}
+    # Clean metadata string values
+    metadata = {}
+    for field in all_fields:
+        value = summary.get(field, None)
+        if isinstance(value, str):
+            metadata[field] = clean_text(value)
+        else:
+            metadata[field] = value
 
     url = summary.get('url', '')
     arxiv_id = extract_arxiv_id(url)
@@ -90,10 +128,14 @@ def create_chunks_from_paper(
     # Chunk 1: Summary content (already concise, AI-generated)
     summary_content = summary.get('content', '')
     if summary_content:
+        # Clean the summary content before splitting
+        summary_content = clean_text(summary_content)
         chunks = text_splitter.split_text(summary_content)
         for i, chunk in enumerate(chunks):
+            # Clean each chunk
+            clean_chunk = clean_text(chunk)
             doc = Document(
-                page_content=chunk,
+                page_content=clean_chunk,
                 metadata={
                     **metadata,
                     'chunk_index': i,
@@ -110,12 +152,16 @@ def create_chunks_from_paper(
 
         if result['success']:
             pdf_text = result['text']
+            # Clean PDF text before splitting
+            pdf_text = clean_text(pdf_text)
             chunks = text_splitter.split_text(pdf_text)
             logger.info(f"Created {len(chunks)} chunks from PDF")
 
             for i, chunk in enumerate(chunks):
+                # Clean each chunk
+                clean_chunk = clean_text(chunk)
                 doc = Document(
-                    page_content=chunk,
+                    page_content=clean_chunk,
                     metadata={
                         **metadata,
                         'chunk_index': i,

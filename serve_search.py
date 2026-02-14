@@ -5,6 +5,7 @@ Serve vector search API with Flask.
 Loads a pre-built FAISS index and provides search endpoints.
 """
 import argparse
+import re
 from pathlib import Path
 from flask import Flask, request, jsonify
 from loguru import logger
@@ -14,6 +15,26 @@ from langchain_community.vectorstores import FAISS
 
 from search_engine_utils.config import SearchEngineConfig
 from search_engine_utils.hybrid_retriever import HybridRetriever
+
+
+def clean_text(text: str) -> str:
+    """Clean text by removing problematic Unicode characters."""
+    if not text:
+        return text
+
+    # Remove surrogate pairs
+    text = re.sub(r'[\ud800-\udfff]', '', text)
+    # Replace mathematical symbols
+    text = re.sub(r'[\U0001D400-\U0001D7FF]', '?', text)
+    # Remove control characters
+    text = re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]', '', text)
+
+    try:
+        text = text.encode('utf-8', errors='ignore').decode('utf-8', errors='ignore')
+    except Exception:
+        text = text.encode('ascii', errors='ignore').decode('ascii', errors='ignore')
+
+    return text
 
 
 app = Flask(__name__)
@@ -121,6 +142,9 @@ def search():
         return jsonify({'error': 'Missing query parameter'}), 400
 
     query = data['query']
+    # Clean query text to handle special characters
+    query = clean_text(query)
+
     k = data.get('k', 5)
     return_fields = data.get('return_fields', None)  # None means return all
     return_scores = data.get('return_scores', True)
