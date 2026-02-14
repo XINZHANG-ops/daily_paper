@@ -100,7 +100,8 @@ def init_retriever(index_dir: Path):
         documents=documents,
         embedding_client=embedding_client,
         vector_weight=config.vector_weight,
-        bm25_weight=config.bm25_weight
+        bm25_weight=config.bm25_weight,
+        faiss_db=db  # Pass pre-loaded FAISS index to avoid re-embedding
     )
 
     logger.info("="*60)

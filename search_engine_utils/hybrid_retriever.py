@@ -31,7 +31,8 @@ class HybridRetriever:
         embedding_client: OllamaEmbeddings,
         vector_weight: float = 0.7,
         bm25_weight: float = 0.3,
-        similarity_threshold: float = 0.0  # Minimum similarity score
+        similarity_threshold: float = 0.0,  # Minimum similarity score
+        faiss_db = None  # Optional: pre-loaded FAISS database
     ):
         """
         Initialize hybrid retriever.
@@ -42,6 +43,7 @@ class HybridRetriever:
             vector_weight: Weight for vector search scores (default: 0.7)
             bm25_weight: Weight for BM25 scores (default: 0.3)
             similarity_threshold: Minimum similarity threshold for vector search
+            faiss_db: Optional pre-loaded FAISS database (to avoid recreating embeddings)
         """
         self.documents = documents
         self.embedding_client = embedding_client
@@ -49,12 +51,20 @@ class HybridRetriever:
         self.bm25_weight = bm25_weight
         self.similarity_threshold = similarity_threshold
 
-        # Initialize vector store
-        self.vector_store = FaissVectorStore(
-            documents=documents,
-            embedding_client=embedding_client,
-            metadatas=[doc.metadata for doc in documents]
-        )
+        # Use pre-loaded FAISS db if provided, otherwise create new one
+        if faiss_db is not None:
+            from loguru import logger
+            logger.info("Using pre-loaded FAISS index (skipping embedding generation)")
+            self.vector_store = type('obj', (object,), {'db': faiss_db})()
+        else:
+            from loguru import logger
+            logger.info("Creating new FAISS vector store (this may take a while)...")
+            # Initialize vector store
+            self.vector_store = FaissVectorStore(
+                documents=documents,
+                embedding_client=embedding_client,
+                metadatas=[doc.metadata for doc in documents]
+            )
 
         # Initialize BM25
         self._init_bm25()
