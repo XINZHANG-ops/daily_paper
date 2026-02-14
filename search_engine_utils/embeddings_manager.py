@@ -54,32 +54,87 @@ class EmbeddingsManager:
         """
         Append new embeddings to storage.
 
+        Fills up existing shards before creating new ones.
+
         Args:
             text_embeddings: List of (text, embedding) tuples
             metadatas: List of metadata dicts
             paper_urls: List of paper URLs (for tracking)
         """
-        # Create new shard
-        shard_id = len(self.index_data['shards'])
-        shard_file = self.embeddings_dir / f"shard_{shard_id:04d}.pkl"
+        remaining_embeddings = text_embeddings
+        remaining_metadatas = metadatas
+        remaining_urls = paper_urls
 
-        # Save shard
-        logger.info(f"Saving {len(text_embeddings)} embeddings to {shard_file}")
-        with open(shard_file, 'wb') as f:
-            pickle.dump({
-                'text_embeddings': text_embeddings,
-                'metadatas': metadatas
-            }, f)
+        while remaining_embeddings:
+            # Check if we have an incomplete shard
+            if self.index_data['shards']:
+                last_shard = self.index_data['shards'][-1]
+                space_left = self.shard_size - last_shard['num_chunks']
 
-        # Update index
-        self.index_data['shards'].append({
-            'id': shard_id,
-            'file': shard_file.name,
-            'num_chunks': len(text_embeddings),
-            'papers': list(set(paper_urls))  # Unique URLs
-        })
-        self.index_data['total_chunks'] += len(text_embeddings)
-        self._save_index()
+                if space_left > 0:
+                    # Fill up the last shard
+                    to_add = min(space_left, len(remaining_embeddings))
+                    logger.info(f"Adding {to_add} embeddings to existing shard {last_shard['id']} ({last_shard['num_chunks']}/{self.shard_size})")
+
+                    # Load existing shard
+                    shard_file = self.embeddings_dir / last_shard['file']
+                    with open(shard_file, 'rb') as f:
+                        shard_data = pickle.load(f)
+
+                    # Append new data
+                    shard_data['text_embeddings'].extend(remaining_embeddings[:to_add])
+                    shard_data['metadatas'].extend(remaining_metadatas[:to_add])
+
+                    # Save updated shard
+                    with open(shard_file, 'wb') as f:
+                        pickle.dump(shard_data, f)
+
+                    # Update index
+                    last_shard['num_chunks'] += to_add
+                    last_shard['papers'] = list(set(last_shard['papers'] + remaining_urls[:to_add]))
+
+                    # Update remaining
+                    remaining_embeddings = remaining_embeddings[to_add:]
+                    remaining_metadatas = remaining_metadatas[to_add:]
+                    remaining_urls = remaining_urls[to_add:]
+
+                    self.index_data['total_chunks'] += to_add
+                    self._save_index()
+
+                    logger.info(f"Shard {last_shard['id']} now has {last_shard['num_chunks']} chunks")
+                    continue
+
+            # Create new shard if we still have remaining embeddings
+            if remaining_embeddings:
+                shard_id = len(self.index_data['shards'])
+                shard_file = self.embeddings_dir / f"shard_{shard_id:04d}.pkl"
+
+                # Take up to shard_size embeddings
+                to_add = min(self.shard_size, len(remaining_embeddings))
+                logger.info(f"Creating new shard {shard_id} with {to_add} embeddings")
+
+                # Save new shard
+                with open(shard_file, 'wb') as f:
+                    pickle.dump({
+                        'text_embeddings': remaining_embeddings[:to_add],
+                        'metadatas': remaining_metadatas[:to_add]
+                    }, f)
+
+                # Update index
+                self.index_data['shards'].append({
+                    'id': shard_id,
+                    'file': shard_file.name,
+                    'num_chunks': to_add,
+                    'papers': list(set(remaining_urls[:to_add]))
+                })
+
+                # Update remaining
+                remaining_embeddings = remaining_embeddings[to_add:]
+                remaining_metadatas = remaining_metadatas[to_add:]
+                remaining_urls = remaining_urls[to_add:]
+
+                self.index_data['total_chunks'] += to_add
+                self._save_index()
 
         logger.info(f"Total chunks: {self.index_data['total_chunks']}")
 
