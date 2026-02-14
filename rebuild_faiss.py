@@ -13,6 +13,8 @@ from loguru import logger
 import faiss
 import numpy as np
 from langchain_community.vectorstores import FAISS
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_core.documents import Document as LCDocument
 from langchain_ollama import OllamaEmbeddings
 
 from search_engine_utils.config import SearchEngineConfig
@@ -123,35 +125,51 @@ def rebuild_index(index_dir: Path, config: SearchEngineConfig = None):
     if use_batched:
         # Build index in batches (memory efficient)
         logger.info("Building FAISS index in batches (memory efficient)...")
-        db = None
+
+        # First pass: collect all embeddings and metadata
+        logger.info("Collecting embeddings from shards...")
+        all_text_embeddings = []
+        all_metadatas = []
         embedding_dim = None
 
-        for i, (batch_text_emb, batch_meta) in enumerate(emb_manager.iter_all_embeddings(batch_size=1000)):
-            logger.info(f"Processing batch {i+1} with {len(batch_text_emb)} embeddings...")
+        for i, (batch_text_emb, batch_meta) in enumerate(emb_manager.iter_all_embeddings(batch_size=5000)):
+            logger.info(f"Loading batch {i+1} with {len(batch_text_emb)} embeddings...")
 
             if embedding_dim is None:
                 embedding_dim = len(batch_text_emb[0][1])
                 logger.info(f"Embedding dimension: {embedding_dim}")
 
-            if db is None:
-                # Create initial index with custom type
-                custom_index = create_faiss_index(batch_text_emb, config, embedding_dim)
+            all_text_embeddings.extend(batch_text_emb)
+            all_metadatas.extend(batch_meta)
 
-                db = FAISS.from_embeddings(
-                    text_embeddings=batch_text_emb,
-                    embedding=embedding_client,
-                    metadatas=batch_meta,
-                    distance_strategy=faiss.METRIC_L2,
-                    index=custom_index
-                )
-            else:
-                # Merge batch into existing index
-                db_temp = FAISS.from_embeddings(
-                    text_embeddings=batch_text_emb,
-                    embedding=embedding_client,
-                    metadatas=batch_meta
-                )
-                db.merge_from(db_temp)
+        logger.info(f"Total embeddings collected: {len(all_text_embeddings)}")
+
+        # Create custom FAISS index
+        custom_index = create_faiss_index(all_text_embeddings, config, embedding_dim)
+
+        # Add embeddings to custom index
+        logger.info("Adding embeddings to custom index...")
+        texts = [te[0] for te in all_text_embeddings]
+        embeddings_array = np.array([te[1] for te in all_text_embeddings], dtype=np.float32)
+        custom_index.add(embeddings_array)
+
+        # Create LangChain FAISS wrapper
+        logger.info("Creating LangChain FAISS wrapper...")
+
+        # Create docstore with documents
+        documents = [LCDocument(page_content=text, metadata=meta)
+                    for text, meta in zip(texts, all_metadatas)]
+
+        index_to_id = {i: str(i) for i in range(len(documents))}
+        docstore = InMemoryDocstore({str(i): doc for i, doc in enumerate(documents)})
+
+        # Create FAISS instance with custom index
+        db = FAISS(
+            embedding_function=embedding_client.embed_query,
+            index=custom_index,
+            docstore=docstore,
+            index_to_docstore_id=index_to_id
+        )
     else:
         # Load all at once (legacy mode)
         logger.info(f"Loaded {len(text_embeddings)} embeddings")
@@ -161,14 +179,28 @@ def rebuild_index(index_dir: Path, config: SearchEngineConfig = None):
         # Create FAISS index with specified type
         custom_index = create_faiss_index(text_embeddings, config, embedding_dim)
 
-        # Build LangChain FAISS from embeddings with custom index
-        logger.info("Building LangChain FAISS vector store...")
-        db = FAISS.from_embeddings(
-            text_embeddings=text_embeddings,
-            embedding=embedding_client,
-            metadatas=metadatas,
-            distance_strategy=faiss.METRIC_L2,
-            index=custom_index
+        # Add embeddings to custom index
+        logger.info("Adding embeddings to custom index...")
+        texts = [te[0] for te in text_embeddings]
+        embeddings_array = np.array([te[1] for te in text_embeddings], dtype=np.float32)
+        custom_index.add(embeddings_array)
+
+        # Create LangChain FAISS wrapper
+        logger.info("Creating LangChain FAISS wrapper...")
+
+        # Create docstore with documents
+        documents = [LCDocument(page_content=text, metadata=meta)
+                    for text, meta in zip(texts, metadatas)]
+
+        index_to_id = {i: str(i) for i in range(len(documents))}
+        docstore = InMemoryDocstore({str(i): doc for i, doc in enumerate(documents)})
+
+        # Create FAISS instance with custom index
+        db = FAISS(
+            embedding_function=embedding_client.embed_query,
+            index=custom_index,
+            docstore=docstore,
+            index_to_docstore_id=index_to_id
         )
 
     # Save new index
