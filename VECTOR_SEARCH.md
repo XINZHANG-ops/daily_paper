@@ -45,9 +45,19 @@ python serve_search.py --index-dir vector_indices/chunk2500_overlap300_model_emb
 ```bash
 python serve_search.py \
   --index-dir PATH          # Required: index directory path
-  --host STR                # Bind host (default: 0.0.0.0)
+  --host STR                # Bind host (default: 0.0.0.0, allows LAN access)
   --port INT                # Bind port (default: 5001)
 ```
+
+### LAN Access (局域网访问)
+1. Check your IP: `ipconfig` (Windows) or `ifconfig` (Linux/Mac)
+2. Find IPv4 address (e.g., `192.168.1.100`)
+3. Other devices use: `http://192.168.1.100:5001/search`
+4. If blocked, allow port in firewall:
+   ```bash
+   # Windows (run as admin)
+   netsh advfirewall firewall add rule name="Flask API" dir=in action=allow protocol=TCP localport=5001
+   ```
 
 ---
 
