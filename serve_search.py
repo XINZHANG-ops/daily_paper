@@ -74,17 +74,28 @@ def init_retriever(index_dir: Path):
     # Get documents for hybrid retriever
     # Note: FAISS doesn't expose documents directly, but HybridRetriever needs them
     # We'll reconstruct from the index
+    logger.info("Extracting documents from FAISS index...")
     documents = []
-    for i in range(db.index.ntotal):
-        doc = db.docstore.search(db.index_to_docstore_id[i])
-        documents.append(doc)
-        # Collect all metadata fields
-        all_metadata_fields.update(doc.metadata.keys())
+
+    # Show progress for large indexes
+    total_docs = db.index.ntotal
+    if total_docs > 1000:
+        from tqdm import tqdm
+        for i in tqdm(range(total_docs), desc="Loading documents"):
+            doc = db.docstore.search(db.index_to_docstore_id[i])
+            documents.append(doc)
+            all_metadata_fields.update(doc.metadata.keys())
+    else:
+        for i in range(total_docs):
+            doc = db.docstore.search(db.index_to_docstore_id[i])
+            documents.append(doc)
+            all_metadata_fields.update(doc.metadata.keys())
 
     logger.info(f"Loaded {len(documents)} document chunks")
     logger.info(f"Available metadata fields: {all_metadata_fields}")
 
     # Initialize hybrid retriever
+    logger.info("Initializing hybrid retriever (vector + BM25)...")
     retriever = HybridRetriever(
         documents=documents,
         embedding_client=embedding_client,
@@ -92,7 +103,12 @@ def init_retriever(index_dir: Path):
         bm25_weight=config.bm25_weight
     )
 
+    logger.info("="*60)
     logger.info("✓ Retriever initialized successfully!")
+    logger.info(f"  - Vector search: FAISS ({config.faiss_index_type})")
+    logger.info(f"  - Keyword search: BM25")
+    logger.info(f"  - Total documents: {len(documents)}")
+    logger.info("="*60)
 
 
 @app.route('/health', methods=['GET'])

@@ -61,16 +61,32 @@ class HybridRetriever:
 
     def _init_bm25(self):
         """Initialize BM25 index."""
+        from loguru import logger
+
         # Extract text content from documents
+        logger.info(f"Extracting text from {len(self.documents)} documents...")
         self.doc_texts = [doc.page_content for doc in self.documents]
 
         # Create BM25 index
+        logger.info("Tokenizing documents for BM25...")
         self.tokenizer = TreebankWordTokenizer()
-        tokenized_docs = [
-            self.tokenizer.tokenize(doc.lower())
-            for doc in self.doc_texts
-        ]
+
+        # Show progress for large document sets
+        if len(self.doc_texts) > 1000:
+            from tqdm import tqdm
+            tokenized_docs = [
+                self.tokenizer.tokenize(doc.lower())
+                for doc in tqdm(self.doc_texts, desc="Tokenizing for BM25")
+            ]
+        else:
+            tokenized_docs = [
+                self.tokenizer.tokenize(doc.lower())
+                for doc in self.doc_texts
+            ]
+
+        logger.info("Building BM25 index...")
         self.bm25 = BM25Okapi(tokenized_docs)
+        logger.info("✓ BM25 index ready")
 
     def _get_ranks_from_scores(self, scores: List[float]) -> np.ndarray:
         """
