@@ -29,6 +29,20 @@ python build_index.py \
 
 **Index Location:** `vector_indices/chunk{size}_overlap{overlap}_model_{model}/`
 
+**Storage Structure:**
+```
+vector_indices/chunk2500_overlap300_model_embeddinggemma_300m/
+├── embeddings/             # 🔑 Sharded embeddings (reusable!)
+│   ├── shard_0000.pkl      # First 500 chunks
+│   ├── shard_0001.pkl      # Next 500 chunks
+│   ├── shard_0002.pkl      # ...
+│   └── index.json          # Shard index
+├── index.faiss             # FAISS index (can be rebuilt)
+├── index.pkl               # FAISS metadata
+├── config.json             # Configuration
+└── processed_papers.json   # Processing log
+```
+
 ---
 
 ## 2️⃣ Serve API
@@ -85,6 +99,40 @@ results = response.json()
 
 ---
 
+---
+
+## 🔧 Rebuild FAISS Index (Change Index Type)
+
+Change FAISS index type **WITHOUT** regenerating embeddings from PDFs!
+
+```bash
+# Switch from Flat (brute force) to HNSW (faster approximate search)
+python rebuild_faiss.py --index-dir vector_indices/chunk2500_overlap300_model_embeddinggemma_300m --faiss-type HNSW
+
+# Use IVF (inverted file index)
+python rebuild_faiss.py --index-dir vector_indices/chunk2500_overlap300_model_embeddinggemma_300m --faiss-type IVF --ivf-nlist 100
+
+# Back to Flat (exact search)
+python rebuild_faiss.py --index-dir vector_indices/chunk2500_overlap300_model_embeddinggemma_300m --faiss-type Flat
+```
+
+### Rebuild Parameters
+```bash
+python rebuild_faiss.py \
+  --index-dir PATH          # Required: index directory
+  --faiss-type STR          # Flat, HNSW, or IVF (default: Flat)
+  --hnsw-m INT              # HNSW M parameter (default: 32)
+  --hnsw-ef INT             # HNSW efConstruction (default: 200)
+  --ivf-nlist INT           # IVF nlist (default: 100)
+```
+
+### FAISS Index Types
+- **Flat** - Exact search (brute force), slowest but most accurate
+- **HNSW** - Approximate search with graph, fast and accurate
+- **IVF** - Clustering-based, good for very large datasets
+
+---
+
 ## ⚡ Key Features
 
 - **Incremental updates** - Only processes new papers
@@ -92,3 +140,4 @@ results = response.json()
 - **Dual indexing** - Both PDF original text + AI summary
 - **Hybrid search** - Vector (FAISS) + Keyword (BM25)
 - **Flexible metadata** - Handles missing fields gracefully
+- **Separates embeddings from index** - Embeddings saved to `embeddings.pkl`, can rebuild FAISS index instantly

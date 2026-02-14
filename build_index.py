@@ -19,6 +19,7 @@ from langchain_ollama import OllamaEmbeddings
 
 from utils.arxiv_utils import download_paper_text
 from search_engine_utils.config import SearchEngineConfig
+from search_engine_utils.embeddings_manager import EmbeddingsManager
 
 
 def clean_text(text: str) -> str:
@@ -250,7 +251,6 @@ def build_index(
         )
 
     # Process papers in batches
-    embedding_batch_size = 16  # For FAISS embedding creation
     total_processed = 0
 
     for batch_start in range(0, len(new_summaries), batch_size):
@@ -289,27 +289,54 @@ def build_index(
         if batch_documents:
             logger.info(f"\nAdding {len(batch_documents)} chunks to index...")
 
+            # Generate embeddings for batch
+            logger.info("Generating embeddings...")
+            texts = [doc.page_content for doc in batch_documents]
+            metadatas = [doc.metadata for doc in batch_documents]
+            embeddings = embedding_client.embed_documents(texts)
+
+            # Create text_embeddings list
+            batch_text_embeddings = list(zip(texts, embeddings))
+
+            # Extract paper URLs from this batch
+            batch_urls = list({doc.metadata.get('url') for doc in batch_documents if doc.metadata.get('url')})
+
+            # Initialize embeddings manager
+            emb_manager = EmbeddingsManager(index_dir, shard_size=500)
+
+            # Append embeddings to sharded storage
+            logger.info("Saving embeddings to sharded storage...")
+            emb_manager.append_embeddings(batch_text_embeddings, metadatas, batch_urls)
+
+            # Rebuild FAISS index incrementally
+            logger.info("Updating FAISS index...")
             if db is None:
                 # Create initial index
-                logger.info("Creating new index...")
-                chunks = [batch_documents[i:i+embedding_batch_size]
-                         for i in range(0, len(batch_documents), embedding_batch_size)]
+                logger.info("Creating new FAISS index from all embeddings...")
+                all_text_embeddings = []
+                all_metadatas = []
 
-                db = FAISS.from_documents(chunks[0], embedding_client)
-                for chunk in chunks[1:]:
-                    db_temp = FAISS.from_documents(chunk, embedding_client)
-                    db.merge_from(db_temp)
+                for batch_emb, batch_meta in emb_manager.iter_all_embeddings(batch_size=1000):
+                    all_text_embeddings.extend(batch_emb)
+                    all_metadatas.extend(batch_meta)
+
+                db = FAISS.from_embeddings(
+                    text_embeddings=all_text_embeddings,
+                    embedding=embedding_client,
+                    metadatas=all_metadatas
+                )
             else:
-                # Merge into existing index
-                chunks = [batch_documents[i:i+embedding_batch_size]
-                         for i in range(0, len(batch_documents), embedding_batch_size)]
+                # Add new embeddings to existing index
+                logger.info("Adding new embeddings to existing index...")
+                db_temp = FAISS.from_embeddings(
+                    text_embeddings=batch_text_embeddings,
+                    embedding=embedding_client,
+                    metadatas=metadatas
+                )
+                db.merge_from(db_temp)
 
-                for chunk in chunks:
-                    db_temp = FAISS.from_documents(chunk, embedding_client)
-                    db.merge_from(db_temp)
-
-            # Save index after each batch
-            logger.info(f"Saving index to {index_dir}...")
+            # Save FAISS index
+            logger.info(f"Saving FAISS index to {index_dir}...")
             db.save_local(str(index_dir))
 
             # Save processed papers log after each batch

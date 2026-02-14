@@ -19,6 +19,16 @@ class SearchEngineConfig:
     embedding_model: str = "embeddinggemma:300m"
     ollama_host: str = "http://localhost:11434"
 
+    # FAISS index type
+    faiss_index_type: str = "Flat"  # Options: "Flat" (brute force), "HNSW", "IVF"
+
+    # HNSW parameters (if using HNSW)
+    hnsw_m: int = 32  # Number of connections per layer
+    hnsw_ef_construction: int = 200  # Size of dynamic candidate list during construction
+
+    # IVF parameters (if using IVF)
+    ivf_nlist: int = 100  # Number of clusters
+
     # Retrieval weights
     vector_weight: float = 0.7
     bm25_weight: float = 0.3
