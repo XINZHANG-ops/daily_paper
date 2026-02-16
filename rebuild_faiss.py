@@ -4,8 +4,11 @@ Rebuild FAISS index from saved embeddings.
 
 This allows you to change FAISS index type (Flat, HNSW, IVF) without
 regenerating embeddings from PDFs.
+
+Can also update metadata without recalculating embeddings.
 """
 import argparse
+import json
 import pickle
 from pathlib import Path
 from loguru import logger
@@ -19,6 +22,92 @@ from langchain_ollama import OllamaEmbeddings
 
 from search_engine_utils.config import SearchEngineConfig
 from search_engine_utils.embeddings_manager import EmbeddingsManager
+
+
+def load_summaries_metadata(summaries_file: Path) -> dict:
+    """
+    Load metadata from summaries.jsonl and create a lookup by URL.
+
+    Returns:
+        dict: Mapping from URL to updated metadata
+    """
+    url_to_metadata = {}
+
+    with open(summaries_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            if line.strip():
+                paper = json.loads(line)
+                url = paper.get('url')
+                if url:
+                    # Create updated metadata
+                    metadata = {
+                        'title': paper.get('title'),
+                        'published_at': paper.get('published_at'),
+                        'url': url,
+                        'content': paper.get('content'),
+                        'date_added': paper.get('date'),  # The date when paper was added to our DB
+                        'personal_notes': None
+                    }
+
+                    # Load personal notes if available
+                    date_added = metadata['date_added']
+                    if date_added:
+                        notes_file = Path('dailies') / 'notes' / f'{date_added}.md'
+                        if notes_file.exists():
+                            try:
+                                with open(notes_file, 'r', encoding='utf-8') as nf:
+                                    metadata['personal_notes'] = nf.read().strip()
+                            except Exception as e:
+                                logger.warning(f"Failed to load notes for {date_added}: {e}")
+
+                    url_to_metadata[url] = metadata
+
+    logger.info(f"Loaded metadata for {len(url_to_metadata)} papers from summaries.jsonl")
+    return url_to_metadata
+
+
+def update_metadata_from_summaries(metadatas: list, summaries_file: Path) -> list:
+    """
+    Update metadata list with fresh data from summaries.jsonl.
+
+    Args:
+        metadatas: Original metadata list
+        summaries_file: Path to summaries.jsonl
+
+    Returns:
+        Updated metadata list
+    """
+    if not summaries_file.exists():
+        logger.warning(f"Summaries file not found: {summaries_file}")
+        return metadatas
+
+    logger.info(f"Updating metadata from {summaries_file}...")
+    url_to_metadata = load_summaries_metadata(summaries_file)
+
+    updated_metadatas = []
+    updated_count = 0
+
+    for old_meta in metadatas:
+        url = old_meta.get('url')
+
+        if url and url in url_to_metadata:
+            # Merge: keep chunk-specific fields, update paper-level fields
+            new_meta = old_meta.copy()
+            paper_meta = url_to_metadata[url]
+
+            # Update paper-level fields
+            for key in ['title', 'published_at', 'url', 'content', 'date_added', 'personal_notes']:
+                if key in paper_meta:
+                    new_meta[key] = paper_meta[key]
+
+            updated_metadatas.append(new_meta)
+            updated_count += 1
+        else:
+            # Keep original if no match found
+            updated_metadatas.append(old_meta)
+
+    logger.info(f"Updated metadata for {updated_count}/{len(metadatas)} chunks")
+    return updated_metadatas
 
 
 def load_embeddings_legacy(index_dir: Path):
@@ -75,13 +164,20 @@ def create_faiss_index(
     return index
 
 
-def rebuild_index(index_dir: Path, config: SearchEngineConfig = None):
+def rebuild_index(
+    index_dir: Path,
+    config: SearchEngineConfig = None,
+    summaries_file: Path = None,
+    update_metadata: bool = False
+):
     """
     Rebuild FAISS index from saved embeddings.
 
     Args:
         index_dir: Directory containing embeddings
         config: New configuration (if None, loads from index_dir)
+        summaries_file: Path to summaries.jsonl for metadata updates
+        update_metadata: If True, update metadata from summaries.jsonl
     """
     # Load existing config if not provided
     if config is None:
@@ -144,6 +240,10 @@ def rebuild_index(index_dir: Path, config: SearchEngineConfig = None):
 
         logger.info(f"Total embeddings collected: {len(all_text_embeddings)}")
 
+        # Update metadata from summaries.jsonl if requested
+        if update_metadata and summaries_file:
+            all_metadatas = update_metadata_from_summaries(all_metadatas, summaries_file)
+
         # Create custom FAISS index
         custom_index = create_faiss_index(all_text_embeddings, config, embedding_dim)
 
@@ -175,6 +275,10 @@ def rebuild_index(index_dir: Path, config: SearchEngineConfig = None):
         logger.info(f"Loaded {len(text_embeddings)} embeddings")
         embedding_dim = len(text_embeddings[0][1])
         logger.info(f"Embedding dimension: {embedding_dim}")
+
+        # Update metadata from summaries.jsonl if requested
+        if update_metadata and summaries_file:
+            metadatas = update_metadata_from_summaries(metadatas, summaries_file)
 
         # Create FAISS index with specified type
         custom_index = create_faiss_index(text_embeddings, config, embedding_dim)
@@ -215,13 +319,24 @@ def rebuild_index(index_dir: Path, config: SearchEngineConfig = None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Rebuild FAISS index from saved embeddings"
+        description="Rebuild FAISS index from saved embeddings (can also update metadata)"
     )
     parser.add_argument(
         '--index-dir',
         type=Path,
         required=True,
-        help='Directory containing embeddings.pkl'
+        help='Directory containing embeddings'
+    )
+    parser.add_argument(
+        '--summaries',
+        type=Path,
+        default=Path('summaries.jsonl'),
+        help='Path to summaries.jsonl for metadata updates (default: summaries.jsonl)'
+    )
+    parser.add_argument(
+        '--update-metadata',
+        action='store_true',
+        help='Update metadata from summaries.jsonl (includes date_added and personal_notes)'
     )
     parser.add_argument(
         '--faiss-type',
@@ -268,7 +383,12 @@ def main():
     config.hnsw_ef_construction = args.hnsw_ef
     config.ivf_nlist = args.ivf_nlist
 
-    rebuild_index(args.index_dir, config)
+    rebuild_index(
+        index_dir=args.index_dir,
+        config=config,
+        summaries_file=args.summaries,
+        update_metadata=args.update_metadata
+    )
 
 
 if __name__ == '__main__':
