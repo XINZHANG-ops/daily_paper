@@ -100,15 +100,15 @@ class AIAssistant {
     this.elements.window.style.maxHeight = `${DIMENSIONS.CHAT_MAX_HEIGHT_VH}vh`;
   }
 
-  getTranslations(lang) {
-    // Always use global i18n system - all translations are in js/i18n/
+  getTranslations() {
+    // Simplified for daily_paper - no i18n system needed
     return {
-      title: window.i18n.t('ai.title', lang),
-      welcome: window.i18n.t('ai.welcome', lang),
-      placeholder: window.i18n.t('ai.placeholder', lang),
-      send: window.i18n.t('ai.send', lang),
-      newSession: window.i18n.t('ai.newSession', lang),
-      mentionTitle: window.i18n.t('ai.mentionTitle', lang)
+      title: 'AI Paper Assistant',
+      welcome: 'Hi! Ask me anything about the papers.',
+      placeholder: 'Type @ to mention paper context...',
+      send: 'Send',
+      newSession: 'New',
+      mentionTitle: 'Select Context'
     };
   }
 
