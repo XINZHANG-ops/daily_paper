@@ -67,6 +67,11 @@ def get_all_metadata_fields(summaries: List[Dict]) -> Set[str]:
     all_fields = set()
     for summary in summaries:
         all_fields.update(summary.keys())
+
+    # Add custom fields that we compute (not directly from summaries.jsonl)
+    all_fields.add('date_added')  # The date when the paper was added to our database
+    all_fields.add('personal_notes')  # Personal notes written by Xin
+
     return all_fields
 
 
@@ -122,6 +127,25 @@ def create_chunks_from_paper(
             metadata[field] = clean_text(value)
         else:
             metadata[field] = value
+
+    # Add date_added field (from 'date' field - when paper was added to our database)
+    metadata['date_added'] = summary.get('date', None)
+
+    # Add personal_notes field (from dailies/notes/{date}.md if available)
+    date_added = metadata['date_added']
+    personal_notes = None
+    if date_added:
+        notes_file = Path('dailies') / 'notes' / f'{date_added}.md'
+        if notes_file.exists():
+            try:
+                with open(notes_file, 'r', encoding='utf-8') as f:
+                    personal_notes = f.read().strip()
+                    personal_notes = clean_text(personal_notes)
+                logger.info(f"Loaded personal notes for {date_added} ({len(personal_notes)} chars)")
+            except Exception as e:
+                logger.warning(f"Failed to load notes for {date_added}: {e}")
+
+    metadata['personal_notes'] = personal_notes
 
     url = summary.get('url', '')
     arxiv_id = extract_arxiv_id(url)

@@ -36,6 +36,16 @@ DB_SCHEMA = {
             "name": "content",
             "type": "TEXT",
             "description": "paper summary/abstract"
+        },
+        {
+            "name": "date_added",
+            "type": "TEXT",
+            "description": "the date when the paper was added to our database"
+        },
+        {
+            "name": "personal_notes",
+            "type": "TEXT",
+            "description": "personal notes written by Xin (from dailies/notes/{date_added}.md)"
         }
     ]
 }
@@ -96,7 +106,9 @@ class PaperSqliteManager:
             title TEXT PRIMARY KEY,
             published_at TEXT,
             url TEXT,
-            content TEXT
+            content TEXT,
+            date_added TEXT,
+            personal_notes TEXT
         )
         """)
 
@@ -105,11 +117,25 @@ class PaperSqliteManager:
         # Insert data
         insert_sql = """
         INSERT OR REPLACE INTO papers (
-            title, published_at, url, content
-        ) VALUES (?, ?, ?, ?)
+            title, published_at, url, content, date_added, personal_notes
+        ) VALUES (?, ?, ?, ?, ?, ?)
         """
 
         for paper in all_paper_data:
+            # Get date_added from 'date' field
+            date_added = paper.get("date")
+
+            # Load personal notes if available
+            personal_notes = None
+            if date_added:
+                notes_file = Path('dailies') / 'notes' / f'{date_added}.md'
+                if notes_file.exists():
+                    try:
+                        with open(notes_file, 'r', encoding='utf-8') as f:
+                            personal_notes = f.read().strip()
+                    except Exception as e:
+                        logger.warning(f"Failed to load notes for {date_added}: {e}")
+
             cur.execute(
                 insert_sql,
                 (
@@ -117,6 +143,8 @@ class PaperSqliteManager:
                     paper.get("published_at"),
                     paper.get("url"),
                     paper.get("content"),
+                    date_added,
+                    personal_notes,
                 )
             )
 

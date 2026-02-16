@@ -138,6 +138,75 @@ Each paper is analyzed for:
 - Beautiful purple gradient styling
 - Images automatically sized and styled
 
+## 🔍 Search Engine & Database
+
+The repository includes both vector search (FAISS) and SQL query capabilities.
+
+### Vector Search Index Metadata
+
+Each paper chunk includes these metadata fields:
+
+**Standard Fields:**
+- **title**: Paper title
+- **published_at**: Original publication date from arXiv
+- **url**: Link to the paper PDF
+- **content**: AI-generated summary
+- **chunk_index**: Index of the text chunk
+- **chunk_source**: Origin of chunk (`summary` or `pdf_original`)
+- **total_chunks**: Total number of chunks for this paper
+
+**Custom Fields:**
+- **date_added**: The date when the paper was added to our database (from `date` field in `summaries.jsonl`)
+- **personal_notes**: Personal notes written by Xin (loaded from `dailies/notes/{date_added}.md` if exists, otherwise `None`)
+
+### SQLite Database Schema
+
+The SQLite database (`papers.sqlite`) provides structured SQL queries:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `title` | TEXT | Paper title (PRIMARY KEY) |
+| `published_at` | TEXT | Publication date (YYYY-MM-DD) |
+| `url` | TEXT | arXiv link to the paper |
+| `content` | TEXT | Paper summary/abstract |
+| `date_added` | TEXT | Date when paper was added to our database |
+| `personal_notes` | TEXT | Personal notes written by Xin |
+
+### Rebuilding the Database
+
+To rebuild the SQLite database with new fields:
+
+```bash
+# Rebuild with --overwrite-db flag
+python serve_search.py \
+  --index-dir vector_indices/your_index \
+  --summaries-path summaries.jsonl \
+  --sqlite-path papers.sqlite \
+  --overwrite-db \
+  --port 5001
+```
+
+This will:
+- Read all papers from `summaries.jsonl`
+- Load personal notes from `dailies/notes/{date_added}.md` for each paper
+- Create/recreate the SQLite database with all fields
+
+### Using the Search API
+
+Query the database via the `/query` endpoint:
+
+```bash
+# Get papers with personal notes
+curl -X POST http://localhost:5001/query \
+  -H "Content-Type: application/json" \
+  -d '{"sql": "SELECT * FROM papers WHERE personal_notes IS NOT NULL LIMIT 10"}'
+
+# Get papers added in a specific date range
+curl -X POST http://localhost:5001/query \
+  -H "Content-Type: application/json" \
+  -d '{"sql": "SELECT title, date_added FROM papers WHERE date_added >= \"2026-02-01\" ORDER BY date_added DESC"}'
+```
+
 ## 🤖 AI Chat Assistant
 
 An integrated AI assistant is available on both the main page and all paper subpages:
