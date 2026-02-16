@@ -14,6 +14,7 @@ https://xinzhang-ops.github.io/daily_paper/dailies/pages/2026-01-02.html
 - **Visual Flowcharts**: SVG diagrams showing paper methodology
 - **Personal Takeaways**: Add your own notes in markdown
 - **Multi-Platform**: Posts to Google Chat + generates GitHub Pages website
+- **🤖 AI Chat Assistant**: Integrated AI assistant for asking questions about papers
 
 ## 📁 Repository Structure
 
@@ -137,10 +138,43 @@ Each paper is analyzed for:
 - Beautiful purple gradient styling
 - Images automatically sized and styled
 
+## 🤖 AI Chat Assistant
+
+An integrated AI assistant is available on both the main page and all paper subpages:
+
+### Features
+- **Paper Context**: Automatically tagged with 📄 paper context
+- **Date Awareness**: On subpages, the assistant knows which date's papers you're viewing
+- **Persistent Sessions**: Chat history persists across page navigations
+- **Shared Backend**: Uses the same AI backend as personal_page repository
+
+### Usage
+1. Click the robot icon (🤖) in the bottom right corner
+2. The assistant automatically knows you're asking about papers
+3. On specific date pages (e.g., `2026-02-13.html`), it knows the exact date
+4. Type `@` to see available context options (only "paper" for this repo)
+5. Use backspace to remove the context tag if needed
+
+### Technical Details
+- **Frontend Files**:
+  - `js/ai-assistant-*.js` - Core chat functionality
+  - `css/ai-assistant.css` - Styling
+- **Backend**: Shared endpoint configured in `js/ai-assistant-config.js`
+- **Storage**: Uses localStorage to persist chat state and sessions (separate keys from personal_page)
+- **Paper Date Detection**: Automatically extracts date from URL path or page title
+- **Session Management**: Each page visit uses a unique session ID to maintain conversation context
+
+### Configuration
+The assistant connects to the same backend as personal_page:
+- **Local**: `http://localhost:8080/chat`
+- **GitHub Pages**: Uses ngrok tunnel (configure in `js/ai-assistant-config.js`)
+- **Backend Communication**: Sends `context_type: "paper"` and `paper_date` (if on subpage) with each request
+
 ## 🔗 Links
 
 - **Live Site**: https://xinzhang-ops.github.io/daily_paper/
 - **GitHub**: https://github.com/xinzhang-ops/daily_paper
+- **Personal Page**: https://xinzhang-ops.github.io/personal_page/ (shares AI backend)
 
 ## 📝 License
 
