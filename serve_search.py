@@ -3,6 +3,7 @@
 Serve vector search API with Flask.
 
 Loads a pre-built FAISS index and provides search endpoints.
+Also provides SQLite database query endpoints for papers.
 """
 import argparse
 import re
@@ -15,6 +16,7 @@ from langchain_community.vectorstores import FAISS
 
 from search_engine_utils.config import SearchEngineConfig
 from search_engine_utils.hybrid_retriever import HybridRetriever
+from search_engine_utils.paper_sqlite import PaperSqliteManager
 
 
 def clean_text(text: str) -> str:
@@ -43,6 +45,9 @@ app = Flask(__name__)
 retriever = None
 config = None
 all_metadata_fields = set()
+
+# Global SQLite manager instance
+sqlite_manager = None
 
 
 def init_retriever(index_dir: Path):
@@ -109,6 +114,33 @@ def init_retriever(index_dir: Path):
     logger.info(f"  - Vector search: FAISS ({config.faiss_index_type})")
     logger.info(f"  - Keyword search: BM25")
     logger.info(f"  - Total documents: {len(documents)}")
+    logger.info("="*60)
+
+
+def init_sqlite(summaries_path: Path, sqlite_path: Path, overwrite: bool = False):
+    """Initialize the SQLite database manager."""
+    global sqlite_manager
+
+    logger.info("Initializing SQLite database...")
+
+    if not summaries_path.exists():
+        logger.warning(f"Summaries file not found: {summaries_path}")
+        logger.warning("SQLite endpoints will not be available")
+        return
+
+    sqlite_manager = PaperSqliteManager(
+        paper_summaries_path=summaries_path,
+        sqlite_path=sqlite_path,
+        overwrite=overwrite
+    )
+
+    # Get and log stats
+    stats = sqlite_manager.get_stats()
+    logger.info("="*60)
+    logger.info("✓ SQLite database initialized successfully!")
+    logger.info(f"  - Total papers: {stats['total_papers']}")
+    logger.info(f"  - Date range: {stats['earliest_paper']} to {stats['latest_paper']}")
+    logger.info(f"  - Database path: {stats['database_path']}")
     logger.info("="*60)
 
 
@@ -236,13 +268,114 @@ def stats():
     })
 
 
+@app.route('/schema', methods=['GET'])
+def get_schema():
+    """
+    Get database schema information.
+
+    Response:
+    {
+        "table_name": "papers",
+        "columns": [
+            {
+                "name": "title",
+                "type": "TEXT",
+                "description": "paper title"
+            },
+            ...
+        ]
+    }
+    """
+    if sqlite_manager is None:
+        return jsonify({'error': 'SQLite database not initialized'}), 500
+
+    return jsonify(PaperSqliteManager.get_schema())
+
+
+@app.route('/query', methods=['POST'])
+def execute_query():
+    """
+    Execute a SQL query on the papers database.
+
+    Request body:
+    {
+        "sql": "SELECT * FROM papers WHERE published_at > '2024-01-01' LIMIT 10"
+    }
+
+    Response:
+    {
+        "sql": "SELECT * FROM papers...",
+        "num_results": 10,
+        "results": [
+            {
+                "title": "Paper title",
+                "published_at": "2024-01-15",
+                "url": "https://arxiv.org/...",
+                "content": "Paper summary..."
+            },
+            ...
+        ]
+    }
+    """
+    if sqlite_manager is None:
+        return jsonify({'error': 'SQLite database not initialized'}), 500
+
+    data = request.get_json()
+    if not data or 'sql' not in data:
+        return jsonify({'error': 'Missing sql parameter'}), 400
+
+    sql = data['sql']
+
+    # Basic SQL injection protection - only allow SELECT statements
+    sql_upper = sql.strip().upper()
+    if not sql_upper.startswith('SELECT'):
+        return jsonify({'error': 'Only SELECT queries are allowed'}), 400
+
+    # Prevent dangerous SQL operations
+    dangerous_keywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'ALTER', 'CREATE', 'TRUNCATE']
+    for keyword in dangerous_keywords:
+        if keyword in sql_upper:
+            return jsonify({'error': f'Keyword {keyword} is not allowed in queries'}), 400
+
+    try:
+        # Execute query
+        results = sqlite_manager.query_dict(sql)
+
+        return jsonify({
+            'sql': sql,
+            'num_results': len(results),
+            'results': results
+        })
+
+    except Exception as e:
+        logger.error(f"Query error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Serve vector search API")
+    parser = argparse.ArgumentParser(description="Serve vector search and SQL query API")
     parser.add_argument(
         '--index-dir',
         type=Path,
         required=True,
         help='Path to index directory (e.g., vector_indices/chunk2500_overlap300_model_embeddinggemma_300m)'
+    )
+    parser.add_argument(
+        '--summaries-path',
+        type=Path,
+        default=None,
+        help='Path to summaries.jsonl file (default: auto-detect from project root)'
+    )
+    parser.add_argument(
+        '--sqlite-path',
+        type=Path,
+        default=Path('papers.sqlite'),
+        help='Path to SQLite database file (default: papers.sqlite)'
+    )
+    parser.add_argument(
+        '--overwrite-db',
+        action='store_true',
+        help='Recreate SQLite database from summaries.jsonl'
     )
     parser.add_argument(
         '--host',
@@ -265,6 +398,28 @@ def main():
 
     # Initialize retriever
     init_retriever(args.index_dir)
+
+    # Initialize SQLite database
+    # Auto-detect summaries.jsonl path if not specified
+    if args.summaries_path is None:
+        # Try to find summaries.jsonl in parent directories
+        current_dir = Path.cwd()
+        for parent in [current_dir] + list(current_dir.parents):
+            summaries_path = parent / 'summaries.jsonl'
+            if summaries_path.exists():
+                logger.info(f"Auto-detected summaries.jsonl at: {summaries_path}")
+                args.summaries_path = summaries_path
+                break
+
+    if args.summaries_path and args.summaries_path.exists():
+        init_sqlite(
+            summaries_path=args.summaries_path,
+            sqlite_path=args.sqlite_path,
+            overwrite=args.overwrite_db
+        )
+    else:
+        logger.warning("Summaries file not found. SQLite endpoints will not be available.")
+        logger.warning("Use --summaries-path to specify the path to summaries.jsonl")
 
     # Start Flask server
     logger.info(f"Starting server on {args.host}:{args.port}")
