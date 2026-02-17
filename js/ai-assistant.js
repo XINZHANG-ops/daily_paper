@@ -808,10 +808,13 @@ class AIAssistant {
     // Don't pass imageData to template (we'll add it via DOM)
     const messageHTML = Templates.message(type, formattedContent, contextType, null);
 
-    // Remove typing indicator if exists
-    const typingIndicator = this.elements.messages.querySelector(`.${CSS_CLASSES.MESSAGE_TYPING}`);
-    if (typingIndicator) {
-      DOMUtils.removeElement(typingIndicator);
+    // Remove typing indicator if exists (remove entire message div, not just content)
+    const typingContent = this.elements.messages.querySelector(`.${CSS_CLASSES.MESSAGE_TYPING}`);
+    if (typingContent) {
+      const messageDiv = typingContent.closest(`.${CSS_CLASSES.MESSAGE}`);
+      if (messageDiv) {
+        DOMUtils.removeElement(messageDiv);
+      }
     }
 
     this.elements.messages.insertAdjacentHTML('beforeend', messageHTML);
@@ -902,10 +905,13 @@ class AIAssistant {
       this.elements.messages.insertAdjacentHTML('beforeend', typingHTML);
       this.scrollToBottom();
     } else {
-      // Remove typing indicator
-      const typingIndicator = this.elements.messages.querySelector(`.${CSS_CLASSES.MESSAGE_TYPING}`);
-      if (typingIndicator) {
-        DOMUtils.removeElement(typingIndicator);
+      // Remove typing indicator (remove entire message div, not just content)
+      const typingContent = this.elements.messages.querySelector(`.${CSS_CLASSES.MESSAGE_TYPING}`);
+      if (typingContent) {
+        const messageDiv = typingContent.closest(`.${CSS_CLASSES.MESSAGE}`);
+        if (messageDiv) {
+          DOMUtils.removeElement(messageDiv);
+        }
       }
 
       // Auto-focus input after response if user was actively using it
