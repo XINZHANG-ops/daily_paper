@@ -56,7 +56,7 @@ claude37_sonnet = GenaiGatewayClient(
 
 
 model_map = {
-    'claude4': claude4_opus,
+    'claude4': claude4_sonnet,
     'claude35': claude35_sonnet_v2,
     'claude37': claude37_sonnet,
 }
