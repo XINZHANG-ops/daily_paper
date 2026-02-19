@@ -332,32 +332,23 @@ def build_index(
             logger.info("Saving embeddings to sharded storage...")
             emb_manager.append_embeddings(batch_text_embeddings, metadatas, batch_urls)
 
-            # Rebuild FAISS index incrementally
-            logger.info("Updating FAISS index...")
-            if db is None:
-                # Create initial index
-                logger.info("Creating new FAISS index from all embeddings...")
-                all_text_embeddings = []
-                all_metadatas = []
+            # Rebuild FAISS index from all embeddings
+            # Note: We rebuild the entire index instead of using merge_from()
+            # because merge_from() is not supported by all FAISS index types (e.g., HNSW, IVF)
+            logger.info("Rebuilding FAISS index from all embeddings...")
+            all_text_embeddings = []
+            all_metadatas = []
 
-                for batch_emb, batch_meta in emb_manager.iter_all_embeddings(batch_size=1000):
-                    all_text_embeddings.extend(batch_emb)
-                    all_metadatas.extend(batch_meta)
+            for batch_emb, batch_meta in emb_manager.iter_all_embeddings(batch_size=1000):
+                all_text_embeddings.extend(batch_emb)
+                all_metadatas.extend(batch_meta)
 
-                db = FAISS.from_embeddings(
-                    text_embeddings=all_text_embeddings,
-                    embedding=embedding_client,
-                    metadatas=all_metadatas
-                )
-            else:
-                # Add new embeddings to existing index
-                logger.info("Adding new embeddings to existing index...")
-                db_temp = FAISS.from_embeddings(
-                    text_embeddings=batch_text_embeddings,
-                    embedding=embedding_client,
-                    metadatas=metadatas
-                )
-                db.merge_from(db_temp)
+            logger.info(f"Creating FAISS index with {len(all_text_embeddings)} total embeddings...")
+            db = FAISS.from_embeddings(
+                text_embeddings=all_text_embeddings,
+                embedding=embedding_client,
+                metadatas=all_metadatas
+            )
 
             # Save FAISS index
             logger.info(f"Saving FAISS index to {index_dir}...")
