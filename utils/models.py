@@ -60,26 +60,6 @@ if GENAI_AVAILABLE:
         safety_filtering='off'
     )
 
-<<<<<<< HEAD
-
-claude37_sonnet = GenaiGatewayClient(
-    api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
-    env="staging",
-    jurisdiction="us",
-    temperature=0.8,
-    provider='anthropics',
-    chat_model='claude-3-7-sonnet',
-    max_tokens=8192,
-    safety_filtering='off'
-)
-
-
-model_map = {
-    'claude4': claude4_sonnet,
-    'claude35': claude35_sonnet_v2,
-    'claude37': claude37_sonnet,
-}
-=======
     model_map = {
         'claude4': claude4_opus,
         'claude35': claude35_sonnet_v2,
@@ -92,7 +72,6 @@ else:
     claude4_opus = None
     claude37_sonnet = None
     model_map = {}
->>>>>>> fe0cbd0791371df24a47fb705f7ca218c9276c13
 
 
 def clean_prompt(text):
