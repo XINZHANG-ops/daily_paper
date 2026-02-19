@@ -5,43 +5,62 @@ Provides unified interface for multiple AI models including Claude and Gemini va
 """
 import os
 import re
-from geotab_genai.genai_gateway_client import GenaiGatewayClient
 
+# Try to import geotab_genai, but allow the module to work without it
+try:
+    from geotab_genai.genai_gateway_client import GenaiGatewayClient
+    GENAI_AVAILABLE = True
+except ModuleNotFoundError:
+    GenaiGatewayClient = None
+    GENAI_AVAILABLE = False
 
-claude35_sonnet_v2 = GenaiGatewayClient(
-    api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
-    env="staging",
-    jurisdiction="us",
-    temperature=0.8,
-    provider='anthropics',
-    chat_model='claude-3-5-sonnet-v2',
-    max_tokens=8192,
-    safety_filtering='off'
-)
+# Initialize models only if geotab_genai is available
+if GENAI_AVAILABLE:
+    claude35_sonnet_v2 = GenaiGatewayClient(
+        api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
+        env="staging",
+        jurisdiction="us",
+        temperature=0.8,
+        provider='anthropics',
+        chat_model='claude-3-5-sonnet-v2',
+        max_tokens=8192,
+        safety_filtering='off'
+    )
 
+    claude4_sonnet = GenaiGatewayClient(
+        api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
+        env="staging",
+        jurisdiction="us",
+        temperature=0.8,
+        provider='anthropics',
+        chat_model='claude-sonnet-4',
+        max_tokens=8192,
+        safety_filtering='off'
+    )
 
-claude4_sonnet = GenaiGatewayClient(
-    api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
-    env="staging",
-    jurisdiction="us",
-    temperature=0.8,
-    provider='anthropics',
-    chat_model='claude-sonnet-4',
-    max_tokens=8192,
-    safety_filtering='off'
-)
+    claude4_opus = GenaiGatewayClient(
+        api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
+        env="staging",
+        jurisdiction="us",
+        temperature=0.8,
+        provider='anthropics',
+        chat_model='claude-opus-4',
+        max_tokens=8192,
+        safety_filtering='off'
+    )
 
-claude4_opus = GenaiGatewayClient(
-    api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
-    env="staging",
-    jurisdiction="us",
-    temperature=0.8,
-    provider='anthropics',
-    chat_model='claude-opus-4',
-    max_tokens=8192,
-    safety_filtering='off'
-)
+    claude37_sonnet = GenaiGatewayClient(
+        api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
+        env="staging",
+        jurisdiction="us",
+        temperature=0.8,
+        provider='anthropics',
+        chat_model='claude-3-7-sonnet',
+        max_tokens=8192,
+        safety_filtering='off'
+    )
 
+<<<<<<< HEAD
 
 claude37_sonnet = GenaiGatewayClient(
     api_key=os.getenv("GENAI_GATEWAY_API_KEY"),
@@ -60,6 +79,20 @@ model_map = {
     'claude35': claude35_sonnet_v2,
     'claude37': claude37_sonnet,
 }
+=======
+    model_map = {
+        'claude4': claude4_opus,
+        'claude35': claude35_sonnet_v2,
+        'claude37': claude37_sonnet,
+    }
+else:
+    # Provide dummy values when geotab_genai is not available
+    claude35_sonnet_v2 = None
+    claude4_sonnet = None
+    claude4_opus = None
+    claude37_sonnet = None
+    model_map = {}
+>>>>>>> fe0cbd0791371df24a47fb705f7ca218c9276c13
 
 
 def clean_prompt(text):
@@ -108,7 +141,17 @@ def model_response(prompt, model_name, max_tokens=8192):
 
     Returns:
         str: Model response content
+
+    Raises:
+        RuntimeError: If geotab_genai is not available
     """
+    if not GENAI_AVAILABLE:
+        raise RuntimeError(
+            "geotab_genai module is not available. "
+            "This is an internal Geotab library and cannot be installed externally. "
+            "Model functionality is disabled, but other utilities (like download_paper_text) still work."
+        )
+
     # Clean the prompt to remove problematic Unicode characters
     prompt = clean_prompt(prompt)
 

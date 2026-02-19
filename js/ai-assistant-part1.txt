@@ -1,0 +1,115 @@
+/**
+ * AI Assistant Chat Widget
+ * Modified for Daily Paper repository
+ * - Only paper context type
+ * - Auto-detects paper date from subpage titles
+ * - Simplified without i18n support
+ */
+
+(function(window) {
+  'use strict';
+
+  // Use global utilities loaded from separate files
+  const { ICONS, DIMENSIONS, TIMING, LIMITS, STORAGE_KEYS, CSS_CLASSES, API_CONFIG, MESSAGES, CONTEXT_INFO, CONTEXT_TYPES } = window;
+  const { StorageManager, PositionManager, Templates, DOMUtils } = window;
+
+class AIAssistant {
+  constructor(config = {}) {
+    // Configuration with defaults
+    this.config = {
+      serverUrl: config.serverUrl || API_CONFIG.DEFAULT_SERVER_URL,
+      maxMessages: config.maxMessages || LIMITS.MAX_MESSAGES,
+      reconnectInterval: config.reconnectInterval || TIMING.RECONNECT_INTERVAL,
+      ...config
+    };
+
+    // State - Load from localStorage to persist across pages
+    this.isOpen = this.loadChatState();
+    this.isConnected = false;
+    this.messages = [];
+    this.isTyping = false;
+    this.sessionId = this.getSessionId();
+    this.wasDragging = false;
+    this.shouldAutoFocus = true;
+    this.selectedContextType = null;
+    this.showingMentionDropdown = false;
+
+    // Track position as percentage for zoom consistency
+    this.positionPercentage = null;
+
+    // Track chat window size
+    const savedSize = this.loadChatSize();
+    this.chatSize = {
+      width: savedSize?.width || DIMENSIONS.CHAT_WIDTH,
+      height: savedSize?.height || DIMENSIONS.CHAT_HEIGHT
+    };
+
+    // Initialize
+    this.init();
+    this.checkConnection();
+    this.loadChatHistory();
+
+    // Restore open state if it was previously open
+    if (this.isOpen) {
+      this.openChat();
+    }
+  }
+
+  init() {
+    // Create chat widget HTML
+    this.createChatWidget();
+
+    // Get DOM elements
+    this.elements = {
+      widget: document.getElementById('ai-assistant'),
+      toggle: document.getElementById('ai-toggle'),
+      window: document.getElementById('ai-window'),
+      close: document.getElementById('ai-close'),
+      newSession: document.getElementById('ai-new-session'),
+      messages: document.getElementById('ai-messages'),
+      input: document.getElementById('ai-input'),
+      send: document.getElementById('ai-send'),
+      status: document.getElementById('ai-status'),
+      header: document.getElementById('ai-header')
+    };
+
+    // Create and inject mention dropdown
+    this.createMentionDropdown();
+
+    // Apply dimensions
+    this.applyChatDimensions();
+
+    // Add event listeners
+    this.setupEventListeners();
+    this.setupMentionListener();
+    this.setupDraggable();
+    this.setupResizable();
+    this.setupResizeHandler();
+
+    // Set default context tag to paper
+    this.setDefaultContextTag();
+  }
+
+  applyChatDimensions() {
+    this.elements.window.style.width = `${this.chatSize.width}px`;
+    this.elements.window.style.height = `${this.chatSize.height}px`;
+    this.elements.window.style.maxWidth = `${DIMENSIONS.CHAT_MAX_WIDTH_VW}vw`;
+    this.elements.window.style.maxHeight = `${DIMENSIONS.CHAT_MAX_HEIGHT_VH}vh`;
+  }
+
+  getTranslations() {
+    // Simplified without i18n
+    return {
+      title: 'AI Paper Assistant',
+      welcome: 'Hi! Ask me anything about the papers.',
+      placeholder: 'Type @ to mention paper context...',
+      send: 'Send',
+      newSession: 'New'
+    };
+  }
+
+  createChatWidget() {
+    const translations = this.getTranslations();
+    const widgetHTML = Templates.chatWidget(translations);
+    document.body.insertAdjacentHTML('beforeend', widgetHTML);
+  }
