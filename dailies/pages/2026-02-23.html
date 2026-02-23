@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-02-23 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>2026-02-23 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-wood.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>VESPO: Variational Sequence-Level Soft Policy Optimization for Stable Off-Policy LLM Training</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-02-11</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2602.10693" target="_blank">http://arxiv.org/pdf/2602.10693</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on stabilizing off-policy reinforcement learning (RL) training for large language models (LLMs) through variance-controlled importance sampling.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing methods like GRPO (token-level clipping) and GSPO (sequence-level with length normalization), proposing a variational framework that derives importance weight transformations from first principles rather than heuristic design.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses training instability in LLM RL caused by distribution shifts from policy staleness, asynchronous training, and train-inference mismatches, where existing importance sampling methods suffer from high variance or introduce bias.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> VESPO uses a variational objective with dual proximity constraints and variance control to derive a closed-form reshaping kernel φ(W) = W^c1 exp(c2(1-W)) that operates directly on sequence-level importance weights without length normalization.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> On mathematical reasoning benchmarks, VESPO maintains stable training under staleness ratios up to 64× and fully asynchronous settings, achieving 2.3% higher average accuracy than baselines on MoE models and demonstrating consistent improvements across all model scales.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VESPO: Variational Sequence-Level Soft Policy Optimization for Stable Off-Policy LLM Training</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2C3E50">VESPO: Variational Sequence-Level Soft Policy Optimization</text>
+  
+  <!-- Problem Context -->
+  <rect x="50" y="60" width="900" height="80" rx="10" fill="#E8F4F8" stroke="#3498DB" stroke-width="2"/>
+  <text x="500" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2C3E50">Problem: Off-Policy Distribution Shift in LLM Training</text>
+  <text x="150" y="110" font-size="12" fill="#34495E">• Policy staleness from batched rollouts</text>
+  <text x="150" y="130" font-size="12" fill="#34495E">• Train-inference mismatch (especially in MoE models)</text>
+  <text x="550" y="110" font-size="12" fill="#34495E">• Asynchronous training systems</text>
+  <text x="550" y="130" font-size="12" fill="#34495E">• Variance explosion in sequence-level IS</text>
+  
+  <!-- Existing Methods -->
+  <g transform="translate(50, 170)">
+    <rect x="0" y="0" width="200" height="120" rx="8" fill="#FFE5CC" stroke="#E67E22" stroke-width="2"/>
+    <text x="100" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#D35400">Existing Methods</text>
+    <text x="10" y="45" font-size="11" fill="#7F4E1E">GRPO: Token-level clipping</text>
+    <text x="10" y="65" font-size="11" fill="#7F4E1E">GSPO: Length normalization</text>
+    <text x="10" y="85" font-size="11" fill="#7F4E1E">SAPO: Soft adaptive gating</text>
+    <text x="10" y="105" font-size="11" fill="#C0392B">✗ Heuristic design</text>
+  </g>
+  
+  <!-- Key Insight -->
+  <g transform="translate(300, 170)">
+    <rect x="0" y="0" width="400" height="120" rx="8" fill="#E8F6F3" stroke="#16A085" stroke-width="2"/>
+    <text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#0E6655">Key Insight: Measure Change Perspective</text>
+    <text x="10" y="45" font-size="12" fill="#0E6655">Any reshaping function φ(W) implicitly defines a proposal Q:</text>
+    <rect x="80" y="55" width="240" height="25" rx="5" fill="#D5F4E6" stroke="#27AE60"/>
+    <text x="200" y="72" text-anchor="middle" font-size="11" font-family="monospace" fill="#1E5631">Q(τ) ∝ μ(τ)·φ(W(τ))</text>
+  </g>
+  
+  <!-- Variational Framework -->
+  <g transform="translate(750, 170)">
+    <rect x="0" y="0" width="200" height="120" rx="8" fill="#F4E6FF" stroke="#8E44AD" stroke-width="2"/>
+    <text x="100" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#6C3483">Design Principles</text>
+    <text x="10" y="45" font-size="11" fill="#6C3483">• Dual proximity to μ and π</text>
+    <text x="10" y="65" font-size="11" fill="#6C3483">• Variance constraint</text>
+    <text x="10" y="85" font-size="11" fill="#6C3483">• Smooth differentiable</text>
+    <text x="10" y="105" font-size="11" fill="#27AE60">✓ Principled derivation</text>
+  </g>
+  
+  <!-- Variational Objective -->
+  <g transform="translate(200, 320)">
+    <rect x="0" y="0" width="600" height="100" rx="10" fill="#FFF3CD" stroke="#F39C12" stroke-width="2"/>
+    <text x="300" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#D68910">Variational Objective</text>
+    <text x="300" y="50" text-anchor="middle" font-size="12" font-family="monospace" fill="#7E5109">min_Q (1-α)D_KL(Q||μ) + α D_KL(Q||π)</text>
+    <text x="300" y="70" text-anchor="middle" font-size="12" font-family="monospace" fill="#7E5109">s.t. E_Q[W] ≤ C</text>
+    <circle cx="150" cy="60" r="30" fill="#F39C12" opacity="0.3"/>
+    <text x="150" y="65" text-anchor="middle" font-size="11" fill="#7E5109">Balance</text>
+    <circle cx="450" cy="60" r="30" fill="#E74C3C" opacity="0.3"/>
+    <text x="450" y="65" text-anchor="middle" font-size="11" fill="#922B21">Variance</text>
+  </g>
+  
+  <!-- Solution -->
+  <g transform="translate(200, 450)">
+    <rect x="0" y="0" width="600" height="80" rx="10" fill="#D5E8D4" stroke="#27AE60" stroke-width="2"/>
+    <text x="300" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#1E8449">Closed-Form Solution</text>
+    <rect x="150" y="35" width="300" height="30" rx="5" fill="#A9DFBF" stroke="#27AE60"/>
+    <text x="300" y="55" text-anchor="middle" font-size="13" font-family="monospace" fill="#0E5E2F">φ(W) = W^c₁ · exp(c₂(1-W))</text>
+  </g>
+  
+  <!-- VESPO Algorithm -->
+  <g transform="translate(150, 560)">
+    <rect x="0" y="0" width="700" height="120" rx="10" fill="#EBF5FB" stroke="#3498DB" stroke-width="2"/>
+    <text x="350" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#1F618D">VESPO Algorithm</text>
+    
+    <!-- Features -->
+    <rect x="20" y="40" width="200" height="65" rx="5" fill="#D6EAF8" stroke="#2874A6"/>
+    <text x="120" y="60" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B4F72">Features</text>
+    <text x="30" y="80" font-size="10" fill="#1B4F72">• Sequence-level operation</text>
+    <text x="30" y="95" font-size="10" fill="#1B4F72">• No length normalization</text>
+    
+    <rect x="240" y="40" width="210" height="65" rx="5" fill="#D6EAF8" stroke="#2874A6"/>
+    <text x="345" y="60" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B4F72">Gradient Estimator</text>
+    <text x="250" y="80" font-size="10" fill="#1B4F72">∇J = E[φ(W)·A·∇log π]</text>
+    <text x="250" y="95" font-size="10" fill="#1B4F72">Asymmetric c₊, c₋</text>
+    
+    <rect x="470" y="40" width="210" height="65" rx="5" fill="#D6EAF8" stroke="#2874A6"/>
+    <text x="575" y="60" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B4F72">Advantages</text>
+    <text x="480" y="80" font-size="10" fill="#1B4F72">• Stable under 64× staleness</text>
+    <text x="480" y="95" font-size="10" fill="#1B4F72">• Works with async training</text>
+  </g>
+  
+  <!-- Results -->
+  <g transform="translate(200, 710)">
+    <rect x="0" y="0" width="600" height="70" rx="10" fill="#D4EDDA" stroke="#28A745" stroke-width="2"/>
+    <text x="300" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#155724">Experimental Results</text>
+    <text x="100" y="50" font-size="11" fill="#155724">✓ Best avg accuracy across models</text>
+    <text x="100" y="65" font-size="11" fill="#155724">✓ Robust to train-inference mismatch</text>
+    <text x="400" y="50" font-size="11" fill="#155724">✓ Stable training dynamics</text>
+    <text x="400" y="65" font-size="11" fill="#155724">✓ Compatible with engineering fixes</text>
+  </g>
+  
+  <!-- Connecting lines -->
+  <path d="M 150 290 L 400 320" stroke="#7F8C8D" stroke-width="2" fill="none"/>
+  <path d="M 500 290 L 500 320" stroke="#7F8C8D" stroke-width="2" fill="none"/>
+  <path d="M 850 290 L 600 320" stroke="#7F8C8D" stroke-width="2" fill="none"/>
+  <path d="M 500 420 L 500 450" stroke="#27AE60" stroke-width="3" fill="none"/>
+  <path d="M 500 530 L 500 560" stroke="#3498DB" stroke-width="3" fill="none"/>
+  <path d="M 500 680 L 500 710" stroke="#28A745" stroke-width="3" fill="none"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="φ(W) = W^α · exp(-λW), derived from variational principles without requiring length normalization">
+                        <div class="quiz-question">1. What mathematical form does VESPO's reshaping kernel take, and why is this significant?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="φ(W) = W^α · exp(-λW), derived from variational principles without requiring length normalization">φ(W) = W^α · exp(-λW), derived from variational principles without requiring length normalization</div><div class="quiz-choice" data-value="φ(W) = min(W, clip_ratio), using hard clipping similar to PPO but at sequence level">φ(W) = min(W, clip_ratio), using hard clipping similar to PPO but at sequence level</div><div class="quiz-choice" data-value="φ(W) = W^(1/T), normalizing by sequence length to prevent variance explosion">φ(W) = W^(1/T), normalizing by sequence length to prevent variance explosion</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It demonstrates that token-level methods cannot be expressed as importance sampling toward any single proposal distribution, breaking sequence-level coherence">
+                        <div class="quiz-question">2. How does VESPO's measure-change perspective reveal limitations in existing methods like GRPO?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="It shows that GRPO's token-level clipping preserves exact sequence-level gradients through decomposition">It shows that GRPO's token-level clipping preserves exact sequence-level gradients through decomposition</div><div class="quiz-choice long-text" data-value="It demonstrates that token-level methods cannot be expressed as importance sampling toward any single proposal distribution, breaking sequence-level coherence">It demonstrates that token-level methods cannot be expressed as importance sampling toward any single proposal distribution, breaking sequence-level coherence</div><div class="quiz-choice" data-value="It proves that GRPO's clipping mechanism is optimal for short sequences under 100 tokens">It proves that GRPO's clipping mechanism is optimal for short sequences under 100 tokens</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="VESPO achieves 58.5% accuracy while SAPO collapses to 18.4% and GRPO/GSPO degrade to ~45%">
+                        <div class="quiz-question">3. What happens to baseline methods when training under extreme policy staleness (N=64)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="All methods maintain similar performance with less than 5% accuracy drop">All methods maintain similar performance with less than 5% accuracy drop</div><div class="quiz-choice" data-value="VESPO achieves 58.5% accuracy while SAPO collapses to 18.4% and GRPO/GSPO degrade to ~45%">VESPO achieves 58.5% accuracy while SAPO collapses to 18.4% and GRPO/GSPO degrade to ~45%</div><div class="quiz-choice" data-value="Length normalization in GSPO makes it the most stable method under high staleness">Length normalization in GSPO makes it the most stable method under high staleness</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/use-your-illusion.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>AutoWebWorld: Synthesizing Infinite Verifiable Web Environments via Finite State Machines</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-02-15</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2602.14296" target="_blank">http://arxiv.org/pdf/2602.14296</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on synthesizing verifiable web environments for training autonomous Web GUI agents using Finite State Machines (FSMs).</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing GUI trajectory collection methods that rely on real websites and external verifiers, proposing AutoWebWorld which uses FSMs to create synthetic websites with intrinsic verification capabilities.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the expensive and inconsistent verification of GUI interaction trajectories from real websites, where internal states are hidden and external verifiers (humans/LLMs) are costly and unreliable.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a multi-agent framework to generate FSMs from web themes, translate FSMs into synthetic websites via coding agents, perform BFS traversal for trajectory generation, and apply execution-based filtering for verification.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> AutoWebWorld generated 11,663 verified trajectories from 29 synthetic websites at $0.04 per trajectory, achieving 27.42% success rate on WebVoyager benchmark with only 16K training steps, demonstrating clear scaling laws as synthetic data volume increases.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>AutoWebWorld: Synthesizing Infinite Verifiable Web Environments via Finite State Machines</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+    AutoWebWorld: Method Workflow
+  </text>
+  
+  <!-- Step 1: FSM Generation -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="200" height="300" rx="15" fill="#3498db" opacity="0.9"/>
+    <text x="100" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Step 1: FSM Generation</text>
+    
+    <!-- Multi-agent components -->
+    <rect x="20" y="50" width="160" height="50" rx="8" fill="#2980b9"/>
+    <text x="100" y="80" font-family="Arial" font-size="14" text-anchor="middle" fill="white">FSM Proposer</text>
+    
+    <rect x="20" y="110" width="160" height="50" rx="8" fill="#2980b9"/>
+    <text x="100" y="140" font-family="Arial" font-size="14" text-anchor="middle" fill="white">FSM Validator</text>
+    
+    <rect x="20" y="170" width="160" height="50" rx="8" fill="#2980b9"/>
+    <text x="100" y="200" font-family="Arial" font-size="14" text-anchor="middle" fill="white">FSM Improver</text>
+    
+    <rect x="20" y="230" width="160" height="50" rx="8" fill="#1f618d"/>
+    <text x="100" y="260" font-family="Arial" font-size="14" text-anchor="middle" fill="white">Final FSM</text>
+  </g>
+  
+  <!-- Arrow 1 to 2 -->
+  <path d="M 250 230 L 300 230" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Step 2: Web Generation -->
+  <g transform="translate(300, 80)">
+    <rect x="0" y="0" width="200" height="300" rx="15" fill="#e74c3c" opacity="0.9"/>
+    <text x="100" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Step 2: Web Generation</text>
+    
+    <!-- Stages -->
+    <rect x="20" y="50" width="160" height="40" rx="8" fill="#c0392b"/>
+    <text x="100" y="75" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Stage 1: Guidelines</text>
+    
+    <rect x="20" y="100" width="160" height="40" rx="8" fill="#c0392b"/>
+    <text x="100" y="125" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Stage 2: Pages Synthesis</text>
+    
+    <rect x="20" y="150" width="160" height="40" rx="8" fill="#c0392b"/>
+    <text x="100" y="175" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Stage 3: Web Building</text>
+    
+    <rect x="20" y="200" width="160" height="40" rx="8" fill="#c0392b"/>
+    <text x="100" y="225" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Stage 4: Self-repair</text>
+    
+    <rect x="20" y="250" width="160" height="30" rx="8" fill="#922b21"/>
+    <text x="100" y="270" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Synthesized Web</text>
+  </g>
+  
+  <!-- Arrow 2 to 3 -->
+  <path d="M 500 230 L 550 230" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Step 3: Trajectory Search -->
+  <g transform="translate(550, 80)">
+    <rect x="0" y="0" width="200" height="300" rx="15" fill="#2ecc71" opacity="0.9"/>
+    <text x="100" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Step 3: Trajectory Search</text>
+    
+    <!-- BFS visualization -->
+    <circle cx="100" cy="80" r="15" fill="#27ae60"/>
+    <text x="100" y="85" font-family="Arial" font-size="12" text-anchor="middle" fill="white">SI</text>
+    
+    <circle cx="60" cy="130" r="12" fill="#27ae60"/>
+    <text x="60" y="135" font-family="Arial" font-size="10" text-anchor="middle" fill="white">S1</text>
+    
+    <circle cx="100" cy="130" r="12" fill="#27ae60"/>
+    <text x="100" y="135" font-family="Arial" font-size="10" text-anchor="middle" fill="white">S2</text>
+    
+    <circle cx="140" cy="130" r="12" fill="#27ae60"/>
+    <text x="140" y="135" font-family="Arial" font-size="10" text-anchor="middle" fill="white">S3</text>
+    
+    <circle cx="100" cy="180" r="15" fill="#229954"/>
+    <text x="100" y="185" font-family="Arial" font-size="12" text-anchor="middle" fill="white">SE</text>
+    
+    <!-- BFS connections -->
+    <line x1="100" y1="95" x2="60" y2="118" stroke="#27ae60" stroke-width="2"/>
+    <line x1="100" y1="95" x2="100" y2="118" stroke="#27ae60" stroke-width="2"/>
+    <line x1="100" y1="95" x2="140" y2="118" stroke="#27ae60" stroke-width="2"/>
+    <line x1="100" y1="142" x2="100" y2="165" stroke="#27ae60" stroke-width="2"/>
+    
+    <rect x="20" y="210" width="160" height="30" rx="8" fill="#229954"/>
+    <text x="100" y="230" font-family="Arial" font-size="14" text-anchor="middle" fill="white">BFS Algorithm</text>
+    
+    <rect x="20" y="250" width="160" height="30" rx="8" fill="#1e8449"/>
+    <text x="100" y="270" font-family="Arial" font-size="14" text-anchor="middle" fill="white">All Trajectories</text>
+  </g>
+  
+  <!-- Arrow 3 to 4 -->
+  <path d="M 750 230 L 800 230" stroke="#34495e" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Step 4: Trajectory Filtering -->
+  <g transform="translate(800, 80)">
+    <rect x="0" y="0" width="180" height="300" rx="15" fill="#9b59b6" opacity="0.9"/>
+    <text x="90" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Step 4: Filtering</text>
+    
+    <rect x="20" y="50" width="140" height="40" rx="8" fill="#8e44ad"/>
+    <text x="90" y="70" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Execution-based</text>
+    <text x="90" y="85" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Verification</text>
+    
+    <rect x="20" y="100" width="140" height="40" rx="8" fill="#8e44ad"/>
+    <text x="90" y="120" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Playwright</text>
+    <text x="90" y="135" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Replay</text>
+    
+    <rect x="20" y="150" width="140" height="40" rx="8" fill="#8e44ad"/>
+    <text x="90" y="170" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Match User</text>
+    <text x="90" y="185" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Intent</text>
+    
+    <rect x="20" y="200" width="140" height="40" rx="8" fill="#8e44ad"/>
+    <text x="90" y="220" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Valid Trajectory</text>
+    <text x="90" y="235" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Check</text>
+    
+    <rect x="20" y="250" width="140" height="30" rx="8" fill="#7b3f99"/>
+    <text x="90" y="270" font-family="Arial" font-size="13" text-anchor="middle" fill="white">Final Dataset</text>
+  </g>
+  
+  <!-- Key Features -->
+  <g transform="translate(100, 420)">
+    <rect x="0" y="0" width="800" height="120" rx="15" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+    <text x="400" y="30" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="#2c3e50">Key Features</text>
+    
+    <circle cx="50" cy="70" r="8" fill="#3498db"/>
+    <text x="70" y="75" font-family="Arial" font-size="14" fill="#2c3e50">Finite State Machine (FSM) based approach</text>
+    
+    <circle cx="50" cy="100" r="8" fill="#e74c3c"/>
+    <text x="70" y="105" font-family="Arial" font-size="14" fill="#2c3e50">Automated web environment synthesis</text>
+    
+    <circle cx="420" cy="70" r="8" fill="#2ecc71"/>
+    <text x="440" y="75" font-family="Arial" font-size="14" fill="#2c3e50">BFS-based trajectory enumeration</text>
+    
+    <circle cx="420" cy="100" r="8" fill="#9b59b6"/>
+    <text x="440" y="105" font-family="Arial" font-size="14" fill="#2c3e50">Intrinsic verification without external judges</text>
+  </g>
+  
+  <!-- Cost Efficiency -->
+  <g transform="translate(100, 570)">
+    <rect x="0" y="0" width="380" height="80" rx="15" fill="#f39c12" opacity="0.9"/>
+    <text x="190" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Cost Efficiency</text>
+    <text x="190" y="55" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="white">$0.04 per trajectory</text>
+  </g>
+  
+  <!-- Performance -->
+  <g transform="translate(520, 570)">
+    <rect x="0" y="0" width="380" height="80" rx="15" fill="#16a085" opacity="0.9"/>
+    <text x="190" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Performance</text>
+    <text x="190" y="55" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="white">27.42% on WebVoyager</text>
+  </g>
+  
+  <!-- Scale -->
+  <g transform="translate(310, 680)">
+    <rect x="0" y="0" width="380" height="80" rx="15" fill="#c0392b" opacity="0.9"/>
+    <text x="190" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Scale</text>
+    <text x="190" y="55" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="white">11,663 trajectories from 29 websites</text>
+  </g>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It explicitly models website states as FSMs, making internal transitions observable and programmatically verifiable">
+                        <div class="quiz-question">1. What makes AutoWebWorld's trajectory verification fundamentally different from existing GUI data collection methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses GPT-5.1 to judge trajectory correctness instead of human annotators">It uses GPT-5.1 to judge trajectory correctness instead of human annotators</div><div class="quiz-choice long-text" data-value="It explicitly models website states as FSMs, making internal transitions observable and programmatically verifiable">It explicitly models website states as FSMs, making internal transitions observable and programmatically verifiable</div><div class="quiz-choice" data-value="It collects trajectories 10x faster by using parallel web browsers">It collects trajectories 10x faster by using parallel web browsers</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Thinking generation ($272.17), suggesting that per-step reasoning is the primary expense rather than environment execution">
+                        <div class="quiz-question">2. Which component dominates the cost breakdown in AutoWebWorld's data generation pipeline, and what does this suggest?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Web environment generation ($272.17), suggesting that creating synthetic websites is the main bottleneck">Web environment generation ($272.17), suggesting that creating synthetic websites is the main bottleneck</div><div class="quiz-choice long-text" data-value="FSM generation ($272.17), indicating that designing state machines requires extensive computational resources">FSM generation ($272.17), indicating that designing state machines requires extensive computational resources</div><div class="quiz-choice long-text" data-value="Thinking generation ($272.17), suggesting that per-step reasoning is the primary expense rather than environment execution">Thinking generation ($272.17), suggesting that per-step reasoning is the primary expense rather than environment execution</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Performance on WebVoyager monotonically improves from 3.92% to 27.42% as training samples increase from 8 to 16,253">
+                        <div class="quiz-question">3. What evidence does the paper provide for the scaling potential of synthetic GUI training data?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Performance on WebVoyager monotonically improves from 3.92% to 27.42% as training samples increase from 8 to 16,253">Performance on WebVoyager monotonically improves from 3.92% to 27.42% as training samples increase from 8 to 16,253</div><div class="quiz-choice" data-value="The synthetic websites are 100x more diverse than real websites in terms of interaction patterns">The synthetic websites are 100x more diverse than real websites in terms of interaction patterns</div><div class="quiz-choice" data-value="AutoWebWorld can generate infinite websites at zero marginal cost after initial setup">AutoWebWorld can generate infinite websites at zero marginal cost after initial setup</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Arcee Trinity Large Technical Report</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-02-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2602.17004" target="_blank">http://arxiv.org/pdf/2602.17004</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents technical details of the Trinity family of sparse Mixture-of-Experts language models, focusing on architecture design, training, and evaluation in the domain of large-scale language model development.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing work including sparse MoE architectures, interleaved local/global attention patterns, and the Muon optimizer, while introducing new ideas like Soft-clamped Momentum Expert Bias Updates (SMEBU) for load balancing and the Random Sequential Document Buffer (RSDB) for improved data preparation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to develop open-weight language models that are both capable and efficient for inference, addressing the need for models that can handle long contexts, tool use, and reasoning while being deployable in enterprise settings with transparency requirements.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a sparse MoE architecture with interleaved local/global attention, gated attention, depth-scaled sandwich norm, sigmoid routing, and train with the Muon optimizer on up to 17 trillion tokens using custom data curation including 8 trillion synthetic tokens.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Trinity Large achieved competitive performance with models like GLM 4.5 Base despite 4× higher sparsity, completed training with zero loss spikes, demonstrated strong inference efficiency, and showed effective context extension up to 512K tokens with good needle-in-haystack performance.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Arcee Trinity Large Technical Report</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Title -->
+  <text x="500" y="30" font-size="24" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Arcee Trinity Large: Technical Workflow</text>
+  
+  <!-- Architecture Design Phase -->
+  <rect x="50" y="60" width="200" height="120" rx="10" fill="#4a90e2" stroke="#2c5aa0" stroke-width="2"/>
+  <text x="150" y="85" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Architecture Design</text>
+  <text x="150" y="105" font-size="11" text-anchor="middle" fill="white">• Sparse MoE (400B/13B)</text>
+  <text x="150" y="120" font-size="11" text-anchor="middle" fill="white">• Local/Global Attention</text>
+  <text x="150" y="135" font-size="11" text-anchor="middle" fill="white">• Gated Attention</text>
+  <text x="150" y="150" font-size="11" text-anchor="middle" fill="white">• QK-Normalization</text>
+  <text x="150" y="165" font-size="11" text-anchor="middle" fill="white">• SMEBU Load Balancing</text>
+  
+  <!-- Data Preparation -->
+  <rect x="300" y="60" width="200" height="120" rx="10" fill="#50c878" stroke="#3a9b5c" stroke-width="2"/>
+  <text x="400" y="85" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Data Curation</text>
+  <text x="400" y="105" font-size="11" text-anchor="middle" fill="white">• 17T tokens total</text>
+  <text x="400" y="120" font-size="11" text-anchor="middle" fill="white">• 3-phase mixture</text>
+  <text x="400" y="135" font-size="11" text-anchor="middle" fill="white">• 8T synthetic data</text>
+  <text x="400" y="150" font-size="11" text-anchor="middle" fill="white">• Multilingual corpus</text>
+  <text x="400" y="165" font-size="11" text-anchor="middle" fill="white">• Code & STEM focus</text>
+  
+  <!-- Tokenization -->
+  <rect x="550" y="60" width="200" height="120" rx="10" fill="#9b59b6" stroke="#7d3c98" stroke-width="2"/>
+  <text x="650" y="85" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Tokenization</text>
+  <text x="650" y="105" font-size="11" text-anchor="middle" fill="white">• 200K BPE vocabulary</text>
+  <text x="650" y="120" font-size="11" text-anchor="middle" fill="white">• Place-aligned digits</text>
+  <text x="650" y="135" font-size="11" text-anchor="middle" fill="white">• Script-aware isolation</text>
+  <text x="650" y="150" font-size="11" text-anchor="middle" fill="white">• Byte-level fallback</text>
+  <text x="650" y="165" font-size="11" text-anchor="middle" fill="white">• On-the-fly tokenization</text>
+  
+  <!-- Pre-training Phase -->
+  <rect x="175" y="220" width="450" height="140" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="400" y="245" font-size="16" font-weight="bold" text-anchor="middle" fill="white">Pre-training</text>
+  <text x="400" y="270" font-size="12" text-anchor="middle" fill="white">Infrastructure: 2048 B300 GPUs</text>
+  <text x="400" y="290" font-size="12" text-anchor="middle" fill="white">Optimizer: Muon (hidden) + AdamW (embed/output)</text>
+  <text x="400" y="310" font-size="12" text-anchor="middle" fill="white">Batch size: 12288 → 16384 tokens</text>
+  <text x="400" y="330" font-size="12" text-anchor="middle" fill="white">Sequence length: 8192 tokens</text>
+  <text x="400" y="350" font-size="12" text-anchor="middle" fill="white">RSDB: Random Sequential Document Buffer</text>
+  
+  <!-- Context Extension -->
+  <rect x="50" y="400" width="250" height="100" rx="10" fill="#f39c12" stroke="#d68910" stroke-width="2"/>
+  <text x="175" y="425" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Context Extension</text>
+  <text x="175" y="445" font-size="11" text-anchor="middle" fill="white">• Train at 256K tokens</text>
+  <text x="175" y="460" font-size="11" text-anchor="middle" fill="white">• Target: 512K context</text>
+  <text x="175" y="475" font-size="11" text-anchor="middle" fill="white">• 117B token dataset</text>
+  <text x="175" y="490" font-size="11" text-anchor="middle" fill="white">• MK-NIAH: 0.976 @ 512K</text>
+  
+  <!-- Supervised Fine-tuning -->
+  <rect x="350" y="400" width="250" height="100" rx="10" fill="#16a085" stroke="#138871" stroke-width="2"/>
+  <text x="475" y="425" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Supervised Fine-tuning</text>
+  <text x="475" y="445" font-size="11" text-anchor="middle" fill="white">• Public + custom data blend</text>
+  <text x="475" y="460" font-size="11" text-anchor="middle" fill="white">• Agentic coding trajectories</text>
+  <text x="475" y="475" font-size="11" text-anchor="middle" fill="white">• 64K sequence length</text>
+  <text x="475" y="490" font-size="11" text-anchor="middle" fill="white">• Cut Cross-Entropy kernel</text>
+  
+  <!-- Reinforcement Learning -->
+  <rect x="650" y="400" width="250" height="100" rx="10" fill="#e67e22" stroke="#ca6f1e" stroke-width="2"/>
+  <text x="775" y="425" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Reinforcement Learning</text>
+  <text x="775" y="445" font-size="11" text-anchor="middle" fill="white">• prime-rl framework</text>
+  <text x="775" y="460" font-size="11" text-anchor="middle" fill="white">• vLLM-backed workers</text>
+  <text x="775" y="475" font-size="11" text-anchor="middle" fill="white">• Verifiable rewards</text>
+  <text x="775" y="490" font-size="11" text-anchor="middle" fill="white">• FSDP2 distributed training</text>
+  
+  <!-- Evaluation -->
+  <rect x="275" y="540" width="350" height="100" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+  <text x="450" y="565" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Evaluation & Benchmarking</text>
+  <text x="450" y="585" font-size="11" text-anchor="middle" fill="white">• Coding/Math: MBPP+ (88.62%), MATH500 (65.20%)</text>
+  <text x="450" y="600" font-size="11" text-anchor="middle" fill="white">• Knowledge: MMLU (82.58%), MMLU-Pro (66.02%)</text>
+  <text x="450" y="615" font-size="11" text-anchor="middle" fill="white">• Reasoning: BBH (65.70%), GPQA (43.94%)</text>
+  <text x="450" y="630" font-size="11" text-anchor="middle" fill="white">• Inference: Efficient with FP8 quantization</text>
+  
+  <!-- Final Model -->
+  <rect x="325" y="680" width="250" height="80" rx="10" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="450" y="705" font-size="16" font-weight="bold" text-anchor="middle" fill="white">Trinity Large</text>
+  <text x="450" y="725" font-size="12" text-anchor="middle" fill="white">400B total / 13B active parameters</text>
+  <text x="450" y="745" font-size="12" text-anchor="middle" fill="white">Available on HuggingFace</text>
+  
+  <!-- Flow arrows -->
+  <path d="M 150 180 L 400 220" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 400 180 L 400 220" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 650 180 L 400 220" stroke="#666" stroke-width="2" fill="none"/>
+  
+  <path d="M 400 360 L 175 400" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 400 360 L 475 400" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 400 360 L 775 400" stroke="#666" stroke-width="2" fill="none"/>
+  
+  <path d="M 175 500 L 450 540" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 475 500 L 450 540" stroke="#666" stroke-width="2" fill="none"/>
+  <path d="M 775 500 L 450 540" stroke="#666" stroke-width="2" fill="none"/>
+  
+  <path d="M 450 640 L 450 680" stroke="#666" stroke-width="2" fill="none"/>
+  
+  <!-- Key Innovations Box -->
+  <rect x="780" y="60" width="180" height="120" rx="10" fill="#ff6b6b" stroke="#ff5252" stroke-width="2"/>
+  <text x="870" y="85" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Key Innovations</text>
+  <text x="870" y="105" font-size="10" text-anchor="middle" fill="white">• SMEBU load balancing</text>
+  <text x="870" y="120" font-size="10" text-anchor="middle" fill="white">• Interleaved attention</text>
+  <text x="870" y="135" font-size="10" text-anchor="middle" fill="white">• Muon optimizer</text>
+  <text x="870" y="150" font-size="10" text-anchor="middle" fill="white">• Zero loss spikes</text>
+  <text x="870" y="165" font-size="10" text-anchor="middle" fill="white">• Extreme sparsity</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Soft-clamped Momentum Expert Bias Updates (SMEBU) using tanh soft-clamping and momentum smoothing">
+                        <div class="quiz-question">1. What novel load balancing method did the authors introduce specifically for Trinity Large to address MoE training instability?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Soft-clamped Momentum Expert Bias Updates (SMEBU) using tanh soft-clamping and momentum smoothing">Soft-clamped Momentum Expert Bias Updates (SMEBU) using tanh soft-clamping and momentum smoothing</div><div class="quiz-choice" data-value="Random Sequential Document Buffer (RSDB) with auxiliary-loss-free balancing">Random Sequential Document Buffer (RSDB) with auxiliary-loss-free balancing</div><div class="quiz-choice" data-value="Sigmoid routing with depth-scaled sandwich normalization">Sigmoid routing with depth-scaled sandwich normalization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="8 trillion tokens, representing one of the largest publicly documented synthetic data generation efforts">
+                        <div class="quiz-question">2. How much synthetic data did DatologyAI generate for the Trinity models' pretraining, and what was unique about this effort?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="4 trillion tokens, making it the largest open-source synthetic dataset">4 trillion tokens, making it the largest open-source synthetic dataset</div><div class="quiz-choice long-text" data-value="8 trillion tokens, representing one of the largest publicly documented synthetic data generation efforts">8 trillion tokens, representing one of the largest publicly documented synthetic data generation efforts</div><div class="quiz-choice" data-value="17 trillion tokens, entirely generated using the Muon optimizer">17 trillion tokens, entirely generated using the Muon optimizer</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It achieved a Multi-Key Needle-in-a-haystack score of 0.976 at 512K context length">
+                        <div class="quiz-question">3. Despite not being trained at 512K context length, what surprising capability did Trinity Large demonstrate during evaluation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It achieved perfect accuracy on all coding benchmarks at 512K tokens">It achieved perfect accuracy on all coding benchmarks at 512K tokens</div><div class="quiz-choice" data-value="It achieved a Multi-Key Needle-in-a-haystack score of 0.976 at 512K context length">It achieved a Multi-Key Needle-in-a-haystack score of 0.976 at 512K context length</div><div class="quiz-choice" data-value="It automatically extended its context window to 1M tokens without any fine-tuning">It automatically extended its context window to 1M tokens without any fine-tuning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
