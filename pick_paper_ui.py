@@ -308,6 +308,7 @@ def check_if_ready(daily_total):
 
 def create_ui():
     """Create the Gradio UI."""
+    pull_github()
 
     with gr.Blocks(title="Daily Papers Selector") as ui:
         gr.Markdown("# 📚 Daily Papers - One at a Time")
@@ -398,7 +399,6 @@ def create_ui():
 if __name__ == "__main__":
     logger.add(sys.stderr, format="{time} {level} {message}", level="INFO")
     pull_github()
-
     ui = create_ui()
     logger.info("Starting UI on http://localhost:7860")
 
