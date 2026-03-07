@@ -87,9 +87,74 @@ class AIAssistant {
     this.setupDraggable();
     this.setupResizable();
     this.setupResizeHandler();
+    this.setupStorageSync();
 
     // Set default context tag to paper
     this.setDefaultContextTag();
+  }
+
+  setupStorageSync() {
+    // Listen for localStorage changes from other tabs/pages
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEYS.CHAT_HISTORY && e.newValue !== null) {
+        // Another page updated chat history, reload it
+        this.reloadChatHistoryFromStorage();
+      }
+    });
+  }
+
+  reloadChatHistoryFromStorage() {
+    // Get latest history from localStorage
+    const history = StorageManager.get(STORAGE_KEYS.CHAT_HISTORY, []);
+
+    // Clear current messages display (keep welcome message structure)
+    const currentLang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
+    const translations = this.getTranslations(currentLang);
+    this.elements.messages.innerHTML = Templates.welcomeMessage(translations.welcome);
+
+    // Reset messages array
+    this.messages = [];
+
+    // Reload all messages from storage
+    history.forEach(msg => {
+      let contextType = null;
+      if (msg.contextType) {
+        contextType = CONTEXT_TYPES.find(ct => ct.id === msg.contextType);
+      }
+      const imageData = msg.imageData || null;
+      this.addMessageWithoutSave(msg.type, msg.content, contextType, imageData);
+    });
+
+    // Update messages array to match storage
+    this.messages = history;
+  }
+
+  addMessageWithoutSave(type, content, contextType = null, imageData = null) {
+    // Render markdown for assistant messages, escape HTML for user messages
+    const formattedContent = type === 'assistant'
+      ? this.renderMarkdown(content)
+      : DOMUtils.escapeHtml(content);
+
+    const messageHTML = Templates.message(type, formattedContent, contextType, null);
+    this.elements.messages.insertAdjacentHTML('beforeend', messageHTML);
+
+    // If there's an image, add it via DOM manipulation
+    if (imageData && type === 'user') {
+      const lastMessage = this.elements.messages.lastElementChild;
+      const messageContent = lastMessage.querySelector('.ai-message__content');
+      if (messageContent) {
+        const img = document.createElement('img');
+        img.className = 'ai-message__image';
+        img.alt = 'Uploaded image';
+        img.loading = 'lazy';
+        img.style.opacity = '1';
+        img.style.display = 'block';
+        img.src = imageData;
+        messageContent.insertBefore(img, messageContent.firstChild);
+      }
+    }
+
+    this.scrollToBottom();
   }
 
   applyChatDimensions() {
