@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-03-19 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>2026-03-19 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/black-linen-2.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>MiroThinker-1.7 & H1: Towards Heavy-Duty Research Agents via Verification</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-03-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2603.15726" target="_blank">http://arxiv.org/pdf/2603.15726</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents MiroThinker-1.7 and MiroThinker-H1, research agents designed for complex long-horizon reasoning tasks in the domain of agentic AI systems.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on ReAct paradigm and agentic LLMs (GPT-5.4, Claude-4.6, etc.), proposing agentic mid-training for atomic capabilities and verification-centric reasoning with local and global verifiers for reliable multi-step problem solving.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge that simply scaling interaction length in agent trajectories accumulates noise and errors rather than improving reasoning quality in complex real-world tasks.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a four-stage training pipeline (mid-training, supervised fine-tuning, preference optimization, reinforcement learning) with dual-loop agent architecture, sliding-window context management, and verification mechanisms at both local and global levels.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> MiroThinker-H1 achieves state-of-the-art performance with 88.2 on BrowseComp and 88.5 on GAIA, outperforming commercial agents while requiring 43% fewer interaction rounds compared to previous versions, evaluated using LLM-as-Judge across multiple benchmarks.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MiroThinker-1.7 & H1: Towards Heavy-Duty Research Agents via Verification</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Title -->
+  <text x="500" y="30" font-size="24" font-weight="bold" text-anchor="middle" fill="#1a237e">MiroThinker-1.7 & H1: Method Workflow</text>
+  
+  <!-- Phase 1: QA Construction -->
+  <rect x="50" y="60" width="900" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="500" y="85" font-size="18" font-weight="bold" text-anchor="middle" fill="#1976d2">High-Quality QA Construction</text>
+  
+  <rect x="100" y="100" width="350" height="60" rx="5" fill="#bbdefb"/>
+  <text x="275" y="125" font-size="14" text-anchor="middle" fill="#0d47a1">Corpus-based Pipeline</text>
+  <text x="275" y="145" font-size="12" text-anchor="middle" fill="#424242">Subgraph sampling, broad coverage</text>
+  
+  <rect x="550" y="100" width="350" height="60" rx="5" fill="#bbdefb"/>
+  <text x="725" y="125" font-size="14" text-anchor="middle" fill="#0d47a1">WebHop Pipeline</text>
+  <text x="725" y="145" font-size="12" text-anchor="middle" fill="#424242">Web expansion, difficulty control</text>
+  
+  <!-- Arrow down -->
+  <path d="M 500 180 L 500 210" stroke="#424242" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Phase 2: Training Pipeline -->
+  <rect x="50" y="220" width="900" height="280" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="500" y="245" font-size="18" font-weight="bold" text-anchor="middle" fill="#7b1fa2">4-Stage Training Pipeline</text>
+  
+  <!-- Stage 1 -->
+  <rect x="100" y="260" width="180" height="80" rx="5" fill="#ce93d8"/>
+  <text x="190" y="285" font-size="14" font-weight="bold" text-anchor="middle" fill="#4a148c">1. Agentic Mid-training</text>
+  <text x="190" y="305" font-size="11" text-anchor="middle" fill="#212121">Planning Boosting</text>
+  <text x="190" y="320" font-size="11" text-anchor="middle" fill="#212121">Reasoning Sculpting</text>
+  <text x="190" y="335" font-size="11" text-anchor="middle" fill="#212121">Summarization</text>
+  
+  <!-- Stage 2 -->
+  <rect x="320" y="260" width="180" height="80" rx="5" fill="#ba68c8"/>
+  <text x="410" y="285" font-size="14" font-weight="bold" text-anchor="middle" fill="#4a148c">2. Supervised Fine-tuning</text>
+  <text x="410" y="305" font-size="11" text-anchor="middle" fill="#212121">Expert trajectories</text>
+  <text x="410" y="320" font-size="11" text-anchor="middle" fill="#212121">Multi-turn interaction</text>
+  <text x="410" y="335" font-size="11" text-anchor="middle" fill="#212121">Tool execution</text>
+  
+  <!-- Stage 3 -->
+  <rect x="540" y="260" width="180" height="80" rx="5" fill="#ab47bc"/>
+  <text x="630" y="285" font-size="14" font-weight="bold" text-anchor="middle" fill="#4a148c">3. Preference Optimization</text>
+  <text x="630" y="305" font-size="11" text-anchor="middle" fill="#212121">DPO training</text>
+  <text x="630" y="320" font-size="11" text-anchor="middle" fill="#212121">Correctness ranking</text>
+  <text x="630" y="335" font-size="11" text-anchor="middle" fill="#212121">Quality filtering</text>
+  
+  <!-- Stage 4 -->
+  <rect x="760" y="260" width="180" height="80" rx="5" fill="#9c27b0"/>
+  <text x="850" y="285" font-size="14" font-weight="bold" text-anchor="middle" fill="#4a148c">4. Reinforcement Learning</text>
+  <text x="850" y="305" font-size="11" text-anchor="middle" fill="#212121">GRPO optimization</text>
+  <text x="850" y="320" font-size="11" text-anchor="middle" fill="#212121">Entropy control</text>
+  <text x="850" y="335" font-size="11" text-anchor="middle" fill="#212121">Creative exploration</text>
+  
+  <!-- Model variants -->
+  <rect x="100" y="360" width="250" height="120" rx="8" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+  <text x="225" y="385" font-size="16" font-weight="bold" text-anchor="middle" fill="#2e7d32">MiroThinker-1.7-mini</text>
+  <text x="225" y="405" font-size="12" text-anchor="middle" fill="#424242">3B activated params</text>
+  <text x="225" y="425" font-size="12" text-anchor="middle" fill="#424242">Preference distillation</text>
+  <text x="225" y="445" font-size="12" text-anchor="middle" fill="#424242">Efficient performance</text>
+  
+  <rect x="375" y="360" width="250" height="120" rx="8" fill="#e1f5fe" stroke="#0288d1" stroke-width="2"/>
+  <text x="500" y="385" font-size="16" font-weight="bold" text-anchor="middle" fill="#01579b">MiroThinker-1.7</text>
+  <text x="500" y="405" font-size="12" text-anchor="middle" fill="#424242">Full-scale model</text>
+  <text x="500" y="425" font-size="12" text-anchor="middle" fill="#424242">Strong atomic abilities</text>
+  <text x="500" y="445" font-size="12" text-anchor="middle" fill="#424242">Effective interaction</text>
+  
+  <rect x="650" y="360" width="250" height="120" rx="8" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="775" y="385" font-size="16" font-weight="bold" text-anchor="middle" fill="#e65100">MiroThinker-H1</text>
+  <text x="775" y="405" font-size="12" text-anchor="middle" fill="#424242">Heavy-duty reasoning</text>
+  <text x="775" y="425" font-size="12" text-anchor="middle" fill="#424242">Local verification</text>
+  <text x="775" y="445" font-size="12" text-anchor="middle" fill="#424242">Global verification</text>
+  
+  <!-- Arrow down -->
+  <path d="M 500 500 L 500 530" stroke="#424242" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Phase 3: Agentic Workflow -->
+  <rect x="50" y="540" width="900" height="240" rx="10" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="500" y="565" font-size="18" font-weight="bold" text-anchor="middle" fill="#3f51b5">Agentic Workflow & Verification</text>
+  
+  <!-- ReAct Loop -->
+  <rect x="100" y="580" width="380" height="180" rx="8" fill="#c5cae9"/>
+  <text x="290" y="605" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a237e">ReAct Interaction Loop</text>
+  
+  <ellipse cx="180" cy="670" rx="60" ry="40" fill="#7986cb"/>
+  <text x="180" y="675" font-size="12" text-anchor="middle" fill="white">Thought</text>
+  
+  <ellipse cx="290" cy="670" rx="60" ry="40" fill="#5c6bc0"/>
+  <text x="290" y="675" font-size="12" text-anchor="middle" fill="white">Action</text>
+  
+  <ellipse cx="400" cy="670" rx="60" ry="40" fill="#3f51b5"/>
+  <text x="400" y="675" font-size="12" text-anchor="middle" fill="white">Observation</text>
+  
+  <text x="290" y="720" font-size="11" text-anchor="middle" fill="#424242">Context Management:</text>
+  <text x="290" y="735" font-size="10" text-anchor="middle" fill="#424242">Sliding-window (K=5)</text>
+  <text x="290" y="750" font-size="10" text-anchor="middle" fill="#424242">Result truncation</text>
+  
+  <!-- Tools -->
+  <rect x="520" y="580" width="180" height="180" rx="8" fill="#b39ddb"/>
+  <text x="610" y="605" font-size="16" font-weight="bold" text-anchor="middle" fill="#311b92">Tool Interface</text>
+  <text x="610" y="630" font-size="12" text-anchor="middle" fill="#212121">Information Retrieval</text>
+  <text x="610" y="650" font-size="10" text-anchor="middle" fill="#424242">• google_search</text>
+  <text x="610" y="665" font-size="10" text-anchor="middle" fill="#424242">• scrape_extract</text>
+  <text x="610" y="685" font-size="12" text-anchor="middle" fill="#212121">Code Execution</text>
+  <text x="610" y="705" font-size="10" text-anchor="middle" fill="#424242">• run_python_code</text>
+  <text x="610" y="720" font-size="10" text-anchor="middle" fill="#424242">• run_command</text>
+  <text x="610" y="740" font-size="12" text-anchor="middle" fill="#212121">File Transfer</text>
+  
+  <!-- Verification -->
+  <rect x="740" y="580" width="180" height="180" rx="8" fill="#ffccbc"/>
+  <text x="830" y="605" font-size="16" font-weight="bold" text-anchor="middle" fill="#bf360c">H1 Verification</text>
+  <rect x="760" y="620" width="140" height="55" rx="5" fill="#ff8a65"/>
+  <text x="830" y="640" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Local Verifier</text>
+  <text x="830" y="655" font-size="10" text-anchor="middle" fill="white">Step-level audit</text>
+  <text x="830" y="670" font-size="10" text-anchor="middle" fill="white">Error correction</text>
+  
+  <rect x="760" y="685" width="140" height="55" rx="5" fill="#ff5722"/>
+  <text x="830" y="705" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Global Verifier</text>
+  <text x="830" y="720" font-size="10" text-anchor="middle" fill="white">Trajectory audit</text>
+  <text x="830" y="735" font-size="10" text-anchor="middle" fill="white">Solution selection</text>
+  
+  <!-- Arrow definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#424242"/>
+    </marker>
+  </defs>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Scaling effective interaction quality rather than simply increasing interaction length">
+                        <div class="quiz-question">1. What is the key insight behind MiroThinker's approach to improving long-horizon reasoning?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Increasing the context window size to 512K tokens for better memory retention">Increasing the context window size to 512K tokens for better memory retention</div><div class="quiz-choice" data-value="Scaling effective interaction quality rather than simply increasing interaction length">Scaling effective interaction quality rather than simply increasing interaction length</div><div class="quiz-choice" data-value="Using multiple parallel agents to explore different solution paths simultaneously">Using multiple parallel agents to explore different solution paths simultaneously</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It integrates Local and Global Verifiers to audit step-level and complete reasoning processes">
+                        <div class="quiz-question">2. How does MiroThinker-H1's verification-centric reasoning mode work?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses blockchain technology to verify each reasoning step cryptographically">It uses blockchain technology to verify each reasoning step cryptographically</div><div class="quiz-choice" data-value="It employs human experts to validate intermediate results during inference">It employs human experts to validate intermediate results during inference</div><div class="quiz-choice" data-value="It integrates Local and Global Verifiers to audit step-level and complete reasoning processes">It integrates Local and Global Verifiers to audit step-level and complete reasoning processes</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="16.7% better performance with 43% fewer interaction rounds on average">
+                        <div class="quiz-question">3. What surprising result did MiroThinker-1.7-mini achieve compared to MiroThinker-1.5?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="16.7% better performance with 43% fewer interaction rounds on average">16.7% better performance with 43% fewer interaction rounds on average</div><div class="quiz-choice" data-value="50% reduction in training time with identical performance metrics">50% reduction in training time with identical performance metrics</div><div class="quiz-choice" data-value="Triple the context length capacity while maintaining the same parameter count">Triple the context length capacity while maintaining the same parameter count</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>MetaClaw: Just Talk -- An Agent That Meta-Learns and Evolves in the Wild</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-03-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2603.17187" target="_blank">http://arxiv.org/pdf/2603.17187</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents MetaClaw, a continual meta-learning framework for deployed LLM agents that enables them to evolve and adapt in real-world usage through skill synthesis and policy optimization.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on memory-based methods (Reflexion), skill-based approaches (Voyager, ExpeL), and RL-based LLM training (RLHF, GRPO), proposing a novel dual-mechanism approach that combines gradient-free skill evolution with opportunistic gradient-based policy optimization while maintaining strict support-query data separation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the fundamental tension that deployed LLM agents remain static after training while user needs and task distributions evolve continuously, causing performance degradation without service interruption for retraining.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> MetaClaw employs two complementary mechanisms: skill-driven fast adaptation that analyzes failures to synthesize reusable behavioral instructions with zero downtime, and opportunistic policy optimization that performs RL-based LoRA fine-tuning during user-inactive windows detected by monitoring sleep schedules, system inactivity, and calendar events.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> On MetaClaw-Bench (934 questions), skill adaptation improved accuracy by up to 32% relative, the full pipeline advanced Kimi-K2.5 from 21.4% to 40.6% accuracy with 8.25× gain in task completion, and on AutoResearchClaw, skill injection alone improved composite robustness by 18.3%.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>MetaClaw: Just Talk -- An Agent That Meta-Learns and Evolves in the Wild</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">MetaClaw: Continual Meta-Learning Framework</text>
+  
+  <!-- Main Components -->
+  
+  <!-- Task Stream Input -->
+  <rect x="50" y="80" width="150" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="125" y="105" text-anchor="middle" font-size="14" fill="white">Task Stream</text>
+  <text x="125" y="125" text-anchor="middle" font-size="12" fill="white">τ₁, τ₂, τ₃...</text>
+  
+  <!-- Meta-Model -->
+  <rect x="300" y="80" width="180" height="60" rx="10" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="390" y="105" text-anchor="middle" font-size="14" fill="white">Meta-Model M</text>
+  <text x="390" y="125" text-anchor="middle" font-size="12" fill="white">(θ, S)</text>
+  
+  <!-- Agent Execution -->
+  <rect x="580" y="80" width="150" height="60" rx="10" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="655" y="105" text-anchor="middle" font-size="14" fill="white">Agent Execution</text>
+  <text x="655" y="125" text-anchor="middle" font-size="12" fill="white">π_θ(·|τ, Retrieve(S,τ))</text>
+  
+  <!-- Trajectory Collection -->
+  <rect x="780" y="80" width="150" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="855" y="105" text-anchor="middle" font-size="14" fill="white">Trajectory</text>
+  <text x="855" y="125" text-anchor="middle" font-size="12" fill="white">a₁, a₂, ..., aₙ</text>
+  
+  <!-- Two Main Loops -->
+  
+  <!-- Fast Adaptation Loop -->
+  <rect x="100" y="220" width="350" height="250" rx="15" fill="#ecf0f1" stroke="#34495e" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="275" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#34495e">Skill-Driven Fast Adaptation</text>
+  
+  <!-- Failure Analysis -->
+  <rect x="120" y="270" width="140" height="50" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <text x="190" y="290" text-anchor="middle" font-size="12" fill="white">Failure Analysis</text>
+  <text x="190" y="305" text-anchor="middle" font-size="10" fill="white">Support Data D_sup</text>
+  
+  <!-- Skill Evolver -->
+  <rect x="290" y="270" width="140" height="50" rx="8" fill="#f39c12" stroke="#d68910" stroke-width="2"/>
+  <text x="360" y="290" text-anchor="middle" font-size="12" fill="white">Skill Evolver E</text>
+  <text x="360" y="305" text-anchor="middle" font-size="10" fill="white">LLM Analysis</text>
+  
+  <!-- Skill Library Update -->
+  <rect x="205" y="350" width="140" height="50" rx="8" fill="#27ae60" stroke="#229954" stroke-width="2"/>
+  <text x="275" y="370" text-anchor="middle" font-size="12" fill="white">Update S</text>
+  <text x="275" y="385" text-anchor="middle" font-size="10" fill="white">S_g+1 = S_g ∪ ΔS</text>
+  
+  <!-- Immediate Effect -->
+  <rect x="205" y="420" width="140" height="40" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="275" y="445" text-anchor="middle" font-size="12" fill="white">Zero Downtime</text>
+  
+  <!-- Policy Optimization Loop -->
+  <rect x="550" y="220" width="350" height="250" rx="15" fill="#ecf0f1" stroke="#34495e" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="725" y="245" text-anchor="middle" font-size="16" font-weight="bold" fill="#34495e">Opportunistic Policy Optimization</text>
+  
+  <!-- Query Data Collection -->
+  <rect x="570" y="270" width="140" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="640" y="290" text-anchor="middle" font-size="12" fill="white">Query Data D_qry</text>
+  <text x="640" y="305" text-anchor="middle" font-size="10" fill="white">Post-adaptation</text>
+  
+  <!-- OMLS Scheduler -->
+  <rect x="740" y="270" width="140" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="810" y="290" text-anchor="middle" font-size="12" fill="white">OMLS Scheduler</text>
+  <text x="810" y="305" text-anchor="middle" font-size="10" fill="white">Idle Detection</text>
+  
+  <!-- RL Training -->
+  <rect x="655" y="350" width="140" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="725" y="370" text-anchor="middle" font-size="12" fill="white">RL Training</text>
+  <text x="725" y="385" text-anchor="middle" font-size="10" fill="white">Cloud LoRA</text>
+  
+  <!-- Weight Update -->
+  <rect x="655" y="420" width="140" height="40" rx="8" fill="#c0392b" stroke="#a93226" stroke-width="2"/>
+  <text x="725" y="445" text-anchor="middle" font-size="12" fill="white">Update θ</text>
+  
+  <!-- Skill Versioning Mechanism -->
+  <rect x="350" y="520" width="300" height="80" rx="10" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="500" y="545" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Skill Generation Versioning</text>
+  <text x="500" y="565" text-anchor="middle" font-size="12" fill="white">Support-Query Separation</text>
+  <text x="500" y="585" text-anchor="middle" font-size="10" fill="white">Flush samples with version ≤ g</text>
+  
+  <!-- Idle Signals -->
+  <g transform="translate(700, 640)">
+    <rect x="0" y="0" width="250" height="100" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <text x="125" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Three Idle Signals</text>
+    <circle cx="40" cy="50" r="15" fill="#e74c3c"/>
+    <text x="40" y="55" text-anchor="middle" font-size="10" fill="white">Sleep</text>
+    <circle cx="125" cy="50" r="15" fill="#f39c12"/>
+    <text x="125" y="55" text-anchor="middle" font-size="10" fill="white">Inactivity</text>
+    <circle cx="210" cy="50" r="15" fill="#3498db"/>
+    <text x="210" y="55" text-anchor="middle" font-size="10" fill="white">Calendar</text>
+  </g>
+  
+  <!-- Connections -->
+  <path d="M 200 110 L 300 110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 480 110 L 580 110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 730 110 L 780 110" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Trajectory to loops -->
+  <path d="M 855 140 L 855 200 L 190 200 L 190 270" stroke="#e74c3c" stroke-width="2" stroke-dasharray="3,3"/>
+  <path d="M 855 140 L 855 200 L 640 200 L 640 270" stroke="#3498db" stroke-width="2" stroke-dasharray="3,3"/>
+  
+  <!-- Within loops -->
+  <path d="M 260 295 L 290 295" stroke="#34495e" stroke-width="2"/>
+  <path d="M 360 320 L 360 340 L 275 340 L 275 350" stroke="#34495e" stroke-width="2"/>
+  <path d="M 275 400 L 275 420" stroke="#34495e" stroke-width="2"/>
+  
+  <path d="M 710 295 L 740 295" stroke="#34495e" stroke-width="2"/>
+  <path d="M 810 320 L 810 340 L 725 340 L 725 350" stroke="#34495e" stroke-width="2"/>
+  <path d="M 725 400 L 725 420" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Back to meta-model -->
+  <path d="M 275 460 L 275 480 L 390 480 L 390 140" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5"/>
+  <path d="M 725 460 L 725 480 L 390 480 L 390 140" stroke="#c0392b" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Features -->
+  <text x="50" y="700" font-size="12" font-weight="bold" fill="#2c3e50">Key Features:</text>
+  <text x="50" y="720" font-size="11" fill="#34495e">• Dual timescale adaptation: fast (skills) and slow (weights)</text>
+  <text x="50" y="740" font-size="11" fill="#34495e">• Zero-downtime skill injection via prompt modification</text>
+  <text x="50" y="760" font-size="11" fill="#34495e">• Opportunistic training during user idle periods</text>
+  <text x="50" y="780" font-size="11" fill="#34495e">• Strict support-query data separation via versioning</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="An Opportunistic Meta-Learning Scheduler (OMLS) that monitors sleep hours, keyboard inactivity, and Google Calendar events">
+                        <div class="quiz-question">1. What unique scheduling mechanism does MetaClaw use to avoid disrupting user experience during policy optimization?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="A distributed computing cluster that runs training in parallel without affecting the main agent">A distributed computing cluster that runs training in parallel without affecting the main agent</div><div class="quiz-choice long-text" data-value="An Opportunistic Meta-Learning Scheduler (OMLS) that monitors sleep hours, keyboard inactivity, and Google Calendar events">An Opportunistic Meta-Learning Scheduler (OMLS) that monitors sleep hours, keyboard inactivity, and Google Calendar events</div><div class="quiz-choice long-text" data-value="A predictive algorithm that forecasts when users will need the agent and schedules training accordingly">A predictive algorithm that forecasts when users will need the agent and schedules training accordingly</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="To prevent stale rewards from pre-adaptation failures contaminating gradient updates for policy optimization">
+                        <div class="quiz-question">2. Why does MetaClaw maintain strict separation between 'support data' and 'query data' through its skill generation versioning mechanism?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="To prevent stale rewards from pre-adaptation failures contaminating gradient updates for policy optimization">To prevent stale rewards from pre-adaptation failures contaminating gradient updates for policy optimization</div><div class="quiz-choice" data-value="To comply with data privacy regulations by keeping user interactions separate from training data">To comply with data privacy regulations by keeping user interactions separate from training data</div><div class="quiz-choice" data-value="To reduce memory consumption by archiving old trajectories that are no longer needed">To reduce memory consumption by archiving old trajectories that are no longer needed</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Skill injection alone improved composite robustness by 18.3% without any gradient updates">
+                        <div class="quiz-question">3. When MetaClaw was applied to AutoResearchClaw's 23-stage research pipeline, what was the primary improvement mechanism and its impact?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Full RL training reduced pipeline execution time by 23% through optimized stage transitions">Full RL training reduced pipeline execution time by 23% through optimized stage transitions</div><div class="quiz-choice" data-value="Memory augmentation allowed the system to cache previous research papers for faster retrieval">Memory augmentation allowed the system to cache previous research papers for faster retrieval</div><div class="quiz-choice" data-value="Skill injection alone improved composite robustness by 18.3% without any gradient updates">Skill injection alone improved composite robustness by 18.3% without any gradient updates</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/my-little-plaid-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>SocialOmni: Benchmarking Audio-Visual Social Interactivity in Omni Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-03-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2603.16859" target="_blank">http://arxiv.org/pdf/2603.16859</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper introduces SocialOmni, a benchmark for evaluating audio-visual social interactivity in omni-modal large language models (OLMs) during multi-party conversations.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing OLM benchmarks that focus on static accuracy-centric tasks, proposing a new evaluation framework that operationalizes social interactivity across three dimensions: who (speaker identification), when (interruption timing), and how (natural response generation).</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the gap in evaluating OLMs' conversational social competence, as current benchmarks fail to assess models' ability to navigate dynamic dialogue cues, determine appropriate turn-taking timing, and generate socially coherent responses in real-time multi-party settings.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors created a benchmark with 2,000 perception samples and 209 interaction-generation instances across 15 dialogue domains, using multiple-choice questions for speaker identification and LLM-as-judge protocols for evaluating turn-timing decisions and response quality.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Testing 12 OLMs revealed no single model dominates all three axes, with significant decoupling between perceptual accuracy and generation quality - models excelling at speaker identification often fail at natural interruption generation, confirming that understanding-centric metrics alone cannot characterize conversational competence.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>SocialOmni: Benchmarking Audio-Visual Social Interactivity in Omni Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f4f8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Arrow marker -->
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#4a5568" />
+    </marker>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#bgGradient)" />
+  
+  <!-- Title -->
+  <text x="500" y="40" font-size="28" font-weight="bold" text-anchor="middle" fill="#2d3748">SocialOmni Benchmark Workflow</text>
+  
+  <!-- Data Collection Phase -->
+  <rect x="50" y="80" width="200" height="60" rx="10" fill="#667eea" />
+  <text x="150" y="115" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Data Collection</text>
+  
+  <!-- Video Sources -->
+  <rect x="30" y="170" width="240" height="120" rx="8" fill="#faf5ff" stroke="#805ad5" stroke-width="2" />
+  <text x="150" y="195" text-anchor="middle" fill="#553c9a" font-size="12" font-weight="bold">Video Sources</text>
+  <text x="150" y="215" text-anchor="middle" fill="#6b46c1" font-size="11">• 3,000+ raw videos</text>
+  <text x="150" y="235" text-anchor="middle" fill="#6b46c1" font-size="11">• 15 dialogue subcategories</text>
+  <text x="150" y="255" text-anchor="middle" fill="#6b46c1" font-size="11">• 4 domains</text>
+  <text x="150" y="275" text-anchor="middle" fill="#6b46c1" font-size="11">• CC-BY licenses</text>
+  
+  <!-- Preprocessing -->
+  <rect x="320" y="80" width="200" height="60" rx="10" fill="#f56565" />
+  <text x="420" y="115" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Preprocessing</text>
+  
+  <!-- Preprocessing Details -->
+  <rect x="300" y="170" width="240" height="120" rx="8" fill="#fff5f5" stroke="#fc8181" stroke-width="2" />
+  <text x="420" y="195" text-anchor="middle" fill="#c53030" font-size="12" font-weight="bold">Processing Steps</text>
+  <text x="420" y="215" text-anchor="middle" fill="#e53e3e" font-size="11">• Extract 10-30s clips</text>
+  <text x="420" y="235" text-anchor="middle" fill="#e53e3e" font-size="11">• Audio clarity filtering</text>
+  <text x="420" y="255" text-anchor="middle" fill="#e53e3e" font-size="11">• Face visibility check</text>
+  <text x="420" y="275" text-anchor="middle" fill="#e53e3e" font-size="11">• ASR transcription</text>
+  
+  <!-- Task Design -->
+  <rect x="590" y="80" width="200" height="60" rx="10" fill="#48bb78" />
+  <text x="690" y="115" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Task Design</text>
+  
+  <!-- Task I: Who -->
+  <rect x="50" y="330" width="280" height="140" rx="8" fill="#e6fffa" stroke="#38b2ac" stroke-width="2" />
+  <text x="190" y="355" text-anchor="middle" fill="#234e52" font-size="14" font-weight="bold">Task I: Who - Perception</text>
+  <text x="190" y="380" text-anchor="middle" fill="#2c7a7b" font-size="11">• Speaker identification at timestamp t</text>
+  <text x="190" y="400" text-anchor="middle" fill="#2c7a7b" font-size="11">• 4-way multiple choice</text>
+  <text x="190" y="420" text-anchor="middle" fill="#2c7a7b" font-size="11">• 2,000 perception samples</text>
+  <text x="190" y="440" text-anchor="middle" fill="#2c7a7b" font-size="11">• Consistent/Inconsistent splits</text>
+  <text x="190" y="460" text-anchor="middle" fill="#2c7a7b" font-size="11">• Audio-visual alignment testing</text>
+  
+  <!-- Task II: When & How -->
+  <rect x="360" y="330" width="280" height="140" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+  <text x="500" y="355" text-anchor="middle" fill="#78350f" font-size="14" font-weight="bold">Task II: When & How - Generation</text>
+  <text x="500" y="380" text-anchor="middle" fill="#92400e" font-size="11">• Binary turn-taking decision</text>
+  <text x="500" y="400" text-anchor="middle" fill="#92400e" font-size="11">• Context-appropriate utterance</text>
+  <text x="500" y="420" text-anchor="middle" fill="#92400e" font-size="11">• 209 generation instances</text>
+  <text x="500" y="440" text-anchor="middle" fill="#92400e" font-size="11">• Multi-reference continuations</text>
+  <text x="500" y="460" text-anchor="middle" fill="#92400e" font-size="11">• Temporal constraint evaluation</text>
+  
+  <!-- Evaluation -->
+  <rect x="670" y="330" width="280" height="140" rx="8" fill="#fce4ec" stroke="#e91e63" stroke-width="2" />
+  <text x="810" y="355" text-anchor="middle" fill="#880e4f" font-size="14" font-weight="bold">Evaluation Metrics</text>
+  <text x="810" y="380" text-anchor="middle" fill="#c2185b" font-size="11">• Who: Top-1 accuracy, Macro-F1</text>
+  <text x="810" y="400" text-anchor="middle" fill="#c2185b" font-size="11">• When: Timing categories (E/O/L)</text>
+  <text x="810" y="420" text-anchor="middle" fill="#c2185b" font-size="11">• How: LLM-as-judge scoring</text>
+  <text x="810" y="440" text-anchor="middle" fill="#c2185b" font-size="11">• Consistency gap analysis</text>
+  <text x="810" y="460" text-anchor="middle" fill="#c2185b" font-size="11">• Response coverage metrics</text>
+  
+  <!-- Model Testing -->
+  <rect x="200" y="510" width="600" height="80" rx="10" fill="#4299e1" />
+  <text x="500" y="540" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Model Testing & Benchmarking</text>
+  <text x="500" y="565" text-anchor="middle" fill="white" font-size="12">12 OLMs tested: GPT-4o, Gemini series, Qwen series, OmniVinci, VITA, Baichuan-Omni, MiniOmni2</text>
+  
+  <!-- Results Analysis -->
+  <rect x="50" y="620" width="400" height="120" rx="8" fill="#f0fff4" stroke="#48bb78" stroke-width="2" />
+  <text x="250" y="645" text-anchor="middle" fill="#1a202c" font-size="14" font-weight="bold">Key Findings</text>
+  <text x="250" y="670" text-anchor="middle" fill="#2d3748" font-size="11">• No single model dominates all axes</text>
+  <text x="250" y="690" text-anchor="middle" fill="#2d3748" font-size="11">• Perception-generation decoupling observed</text>
+  <text x="250" y="710" text-anchor="middle" fill="#2d3748" font-size="11">• Open-source models lag commercial systems</text>
+  <text x="250" y="730" text-anchor="middle" fill="#2d3748" font-size="11">• Cross-modal temporal incoherence issues</text>
+  
+  <!-- Failure Patterns -->
+  <rect x="480" y="620" width="470" height="120" rx="8" fill="#fff5f7" stroke="#ed64a6" stroke-width="2" />
+  <text x="715" y="645" text-anchor="middle" fill="#1a202c" font-size="14" font-weight="bold">Common Failure Patterns</text>
+  <text x="600" y="670" text-anchor="left" fill="#2d3748" font-size="11">Perception: • Cross-modal temporal incoherence</text>
+  <text x="600" y="690" text-anchor="left" fill="#2d3748" font-size="11">                    • Correct transcription, wrong speaker</text>
+  <text x="600" y="710" text-anchor="left" fill="#2d3748" font-size="11">Generation: • Premature interruption</text>
+  <text x="600" y="730" text-anchor="left" fill="#2d3748" font-size="11">                     • Contextually incoherent continuation</text>
+  
+  <!-- Flow arrows -->
+  <path d="M 250 140 L 320 140" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 520 140 L 590 140" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 150 290 L 190 330" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 420 290 L 380 330" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 420 290 L 500 330" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 690 140 L 810 330" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 190 470 L 300 510" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 500 470 L 500 510" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 810 470 L 700 510" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 400 590 L 250 620" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 600 590 L 715 620" stroke="#4a5568" stroke-width="2" marker-end="url(#arrow)" />
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="There is a pronounced decoupling - models excelling at speaker identification often fail at generating appropriate interruptions">
+                        <div class="quiz-question">1. What surprising pattern did SocialOmni reveal about the relationship between a model's perceptual accuracy and its conversational abilities?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Models with high speaker identification accuracy consistently generate the most natural interruptions">Models with high speaker identification accuracy consistently generate the most natural interruptions</div><div class="quiz-choice long-text" data-value="There is a pronounced decoupling - models excelling at speaker identification often fail at generating appropriate interruptions">There is a pronounced decoupling - models excelling at speaker identification often fail at generating appropriate interruptions</div><div class="quiz-choice" data-value="Perceptual accuracy perfectly predicts a model's ability to time conversational turns correctly">Perceptual accuracy perfectly predicts a model's ability to time conversational turns correctly</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Different models led each axis: Qwen3-Omni (who), Gemini 3 Pro Preview (when), and Gemini 2.5 Flash (how)">
+                        <div class="quiz-question">2. Which model achieved the best performance on each of SocialOmni's three evaluation axes?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="GPT-4o dominated all three axes: who, when, and how">GPT-4o dominated all three axes: who, when, and how</div><div class="quiz-choice" data-value="Gemini 3 Pro Preview excelled at all tasks due to its unified architecture">Gemini 3 Pro Preview excelled at all tasks due to its unified architecture</div><div class="quiz-choice long-text" data-value="Different models led each axis: Qwen3-Omni (who), Gemini 3 Pro Preview (when), and Gemini 2.5 Flash (how)">Different models led each axis: Qwen3-Omni (who), Gemini 3 Pro Preview (when), and Gemini 2.5 Flash (how)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Aggressive models frequently interrupt too early, while conservative models miss conversational windows entirely">
+                        <div class="quiz-question">3. What are the two dominant failure patterns SocialOmni identified in the 'when' (turn-taking timing) task?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Aggressive models frequently interrupt too early, while conservative models miss conversational windows entirely">Aggressive models frequently interrupt too early, while conservative models miss conversational windows entirely</div><div class="quiz-choice" data-value="All models consistently respond exactly on time but with inappropriate content">All models consistently respond exactly on time but with inappropriate content</div><div class="quiz-choice" data-value="Models only fail when audio and visual cues are perfectly synchronized">Models only fail when audio and visual cues are perfectly synchronized</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
