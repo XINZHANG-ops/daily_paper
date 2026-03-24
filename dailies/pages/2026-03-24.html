@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-03-24 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>2026-03-24 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/woven.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>Omni-WorldBench: Towards a Comprehensive Interaction-Centric Evaluation for World Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-03-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2603.22212" target="_blank">http://arxiv.org/pdf/2603.22212</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents Omni-WorldBench, a comprehensive benchmark for evaluating the interactive response capabilities of video-based world models in 4D generation settings.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on existing video generation benchmarks like VBench and WorldScore that focus on visual fidelity and static 3D reconstruction, but proposes the first benchmark specifically designed to evaluate how world models respond to interaction actions across space and time.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the lack of standardized evaluation protocols for assessing the core capability of world models - their ability to generate consistent and plausible responses under varying interaction conditions beyond just visual quality.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors develop Omni-WorldSuite (a hierarchical prompt suite with three interaction levels across diverse scenarios) and Omni-Metrics (an agent-based evaluation framework measuring interaction effect fidelity, video quality, and camera-object controllability), which are combined into an overall AgenticScore.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Evaluation of 18 world models reveals that while current models achieve strong visual fidelity (>95% in temporal smoothness), they show significant limitations in interactive response capabilities, with IT2V models like Wan2.2 achieving the highest AgenticScore (75.92%) but still struggling with complex causal interactions and long-term consistency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Omni-WorldBench: Towards a Comprehensive Interaction-Centric Evaluation for World Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2C3E50">Omni-WorldBench: Method Workflow</text>
+  
+  <!-- Main Components -->
+  <!-- Omni-WorldSuite Box -->
+  <rect x="50" y="70" width="400" height="300" fill="#E8F4F8" stroke="#3498DB" stroke-width="3" rx="10"/>
+  <text x="250" y="100" text-anchor="middle" font-size="20" font-weight="bold" fill="#2C3E50">Omni-WorldSuite</text>
+  
+  <!-- Construction Pipeline -->
+  <rect x="70" y="120" width="160" height="80" fill="#AED6F1" stroke="#2980B9" stroke-width="2" rx="5"/>
+  <text x="150" y="145" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Dataset-grounded</text>
+  <text x="150" y="165" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Prompt Generation</text>
+  <text x="150" y="185" text-anchor="middle" font-size="12" fill="#34495E">(Open Datasets)</text>
+  
+  <rect x="270" y="120" width="160" height="80" fill="#F9E79F" stroke="#F39C12" stroke-width="2" rx="5"/>
+  <text x="350" y="145" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Concept-driven</text>
+  <text x="350" y="165" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Prompt Generation</text>
+  <text x="350" y="185" text-anchor="middle" font-size="12" fill="#34495E">(LLM/VLM-based)</text>
+  
+  <!-- Interaction Levels -->
+  <rect x="70" y="220" width="110" height="130" fill="#D5F4E6" stroke="#27AE60" stroke-width="2" rx="5"/>
+  <text x="125" y="240" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Level 1</text>
+  <text x="125" y="260" text-anchor="middle" font-size="12" fill="#34495E">Single Object</text>
+  <text x="125" y="275" text-anchor="middle" font-size="12" fill="#34495E">Self-state</text>
+  <circle cx="125" cy="310" r="20" fill="#52BE80" opacity="0.5"/>
+  
+  <rect x="195" y="220" width="110" height="130" fill="#FADBD8" stroke="#E74C3C" stroke-width="2" rx="5"/>
+  <text x="250" y="240" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Level 2</text>
+  <text x="250" y="260" text-anchor="middle" font-size="12" fill="#34495E">Local</text>
+  <text x="250" y="275" text-anchor="middle" font-size="12" fill="#34495E">Interaction</text>
+  <circle cx="230" cy="310" r="15" fill="#EC7063" opacity="0.5"/>
+  <circle cx="270" cy="310" r="15" fill="#EC7063" opacity="0.5"/>
+  
+  <rect x="320" y="220" width="110" height="130" fill="#E8DAEF" stroke="#8E44AD" stroke-width="2" rx="5"/>
+  <text x="375" y="240" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Level 3</text>
+  <text x="375" y="260" text-anchor="middle" font-size="12" fill="#34495E">Global</text>
+  <text x="375" y="275" text-anchor="middle" font-size="12" fill="#34495E">Environment</text>
+  <circle cx="355" cy="305" r="12" fill="#AF7AC5" opacity="0.5"/>
+  <circle cx="375" cy="315" r="12" fill="#AF7AC5" opacity="0.5"/>
+  <circle cx="395" cy="305" r="12" fill="#AF7AC5" opacity="0.5"/>
+  
+  <!-- Omni-Metric Box -->
+  <rect x="550" y="70" width="400" height="300" fill="#FEF9E7" stroke="#F39C12" stroke-width="3" rx="10"/>
+  <text x="750" y="100" text-anchor="middle" font-size="20" font-weight="bold" fill="#2C3E50">Omni-Metric</text>
+  
+  <!-- Evaluation Dimensions -->
+  <rect x="570" y="120" width="360" height="50" fill="#FAD7A0" stroke="#E67E22" stroke-width="2" rx="5"/>
+  <text x="750" y="150" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Generated Video Quality</text>
+  
+  <rect x="570" y="180" width="360" height="50" fill="#ABEBC6" stroke="#239B56" stroke-width="2" rx="5"/>
+  <text x="750" y="210" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Camera-Object Controllability</text>
+  
+  <rect x="570" y="240" width="360" height="50" fill="#AED6F1" stroke="#2980B9" stroke-width="2" rx="5"/>
+  <text x="750" y="270" text-anchor="middle" font-size="14" font-weight="bold" fill="#1C2833">Interaction Effect Fidelity</text>
+  
+  <rect x="620" y="310" width="260" height="40" fill="#D2B4DE" stroke="#7D3C98" stroke-width="2" rx="5"/>
+  <text x="750" y="335" text-anchor="middle" font-size="16" font-weight="bold" fill="#1C2833">AgenticScore</text>
+  
+  <!-- World Models -->
+  <rect x="200" y="420" width="600" height="120" fill="#EBDEF0" stroke="#8E44AD" stroke-width="3" rx="10"/>
+  <text x="500" y="450" text-anchor="middle" font-size="18" font-weight="bold" fill="#2C3E50">World Models Under Evaluation</text>
+  
+  <rect x="220" y="470" width="120" height="50" fill="#85C1E2" stroke="#3498DB" stroke-width="2" rx="5"/>
+  <text x="280" y="490" text-anchor="middle" font-size="12" font-weight="bold" fill="#1C2833">T2V Models</text>
+  <text x="280" y="505" text-anchor="middle" font-size="10" fill="#34495E">(Text-to-Video)</text>
+  
+  <rect x="360" y="470" width="120" height="50" fill="#82E0AA" stroke="#27AE60" stroke-width="2" rx="5"/>
+  <text x="420" y="490" text-anchor="middle" font-size="12" font-weight="bold" fill="#1C2833">IT2V Models</text>
+  <text x="420" y="505" text-anchor="middle" font-size="10" fill="#34495E">(Image-to-Video)</text>
+  
+  <rect x="500" y="470" width="120" height="50" fill="#F8C471" stroke="#E67E22" stroke-width="2" rx="5"/>
+  <text x="560" y="490" text-anchor="middle" font-size="12" font-weight="bold" fill="#1C2833">Camera-Conditioned</text>
+  <text x="560" y="505" text-anchor="middle" font-size="10" fill="#34495E">Models</text>
+  
+  <rect x="640" y="470" width="120" height="50" fill="#F1948A" stroke="#E74C3C" stroke-width="2" rx="5"/>
+  <text x="700" y="490" text-anchor="middle" font-size="12" font-weight="bold" fill="#1C2833">18 Models</text>
+  <text x="700" y="505" text-anchor="middle" font-size="10" fill="#34495E">Total Evaluated</text>
+  
+  <!-- Results -->
+  <rect x="300" y="580" width="400" height="80" fill="#D5F4E6" stroke="#27AE60" stroke-width="3" rx="10"/>
+  <text x="500" y="610" text-anchor="middle" font-size="18" font-weight="bold" fill="#2C3E50">Evaluation Results</text>
+  <text x="500" y="635" text-anchor="middle" font-size="14" fill="#34495E">Quantitative metrics, qualitative analysis,</text>
+  <text x="500" y="650" text-anchor="middle" font-size="14" fill="#34495E">and human alignment validation</text>
+  
+  <!-- Flow Arrows -->
+  <path d="M 250 370 L 250 420" stroke="#34495E" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 750 370 L 750 420" stroke="#34495E" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 540 L 500 580" stroke="#34495E" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#34495E"/>
+    </marker>
+  </defs>
+  
+  <!-- Key Features -->
+  <rect x="50" y="700" width="900" height="80" fill="#FCF3CF" stroke="#F4D03F" stroke-width="2" rx="10"/>
+  <text x="500" y="725" text-anchor="middle" font-size="16" font-weight="bold" fill="#2C3E50">Key Features</text>
+  <text x="150" y="750" text-anchor="middle" font-size="12" fill="#34495E">• 1,068 evaluation prompts</text>
+  <text x="350" y="750" text-anchor="middle" font-size="12" fill="#34495E">• 3-level interaction hierarchy</text>
+  <text x="550" y="750" text-anchor="middle" font-size="12" fill="#34495E">• Multi-dimensional evaluation</text>
+  <text x="750" y="750" text-anchor="middle" font-size="12" fill="#34495E">• Agent-based aggregation</text>
+  <text x="850" y="750" text-anchor="middle" font-size="12" fill="#34495E">• MLLM integration</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Level 1: Actions confined to the acting object, Level 2: One object affecting another, Level 3: Actions influencing multiple objects and environment">
+                        <div class="quiz-question">1. What is the three-level interaction hierarchy in Omni-WorldSuite designed to evaluate?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Level 1: Global environmental changes, Level 2: Localized object interactions, Level 3: Self-contained object actions">Level 1: Global environmental changes, Level 2: Localized object interactions, Level 3: Self-contained object actions</div><div class="quiz-choice long-text" data-value="Level 1: Actions confined to the acting object, Level 2: One object affecting another, Level 3: Actions influencing multiple objects and environment">Level 1: Actions confined to the acting object, Level 2: One object affecting another, Level 3: Actions influencing multiple objects and environment</div><div class="quiz-choice long-text" data-value="Level 1: Camera motion control, Level 2: Object trajectory prediction, Level 3: Scene reconstruction accuracy">Level 1: Camera motion control, Level 2: Object trajectory prediction, Level 3: Scene reconstruction accuracy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Wan2.2 (75.92%) - excelled overall but current models still show limitations in action-conditioned world evolution and causal interaction consistency">
+                        <div class="quiz-question">2. Which model achieved the highest overall AgenticScore in the benchmark evaluation, and what key limitation was revealed?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="HunyuanVideo (73.96%) - struggled with camera motion control in autonomous driving scenarios">HunyuanVideo (73.96%) - struggled with camera motion control in autonomous driving scenarios</div><div class="quiz-choice long-text" data-value="WonderWorld (74.02%) - achieved perfect dynamic degree but failed at maintaining non-target region stability (InterStab-N: 24.89%)">WonderWorld (74.02%) - achieved perfect dynamic degree but failed at maintaining non-target region stability (InterStab-N: 24.89%)</div><div class="quiz-choice long-text" data-value="Wan2.2 (75.92%) - excelled overall but current models still show limitations in action-conditioned world evolution and causal interaction consistency">Wan2.2 (75.92%) - excelled overall but current models still show limitations in action-conditioned world evolution and causal interaction consistency</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It incorporates a dynamics gating mechanism that penalizes videos to zero score if anchor interval similarities exceed a static threshold">
+                        <div class="quiz-question">3. How does Omni-Metric's InterStab-L metric prevent rewarding trivially static videos when evaluating long-horizon temporal coherence?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="It incorporates a dynamics gating mechanism that penalizes videos to zero score if anchor interval similarities exceed a static threshold">It incorporates a dynamics gating mechanism that penalizes videos to zero score if anchor interval similarities exceed a static threshold</div><div class="quiz-choice long-text" data-value="It only evaluates videos with minimum 100 frames and requires at least 50% of objects to be in motion">It only evaluates videos with minimum 100 frames and requires at least 50% of objects to be in motion</div><div class="quiz-choice" data-value="It uses optical flow magnitude thresholds to filter out videos with insufficient camera movement">It uses optical flow magnitude thresholds to filter out videos with insufficient camera movement</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/dark-geometric.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Speed by Simplicity: A Single-Stream Architecture for Fast Audio-Video Generative Foundation Model</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-03-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2603.21986" target="_blank">http://arxiv.org/pdf/2603.21986</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper presents daVinci-MagiHuman, an open-source audio-video generative foundation model specialized in human-centric generation with synchronized video and audio output.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> While existing models like Ovi and LTX use complex multi-stream architectures with separate pathways for different modalities, this paper proposes a simplified single-stream Transformer that processes text, video, and audio in a unified token sequence using only self-attention.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of building an open-source model that combines strong generation quality, multilingual support, and inference efficiency while avoiding the complexity of heavily specialized multi-stream architectures.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a 15B-parameter single-stream Transformer with sandwich architecture layout, timestep-free denoising, per-head gating, and efficiency techniques including latent-space super-resolution, turbo VAE decoder, full-graph compilation, and model distillation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> daVinci-MagiHuman achieves the highest visual quality (4.80) and text alignment (4.18) scores, lowest WER (14.60%) for speech intelligibility, 80.0% win rate against Ovi 1.1 and 60.9% against LTX 2.3 in human evaluation, and generates 5-second 256p video in 2 seconds on a single H100 GPU.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Speed by Simplicity: A Single-Stream Architecture for Fast Audio-Video Generative Foundation Model</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Title -->
+  <text x="500" y="40" font-size="24" font-weight="bold" text-anchor="middle" fill="#2C3E50">daVinci-MagiHuman Architecture Flow</text>
+  
+  <!-- Input Stage -->
+  <rect x="50" y="80" width="900" height="80" rx="10" fill="#3498DB" stroke="#2C3E50" stroke-width="2"/>
+  <text x="500" y="110" font-size="16" font-weight="bold" text-anchor="middle" fill="white">Input Stage</text>
+  <text x="150" y="140" font-size="14" text-anchor="middle" fill="white">Text Tokens</text>
+  <text x="350" y="140" font-size="14" text-anchor="middle" fill="white">Reference Image Latent</text>
+  <text x="550" y="140" font-size="14" text-anchor="middle" fill="white">Noisy Video Tokens</text>
+  <text x="750" y="140" font-size="14" text-anchor="middle" fill="white">Noisy Audio Tokens</text>
+  
+  <!-- Single-Stream Transformer -->
+  <rect x="150" y="200" width="700" height="300" rx="15" fill="#9B59B6" stroke="#2C3E50" stroke-width="3"/>
+  <text x="500" y="230" font-size="20" font-weight="bold" text-anchor="middle" fill="white">Single-Stream Transformer (15B params, 40 layers)</text>
+  
+  <!-- Sandwich Architecture -->
+  <rect x="200" y="260" width="600" height="60" rx="8" fill="#8E44AD" stroke="#2C3E50" stroke-width="2"/>
+  <text x="500" y="295" font-size="14" text-anchor="middle" fill="white">First 4 layers: Modality-specific projections & RMSNorm</text>
+  
+  <rect x="200" y="340" width="600" height="80" rx="8" fill="#7D3C98" stroke="#2C3E50" stroke-width="2"/>
+  <text x="500" y="370" font-size="14" text-anchor="middle" fill="white">Middle 32 layers: Shared Transformer parameters</text>
+  <text x="500" y="395" font-size="12" text-anchor="middle" fill="white">(Self-attention only, Per-head gating)</text>
+  
+  <rect x="200" y="440" width="600" height="60" rx="8" fill="#8E44AD" stroke="#2C3E50" stroke-width="2"/>
+  <text x="500" y="475" font-size="14" text-anchor="middle" fill="white">Last 4 layers: Modality-specific projections & RMSNorm</text>
+  
+  <!-- Output -->
+  <rect x="250" y="540" width="250" height="60" rx="10" fill="#E74C3C" stroke="#2C3E50" stroke-width="2"/>
+  <text x="375" y="575" font-size="16" text-anchor="middle" fill="white">Denoised Video Latents</text>
+  
+  <rect x="550" y="540" width="250" height="60" rx="10" fill="#E67E22" stroke="#2C3E50" stroke-width="2"/>
+  <text x="675" y="575" font-size="16" text-anchor="middle" fill="white">Denoised Audio Latents</text>
+  
+  <!-- Inference Optimization -->
+  <rect x="50" y="640" width="900" height="120" rx="10" fill="#16A085" stroke="#2C3E50" stroke-width="2"/>
+  <text x="500" y="670" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Inference Optimization Techniques</text>
+  
+  <circle cx="200" cy="710" r="35" fill="#1ABC9C"/>
+  <text x="200" y="715" font-size="12" text-anchor="middle" fill="white">Latent SR</text>
+  
+  <circle cx="380" cy="710" r="35" fill="#1ABC9C"/>
+  <text x="380" y="715" font-size="12" text-anchor="middle" fill="white">Turbo VAE</text>
+  
+  <circle cx="560" cy="710" r="35" fill="#1ABC9C"/>
+  <text x="560" y="715" font-size="12" text-anchor="middle" fill="white">Distillation</text>
+  
+  <circle cx="740" cy="710" r="35" fill="#1ABC9C"/>
+  <text x="740" y="715" font-size="12" text-anchor="middle" fill="white">Compilation</text>
+  
+  <!-- Key Features -->
+  <rect x="870" y="200" width="120" height="300" rx="10" fill="#34495E" stroke="#2C3E50" stroke-width="2"/>
+  <text x="930" y="230" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Key Features</text>
+  <text x="930" y="260" font-size="11" text-anchor="middle" fill="white">• No timestep</text>
+  <text x="930" y="280" font-size="11" text-anchor="middle" fill="white">embedding</text>
+  <text x="930" y="310" font-size="11" text-anchor="middle" fill="white">• Self-attention</text>
+  <text x="930" y="330" font-size="11" text-anchor="middle" fill="white">only</text>
+  <text x="930" y="360" font-size="11" text-anchor="middle" fill="white">• Unified token</text>
+  <text x="930" y="380" font-size="11" text-anchor="middle" fill="white">sequence</text>
+  <text x="930" y="410" font-size="11" text-anchor="middle" fill="white">• Per-head</text>
+  <text x="930" y="430" font-size="11" text-anchor="middle" fill="white">gating</text>
+  <text x="930" y="460" font-size="11" text-anchor="middle" fill="white">• Multilingual</text>
+  <text x="930" y="480" font-size="11" text-anchor="middle" fill="white">support</text>
+  
+  <!-- Flow indicators -->
+  <line x1="500" y1="160" x2="500" y2="200" stroke="#2C3E50" stroke-width="3"/>
+  <line x1="375" y1="600" x2="375" y2="640" stroke="#2C3E50" stroke-width="3"/>
+  <line x1="675" y1="600" x2="675" y2="640" stroke="#2C3E50" stroke-width="3"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It uses a single-stream Transformer that processes all modalities in a unified token sequence">
+                        <div class="quiz-question">1. What architectural innovation distinguishes daVinci-MagiHuman from other audio-video generation models like Ovi and LTX?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a single-stream Transformer that processes all modalities in a unified token sequence">It uses a single-stream Transformer that processes all modalities in a unified token sequence</div><div class="quiz-choice" data-value="It employs separate neural networks for each language it supports">It employs separate neural networks for each language it supports</div><div class="quiz-choice" data-value="It requires cross-attention modules to synchronize audio and video">It requires cross-attention modules to synchronize audio and video</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="2 seconds">
+                        <div class="quiz-question">2. How fast can the distilled daVinci-MagiHuman model generate a 5-second video at 256p resolution on a single H100 GPU?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="38 seconds">38 seconds</div><div class="quiz-choice" data-value="2 seconds">2 seconds</div><div class="quiz-choice" data-value="8 seconds">8 seconds</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It infers the denoising state directly from noisy inputs without explicit timestep embeddings">
+                        <div class="quiz-question">3. What unique design choice does daVinci-MagiHuman make regarding diffusion timestep handling?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses AdaLN conditioning to inject timestep information at every layer">It uses AdaLN conditioning to inject timestep information at every layer</div><div class="quiz-choice" data-value="It infers the denoising state directly from noisy inputs without explicit timestep embeddings">It infers the denoising state directly from noisy inputs without explicit timestep embeddings</div><div class="quiz-choice" data-value="It maintains separate timestep pathways for audio and video modalities">It maintains separate timestep pathways for audio and video modalities</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <!-- 卡片计数器 -->
+                    <div class="card-counter">1/2</div>
+                    
+                    <!-- 第一张卡片：论文概述 -->
+                    <div class="paper-card active" style="background-image: url('bg/shattered-dark.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>VideoDetective: Clue Hunting via both Extrinsic Query and Intrinsic Relevance for Long Video Understanding</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-03-23</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2603.22285" target="_blank">http://arxiv.org/pdf/2603.22285</a></p>
+                        <div><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper addresses long video understanding through multimodal large language models (MLLMs), specifically focusing on efficient clue localization for question answering.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> While existing methods rely on unidirectional query-to-video search (keyframe selection, retrieval-based, or agent approaches), this paper proposes integrating both extrinsic query relevance and intrinsic video structure through a visual-temporal affinity graph.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper aims to solve the challenge of identifying sparse query-relevant video segments within limited context windows for long video question answering.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors use a Hypothesis-Verification-Refinement loop on a visual-temporal affinity graph, propagating relevance scores from observed segments to unobserved ones via graph diffusion to create a global belief field.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> VideoDetective achieves up to 7.5% accuracy improvement on VideoMME-long and outperforms state-of-the-art models across four benchmarks, demonstrating consistent gains across various MLLM backbones while maintaining computational efficiency.</div></div>
+                    </div>
+                    
+                    <!-- 第二张卡片：流程图 -->
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>VideoDetective: Clue Hunting via both Extrinsic Query and Intrinsic Relevance for Long Video Understanding</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f0f4f8"/>
+  
+  <!-- Title -->
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+    VideoDetective: Method Workflow
+  </text>
+  
+  <!-- Step 1: Video Preprocessing -->
+  <g transform="translate(100, 80)">
+    <rect x="0" y="0" width="200" height="80" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+    <text x="100" y="30" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Video Preprocessing
+    </text>
+    <text x="100" y="50" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      Segment video into K chunks
+    </text>
+  </g>
+  
+  <!-- Step 2: Graph Construction -->
+  <g transform="translate(400, 80)">
+    <rect x="0" y="0" width="200" height="80" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+    <text x="100" y="25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Visual-Temporal
+    </text>
+    <text x="100" y="45" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Affinity Graph
+    </text>
+    <text x="100" y="65" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      W = αW_sim + (1-α)W_time
+    </text>
+  </g>
+  
+  <!-- Step 3: Query Decomposition -->
+  <g transform="translate(700, 80)">
+    <rect x="0" y="0" width="200" height="80" rx="10" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+    <text x="100" y="25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Query Decomposition
+    </text>
+    <text x="100" y="45" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      Keywords + Semantic
+    </text>
+    <text x="100" y="65" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      q → {(Kr, Pr)}
+    </text>
+  </g>
+  
+  <!-- Main Loop Container -->
+  <g transform="translate(150, 200)">
+    <rect x="-50" y="-10" width="750" height="380" rx="15" fill="none" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>
+    <text x="350" y="-20" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#7f8c8d">
+      Hypothesis-Verification-Refinement Loop
+    </text>
+  </g>
+  
+  <!-- Hypothesis -->
+  <g transform="translate(150, 220)">
+    <circle cx="100" cy="50" r="60" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+    <text x="100" y="45" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Hypothesis
+    </text>
+    <text x="100" y="65" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      Select Anchor
+    </text>
+  </g>
+  
+  <!-- Verification -->
+  <g transform="translate(400, 220)">
+    <circle cx="100" cy="50" r="60" fill="#f39c12" stroke="#d68910" stroke-width="2"/>
+    <text x="100" y="45" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Verification
+    </text>
+    <text x="100" y="65" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      Extract Evidence
+    </text>
+  </g>
+  
+  <!-- Refinement -->
+  <g transform="translate(650, 220)">
+    <circle cx="100" cy="50" r="60" fill="#16a085" stroke="#138d75" stroke-width="2"/>
+    <text x="100" y="45" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Refinement
+    </text>
+    <text x="100" y="65" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      Graph Diffusion
+    </text>
+  </g>
+  
+  <!-- Detailed boxes under each step -->
+  <!-- Hypothesis Details -->
+  <g transform="translate(150, 340)">
+    <rect x="0" y="0" width="180" height="100" rx="8" fill="#dda0dd" stroke="#9b59b6" stroke-width="2"/>
+    <text x="90" y="20" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#4a4a4a">
+      Selection Policies:
+    </text>
+    <text x="10" y="40" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • Facet-Guided Init
+    </text>
+    <text x="10" y="60" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • Neighbor Exploration
+    </text>
+    <text x="10" y="80" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • Global Gap Filling
+    </text>
+  </g>
+  
+  <!-- Verification Details -->
+  <g transform="translate(410, 340)">
+    <rect x="0" y="0" width="180" height="100" rx="8" fill="#f7dc6f" stroke="#f39c12" stroke-width="2"/>
+    <text x="90" y="20" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#4a4a4a">
+      Evidence Sources:
+    </text>
+    <text x="10" y="40" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • VLM Caption
+    </text>
+    <text x="10" y="60" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • OCR Text
+    </text>
+    <text x="10" y="80" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • ASR Transcript
+    </text>
+  </g>
+  
+  <!-- Refinement Details -->
+  <g transform="translate(660, 340)">
+    <rect x="0" y="0" width="180" height="100" rx="8" fill="#76d7c4" stroke="#16a085" stroke-width="2"/>
+    <text x="90" y="20" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#4a4a4a">
+      Update Process:
+    </text>
+    <text x="10" y="40" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • Inject Y^(t)
+    </text>
+    <text x="10" y="60" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • Propagate via W_norm
+    </text>
+    <text x="10" y="80" font-family="Arial" font-size="11" fill="#4a4a4a">
+      • Update belief F^(t)
+    </text>
+  </g>
+  
+  <!-- Loop arrows -->
+  <path d="M 350 270 Q 400 300 450 270" fill="none" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 600 270 Q 650 300 700 270" fill="none" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 750 220 Q 800 150 750 100 Q 700 50 200 50 Q 150 100 200 220" fill="none" stroke="#e74c3c" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowhead-red)"/>
+  
+  <!-- Final Steps -->
+  <g transform="translate(250, 500)">
+    <rect x="0" y="0" width="200" height="80" rx="10" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <text x="100" y="30" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      Graph-NMS
+    </text>
+    <text x="100" y="50" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      Select Top Segments
+    </text>
+  </g>
+  
+  <g transform="translate(550, 500)">
+    <rect x="0" y="0" width="200" height="80" rx="10" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+    <text x="100" y="30" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="white">
+      MLLM Answer
+    </text>
+    <text x="100" y="50" font-family="Arial" font-size="12" text-anchor="middle" fill="white">
+      Generate Final Answer
+    </text>
+  </g>
+  
+  <!-- Arrows -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#34495e"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#e74c3c"/>
+    </marker>
+  </defs>
+  
+  <!-- Connection arrows -->
+  <path d="M 300 120 L 400 120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 600 120 L 700 120" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 200 160 L 200 200" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 500 160 L 500 200" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 800 160 L 800 200 L 750 220" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 350 460 L 350 500" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 450 540 L 550 540" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Key formulas -->
+  <g transform="translate(50, 650)">
+    <rect x="0" y="0" width="900" height="100" rx="10" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+    <text x="20" y="30" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">
+      Key Formulas:
+    </text>
+    <text x="20" y="55" font-family="Courier" font-size="12" fill="#34495e">
+      F^(t+1) = βW_norm F^(t) + (1-β)Y^(t+1)  (Belief Propagation)
+    </text>
+    <text x="20" y="80" font-family="Courier" font-size="12" fill="#34495e">
+      s_i = max{s_ocr, s_asr, s_cap}  (Evidence Scoring)
+    </text>
+    <text x="500" y="55" font-family="Courier" font-size="12" fill="#34495e">
+      W = αW_sim + (1-α)W_time  (Graph Construction)
+    </text>
+    <text x="500" y="80" font-family="Courier" font-size="12" fill="#34495e">
+      J(F) = ||F-Y||² + μF^T LF  (Optimization)
+    </text>
+  </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It integrates both query-to-segment relevance and inter-segment affinity through a visual-temporal graph">
+                        <div class="quiz-question">1. What is the core innovation of VideoDetective's approach to long video understanding compared to existing methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger context window to process entire videos at once">It uses a larger context window to process entire videos at once</div><div class="quiz-choice long-text" data-value="It integrates both query-to-segment relevance and inter-segment affinity through a visual-temporal graph">It integrates both query-to-segment relevance and inter-segment affinity through a visual-temporal graph</div><div class="quiz-choice" data-value="It relies solely on text-based retrieval to find relevant segments">It relies solely on text-based retrieval to find relevant segments</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Via graph diffusion that updates a global belief field from sparse observations">
+                        <div class="quiz-question">2. In the Hypothesis-Verification-Refinement loop, how does VideoDetective propagate relevance information across the video?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Through direct frame-to-frame comparison using cosine similarity">Through direct frame-to-frame comparison using cosine similarity</div><div class="quiz-choice" data-value="By training a neural network to predict segment importance">By training a neural network to predict segment importance</div><div class="quiz-choice" data-value="Via graph diffusion that updates a global belief field from sparse observations">Via graph diffusion that updates a global belief field from sparse observations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The visual model is the main bottleneck, as upgrading VLM yields 9.5% gain while upgrading LLM yields only 0.2%">
+                        <div class="quiz-question">3. What surprising finding did the modality scaling analysis reveal about VideoDetective's performance bottleneck?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="The visual model is the main bottleneck, as upgrading VLM yields 9.5% gain while upgrading LLM yields only 0.2%">The visual model is the main bottleneck, as upgrading VLM yields 9.5% gain while upgrading LLM yields only 0.2%</div><div class="quiz-choice" data-value="Both LLM and VLM contribute equally to performance improvements">Both LLM and VLM contribute equally to performance improvements</div><div class="quiz-choice" data-value="The graph construction algorithm limits the overall system performance">The graph construction algorithm limits the overall system performance</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                const popup = tab.querySelector('.quiz-popup');
+                
+                // 点击标签切换问题卡的显示状态
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 如果当前问题卡已经显示，则隐藏它
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        // 先隐藏所有其他问题卡
+                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                            p.classList.remove('active');
+                        });
+                        
+                        // 将弹窗内容复制到页面最外层的弹窗中
+                        document.body.appendChild(popup);
+                        
+                        // 显示当前问题卡和背景遮罩
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+                
+                // 确保点击问题卡内部时不会关闭问题卡
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
