@@ -162,7 +162,7 @@ def show_paper_preview(selected_choice):
     return preview
 
 
-def process_single_paper(selected_choice, model_name):
+def process_single_paper(selected_choice):
     """Process one selected paper."""
     global processing_thread, all_papers, processed_papers
 
@@ -191,7 +191,7 @@ def process_single_paper(selected_choice, model_name):
         result_queue = Queue()
         thread = threading.Thread(
             target=process_paper,
-            args=(paper, result_queue, 24000, model_name)
+            args=(paper, result_queue, 24000)
         )
         thread.start()
         thread.join(timeout=150)
@@ -264,7 +264,6 @@ def finish_and_send(daily_total):
         )
         additional_content = model_response(
             formatted_prompt,
-            'claude4',
             max_tokens=1024
         ).strip()
 
@@ -321,7 +320,6 @@ def create_ui():
                 load_btn = gr.Button("🔄 Load Papers", variant="primary", size="lg")
 
                 daily_total = gr.Slider(1, 10, value=3, step=1, label="Daily Total Papers")
-                model = gr.Dropdown(["claude4", "claude35"], value="claude4", label="AI Model")
 
                 generate_btn = gr.Button("🚀 Generate This Paper", variant="secondary", size="lg")
 
@@ -379,7 +377,7 @@ def create_ui():
 
         generate_btn.click(
             process_single_paper,
-            inputs=[paper_choice, model],
+            inputs=[paper_choice],
             outputs=[log_box, finish_btn]
         ).then(
             check_if_ready,

@@ -11,7 +11,7 @@ This package contains modular utility functions organized by domain:
 - models: AI model configuration and abstraction
 """
 
-from .models import model_response, model_map
+from .models import model_response
 from .huggingface_utils import get_huggingface_papers
 from .arxiv_utils import download_paper_text, extract_arxiv_id, get_arxiv_pdf_url
 from .ai_utils import summary_paper, create_question, create_flow_chart, process_paper, extract_categories
@@ -20,7 +20,6 @@ from .file_utils import find_not_proposed_papers, load_daily_takeaways
 
 __all__ = [
     'model_response',
-    'model_map',
     'get_huggingface_papers',
     'download_paper_text',
     'extract_arxiv_id',

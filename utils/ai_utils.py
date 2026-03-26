@@ -134,7 +134,7 @@ Now Output Your Quote(do not output anything else exception for the Quote):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-def summary_paper(paper_title, paper_content, model_name='claude4'):
+def summary_paper(paper_title, paper_content, model_name=None):
     """
     Generate a structured summary of an academic paper.
 
@@ -166,7 +166,7 @@ def summary_paper(paper_title, paper_content, model_name='claude4'):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-def create_question(paper_title, paper_content, summary, model_name='claude4'):
+def create_question(paper_title, paper_content, summary, model_name=None):
     """
     Generate quiz questions about an academic paper.
 
@@ -201,7 +201,7 @@ def create_question(paper_title, paper_content, summary, model_name='claude4'):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-def create_flow_chart(paper_title, paper_content, model_name='claude4'):
+def create_flow_chart(paper_title, paper_content, model_name=None):
     """
     Generate an SVG flowchart visualizing the paper's methodology.
 
@@ -341,7 +341,7 @@ def parse_flowchart(output: str) -> str:
     return output
 
 
-def process_paper(paper, queue, max_paper_length, model_name='claude4'):
+def process_paper(paper, queue, max_paper_length, model_name=None):
     """
     Process a single paper: download, summarize, create quiz, generate flowchart.
 

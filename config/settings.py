@@ -26,9 +26,6 @@ SUMMARIES_FILE = PROJECT_ROOT / 'summaries.jsonl'
 
 
 # ==================== API CREDENTIALS ====================
-# AI Gateway
-GENAI_GATEWAY_API_KEY = os.getenv("GENAI_GATEWAY_API_KEY")
-
 # Google Chat
 GOOGLE_CHAT_SPACE_ID = os.getenv("SPACE_ID")
 GOOGLE_CHAT_KEY = os.getenv("KEY")
@@ -49,16 +46,12 @@ PAPER_PROCESSING_TIMEOUT = 150
 THREAD_JOIN_TIMEOUT = 30
 
 
-# ==================== AI MODEL SETTINGS ====================
-# Default models for different tasks
-DEFAULT_SUMMARY_MODEL = 'claude35'  # For paper summaries
-DEFAULT_QUIZ_MODEL = 'claude35'  # For quiz generation
-DEFAULT_FLOWCHART_MODEL = 'claude4'  # For flowchart generation
-
-# Model parameters
-AI_TEMPERATURE = 0.8
+# ==================== AI MODEL SETTINGS (Ollama) ====================
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:32b")
+OLLAMA_TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.8"))
+OLLAMA_NUM_CTX = int(os.getenv("OLLAMA_NUM_CTX", "32768"))
 AI_MAX_TOKENS = 8192
-AI_SAFETY_FILTERING = 'off'
 
 
 # ==================== GITHUB PAGES SETTINGS ====================
@@ -110,9 +103,6 @@ def validate_config():
         ValueError: If required configuration is missing
     """
     errors = []
-
-    if not GENAI_GATEWAY_API_KEY:
-        errors.append("GENAI_GATEWAY_API_KEY not set in environment")
 
     if not GOOGLE_CHAT_SPACE_ID:
         errors.append("SPACE_ID not set in environment")

@@ -10,7 +10,7 @@ import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
-from utils.models import claude4_opus, model_response
+from utils.models import model_response
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -160,14 +160,9 @@ def internal_error(error):
     }), 500
 
 if __name__ == '__main__':
-    # Check if API key is set
-    if not os.getenv("GENAI_GATEWAY_API_KEY"):
-        print("WARNING: GENAI_GATEWAY_API_KEY environment variable is not set!")
-        print("Please set it before running the server.")
-
     print(f"""
     ╔══════════════════════════════════════════╗
-    ║      Claude 4 Flask Server Starting      ║
+    ║       AI Chat Flask Server Starting      ║
     ╚══════════════════════════════════════════╝
 
     Server Configuration:
