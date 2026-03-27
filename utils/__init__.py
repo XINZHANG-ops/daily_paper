@@ -14,7 +14,10 @@ This package contains modular utility functions organized by domain:
 from .models import model_response
 from .huggingface_utils import get_huggingface_papers
 from .arxiv_utils import download_paper_text, extract_arxiv_id, get_arxiv_pdf_url
-from .ai_utils import summary_paper, create_question, create_flow_chart, process_paper, extract_categories
+from .ai_utils import (
+    summary_paper, create_question, create_flow_chart, process_paper,
+    extract_categories, extract_categories_zh, generate_daily_tips
+)
 from .google_chat_utils import send_articles, start_thread
 from .file_utils import find_not_proposed_papers, load_daily_takeaways
 
@@ -29,6 +32,8 @@ __all__ = [
     'create_flow_chart',
     'process_paper',
     'extract_categories',
+    'extract_categories_zh',
+    'generate_daily_tips',
     'send_articles',
     'start_thread',
     'find_not_proposed_papers',

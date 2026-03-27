@@ -17,6 +17,8 @@ from utils import (
     find_not_proposed_papers,
     get_huggingface_papers,
     extract_categories,
+    extract_categories_zh,
+    generate_daily_tips,
     send_articles,
     start_thread,
     model_response,
@@ -32,99 +34,98 @@ load_dotenv()
 TEST = os.getenv("TEST")
 
 
+def _build_quiz_popup_html(q_idx, q_data, lang):
+    """Build quiz popup HTML for a single question in a given language."""
+    question = q_data.get('question', 'No Question')
+    options = []
+    option_keys = sorted(k for k in q_data.keys() if k.startswith('option'))
+    for opt_key in option_keys:
+        options.append(q_data[opt_key])
+
+    answer_key = q_data.get('answer', '')
+    answer_value = ''
+    if answer_key.startswith('option'):
+        option_index = int(answer_key[6:]) - 1
+        if 0 <= option_index < len(options):
+            answer_value = options[option_index]
+
+    choices_html = '<div class="quiz-choices">'
+    for choice in options:
+        choice_class = "quiz-choice long-text" if len(choice) > 100 else "quiz-choice"
+        choices_html += f'<div class="{choice_class}" data-value="{choice}">{choice}</div>'
+    choices_html += '</div>'
+
+    hide = ' style="display:none"' if lang == 'zh' else ''
+    return f'''<div class="quiz-popup" data-answer="{answer_value}" data-lang="{lang}"{hide}>
+                        <div class="quiz-question">{q_idx+1}. {question}</div>
+                        {choices_html}
+                        <div class="quiz-feedback"></div>
+                    </div>'''
+
+
 def generate_paper_html(articles):
-    """生成子页面的论文内容 HTML，与 Google Chat 推送内容一致，增加轮播卡片功能"""
-    # 获取 bg 文件夹中的所有图片文件
+    """生成子页面的论文内容 HTML（双语支持）"""
     bg_folder = "bg"
     bg_images = [f for f in os.listdir(bg_folder) if f.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     if not bg_images:
         logger.warning("No background images found in the 'bg' folder. Using default background.")
-    
-    logger.debug(articles)
+
     paper_html = ""
     for idx, article in enumerate(articles):
         title = article.get('title', 'No Title')
         published_at = article.get('published_at', 'No Date')
         url = article.get('url', '#')
-        content = article.get('content', 'No Content')
-        questions_dict = article.get('questions', {})
+        content_en = article.get('content', 'No Content')
+        content_zh = article.get('content_zh', '')
+        questions_en = article.get('questions', {})
+        questions_zh = article.get('questions_zh', {})
         flowchart = article.get('flow_chart', "")
-        categories = extract_categories(content)
-        logger.debug(categories)
-        
-        # 为每个类别添加 div 和样式
-        content_html = ""
-        for cat_idx, (cat, cat_content) in enumerate(categories):
-            content_html += f"""<div class="category-chunk">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>"""
 
-        # 随机选择一个背景图片
+        # EN content
+        content_html_en = ""
+        for cat_idx, (cat, cat_content) in enumerate(extract_categories(content_en)):
+            content_html_en += f'<div class="category-chunk" data-lang="en">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>'
+
+        # ZH content
+        content_html_zh = ""
+        if content_zh:
+            for cat_idx, (cat, cat_content) in enumerate(extract_categories_zh(content_zh)):
+                content_html_zh += f'<div class="category-chunk" data-lang="zh" style="display:none">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>'
+
+        content_html = content_html_en + content_html_zh
+
+        # Background
         if bg_images:
             selected_bg = random.choice(bg_images)
             bg_style = f"background-image: url('{bg_folder}/{selected_bg}');"
         else:
-            bg_style = ""  # Fallback to default background if no images are found
-        
-        # 生成问题标签HTML
+            bg_style = ""
+
+        # Quiz tabs (bilingual)
         quiz_tabs_html = ""
-        if questions_dict:
+        if questions_en:
             quiz_tabs_html = '<div class="quiz-tabs">'
-            
-            # 处理新的问题格式
-            question_items = [(k, v) for k, v in questions_dict.items() if k.startswith('question')]
-            question_items.sort()  # 确保问题按顺序排列
-            
-            for q_idx, (q_key, q_data) in enumerate(question_items):
-                question = q_data.get('question', 'No Question')
-                
-                # 获取选项
-                options = []
-                option_keys = [k for k in q_data.keys() if k.startswith('option')]
-                option_keys.sort()  # 确保选项按顺序排列
-                
-                for opt_key in option_keys:
-                    options.append(q_data[opt_key])
-                
-                answer_key = q_data.get('answer', '')  # 例如 'option2'
-                answer_value = ''
-                
-                # 获取正确答案的值
-                if answer_key.startswith('option'):
-                    option_index = int(answer_key[6:]) - 1  # 从'option2'获取索引1
-                    if 0 <= option_index < len(options):
-                        answer_value = options[option_index]
-                
-                # 生成选项HTML
-                choices_html = '<div class="quiz-choices">'
-                for choice_idx, choice in enumerate(options):
-                    choice_class = "quiz-choice"
-                    if len(choice) > 100:  # 如果选项文本非常长
-                        choice_class += " long-text"
-                    
-                    choices_html += f'<div class="{choice_class}" data-value="{choice}">{choice}</div>'
-                choices_html += '</div>'
-                
-                # 生成完整的问题标签
+            question_items_en = sorted((k, v) for k, v in questions_en.items() if k.startswith('question'))
+
+            for q_idx, (q_key, q_data_en) in enumerate(question_items_en):
+                popup_en = _build_quiz_popup_html(q_idx, q_data_en, 'en')
+                q_data_zh = questions_zh.get(q_key, {})
+                popup_zh = _build_quiz_popup_html(q_idx, q_data_zh, 'zh') if q_data_zh else ''
+
                 quiz_tabs_html += f'''
                 <div class="quiz-tab" title="Click To Open Question #{q_idx+1}">Q{q_idx+1}
-                    <div class="quiz-popup" data-answer="{answer_value}">
-                        <div class="quiz-question">{q_idx+1}. {question}</div>
-                        {choices_html}
-                        <div class="quiz-feedback"></div>
-                    </div>
+                    {popup_en}
+                    {popup_zh}
                 </div>
                 '''
             quiz_tabs_html += '</div>'
 
-        # 判断是否有流程图，如果有则创建轮播卡片，否则使用原来的单卡片
+        # Paper card
         if flowchart:
-            # 创建卡片轮播，不包含指示器小点
             paper_html += f"""
             <div class="paper-container">
                 <div class="card-deck">
-                    <!-- 卡片计数器 -->
                     <div class="card-counter">1/2</div>
-                    
-                    <!-- 第一张卡片：论文概述 -->
                     <div class="paper-card active" style="{bg_style}">
                         <h2 style="color: #ffffff;">Paper {idx+1}</h2>
                         <p style="color: #badb12;"><strong>{title}</strong></p>
@@ -132,8 +133,6 @@ def generate_paper_html(articles):
                         <p><strong>Link: </strong><a href="{url}" target="_blank">{url}</a></p>
                         <div>{content_html}</div>
                     </div>
-                    
-                    <!-- 第二张卡片：流程图 -->
                     <div class="paper-card flowchart-card" style="background-color: white;">
                         <h2>{title}</h2>
                         {flowchart}
@@ -143,10 +142,9 @@ def generate_paper_html(articles):
             </div>
             """
         else:
-            # 使用原来的单卡片
             paper_html += f"""
             <div class="paper-container">
-                <div class="paper-card" style="{bg_style}">             
+                <div class="paper-card" style="{bg_style}">
                     <h2 style="color: #ffffff;">Paper {idx+1}</h2>
                     <p style="color: #badb12;"><strong>{title}</strong></p>
                     <p style="color: #ffffff;"><strong>Published: </strong>{published_at}</p>
@@ -157,6 +155,20 @@ def generate_paper_html(articles):
             </div>
             """
     return paper_html
+
+
+def generate_tips_html(tips_en, tips_zh):
+    """生成每日小贴士 HTML（双语）"""
+    return f'''
+    <div class="daily-tips-section">
+        <h2 class="tips-heading">
+            <span data-lang="en">Today's Reading Tips</span>
+            <span data-lang="zh" style="display:none">今日阅读推荐</span>
+        </h2>
+        <div class="tips-content" data-lang="en">{tips_en}</div>
+        <div class="tips-content" data-lang="zh" style="display:none">{tips_zh}</div>
+    </div>
+    '''
 
 
 def update_index_page(dates):
@@ -241,20 +253,21 @@ def update_index_page(dates):
     with open('index.html', 'w', encoding='utf-8') as f:
         f.write(index_html)
 
-def create_subpage(date_str, articles):
+def create_subpage(date_str, articles, tips=None):
     """创建子页面，展示当天的论文内容"""
     paper_content = generate_paper_html(articles)
+    tips_content = ''
+    if tips:
+        tips_content = generate_tips_html(tips.get('tips_en', ''), tips.get('tips_zh', ''))
 
-    # 使用 Template 进行替换
     template = get_subpage_template()
     subpage_html = template.substitute(
         date=date_str,
-        paper_content=paper_content
+        paper_content=paper_content,
+        tips_content=tips_content
     )
 
-    # Ensure dailies/pages directory exists
     os.makedirs('dailies/pages', exist_ok=True)
-
     with open(f'dailies/pages/{date_str}.html', 'w', encoding='utf-8') as f:
         f.write(subpage_html)
 
@@ -354,9 +367,21 @@ if __name__ == "__main__":
         time.sleep(0.2)
         send_articles(articles, THREAD_KEY_VALUE)
 
+        # 生成每日小贴士
+        tips = None
+        if paper_summaries:
+            try:
+                tips = generate_daily_tips(paper_summaries)
+                tips_dir = 'dailies/tips'
+                os.makedirs(tips_dir, exist_ok=True)
+                with open(f'{tips_dir}/{current_date}.json', 'w', encoding='utf-8') as f:
+                    json.dump(tips, f, ensure_ascii=False)
+            except Exception as e:
+                logger.error(f"Failed to generate tips: {e}")
+
         # 生成 GitHub Pages 文件
         # 1. 创建子页面
-        create_subpage(current_date, articles)
+        create_subpage(current_date, articles, tips=tips)
 
         # 2. 更新主页面
         pages_dir = 'dailies/pages'
@@ -369,7 +394,7 @@ if __name__ == "__main__":
         update_index_page(existing_dates)
 
     def push_to_github():
-        subprocess.run(["git", "add", "index.html", "dailies/pages/", "dailies/notes/", "dailies/images/"])
+        subprocess.run(["git", "add", "index.html", "dailies/pages/", "dailies/notes/", "dailies/images/", "dailies/tips/"])
         subprocess.run(["git", "add", "summaries.jsonl"])
         subprocess.run(["git", "commit", "-m", "Daily Paper Push"])
         subprocess.run(["git", "push", "origin", "main"])

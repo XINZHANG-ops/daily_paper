@@ -558,11 +558,62 @@
             padding: 0;
             color: #333;
         }
+
+        /* Language toggle */
+        #lang-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10000;
+        }
+        #lang-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        #lang-btn:hover {
+            background-color: #1557b0;
+        }
+
+        /* Daily tips */
+        .daily-tips-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0 20px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .tips-heading {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .tips-content {
+            background-color: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #333;
+            font-size: 1em;
+            line-height: 1.7;
+        }
     </style>
 </head>
 <body>
+    <div id="lang-toggle">
+        <button id="lang-btn" onclick="toggleLang()">ZH</button>
+    </div>
     <h1>${date} Papers</h1>
     ${paper_content}
+
+    ${tips_content}
 
     <!-- Personal Takeaways Section -->
     <div id="takeaways-container"></div>
@@ -592,7 +643,43 @@
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <script>
+        function toggleLang() {
+            var btn = document.getElementById('lang-btn');
+            var isZh = document.body.classList.contains('lang-zh');
+            if (isZh) {
+                document.body.classList.remove('lang-zh');
+                btn.textContent = 'ZH';
+                localStorage.setItem('-paper-lang', 'en');
+            } else {
+                document.body.classList.add('lang-zh');
+                btn.textContent = 'EN';
+                localStorage.setItem('-paper-lang', 'zh');
+            }
+            var enEls = document.querySelectorAll('[data-lang="en"]');
+            var zhEls = document.querySelectorAll('[data-lang="zh"]');
+            for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = isZh ? '' : 'none'; }
+            for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = isZh ? 'none' : ''; }
+        }
+
+        function getActivePopup(tab) {
+            var lang = document.body.classList.contains('lang-zh') ? 'zh' : 'en';
+            return tab.querySelector('.quiz-popup[data-lang="' + lang + '"]');
+        }
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Restore language preference
+            var savedLang = localStorage.getItem('-paper-lang');
+            if (savedLang === 'zh') {
+                document.body.classList.add('lang-zh');
+                document.getElementById('lang-btn').textContent = 'EN';
+                var enEls = document.querySelectorAll('[data-lang="en"]');
+                var zhEls = document.querySelectorAll('[data-lang="zh"]');
+                for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = 'none'; }
+                for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = ''; }
+            }
+
             // Load and render markdown takeaways
             const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
             if (dateMatch) {
@@ -672,34 +759,27 @@
             
             // 设置点击事件处理
             quizTabs.forEach(tab => {
-                const popup = tab.querySelector('.quiz-popup');
-                
-                // 点击标签切换问题卡的显示状态
+                // 为所有 popup 阻止冒泡
+                tab.querySelectorAll('.quiz-popup').forEach(function(p) {
+                    p.addEventListener('click', function(e) { e.stopPropagation(); });
+                });
+
                 tab.addEventListener('click', function(e) {
-                    e.stopPropagation(); // 阻止事件冒泡
-                    
-                    // 如果当前问题卡已经显示，则隐藏它
+                    e.stopPropagation();
+                    var popup = getActivePopup(tab);
+                    if (!popup) return;
+
                     if (popup.classList.contains('active')) {
                         popup.classList.remove('active');
                         backdrop.classList.remove('active');
                     } else {
-                        // 先隐藏所有其他问题卡
-                        document.querySelectorAll('.quiz-popup').forEach(p => {
+                        document.querySelectorAll('.quiz-popup').forEach(function(p) {
                             p.classList.remove('active');
                         });
-                        
-                        // 将弹窗内容复制到页面最外层的弹窗中
                         document.body.appendChild(popup);
-                        
-                        // 显示当前问题卡和背景遮罩
                         popup.classList.add('active');
                         backdrop.classList.add('active');
                     }
-                });
-                
-                // 确保点击问题卡内部时不会关闭问题卡
-                popup.addEventListener('click', function(e) {
-                    e.stopPropagation();
                 });
             });
             

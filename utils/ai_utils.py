@@ -118,6 +118,86 @@ Now please give me the SVG format of the flow chart, you should only give me the
 """
 
 
+PROMPT_BILINGUAL = """
+You are a research expert skilled at reading academic papers.
+Provide an analysis of this paper by answering only the following questions, and answer each question in one concise sentence.
+You must provide the analysis in BOTH English and Chinese.
+
+Here is the paper:
+Title: {title}
+
+Content:
+{content}
+
+Output format (output BOTH sections, nothing else):
+
+===EN===
+1.  **📘 Topic and Domain:** The paper's topic and domain.
+
+2.  **💡 Previous Research and New Ideas:** The paper based on and new idea.
+
+3.  **❓ Problem:** The problem the paper solves.
+
+4.  **🛠️ Methods:** The method the paper uses.
+
+5.  **📊 Results and Evaluation:** The results.
+
+===ZH===
+1.  **📘 主题与领域：** 论文的主题和领域。
+
+2.  **💡 先前研究与新思路：** 基于的研究和新想法。
+
+3.  **❓ 问题：** 论文解决的问题。
+
+4.  **🛠️ 方法：** 论文使用的方法。
+
+5.  **📊 结果与评估：** 结果。
+"""
+
+
+QUESTION_PROMPT_BILINGUAL = """
+You are a research expert skilled at reading academic papers.
+Here is the paper:
+Title: {title}
+
+Content:
+{content}
+
+And here is a summary of the paper:
+{summary}
+
+--------------
+Create 3 multiple choice questions about the paper in BOTH English and Chinese.
+Each question has only 3 options. Be creative.
+
+Output valid JSON only (no other text, no markdown backticks):
+{{
+  "en": {{
+    "question1": {{"question": "English question", "option1": "opt1", "option2": "opt2", "option3": "opt3", "answer": "option1 or option2 or option3"}},
+    "question2": {{"question": "English question", "option1": "opt1", "option2": "opt2", "option3": "opt3", "answer": "option1 or option2 or option3"}},
+    "question3": {{"question": "English question", "option1": "opt1", "option2": "opt2", "option3": "opt3", "answer": "option1 or option2 or option3"}}
+  }},
+  "zh": {{
+    "question1": {{"question": "中文题目", "option1": "选项1", "option2": "选项2", "option3": "选项3", "answer": "option1 or option2 or option3"}},
+    "question2": {{"question": "中文题目", "option1": "选项1", "option2": "选项2", "option3": "选项3", "answer": "option1 or option2 or option3"}},
+    "question3": {{"question": "中文题目", "option1": "选项1", "option2": "选项2", "option3": "选项3", "answer": "option1 or option2 or option3"}}
+  }}
+}}
+"""
+
+
+TIPS_PROMPT = """
+You are a research advisor. Based on the summaries of today's papers below, write a brief reading recommendation (2-3 sentences max).
+Suggest which paper to read first and why, and note any connections between the papers.
+
+Papers:
+{summaries}
+
+Output valid JSON only, no other text, no markdown backticks:
+{{"tips_en": "Your English recommendation here.", "tips_zh": "你的中文推荐内容。"}}
+"""
+
+
 quotes_prompt = """
 You are a knowledgeable quote expert.
 Based on the context below, you give me a famous quote of my day.
@@ -263,6 +343,67 @@ def extract_categories(text):
     return results
 
 
+def extract_categories_zh(text):
+    """Extract 5 categories from Chinese formatted summary text."""
+    patterns = [
+        (r'\d+\.\s+\*\*📘.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "📘 主题与领域"),
+        (r'\d+\.\s+\*\*💡.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "💡 先前研究与新思路"),
+        (r'\d+\.\s+\*\*❓.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "❓ 问题"),
+        (r'\d+\.\s+\*\*🛠️.*?\*\*\s+(.*?)(?=\n\n\d+\.|\Z)', "🛠️ 方法"),
+        (r'\d+\.\s+\*\*📊.*?\*\*\s+(.*?)(?=\n\n|\Z)', "📊 结果与评估")
+    ]
+    results = []
+    for pattern, category_name in patterns:
+        match = re.search(pattern, text, re.DOTALL)
+        if match:
+            results.append((category_name, match.group(1).strip()))
+    return results
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def summary_paper_bilingual(paper_title, paper_content, model_name=None):
+    """Generate bilingual (EN+ZH) summary in a single model call."""
+    logger.debug(f'Creating bilingual summary for "{paper_title}"')
+    prompt = PROMPT_BILINGUAL.format(title=paper_title, content=paper_content)
+    response = model_response(prompt, model_name, max_tokens=8000)
+
+    summary_en, summary_zh = response, ''
+    if '===ZH===' in response:
+        parts = response.split('===ZH===')
+        summary_en = parts[0].replace('===EN===', '').strip()
+        summary_zh = parts[1].strip()
+    elif '===EN===' in response:
+        summary_en = response.split('===EN===')[-1].strip()
+
+    return summary_en, summary_zh
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def create_question_bilingual(paper_title, paper_content, summary, model_name=None):
+    """Generate bilingual (EN+ZH) quiz questions in a single model call."""
+    logger.debug(f'Creating bilingual questions for "{paper_title}"')
+    prompt = QUESTION_PROMPT_BILINGUAL.format(
+        title=paper_title,
+        content=paper_content,
+        summary=summary,
+    )
+    response = model_response(prompt, model_name, max_tokens=8000)
+    parsed = parse_output(response)
+    questions_en = parsed.get('en', parsed)
+    questions_zh = parsed.get('zh', {})
+    return questions_en, questions_zh
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def generate_daily_tips(summaries_list, model_name=None):
+    """Generate bilingual daily reading tips from paper summaries."""
+    logger.debug('Generating daily tips')
+    combined = "\n\n---\n\n".join(summaries_list)
+    prompt = TIPS_PROMPT.format(summaries=combined)
+    response = model_response(prompt, model_name, max_tokens=2000)
+    return parse_output(response)
+
+
 def find_json_content(text):
     """
     Extract JSON content from markdown code blocks.
@@ -366,11 +507,11 @@ def process_paper(paper, queue, max_paper_length, model_name=None):
             queue.put(None)  # Signal to skip this paper
             return
 
-        summary = summary_paper(title, content, model_name)
-        questions = create_question(
+        summary_en, summary_zh = summary_paper_bilingual(title, content, model_name)
+        questions_en, questions_zh = create_question_bilingual(
             paper_title=title,
             paper_content=content,
-            summary=summary,
+            summary=summary_en,
             model_name=model_name
         )
         flow_chart = create_flow_chart(
@@ -383,11 +524,13 @@ def process_paper(paper, queue, max_paper_length, model_name=None):
             'title': title,
             'published_at': published_at,
             'url': paper_url,
-            'content': summary,
-            'questions': questions,
+            'content': summary_en,
+            'content_zh': summary_zh,
+            'questions': questions_en,
+            'questions_zh': questions_zh,
             'flow_chart': flow_chart
         }
-        queue.put((paper_info, summary))
+        queue.put((paper_info, summary_en))
     except Exception as e:
         logger.error(f"Error processing paper: {e}")
         queue.put(f"Error: {e}")
