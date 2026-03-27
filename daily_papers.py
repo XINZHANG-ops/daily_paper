@@ -305,19 +305,10 @@ if __name__ == "__main__":
 
         for paper in tqdm(new_papers):
             queue = Queue()
-            start_time = time.time()
-            
             thread = Thread(target=process_paper, args=(paper, queue, max_paper_length))
             thread.daemon = True
             thread.start()
-            
-            thread.join(timeout=150)
-            
-            elapsed_time = time.time() - start_time
-            
-            if thread.is_alive():
-                print(f"Processing took over 30 seconds ({elapsed_time:.2f}s), skipping paper.")
-                continue
+            thread.join()
             
             try:
                 result = queue.get_nowait()
