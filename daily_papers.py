@@ -84,15 +84,17 @@ def generate_paper_html(articles):
         # EN content
         content_html_en = ""
         for cat_idx, (cat, cat_content) in enumerate(extract_categories(content_en)):
-            content_html_en += f'<div class="category-chunk" data-lang="en">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>'
+            content_html_en += f'<div class="category-chunk">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>'
 
         # ZH content
         content_html_zh = ""
         if content_zh:
             for cat_idx, (cat, cat_content) in enumerate(extract_categories_zh(content_zh)):
-                content_html_zh += f'<div class="category-chunk" data-lang="zh" style="display:none">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>'
+                content_html_zh += f'<div class="category-chunk">{cat_idx+1}.  <strong>{cat}:</strong> {cat_content}</div>'
 
-        content_html = content_html_en + content_html_zh
+        content_html = f'<div data-lang="en">{content_html_en}</div>'
+        if content_html_zh:
+            content_html += f'<div data-lang="zh" style="display:none">{content_html_zh}</div>'
 
         # Background
         if bg_images:
@@ -338,26 +340,6 @@ if __name__ == "__main__":
             if processed >= paper_counts:
                 break
 
-        quotes_prompt = quotes_prompt.format(
-            paper_summary="\n".join(paper_summaries)
-        )
-
-        # random_quote = fetch_data("/quotes/random")
-        random_quote = quote()
-        if random_quote:
-            additional_content = f"{random_quote['quote']} --{random_quote['author']}"
-        else:
-            additional_content = model_response(
-                quotes_prompt,
-                max_tokens=1024
-            ).strip()
-        additional_content = f"{additional_content}"
-        link = f"https://xinzhang-ops.github.io/daily_paper/dailies/{current_date}.html"
-    
-        start_thread(current_date, additional_content, THREAD_KEY_VALUE)
-        time.sleep(0.2)
-        send_articles(articles, THREAD_KEY_VALUE)
-
         # 生成每日小贴士
         tips = None
         if paper_summaries:
@@ -369,6 +351,25 @@ if __name__ == "__main__":
                     json.dump(tips, f, ensure_ascii=False)
             except Exception as e:
                 logger.error(f"Failed to generate tips: {e}")
+
+        quotes_prompt = quotes_prompt.format(
+            paper_summary="\n".join(paper_summaries)
+        )
+
+        random_quote = quote()
+        if random_quote:
+            additional_content = f"{random_quote['quote']} --{random_quote['author']}"
+        else:
+            additional_content = model_response(
+                quotes_prompt,
+                max_tokens=1024
+            ).strip()
+        additional_content = f"{additional_content}"
+        link = f"https://xinzhang-ops.github.io/daily_paper/dailies/{current_date}.html"
+
+        start_thread(current_date, additional_content, THREAD_KEY_VALUE)
+        time.sleep(0.2)
+        send_articles(articles, THREAD_KEY_VALUE)
 
         # 生成 GitHub Pages 文件
         # 1. 创建子页面
