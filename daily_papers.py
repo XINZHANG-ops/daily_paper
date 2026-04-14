@@ -122,6 +122,11 @@ def generate_paper_html(articles):
                 '''
             quiz_tabs_html += '</div>'
 
+        # Validate flowchart SVG is complete (LLM may truncate due to token limits)
+        if flowchart and ('<svg' in flowchart.lower() and '</svg>' not in flowchart.lower()):
+            print(f"  ⚠️ Paper {idx+1}: Flowchart SVG is truncated, discarding")
+            flowchart = ""
+
         # Paper card
         if flowchart:
             paper_html += f"""
