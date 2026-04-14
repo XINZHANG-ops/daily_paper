@@ -11,6 +11,7 @@ import re
 import subprocess
 import threading
 import time
+import requests as http_requests
 from pathlib import Path
 from flask import Flask, request, jsonify
 from loguru import logger
@@ -374,6 +375,24 @@ def execute_query():
         return jsonify({'error': str(e)}), 500
 
 
+SAFETY_SERVICE_URL = 'http://localhost:5003/filter'
+
+
+def _filter_pii(text):
+    """Filter PII from text via the safety layer service. Returns original on failure."""
+    try:
+        resp = http_requests.post(
+            SAFETY_SERVICE_URL,
+            json={'text': text},
+            timeout=30
+        )
+        if resp.ok:
+            return resp.json().get('text', text)
+    except Exception as e:
+        logger.warning(f"Safety filter unavailable: {e}")
+    return text
+
+
 @app.route('/ask_wiki', methods=['POST'])
 def ask_wiki():
     """
@@ -516,6 +535,8 @@ Answer:
 
         answer = result.stdout.strip()
         logger.info(f"Answer generated ({len(answer)} chars)")
+
+        answer = _filter_pii(answer)
 
         # Save to session history
         if session_id:
