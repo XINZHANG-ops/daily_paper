@@ -1,19 +1,21 @@
 ---
 title: "Multimodal Reasoning"
 slug: multimodal-reasoning
-paper_count: 2
-last_updated: 2026-04-09
+paper_count: 3
+last_updated: 2026-04-14
 ---
 
 # Multimodal Reasoning
 
 ## Overview
 
-Multimodal reasoning encompasses the ability of AI systems to jointly process and reason about information from multiple modalities—text, images, video, audio—and to generate coherent outputs across these modalities. Recent work has made significant strides in both understanding multimodal inputs (as in RLVR's multimodal reasoning benchmarks) and generating multimodal outputs (as in process-driven image generation). The field is moving beyond simple fusion toward tightly coupled reasoning where textual and visual states co-evolve.
+Multimodal reasoning encompasses the ability of AI systems to jointly process and reason about information from multiple modalities—text, images, video, audio—and to generate coherent outputs across these modalities. Three papers now address complementary challenges: Self-Distilled RLVR's leak-free self-distillation for training multimodal reasoning, Think in Strokes' process-driven image generation with interleaved reasoning, and Pseudo-Unification's information-theoretic analysis of why Unified Multimodal Models fail to achieve true synergy between text and image generation.
 
-Self-Distilled RLVR (2604.03128) addresses a fundamental challenge in multimodal reasoning training: the failure mode of On-Policy Self-Distillation (OPSD) where information asymmetry between teacher and student causes privileged information leakage and progressive degradation. The paper proves that OPSD suffers from an irreducible mutual information gap I(Yt;R|X, Y<t)>0 caused by the teacher receiving reference answers the student cannot observe. The proposed RLSD fundamentally repurposes self-distillation from a generative target to a magnitude evaluator—environment rewards determine update direction while the privileged teacher modulates update magnitude. This leak-free approach achieves 56.18% average accuracy across five multimodal reasoning benchmarks, with particularly strong gains on tasks like MathVision (+3.91%) where fine-grained discrimination of reasoning steps matters.
+Self-Distilled RLVR (2604.03128) addresses a fundamental challenge in multimodal reasoning training: the failure mode of On-Policy Self-Distillation (OPSD) where information asymmetry between teacher and student causes privileged information leakage and progressive degradation.
 
-Think in Strokes (2604.04746) introduces process-driven image generation as a new paradigm for multimodal reasoning, decomposing image synthesis into interleaved Plan→Sketch→Inspect→Refine cycles where textual and visual states tightly co-evolve. The key innovation is that textual reasoning explicitly conditions how visual state should evolve, while the generated visual intermediate constrains and grounds the next round of textual reasoning. The approach addresses the supervision challenge for ambiguous intermediate states through scene-graph subsampling for contradiction-free incremental instructions and self-sampled critique traces that learn from the model's own errors. Notably, it achieves comparable performance to the 12B FLUX.1-dev model while using only 7B parameters, with particularly strong gains on position (+21%) and color attributes (+23%)—tasks that require the model to reason precisely about spatial and visual relationships.
+Think in Strokes (2604.04746) introduces process-driven image generation as a new paradigm for multimodal reasoning, decomposing image synthesis into interleaved Plan→Sketch→Inspect→Refine cycles where textual and visual states tightly co-evolve.
+
+Pseudo-Unification (2604.10949) takes a different approach, analyzing why existing UMMs fail to achieve true multimodal synergy. The key finding: despite shared parameters, text generation shows high-entropy creativity while image synthesis enforces low-entropy fidelity. This "pseudo-unification" stems from dual divergence in both encoding (vision and language follow different entropy trajectories) and response patterns (text vs image generation behave differently). Only models like Harmon that use contextual prediction for both modalities achieve genuine unification, suggesting that architectural choices fundamentally determine whether reasoning transfers across modalities.
 
 ## Key Papers
 
@@ -21,6 +23,7 @@ Think in Strokes (2604.04746) introduces process-driven image generation as a ne
 |-------|------|-------------|
 | [[2604.03128]] Self-Distilled RLVR | 2026-04-02 | RLSD: leak-free self-distillation for multimodal reasoning; 56.18% avg accuracy on MMMU, MathVista, MathVision, ZeroBench, WeMath |
 | [[2604.04746]] Think in Strokes, Not Pixels | 2026-04-07 | Process-driven image generation with Plan→Sketch→Inspect→Refine cycles; 8x training data reduction vs PARM |
+| [[2604.10949]] Pseudo-Unification: Entropy Probing | 2026-04-14 | Information-theoretic analysis of UMM unification; reveals dual divergence (modality-asymmetric encoding + pattern-split response) |
 
 ## Open Problems
 

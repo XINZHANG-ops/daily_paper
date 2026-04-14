@@ -31,7 +31,7 @@ The two papers together reveal a convergence: OpenWorldLib argues that world mod
 
 ## Connections
 
-- [[topics/agent_systems]] — HY-Embodied-0.5 integrates perception, interaction, and memory for embodied agent capabilities; OpenWorldLib's Pipeline module addresses orchestration for agent tasks
+- [[topics/agent-systems]] — HY-Embodied-0.5 integrates perception, interaction, and memory for embodied agent capabilities; OpenWorldLib's Pipeline module addresses orchestration for agent tasks
 - [[topics/robotics]] — Robot control experiments (packing, stacking, hanging) in HY-Embodied-0.5
 - [[topics/video-understanding]] — OpenWorldLib's interactive video generation evaluation connects to streaming video understanding
 - [[topics/computer-vision]] — HY-ViT 2.0 and dual-vision encoder architecture; WildDet3D's 3D detection relates to OpenWorldLib's Representation module

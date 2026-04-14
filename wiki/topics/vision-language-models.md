@@ -1,15 +1,17 @@
 ---
 title: "Vision-Language Models"
 slug: vision-language-models
-paper_count: 1
-last_updated: 2026-04-06
+paper_count: 2
+last_updated: 2026-04-14
 ---
 
 # Vision-Language Models
 
 ## Overview
 
-Vision-Language Models (VLMs) sit at the intersection of visual perception and language understanding, enabling models to condition visual representations on natural language. The field has evolved through several paradigms: late-fusion models like CLIP that encode images and text separately before combining their representations, multimodal large language models (MLLMs) that condition language models on vision encoders, and more recently, early-fusion approaches where language conditioning influences vision processing from the earliest layers. This progression reflects a deeper understanding of how visual and linguistic information should interact—moving from modular pipelines to deeply integrated representations.
+Vision-Language Models (VLMs) sit at the intersection of visual perception and language understanding, enabling models to condition visual representations on natural language. Pseudo-Unification (2604.10949) reveals a critical finding for VLMs: despite shared parameters in Unified Multimodal Models, text generation and image synthesis exhibit divergent response behaviors—text follows high-entropy creative patterns while image synthesis enforces low-entropy fidelity. This "pseudo-unification" phenomenon suggests that simply sharing visual and language encoders does not guarantee unified generation behavior.
+
+The field has evolved through several paradigms: late-fusion models like CLIP that encode images and text separately before combining their representations, multimodal large language models (MLLMs) that condition language models on vision encoders, and early-fusion approaches where language conditioning influences vision processing from the earliest layers.
 
 The most recent paradigm shift is exemplified by SteerViT (2604.02327), which demonstrates that conditioning frozen Vision Transformers on language through lightweight cross-attention layers interleaved within ViT blocks produces representations that are simultaneously more steerable and retain strong generic visual quality. This early fusion approach outperforms both CLIP-style late fusion and large MLLM approaches on steerability benchmarks (96% vs 44% on CORE), while preserving representation quality that matches or exceeds the frozen backbone on downstream tasks. The critical insight is that standard ViTs suffer from "photographer bias"—focusing on the most salient objects with no mechanism to direct attention elsewhere—while language conditioning provides that directional control without destroying the rich visual features learned during self-supervised pretraining.
 
@@ -20,6 +22,7 @@ The parameter efficiency story is also compelling: SteerViT adds only ~21M train
 | Paper | Date | Contribution |
 |-------|------|-------------|
 | [[2604.02327]] Steerable Visual Representations (SteerViT) | 2026-04-01 | Early vision-language fusion via gated cross-attention in frozen ViT; 96% steerability with only 21M params |
+| [[2604.10949]] Pseudo-Unification: Entropy Probing | 2026-04-14 | Reveals divergent information patterns in UMMs: text generation high-entropy, image synthesis low-entropy; Harmon (1.5B) outperforms BAGEL (14B) via contextual prediction |
 
 ## Open Problems
 

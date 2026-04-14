@@ -29,3 +29,23 @@ Append-only record of all ingest operations.
 - [[2604.08626]] WildDet3D: Scaling Promptable 3D Detection in the Wild
 
 Topics updated: llm-training, video-understanding, computer-vision, world-models, data-centric-ai, llm-efficiency, agent-systems, benchmarks, reinforcement-learning, image-generation, video-generation, embodied-ai, vision-language-models, agent-evaluation, multimodal-reasoning, reasoning, style-transfer, 3d-detection, kv-cache-compression, tool-integrated-reasoning, skill-evolution, character-animation
+## [2026-04-14] ingest | 3 papers
+
+- [[2604.10949]] Pseudo-Unification: Entropy Probing Reveals Divergent Information Patterns in Unified Multimodal Models
+- [[2604.11641]] CodeTracer: Towards Traceable Agent States
+- [[2604.11804]] OmniShow: Unifying Multimodal Conditions for Human-Object Interaction Video Generation
+
+Topics updated: multimodal-models, representation-learning, vision-language-models, code-agents, agent-systems, agent-evaluation, video-generation, multimodal-conditions, human-object-interaction
+
+## [2026-04-14] lint | 7 issues fixed
+
+### Broken topic links (non-existent topic pages)
+- 2604.08546.md: removed `text-to-video` (topic does not exist)
+- 2604.02176.md: removed `prompting` (topic does not exist)
+- 2604.02317.md: removed `streaming-video` (topic does not exist)
+- 2604.04707.md: fixed `world_models` → `world-models`, `agent_systems` → `agent-systems`
+- 2604.07430.md: removed `robotics` (topic does not exist)
+
+### Inconsistent slug references
+- 2604.06628.md: `fine_tuning` was already correct (topic exists as `fine-tuning`)
+- world-models.md: fixed `[[topics/agent_systems]]` → `[[topics/agent-systems]]`

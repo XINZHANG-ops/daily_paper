@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-04-13 | Papers: 21 | Topics: 18
+Last updated: 2026-04-14 | Papers: 24 | Topics: 27
 
 ## Papers
 
@@ -25,6 +25,9 @@ Last updated: 2026-04-13 | Papers: 21 | Topics: 18
 | [2604.08523](papers/2604.08523.md) | ClawBench: Can AI Agents Complete Everyday Online Tasks? | 2026-04-10 | benchmarks |
 | [2604.08546](papers/2604.08546.md) | When Numbers Speak: Aligning Textual Numerals and Visual Instances in T2V Diffusion Models | 2026-04-10 | video-generation |
 | [2604.08626](papers/2604.08626.md) | WildDet3D: Scaling Promptable 3D Detection in the Wild | 2026-04-13 | computer-vision |
+| [2604.10949](papers/2604.10949.md) | Pseudo-Unification: Entropy Probing Reveals Divergent Information Patterns in Unified Multimodal Models | 2026-04-14 | multimodal-models, representation-learning, vision-language-models |
+| [2604.11641](papers/2604.11641.md) | CodeTracer: Towards Traceable Agent States | 2026-04-14 | agent-systems, code-agents, agent-evaluation |
+| [2604.11804](papers/2604.11804.md) | OmniShow: Unifying Multimodal Conditions for Human-Object Interaction Video Generation | 2026-04-14 | video-generation, multimodal-conditions, human-object-interaction |
 | [2603.26164](papers/2603.26164.md) | DataFlex: A Unified Framework for Data-Centric Dynamic Training of Large Language Models | 2026-04-06 | llm-training, data-centric-ai |
 | [2604.02176](papers/2604.02176.md) | Adam's Law: Textual Frequency Law on Large Language Models | 2026-04-09 | llm-training |
 
@@ -54,3 +57,7 @@ Last updated: 2026-04-13 | Papers: 21 | Topics: 18
 | [Tool-Integrated Reasoning](topics/tool-integrated-reasoning.md) | 1 | 2026-04-08 |
 | [Skill Evolution](topics/skill-evolution.md) | 1 | 2026-04-10 |
 | [Character Animation](topics/character-animation.md) | 1 | 2026-04-13 |
+| [Code Agents](topics/code-agents.md) | 1 | 2026-04-14 |
+| [Human-Object Interaction](topics/human-object-interaction.md) | 1 | 2026-04-14 |
+| [Multimodal Conditions](topics/multimodal-conditions.md) | 1 | 2026-04-14 |
+| [Multimodal Models](topics/multimodal-models.md) | 1 | 2026-04-14 |
