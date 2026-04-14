@@ -1123,9 +1123,40 @@ class AIAssistant {
     const processedLines = [];
     let inOrderedList = false;
     let inUnorderedList = false;
+    let inTable = false;
+    let tableLines = [];
 
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
+
+      // Check if this line is part of a table (contains |)
+      const isTableLine = line.trim().match(/^\|(.+)\|$/);
+
+      if (isTableLine) {
+        // Close any open lists before starting table
+        if (inOrderedList) {
+          processedLines.push('</ol>');
+          inOrderedList = false;
+        }
+        if (inUnorderedList) {
+          processedLines.push('</ul>');
+          inUnorderedList = false;
+        }
+
+        // Collect table lines
+        if (!inTable) {
+          inTable = true;
+          tableLines = [];
+        }
+        tableLines.push(line.trim());
+        continue;
+      } else if (inTable) {
+        // End of table - process collected lines
+        processedLines.push(this.renderTable(tableLines));
+        inTable = false;
+        tableLines = [];
+        // Continue processing this line as normal
+      }
 
       // Skip empty lines within lists (but close lists if we hit two empty lines)
       if (line.trim() === '') {
@@ -1200,9 +1231,12 @@ class AIAssistant {
       }
     }
 
-    // Close any open lists
+    // Close any open lists or tables
     if (inOrderedList) processedLines.push('</ol>');
     if (inUnorderedList) processedLines.push('</ul>');
+    if (inTable && tableLines.length > 0) {
+      processedLines.push(this.renderTable(tableLines));
+    }
 
     html = processedLines.join('\n');
 
@@ -1240,6 +1274,65 @@ class AIAssistant {
     html = html.replace(/(<(ol|ul|h[123])>)<br>/g, '$1');
     html = html.replace(/<br>(<\/(ol|ul|h[123])>)/g, '$1');
 
+    return html;
+  }
+
+  renderTable(tableLines) {
+    if (!tableLines || tableLines.length === 0) return '';
+
+    // Parse table rows
+    const rows = tableLines.map(line => {
+      // Remove leading and trailing |
+      line = line.trim();
+      if (line.startsWith('|')) line = line.substring(1);
+      if (line.endsWith('|')) line = line.substring(0, line.length - 1);
+      // Split by | and trim each cell
+      return line.split('|').map(cell => cell.trim());
+    });
+
+    if (rows.length === 0) return '';
+
+    // Check if second row is separator (e.g., |---|---|)
+    let headerRow = null;
+    let bodyRows = [];
+    let hasSeparator = false;
+
+    if (rows.length > 1 && rows[1].every(cell => cell.match(/^[-:]+$/))) {
+      // Has header separator
+      headerRow = rows[0];
+      bodyRows = rows.slice(2);
+      hasSeparator = true;
+    } else {
+      // No header, all rows are body
+      bodyRows = rows;
+    }
+
+    // Build HTML table
+    let html = '<table class="ai-markdown-table">';
+
+    // Add header if exists
+    if (headerRow) {
+      html += '<thead><tr>';
+      headerRow.forEach(cell => {
+        html += `<th>${cell}</th>`;
+      });
+      html += '</tr></thead>';
+    }
+
+    // Add body
+    if (bodyRows.length > 0) {
+      html += '<tbody>';
+      bodyRows.forEach(row => {
+        html += '<tr>';
+        row.forEach(cell => {
+          html += `<td>${cell}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody>';
+    }
+
+    html += '</table>';
     return html;
   }
 

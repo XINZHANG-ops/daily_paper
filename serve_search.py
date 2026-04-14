@@ -4,9 +4,13 @@ Serve vector search API with Flask.
 
 Loads a pre-built FAISS index and provides search endpoints.
 Also provides SQLite database query endpoints for papers.
+Also provides wiki-based Q&A via ollama claude agent.
 """
 import argparse
 import re
+import subprocess
+import threading
+import time
 from pathlib import Path
 from flask import Flask, request, jsonify
 from loguru import logger
@@ -48,6 +52,9 @@ all_metadata_fields = set()
 
 # Global SQLite manager instance
 sqlite_manager = None
+
+# Global session storage for wiki Q&A
+wiki_sessions = {}  # {session_id: [{'role': 'user', 'content': '...'}, {'role': 'assistant', 'content': '...'}]}
 
 
 def init_retriever(index_dir: Path):
@@ -142,6 +149,21 @@ def init_sqlite(summaries_path: Path, sqlite_path: Path, overwrite: bool = False
     logger.info(f"  - Date range: {stats['earliest_paper']} to {stats['latest_paper']}")
     logger.info(f"  - Database path: {stats['database_path']}")
     logger.info("="*60)
+
+
+@app.before_request
+def log_request():
+    """Log all incoming requests"""
+    logger.info(f"→ {request.method} {request.path} from {request.remote_addr}")
+    if request.json:
+        logger.info(f"  Request data: {str(request.json)[:200]}")
+
+
+@app.after_request
+def log_response(response):
+    """Log all outgoing responses"""
+    logger.info(f"← {request.method} {request.path} → {response.status_code}")
+    return response
 
 
 @app.route('/health', methods=['GET'])
@@ -352,6 +374,364 @@ def execute_query():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/ask_wiki', methods=['POST'])
+def ask_wiki():
+    """
+    Ask a question based on the wiki knowledge base.
+
+    Request body:
+    {
+        "question": "What are recent advances in diffusion models?",
+        "model": "minimax-m2.7:cloud",  // optional, defaults to minimax-m2.7:cloud
+        "session_id": "abc123"  // optional, for conversation history
+    }
+
+    Response:
+    {
+        "question": "...",
+        "answer": "...",
+        "model": "minimax-m2.7:cloud",
+        "session_id": "abc123"
+    }
+    """
+    data = request.get_json()
+    if not data or 'question' not in data:
+        return jsonify({'error': 'Missing question parameter'}), 400
+
+    question = data['question']
+    model = data.get('model', 'minimax-m2.7:cloud')
+    session_id = data.get('session_id', None)
+
+    # Get or create session history
+    if session_id:
+        if session_id not in wiki_sessions:
+            wiki_sessions[session_id] = []
+        conversation_history = wiki_sessions[session_id]
+    else:
+        conversation_history = []
+
+    # Find repo root (where wiki/ directory is)
+    repo_root = Path(__file__).parent
+    wiki_dir = repo_root / 'wiki'
+    llm_wiki_path = repo_root / 'llm-wiki.md'
+    project_schema_path = wiki_dir / 'WIKI.md'
+
+    if not wiki_dir.exists():
+        return jsonify({'error': 'wiki/ directory not found'}), 500
+
+    # Read schema files
+    try:
+        llm_wiki_content = llm_wiki_path.read_text(encoding='utf-8') if llm_wiki_path.exists() else ""
+        project_schema_content = project_schema_path.read_text(encoding='utf-8') if project_schema_path.exists() else ""
+    except Exception as e:
+        logger.error(f"Failed to read schema files: {e}")
+        return jsonify({'error': f'Failed to read schema: {str(e)}'}), 500
+
+    # Build conversation history context
+    history_context = ""
+    if conversation_history:
+        history_context = "\n=== CONVERSATION HISTORY ===\n"
+        for msg in conversation_history[-6:]:  # Last 3 turns (6 messages)
+            role_label = "User" if msg['role'] == 'user' else "Assistant"
+            history_context += f"{role_label}: {msg['content']}\n\n"
+        history_context += "=== END HISTORY ===\n\n"
+
+    # Build the prompt for the agent
+    prompt = f"""You are a research assistant helping answer questions based on a wiki knowledge base.
+
+=== WIKI PATTERN (llm-wiki.md) ===
+{llm_wiki_content}
+
+=== PROJECT SCHEMA (WIKI.md) ===
+{project_schema_content}
+
+=== AVAILABLE TOOLS ===
+
+You have access to the following tools running on localhost:5001:
+
+1. **Vector Search** (semantic similarity via FAISS):
+   curl -X POST http://localhost:5001/search \\
+     -H "Content-Type: application/json" \\
+     -d '{{"query": "your search query", "k": 5, "return_scores": true}}'
+
+   Returns: {{"results": [{{"content": "...", "metadata": {{"title": "...", "url": "...", ...}}, "score": 0.85}}]}}
+
+2. **SQL Query** (structured queries on papers database):
+   curl -X POST http://localhost:5001/query \\
+     -H "Content-Type: application/json" \\
+     -d '{{"sql": "SELECT title, published_at FROM papers WHERE ..."}}'
+
+   Returns: {{"results": [{{"title": "...", "published_at": "...", ...}}]}}
+
+   Available columns: title, published_at, url, content, date_added, personal_notes
+
+3. **Database Schema**:
+   curl http://localhost:5001/schema
+
+Use these tools to find relevant papers when the wiki alone doesn't have enough information.
+For example:
+- Use vector search for semantic queries: "papers about transformers"
+- Use SQL for structured filters: "papers published after 2024-01-01"
+- Read wiki pages for curated summaries and cross-referenced knowledge
+
+{history_context}=== CURRENT QUESTION ===
+
+Working directory: {repo_root}
+
+The user asks: {question}
+
+Strategy:
+1. Consider the conversation history above (if any) for context
+2. Check wiki/index.md to see if relevant topic or paper pages exist
+3. Read relevant wiki pages for curated knowledge
+4. If wiki coverage is incomplete, use vector search or SQL to find additional papers
+5. Synthesize a comprehensive answer combining wiki knowledge and tool results
+
+Provide a comprehensive answer with citations to specific papers (use [[arxiv_id]] format).
+
+Answer:
+"""
+
+    # Call ollama launch claude
+    try:
+        logger.info(f"Calling ollama claude for question: {question[:60]}...")
+        result = subprocess.run(
+            [
+                'ollama', 'launch', 'claude',
+                '--model', model,
+                '--yes',
+                '--',
+                '-p', prompt,
+                '--dangerously-skip-permissions'
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(repo_root),
+            timeout=300  # 5 minutes timeout (agent may use FAISS/SQL tools)
+        )
+
+        if result.returncode != 0:
+            logger.error(f"ollama claude failed: {result.stderr}")
+            return jsonify({'error': f'Agent failed: {result.stderr}'}), 500
+
+        answer = result.stdout.strip()
+        logger.info(f"Answer generated ({len(answer)} chars)")
+
+        # Save to session history
+        if session_id:
+            wiki_sessions[session_id].append({'role': 'user', 'content': question})
+            wiki_sessions[session_id].append({'role': 'assistant', 'content': answer})
+            # Keep only last 20 messages (10 turns)
+            if len(wiki_sessions[session_id]) > 20:
+                wiki_sessions[session_id] = wiki_sessions[session_id][-20:]
+
+        return jsonify({
+            'question': question,
+            'answer': answer,
+            'model': model,
+            'session_id': session_id
+        })
+
+    except subprocess.TimeoutExpired:
+        logger.error("ollama claude timed out")
+        return jsonify({'error': 'Request timed out (5 min limit)'}), 504
+    except Exception as e:
+        logger.error(f"ask_wiki error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/lint_wiki', methods=['POST'])
+def lint_wiki():
+    """
+    Run wiki health check (lint operation).
+
+    Checks for:
+    - Contradictions between pages
+    - Stale claims superseded by newer sources
+    - Orphan pages with no inbound links
+    - Missing concept pages
+    - Missing cross-references
+    - Data gaps
+
+    Request body (optional):
+    {
+        "model": "minimax-m2.7:cloud"  // optional
+    }
+
+    Response:
+    {
+        "status": "completed",
+        "report": "...",
+        "model": "minimax-m2.7:cloud"
+    }
+    """
+    data = request.get_json() or {}
+    model = data.get('model', 'minimax-m2.7:cloud')
+
+    # Find repo root
+    repo_root = Path(__file__).parent
+    wiki_dir = repo_root / 'wiki'
+    llm_wiki_path = repo_root / 'llm-wiki.md'
+    project_schema_path = wiki_dir / 'WIKI.md'
+
+    if not wiki_dir.exists():
+        return jsonify({'error': 'wiki/ directory not found'}), 500
+
+    # Read schema files
+    try:
+        llm_wiki_content = llm_wiki_path.read_text(encoding='utf-8') if llm_wiki_path.exists() else ""
+        project_schema_content = project_schema_path.read_text(encoding='utf-8') if project_schema_path.exists() else ""
+    except Exception as e:
+        logger.error(f"Failed to read schema files: {e}")
+        return jsonify({'error': f'Failed to read schema: {str(e)}'}), 500
+
+    # Build the lint prompt
+    prompt = f"""You are maintaining a research paper wiki. Run a health check (lint operation).
+
+=== WIKI PATTERN (llm-wiki.md) ===
+{llm_wiki_content}
+
+=== PROJECT SCHEMA (WIKI.md) ===
+{project_schema_content}
+
+=== YOUR TASK ===
+
+Working directory: {repo_root}
+
+Run a comprehensive health check on wiki/. Look for:
+
+1. **Contradictions**: Do different pages make conflicting claims?
+2. **Stale content**: Has newer content superseded old claims?
+3. **Orphan pages**: Papers not linked from any topic page
+4. **Orphan topics**: Topics not linked from any paper
+5. **Missing cross-references**: Papers that should be linked but aren't
+6. **Broken links**: [[references]] that don't have a corresponding page
+7. **Metadata consistency**: paper_count vs actual papers in topic pages
+8. **Data gaps**: Missing fields, incomplete summaries
+
+Read wiki/index.md, wiki/papers/, and wiki/topics/ to perform the check.
+
+After identifying issues:
+1. Report all problems found
+2. Fix what you can (update pages, add missing links, correct counts)
+3. Update wiki/log.md with a lint entry
+
+Provide a summary report of what you found and fixed.
+"""
+
+    # Call ollama launch claude
+    try:
+        logger.info("Running wiki lint operation...")
+        result = subprocess.run(
+            [
+                'ollama', 'launch', 'claude',
+                '--model', model,
+                '--yes',
+                '--',
+                '-p', prompt,
+                '--dangerously-skip-permissions'
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(repo_root),
+            timeout=600  # 10 minutes timeout for lint
+        )
+
+        if result.returncode != 0:
+            logger.error(f"ollama claude failed: {result.stderr}")
+            return jsonify({'error': f'Lint failed: {result.stderr}'}), 500
+
+        report = result.stdout.strip()
+        logger.info(f"Lint completed ({len(report)} chars)")
+
+        return jsonify({
+            'status': 'completed',
+            'report': report,
+            'model': model
+        })
+
+    except subprocess.TimeoutExpired:
+        logger.error("ollama claude timed out during lint")
+        return jsonify({'error': 'Lint timed out (10 min limit)'}), 504
+    except Exception as e:
+        logger.error(f"lint_wiki error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+def run_weekly_lint():
+    """Background thread that runs wiki lint every week."""
+    WEEK_SECONDS = 7 * 24 * 60 * 60
+
+    while True:
+        try:
+            time.sleep(WEEK_SECONDS)
+            logger.info("Running scheduled weekly wiki lint...")
+
+            repo_root = Path(__file__).parent
+            wiki_dir = repo_root / 'wiki'
+
+            if not wiki_dir.exists():
+                logger.warning("wiki/ directory not found, skipping scheduled lint")
+                continue
+
+            llm_wiki_path = repo_root / 'llm-wiki.md'
+            project_schema_path = wiki_dir / 'WIKI.md'
+
+            llm_wiki_content = llm_wiki_path.read_text(encoding='utf-8') if llm_wiki_path.exists() else ""
+            project_schema_content = project_schema_path.read_text(encoding='utf-8') if project_schema_path.exists() else ""
+
+            prompt = f"""You are maintaining a research paper wiki. Run a weekly health check (lint operation).
+
+=== WIKI PATTERN (llm-wiki.md) ===
+{llm_wiki_content}
+
+=== PROJECT SCHEMA (WIKI.md) ===
+{project_schema_content}
+
+=== YOUR TASK ===
+
+Working directory: {repo_root}
+
+This is a scheduled weekly health check. Run a comprehensive check on wiki/.
+
+Look for:
+1. Contradictions between pages
+2. Stale content superseded by newer sources
+3. Orphan pages and topics
+4. Missing cross-references
+5. Broken links
+6. Metadata consistency issues
+7. Data gaps
+
+Fix what you can, and update wiki/log.md with a lint entry noting this was a scheduled weekly check.
+
+Provide a summary report.
+"""
+
+            result = subprocess.run(
+                [
+                    'ollama', 'launch', 'claude',
+                    '--model', 'minimax-m2.7:cloud',
+                    '--yes',
+                    '--',
+                    '-p', prompt,
+                    '--dangerously-skip-permissions'
+                ],
+                capture_output=True,
+                text=True,
+                cwd=str(repo_root),
+                timeout=600
+            )
+
+            if result.returncode == 0:
+                logger.info(f"Weekly lint completed successfully ({len(result.stdout)} chars)")
+            else:
+                logger.error(f"Weekly lint failed: {result.stderr}")
+
+        except Exception as e:
+            logger.error(f"Error in weekly lint thread: {e}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Serve vector search and SQL query API")
     parser.add_argument(
@@ -421,8 +801,18 @@ def main():
         logger.warning("Summaries file not found. SQLite endpoints will not be available.")
         logger.warning("Use --summaries-path to specify the path to summaries.jsonl")
 
+    # Start weekly lint background thread
+    logger.info("Starting weekly lint background thread...")
+    lint_thread = threading.Thread(target=run_weekly_lint, daemon=True)
+    lint_thread.start()
+
     # Start Flask server
     logger.info(f"Starting server on {args.host}:{args.port}")
+    logger.info("  - POST /search - Hybrid search")
+    logger.info("  - POST /query - SQL queries")
+    logger.info("  - POST /ask_wiki - Wiki-based Q&A")
+    logger.info("  - POST /lint_wiki - Wiki health check (manual)")
+    logger.info("  - Weekly automated lint enabled")
     app.run(host=args.host, port=args.port, debug=False)
 
 
