@@ -93,6 +93,6 @@ ollama launch claude \
     --yes \
     -- \
     -p "$TASK_PROMPT" \
-    --dangerously-skip-permissions 2>&1 | tee -a "$REPO/wiki_build.log"
+    --permission-mode dontAsk 2>&1 | tee -a "$REPO/wiki_build.log"
 
 log "Wiki build complete."
