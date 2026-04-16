@@ -1,36 +1,38 @@
 ---
 title: "Computer Vision"
 slug: computer-vision
-paper_count: 2
-last_updated: 2026-04-13
+paper_count: 9
+last_updated: 2026-04-16
 ---
 
 # Computer Vision
 
 ## Overview
 
-The two papers in this topic represent complementary advances in visual representation learning and 3D perception. **SteerViT** introduces a paradigm shift from late fusion to early vision-language fusion via gated cross-attention layers interleaved within frozen ViT blocks, producing "steerable visual representations" that can be directed with natural language while preserving the underlying representation quality of the frozen backbone. The key insight is that standard ViTs suffer from "photographer bias"—they tend to focus on the most salient objects with no mechanism to redirect attention. SteerViT addresses this by allowing text to influence visual processing even at early layers, achieving 96% retrieval accuracy on CORE (vs 44% for vanilla DINOv2) while adding only ~21M trainable parameters. The tanh-gated cross-attention with zero-initialized gates enables smooth interpolation between vanilla ViT and fully text-conditioned state via a continuous scaling factor.
-
-**WildDet3D** tackles the challenge of open-vocabulary monocular 3D object detection through two contributions: a unified geometry-aware architecture supporting text, point, box, and exemplar prompts with optional depth input, and WildDet3D-Data—a dataset with 1M images across 13.5K categories, 138x larger than existing benchmarks. The architecture employs dual-vision encoders (image + RGBD) with ControlNet-style depth fusion, and achieves 34.2 AP3D on Omni3D with text prompts, with a striking +20.7 AP average gain when depth signals are available at inference time. Particularly notable is the training efficiency: 12 epochs vs 80-120 for competing approaches, achieved through auxiliary 2D detection and depth estimation heads providing complementary supervision.
-
-The two papers together advance the trajectory from passive image understanding toward active spatial intelligence—SteerViT by giving vision models language-directed attention control, and WildDet3D by extending detection to full 3D space with flexible prompting. Both emphasize parameter efficiency: SteerViT's 21M added parameters vs billion-parameter MLLMs, and WildDet3D's 12-epoch efficiency vs prior methods' 80-120 epochs.
+Computer vision research spans multiple domains: image generation, 3D detection, style transfer, video understanding, and visual representation learning. The papers reveal that **vision capabilities are increasingly measured by controllability and real-world generalization**, not just benchmark accuracy. Key advances include steerable frozen ViTs, simple baselines that beat complex memory mechanisms, and better understanding of the perception-memory tradeoff in streaming scenarios.
 
 ## Key Papers
 
 | Paper | Date | Contribution |
 |-------|------|-------------|
-| [[2604.02327]] SteerViT: Steerable Visual Representations | 2026-04-01 | Early V-L fusion via gated cross-attention in frozen ViT; 96% CORE accuracy vs 44% DINOv2; 21M trainable params; zero-shot transfer to personalized object discrimination, anomaly detection |
-| [[2604.08626]] WildDet3D: Scaling Promptable 3D Detection in the Wild | 2026-04-08 | Unified text/point/box/exemplar promptable 3D detection; WildDet3D-Data (1M images, 13.5K categories, 138x existing benchmarks); 12 epochs training vs 80-120; +20.7 AP with depth cues |
+| [[2604.02327]] SteerViT | 2026-04-06 | Steerable frozen ViT via gated cross-attention, new representation quality/steerability Pareto frontier |
+| [[2604.02317]] SIMPLESTREAM | 2026-04-06 | Simple sliding window matches complex memory mechanisms for streaming video |
+| [[2604.04746]] Think in Strokes | 2026-04-09 | Process-driven image generation with self-correction |
+| [[2604.08364]] MegaStyle | 2026-04-10 | Style transfer with intra-style consistency |
+| [[2604.08546]] NUMINA | 2026-04-10 | Counting alignment via attention heads |
+| [[2604.08626]] WildDet3D | 2026-04-13 | Open-vocabulary 3D detection at scale |
+| [[2604.10949]] Pseudo-Unification | 2026-04-14 | Entropy analysis of visual/linguistic encoding |
+| [[2604.11804]] OmniShow | 2026-04-14 | Human-object interaction video generation |
+| [[2604.14148]] Seedance 2.0 | 2026-04-16 | State-of-the-art video generation |
 
-## Open Problems
+## Patterns & Insights
 
-- **Cross-architecture generalization**: SteerViT conclusions are coupled to transformer-based vision encoders; extension to CNN-based architectures unexplored. WildDet3D focuses on single-image monocular detection; video-based temporal integration could improve tracking and stability.
-- **Depth availability**: WildDet3D shows dramatic gains (+20.7 AP) with depth, but graceful degradation to monocular mode when depth is unavailable means the benefit depends on sensor availability.
-- **Structural vs content understanding**: MinerU2.5-Pro (in data-centric-ai) notes that advancing from content extraction to structured semantic understanding is the next step—this applies equally to 3D detection where relationships between objects are as important as individual detections.
-- **Evaluation coverage**: Both papers use existing benchmarks (CORE, Omni3D) that may not fully capture real-world diversity; domain-specific evaluation sets for vertical applications remain needed.
+- **Controllability is key**: Models must support fine-grained control beyond generic quality
+- **Real-world generalization**: Open-vocabulary and few-shot capabilities essential
+- **Self-correction improves reliability**: Process-driven with inspection beats single-pass
 
 ## Connections
 
-- [[topics/vision_language_models]] — SteerViT is directly relevant to VLM architecture improvements; early vs late fusion debates
-- [[topics/3d-detection]] — WildDet3D is the primary paper for open-vocabulary 3D detection
-- [[topics/data-centric-ai]] — WildDet3D's data engine (1M images, 13.5K categories) represents massive data engineering; the data-centric principle (performance from data quality, not just model scale) applies broadly
+- [[topics/image-generation]] — Core computer vision generation task
+- [[topics/3d-detection]] — 3D understanding extends 2D vision
+- [[topics/video-generation]] — Video adds temporal dimension

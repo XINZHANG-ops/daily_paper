@@ -1,38 +1,46 @@
 ---
 title: "LLM Training"
 slug: llm-training
-paper_count: 4
-last_updated: 2026-04-13
+paper_count: 7
+last_updated: 2026-04-16
 ---
 
 # LLM Training
 
 ## Overview
 
-The four papers in this topic collectively reshape how we think about post-training data engineering and optimization dynamics. **DataFlex** establishes that data is a first-class citizen in LLM training: dynamic sample selection (via gradient-based influence like LESS), domain mixture optimization (via DoReMi/ODM), and per-sample reweighting all yield measurable gains, and these gains are complementary to architectural improvements. Meanwhile, **RLSD** reveals that self-distillation in RLVR is not inherently leaky—the failure mode of On-Policy Self-Distillation is structural (an irreducible information asymmetry gap), and the fix is to repurpose the teacher from a generative target to a magnitude evaluator for credit assignment, with environment rewards holding exclusive authority over update direction.
+LLM training research spans multiple dimensions: data selection (textual frequency, data-centric optimization), optimization strategies (curriculum learning), and knowledge transfer (distillation). The papers reveal that **training efficiency depends on matching data characteristics to model capabilities**—high-frequency data for prompting, data-centric methods (DataFlex) for unified selection/weighting, and thinking-pattern consistency for distillation.
 
-A second major thread is the **Textual Frequency Law (TFL)** from the Adam's Law paper, which demonstrates that high-frequency textual expressions are systematically preferred by LLMs in both prompting and fine-tuning. This is a striking finding: paraphrases with identical meaning but different textual frequencies yield up to 8 percentage points difference in accuracy across math, translation, and commonsense reasoning. The law also motivates curriculum-based training (CTFT) that presents lower-frequency (harder) examples first, with a frequency estimation method that extends to LLM-generated story completions.
+The key theme is that training recipes are not universal—they must be adapted to the specific model, data distribution, and objective.
 
-The fourth paper on **conditional generalization in reasoning SFT** upends a prevailing narrative—that SFT memorizes while RL generalizes—by showing that SFT's cross-domain generalization is not absent but conditional on optimization sufficiency, data quality, and model scale. The key finding is a "dip-and-recovery" non-monotonic training trajectory where OOD performance first degrades before improving with extended training. Even more remarkably, training on Countdown-CoT (a toy arithmetic game) transfers procedural reasoning patterns to math, code, and science domains—suggesting that CoT structures like backtracking and verification are themselves transferable independently of domain content. The catch is asymmetric generalization: while reasoning improves broadly, safety consistently degrades as procedural patterns teach models to work around guardrails.
+## Evolution
+
+Early April 2026 saw Adam's Law establish textual frequency as a fundamental dimension for data selection—high-frequency data works better for both prompting and fine-tuning. A week later, 2604.06628 showed that cross-domain generalization in SFT follows a dip-and-recovery dynamic, challenging the "SFT memorizes, RL generalizes" assumption. KnowRL decomposed hints into atomic knowledge points for minimal-sufficient guidance. 2604.13016 analyzed on-policy distillation and found thinking-pattern consistency as the key condition for success.
 
 ## Key Papers
 
 | Paper | Date | Contribution |
 |-------|------|-------------|
-| [[2603.26164]] DataFlex: A Unified Framework for Data-Centric Dynamic Training | 2026-03-27 | Unified Select/Mix/Weight trainers for dynamic data selection, mixture optimization, and per-sample reweighting; 57% speedup for LESS on 8 GPUs |
-| [[2604.03128]] Self-Distilled RLVR | 2026-04-02 | Repurposes self-distillation as token-level credit assignment magnitude; RLSD structurally immune to privileged information leakage |
-| [[2604.02176]] Adam's Law: Textual Frequency Law | 2026-04-01 | High-frequency textual data preferred for prompting/fine-tuning; 8pp gains from paraphrase selection; CTFT curriculum training |
-| [[2604.06628]] Rethinking Generalization in Reasoning SFT | 2026-04-07 | Cross-domain generalization is conditional ("dip-and-recovery"); procedural patterns transfer from toy domains; asymmetric safety degradation |
+| [[2604.02176]] Adam's Law | 2026-04-09 | Textual frequency as training/prompting dimension |
+| [[2603.26164]] DataFlex | 2026-04-06 | Unified framework for data-centric dynamic training |
+| [[2604.06628]] Rethinking Generalization | 2026-04-13 | SFT has conditional generalization, not absent |
+| [[2604.12627]] KnowRL | 2026-04-15 | Atomic knowledge points for minimal-sufficient guidance |
+| [[2604.13016]] Rethinking OPD | 2026-04-15 | Thinking-pattern consistency for distillation |
+
+## Patterns & Insights
+
+- **Frequency matters**: High-frequency data improves both prompting and fine-tuning
+- **SFT can generalize conditionally**: Not just memorization as previously thought
+- **Distillation requires compatibility**: Thinking patterns must match between teacher and student
 
 ## Open Problems
 
-- **Algorithmic scope beyond instruction tuning**: DataFlex focuses on instruction tuning and pretraining; extending data-centric methods to RLHF and other paradigms remains underexplored.
-- **TFL semantic equivalence assumption**: The textual frequency law assumes perfect semantic equivalence between paraphrases, but paraphrasing inevitably introduces subtle meaning shifts.
-- **Safety-reasoning tradeoff**: Long-CoT SFT improves reasoning broadly but degrades safety consistently; understanding how to preserve reasoning gains while mitigating safety degradation is critical.
-- **Model capability thresholds**: The conditional generalization paper shows smaller models (1.7B) imitate surface verbosity while larger models (14B+) internalize transferable patterns—what is the minimum model scale for procedural pattern transfer?
+- Combining frequency-based selection with other dimensions (quality, diversity)
+- Understanding when SFT vs RL is more appropriate for specific objectives
+- Scaling distillation to very large teacher-student capability gaps
 
 ## Connections
 
-- [[topics/reinforcement-learning]] — RLSD studies self-distillation in RLVR context; the broader generalization work touches on SFT vs RL trade-offs
-- [[topics/reasoning]] — Reasoning SFT and TFL both address chain-of-thought behavior and transfer
-- [[topics/data-centric-ai]] — DataFlex is the foundational framework for data-centric LLM training; TFL is itself a data selection principle
+- [[topics/reinforcement-learning]] — RL is one approach to post-training, with distinct tradeoffs from SFT
+- [[topics/nlp]] — Textual frequency is especially relevant for NLP tasks
+- [[entities/grpo]] — Used in multiple training recipes this period

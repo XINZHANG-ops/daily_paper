@@ -1,35 +1,51 @@
 ---
 title: "Reinforcement Learning"
 slug: reinforcement-learning
-paper_count: 2
-last_updated: 2026-04-09
+paper_count: 8
+last_updated: 2026-04-16
 ---
 
 # Reinforcement Learning
 
 ## Overview
 
-Two papers from this period address critical failure modes in reinforcement learning for language and agent systems: self-distillation credit assignment and reasoning collapse in multi-turn agent training. Together they reveal that standard RL objectives contain structural vulnerabilities that progressive training amplifies in opposite directions.
+Reinforcement learning for LLMs has evolved significantly across the papers seen in this period. The focus has shifted from simple reward maximization to addressing fundamental failure modes like template collapse, reward sparsity, and sampling diversity collapse. Papers explore how RL training dynamics differ between reasoning and non-reasoning tasks, and how to maintain both capability improvement and safety.
 
-RLSD (Self-Distilled RLVR) addresses a fundamental failure mode in On-Policy Self-Distillation where a single model serves as both teacher and student with asymmetric information. The theoretical analysis proves that OPSD suffers from an irreducible mutual information gap I(Yt;R|X, Y<t)>0 caused by information asymmetry—the student's optimization cannot eliminate this gap because it is independent of theta. The gradient decomposition shows that early in training, beneficial marginal matching gradients dominate, but as training progresses and the student approaches the marginal teacher distribution, the pathological r-specific deviation dominates, driving the model toward encoding privileged information correlations. RLSD fundamentally repurposes self-distillation: instead of using the teacher for token-level distribution matching (which causes leakage), it uses the teacher for magnitude evaluation while anchoring update directions to environment rewards. The key property is that sign(A-hat) = sign(A)—the environment reward has exclusive authority over update direction.
+The key theme emerging across papers is that RL training has multiple **independent failure modes** that must be addressed simultaneously: entropy-based monitoring fails to detect template collapse (RAGEN-2), long-CoT SFT enables safety guardrail workarounds (2604.06628), on-policy RL suffers from stable error basin collapse (MEDS), and reward sparsity remains fundamental (KnowRL, 2604.06628).
 
-RAGEN-2 identifies template collapse, a different failure mode where models produce superficially diverse reasoning that is actually input-agnostic. The key insight is that entropy—widely used to monitor reasoning stability—only measures diversity within the same input and cannot detect whether reasoning actually responds to different inputs. Even with stable entropy, models can rely on fixed templates that look diverse within any single input but are effectively the same across inputs. The paper decomposes reasoning quality into two axes: within-input diversity (conditional entropy H(Z|X)) and cross-input distinguishability (mutual information I(X;Z)). Template collapse manifests as high conditional entropy but low mutual information—reasoning appears diverse within each input but becomes input-agnostic across inputs. The SNR mechanism explains this: low reward variance weakens task gradients while input-agnostic regularization (KL divergence and entropy regularization) remains constant, causing regularization to dominate updates and erase cross-input reasoning differences.
+## Evolution
+
+In early April 2026, RAGEN-2 revealed that template collapse is a fundamental failure mode invisible to entropy-based metrics—reasoning appears diverse within inputs but becomes input-agnostic across inputs. Three days later, 2604.06628 showed that cross-domain generalization in reasoning SFT follows a "dip-and-recovery" dynamic and that safety degradation is an unavoidable cost of reasoning improvement. Around the same time, KnowRL tackled reward sparsity through minimal-sufficient knowledge point guidance, and MEDS addressed sampling diversity collapse through error pattern clustering. By mid-April, 2604.13016 analyzed on-policy distillation and found that thinking-pattern consistency and genuinely new knowledge are the two conditions for successful teacher-student transfer. RLSD (2604.03128) further advanced the field by demonstrating that separating token-level credit assignment magnitude (from privileged information) from update direction (from environment reward) resolves the mutual information gap that plagued earlier on-policy self-distillation approaches.
 
 ## Key Papers
 
 | Paper | Date | Contribution |
 |-------|------|-------------|
-| [[2604.03128]] Self-Distilled RLVR | 2026-04-02 | Proves OPSD has irreducible mutual information gap; RLSD repurposes self-distillation for magnitude evaluation with environment rewards directing update direction |
-| [[2604.06268]] RAGEN-2: Reasoning Collapse in Agentic RL | 2026-04-06 | Identifies template collapse where reasoning is input-agnostic despite stable entropy; proposes SNR-Aware Filtering to select high-signal prompts |
+| [[2604.06268]] RAGEN-2 | 2026-04-09 | Template collapse identification and SNR-aware filtering |
+| [[2604.03128]] Self-Distilled RLVR | 2026-04-08 | Token-level credit assignment via privileged information gain |
+| [[2604.06628]] Rethinking Generalization | 2026-04-13 | Dip-and-recovery dynamic, safety-asymmetry in reasoning SFT |
+| [[2604.11297]] MEDS | 2026-04-16 | Memory-enhanced reward shaping with error pattern clustering |
+| [[2604.12627]] KnowRL | 2026-04-15 | Minimal-sufficient knowledge guidance for reward sparsity |
+| [[2604.03128]] Self-Distilled RLVR | 2026-04-08 | Token-level credit assignment via privileged information gain |
+| [[2604.13016]] Rethinking OPD | 2026-04-15 | On-policy distillation failure conditions and recovery |
+
+## Patterns & Insights
+
+- **Multiple independent failure modes**: RL training has template collapse (RAGEN-2), reward sparsity (KnowRL), sampling diversity collapse (MEDS), and credit assignment asymmetry (RLSD)—each requiring different solutions
+- **Entropy monitoring is insufficient**: Template collapse is invisible to entropy metrics; MI-based diagnostics are needed
+- **Credit assignment is distinct from update direction**: RLSD shows that separating magnitude (from privileged info) from direction (from environment reward) resolves OPSD's mutual information gap
+- **Entropy monitoring is insufficient**: Template collapse is invisible to entropy metrics; MI-based diagnostics are needed
+- **Safety is not free**: Reasoning capability improvement consistently comes with safety degradation
+- **On-policy RL is fragile**: Stable error basin collapse happens when policy repeatedly generates similar errors
 
 ## Open Problems
 
-- **Unified view of RL failure modes**: RLSD addresses information asymmetry in self-distillation while RAGEN-2 addresses signal-to-noise ratio in multi-turn agents—are these manifestations of a common underlying problem?
-- **Generalization under stochastic environments**: When reward variance is uniformly low (80-100% stochasticity), SNR-Aware Filtering loses discriminative power.
-- **Format validity vs content sensitivity**: Structural correctness and semantic input-dependence are separate dimensions—a model can have high format validity but low mutual information with inputs.
-- **Leakage-free self-distillation**: RLSD shows leakage can be structurally prevented via stop-gradient, but can this principle be extended to settings requiring richer privileged information?
+- How to detect template collapse early without MI-based diagnostics that require additional computation
+- Whether safety-asymmetry can be addressed without sacrificing reasoning capability
+- How to combine SNR-aware filtering with error pattern clustering for comprehensive failure mode coverage
 
 ## Connections
 
-- [[topics/agent-systems]] — Agent RL training often encounters template collapse; RLSD credit assignment could help
-- [[topics/benchmarks]] — Benchmark insights about capability-reliability divide (Pass@3 vs Pass^3) connect to RL training dynamics
+- [[topics/reasoning]] — RL training for reasoning has distinct failure modes from RL for other tasks
+- [[topics/llm-training]] — RL is one of several post-training approaches, each with tradeoffs
+- [[entities/grpo]] — Primary RL algorithm across multiple papers in this period

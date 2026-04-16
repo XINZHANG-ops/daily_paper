@@ -1,63 +1,87 @@
 # Wiki Index
 
-Last updated: 2026-04-14 | Papers: 24 | Topics: 27
+Last updated: 2026-04-16 | Papers: 31 | Topics: 15 | Entities: 13 | Ideas: 7
 
 ## Papers
 
 | arXiv ID | Title | Date Added | Topics |
 |----------|-------|------------|--------|
-| [2604.02317](papers/2604.02317.md) | A Simple Baseline for Streaming Video Understanding | 2026-04-06 | video-understanding |
-| [2604.02327](papers/2604.02327.md) | Steerable Visual Representations | 2026-04-06 | computer-vision |
-| [2604.03128](papers/2604.03128.md) | Self-Distilled RLVR | 2026-04-08 | reinforcement-learning |
-| [2604.04707](papers/2604.04707.md) | OpenWorldLib: A Unified Codebase and Definition of Advanced World Models | 2026-04-07 | world-models |
-| [2604.04746](papers/2604.04746.md) | Think in Strokes, Not Pixels: Process-Driven Image Generation via Interleaved Reasoning | 2026-04-09 | image-generation |
-| [2604.04771](papers/2604.04771.md) | MinerU2.5-Pro: Pushing the Limits of Data-Centric Document Parsing at Scale | 2026-04-07 | data-centric-ai |
-| [2604.04921](papers/2604.04921.md) | TriAttention: Efficient Long Reasoning with Trigonometric KV Compression | 2026-04-07 | llm-efficiency |
-| [2604.05015](papers/2604.05015.md) | Video-MME-v2: Towards the Next Stage in Benchmarks for Comprehensive Video Understanding | 2026-04-08 | benchmarks |
-| [2604.05404](papers/2604.05404.md) | Beyond Accuracy: Unveiling Inefficiency Patterns in Tool-Integrated Reasoning | 2026-04-08 | llm-efficiency |
-| [2604.06132](papers/2604.06132.md) | Claw-Eval: Toward Trustworthy Evaluation of Autonomous Agents | 2026-04-08 | benchmarks, agent-evaluation |
-| [2604.06268](papers/2604.06268.md) | RAGEN-2: Reasoning Collapse in Agentic RL | 2026-04-09 | reinforcement-learning |
-| [2604.06628](papers/2604.06628.md) | Rethinking Generalization in Reasoning SFT: A Conditional Analysis on Optimization, Data, and Model Capability | 2026-04-13 | llm-training |
-| [2604.07430](papers/2604.07430.md) | HY-Embodied-0.5: Embodied Foundation Models for Real-World Agents | 2026-04-10 | embodied-ai |
-| [2604.07823](papers/2604.07823.md) | LPM 1.0: Video-based Character Performance Model | 2026-04-13 | video-generation |
-| [2604.08364](papers/2604.08364.md) | MegaStyle: Constructing Diverse and Scalable Style Dataset | 2026-04-10 | image-generation |
-| [2604.08377](papers/2604.08377.md) | SkillClaw: Let Skills Evolve Collectively with Agentic Evolver | 2026-04-10 | agent-systems |
-| [2604.08523](papers/2604.08523.md) | ClawBench: Can AI Agents Complete Everyday Online Tasks? | 2026-04-10 | benchmarks |
-| [2604.08546](papers/2604.08546.md) | When Numbers Speak: Aligning Textual Numerals and Visual Instances in T2V Diffusion Models | 2026-04-10 | video-generation |
-| [2604.08626](papers/2604.08626.md) | WildDet3D: Scaling Promptable 3D Detection in the Wild | 2026-04-13 | computer-vision |
-| [2604.10949](papers/2604.10949.md) | Pseudo-Unification: Entropy Probing Reveals Divergent Information Patterns in Unified Multimodal Models | 2026-04-14 | multimodal-models, representation-learning, vision-language-models |
-| [2604.11641](papers/2604.11641.md) | CodeTracer: Towards Traceable Agent States | 2026-04-14 | agent-systems, code-agents, agent-evaluation |
-| [2604.11804](papers/2604.11804.md) | OmniShow: Unifying Multimodal Conditions for Human-Object Interaction Video Generation | 2026-04-14 | video-generation, multimodal-conditions, human-object-interaction |
-| [2603.26164](papers/2603.26164.md) | DataFlex: A Unified Framework for Data-Centric Dynamic Training of Large Language Models | 2026-04-06 | llm-training, data-centric-ai |
-| [2604.02176](papers/2604.02176.md) | Adam's Law: Textual Frequency Law on Large Language Models | 2026-04-09 | llm-training |
+| [2604.02176](papers/2604.02176.md) | Adam's Law: Textual Frequency Law on LLMs | 2026-04-09 | llm-training, nlp |
+| [2604.04746](papers/2604.04746.md) | Think in Strokes, Not Pixels | 2026-04-09 | image-generation, multimodal-models, computer-vision |
+| [2604.06268](papers/2604.06268.md) | RAGEN-2: Reasoning Collapse in Agentic RL | 2026-04-09 | reinforcement-learning, agent-systems, llm-training |
+| [2604.07430](papers/2604.07430.md) | HY-Embodied-0.5 | 2026-04-10 | embodied-ai, robotics, multimodal-models |
+| [2604.08364](papers/2604.08364.md) | MegaStyle | 2026-04-10 | image-generation, style-transfer, computer-vision |
+| [2604.08377](papers/2604.08377.md) | SkillClaw | 2026-04-10 | agent-systems, skill-evolution, llm-training |
+| [2604.08523](papers/2604.08523.md) | ClawBench | 2026-04-10 | agent-systems, agent-evaluation, benchmarks |
+| [2604.08546](papers/2604.08546.md) | NUMINA: Counting in T2V | 2026-04-10 | video-generation, computer-vision, multimodal-models |
+| [2604.06628](papers/2604.06628.md) | Rethinking Generalization in Reasoning SFT | 2026-04-13 | reinforcement-learning, reasoning, llm-training |
+| [2604.07823](papers/2604.07823.md) | LPM 1.0: Video-based Character Performance | 2026-04-13 | video-generation, character-animation, multimodal-models |
+| [2604.08626](papers/2604.08626.md) | WildDet3D | 2026-04-13 | 3d-detection, embodied-ai, computer-vision |
+| [2604.10949](papers/2604.10949.md) | Pseudo-Unification | 2026-04-14 | multimodal-models, reasoning, representation-learning |
+| [2604.11641](papers/2604.11641.md) | CodeTracer | 2026-04-14 | code-agents, agent-evaluation, debugging |
+| [2604.11804](papers/2604.11804.md) | OmniShow | 2026-04-14 | video-generation, human-object-interaction, multimodal-models |
+| [2604.11784](papers/2604.11784.md) | ClawGUI | 2026-04-15 | agent-systems, gui-agents, reinforcement-learning |
+| [2604.12627](papers/2604.12627.md) | KnowRL | 2026-04-15 | reinforcement-learning, reasoning, llm-training |
+| [2604.13016](papers/2604.13016.md) | Rethinking On-Policy Distillation | 2026-04-15 | knowledge-distillation, llm-training, reinforcement-learning |
+| [2604.11297](papers/2604.11297.md) | MEDS: Memory-Enhanced Dynamic Reward Shaping | 2026-04-16 | reinforcement-learning, reasoning, llm-training |
+| [2604.14144](papers/2604.14144.md) | SpatialEvo | 2026-04-16 | embodied-ai, spatial-reasoning, self-evolution |
+| [2604.14148](papers/2604.14148.md) | Seedance 2.0 | 2026-04-16 | video-generation, multimodal-models, computer-vision |
+| [2603.26164](papers/2603.26164.md) | DataFlex: A Unified Framework for Data-Centric Dynamic Training of LLMs | 2026-04-06 | llm-training, data-centric-ai |
+| [2604.02317](papers/2604.02317.md) | A Simple Baseline for Streaming Video Understanding | 2026-04-06 | video-understanding, computer-vision, multimodal-models |
+| [2604.02327](papers/2604.02327.md) | Steerable Visual Representations | 2026-04-06 | computer-vision, multimodal-models, representation-learning |
+| [2604.03128](papers/2604.03128.md) | Self-Distilled RLVR | 2026-04-08 | reinforcement-learning, multimodal-models, reasoning |
+| [2604.04707](papers/2604.04707.md) | OpenWorldLib: A Unified Codebase and Definition of Advanced World Models | 2026-04-07 | world-models, embodied-ai, robotics |
+| [2604.04771](papers/2604.04771.md) | MinerU2.5-Pro: Pushing the Limits of Data-Centric Document Parsing at Scale | 2026-04-07 | document-parsing, data-centric-ai, computer-vision |
+| [2604.04921](papers/2604.04921.md) | TriAttention: Efficient Long Reasoning with Trigonometric KV Compression | 2026-04-07 | llm-efficiency, reasoning, kv-cache-compression |
+| [2604.05015](papers/2604.05015.md) | Video-MME-v2: Towards the Next Stage in Benchmarks for Comprehensive Video Understanding | 2026-04-08 | video-understanding, benchmarks, multimodal-models |
+| [2604.05404](papers/2604.05404.md) | Beyond Accuracy: Unveiling Inefficiency Patterns in Tool-Integrated Reasoning | 2026-04-08 | tool-integrated-reasoning, llm-efficiency, reasoning |
+| [2604.06132](papers/2604.06132.md) | Claw-Eval: Toward Trustworthy Evaluation of Autonomous Agents | 2026-04-08 | agent-systems, agent-evaluation, benchmarks |
 
 ## Topics
 
 | Topic | Papers | Last Updated |
 |-------|--------|-------------|
-| [Agent Systems](topics/agent-systems.md) | 4 | 2026-04-10 |
-| [Benchmarks](topics/benchmarks.md) | 3 | 2026-04-10 |
-| [Reinforcement Learning](topics/reinforcement-learning.md) | 2 | 2026-04-09 |
-| [Image Generation](topics/image-generation.md) | 3 | 2026-04-10 |
-| [Video Generation](topics/video-generation.md) | 2 | 2026-04-10 |
-| [Embodied AI](topics/embodied-ai.md) | 1 | 2026-04-10 |
-| [LLM Training](topics/llm-training.md) | 4 | 2026-04-13 |
-| [Video Understanding](topics/video-understanding.md) | 2 | 2026-04-13 |
-| [Computer Vision](topics/computer-vision.md) | 2 | 2026-04-13 |
-| [World Models](topics/world-models.md) | 2 | 2026-04-13 |
-| [Data-Centric AI](topics/data-centric-ai.md) | 2 | 2026-04-13 |
-| [LLM Efficiency](topics/llm-efficiency.md) | 2 | 2026-04-13 |
-| [Vision-Language Models](topics/vision-language-models.md) | 1 | 2026-04-06 |
-| [Agent Evaluation](topics/agent-evaluation.md) | 2 | 2026-04-10 |
-| [Multimodal Reasoning](topics/multimodal-reasoning.md) | 2 | 2026-04-09 |
-| [Reasoning](topics/reasoning.md) | 2 | 2026-04-13 |
-| [Style Transfer](topics/style-transfer.md) | 1 | 2026-04-10 |
-| [3D Object Detection](topics/3d-detection.md) | 1 | 2026-04-13 |
-| [KV Cache Compression](topics/kv-cache-compression.md) | 1 | 2026-04-07 |
-| [Tool-Integrated Reasoning](topics/tool-integrated-reasoning.md) | 1 | 2026-04-08 |
-| [Skill Evolution](topics/skill-evolution.md) | 1 | 2026-04-10 |
-| [Character Animation](topics/character-animation.md) | 1 | 2026-04-13 |
-| [Code Agents](topics/code-agents.md) | 1 | 2026-04-14 |
-| [Human-Object Interaction](topics/human-object-interaction.md) | 1 | 2026-04-14 |
-| [Multimodal Conditions](topics/multimodal-conditions.md) | 1 | 2026-04-14 |
-| [Multimodal Models](topics/multimodal-models.md) | 1 | 2026-04-14 |
+| [computer-vision](topics/computer-vision.md) | 9 | 2026-04-16 |
+| [reinforcement-learning](topics/reinforcement-learning.md) | 8 | 2026-04-16 |
+| [llm-training](topics/llm-training.md) | 7 | 2026-04-16 |
+| [agent-systems](topics/agent-systems.md) | 7 | 2026-04-16 |
+| [video-generation](topics/video-generation.md) | 4 | 2026-04-16 |
+| [video-understanding](topics/video-understanding.md) | 2 | 2026-04-16 |
+| [embodied-ai](topics/embodied-ai.md) | 4 | 2026-04-16 |
+| [multimodal-models](topics/multimodal-models.md) | 4 | 2026-04-16 |
+| [image-generation](topics/image-generation.md) | 5 | 2026-04-16 |
+| [world-models](topics/world-models.md) | 1 | 2026-04-16 |
+| [document-parsing](topics/document-parsing.md) | 1 | 2026-04-16 |
+| [data-centric-ai](topics/data-centric-ai.md) | 2 | 2026-04-16 |
+| [kv-cache-compression](topics/kv-cache-compression.md) | 1 | 2026-04-16 |
+| [tool-integrated-reasoning](topics/tool-integrated-reasoning.md) | 1 | 2026-04-16 |
+| [representation-learning](topics/representation-learning.md) | 1 | 2026-04-16 |
+
+## Entities
+
+| Entity | Type | Papers | Last Updated |
+|--------|------|--------|-------------|
+| [grpo](entities/grpo.md) | algorithm | 5 | 2026-04-16 |
+| [ppo](entities/ppo.md) | algorithm | 3 | 2026-04-16 |
+| [bagel](entities/bagel.md) | model | 2 | 2026-04-16 |
+| [rlsd](entities/rlsd.md) | algorithm | 1 | 2026-04-16 |
+| [steervit](entities/steervit.md) | model | 1 | 2026-04-16 |
+| [simplestream](entities/simplestream.md) | model | 1 | 2026-04-16 |
+| [claw-eval](entities/claw-eval.md) | benchmark | 1 | 2026-04-16 |
+| [openworldlib](entities/openworldlib.md) | framework | 1 | 2026-04-16 |
+| [mineru](entities/mineru.md) | framework | 1 | 2026-04-16 |
+| [video-mme-v2](entities/video-mme-v2.md) | benchmark | 1 | 2026-04-16 |
+| [dinov2](entities/dinov2.md) | model | 1 | 2026-04-16 |
+| [pte](entities/pte.md) | metric | 1 | 2026-04-16 |
+
+## Ideas
+
+| Idea | Source | Last Updated |
+|------|--------|-------------|
+| [template-collapse](ideas/template-collapse.md) | paper | 2026-04-16 |
+| [entropy-is-misleading](ideas/entropy-is-misleading.md) | synthesis | 2026-04-16 |
+| [collective-intelligence](ideas/collective-intelligence.md) | synthesis | 2026-04-16 |
+| [agent-reliability-systems](ideas/agent-reliability-systems.md) | synthesis | 2026-04-16 |
+| [sampling-is-optimization](ideas/sampling-is-optimization.md) | note | 2026-04-16 |
+| [sae-random-baseline](ideas/sae-random-baseline.md) | note | 2026-04-16 |
+| [on-policy-rl-idling](ideas/on-policy-rl-idling.md) | note | 2026-04-16 |

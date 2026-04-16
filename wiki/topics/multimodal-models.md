@@ -1,33 +1,44 @@
 ---
 title: "Multimodal Models"
 slug: multimodal-models
-paper_count: 1
-last_updated: 2026-04-14
+paper_count: 4
+last_updated: 2026-04-16
 ---
 
 # Multimodal Models
 
 ## Overview
 
-Unified Multimodal Models (UMMs) aim to synergize the creative reasoning of LLMs with the fidelity-driven generation of vision models, enabling both text generation and image synthesis within a single architecture. However, Pseudo-Unification (2604.10949) reveals a fundamental limitation: despite shared parameters, UMMs exhibit divergent response behaviors where text generation shows high-entropy creativity while image synthesis enforces low-entropy fidelity. This stems from two sources of divergence: modality-asymmetric encoding (vision and language follow divergent entropy trajectories shaped by architectural priors) and pattern-split response (text follows high-entropy creative pattern while image synthesis adheres to low-entropy fidelity regime). Only models that unify both encoding and generative logic (e.g., via contextual prediction) achieve genuine unification—Harmon (1.5B) actually outperforms BAGEL (14B) in cross-modal reasoning due to consistent information flow across modalities.
+Unified multimodal models aim to process text, images, and other modalities within a single architecture. The papers reveal a critical issue: **pseudo-unification** where despite shared parameters, text generation shows high-entropy creativity while image synthesis enforces low-entropy fidelity. The root cause is modality-asymmetric encoding and pattern-split responses.
 
-The field spans two architectural categories: (1) Native UMMs that unify text and image generation within a single architecture (e.g., Harmon, Janus-Pro, Show-o2 using all-in-one Transformers or Mixture-of-Transformers), and (2) MLLM + Diffusion Pipelines where a multimodal LLM generates text-based conditions and delegates image synthesis to a separate diffusion model (e.g., OmniGen2).
+The key insight is that true unification requires consistent information flow, not just shared parameters.
+
+## Evolution
+
+Early April 2026, Think in Strokes used BAGEL as base for process-driven image generation, showing strong capabilities. By mid-April, Pseudo-Unification analyzed 10 unified multimodal models and found that most suffer from pseudo-unification—only Harmon (using contextual prediction for both modalities) achieves genuine unification. Seedance 2.0 then showed that native multi-modal audio-video processing can achieve state-of-the-art across multiple generation tasks.
 
 ## Key Papers
 
 | Paper | Date | Contribution |
 |-------|------|-------------|
-| [[2604.10949]] Pseudo-Unification: Entropy Probing | 2026-04-14 | Information-theoretic probing framework revealing pseudo-unification via dual divergence (modality-asymmetric encoding + pattern-split response); Harmon (1.5B) outperforms BAGEL (14B) via contextual prediction |
+| [[2604.04746]] Think in Strokes | 2026-04-09 | Process-driven generation on unified multimodal backbone |
+| [[2604.10949]] Pseudo-Unification | 2026-04-14 | Entropy probing reveals divergent text/image behaviors |
+| [[2604.14148]] Seedance 2.0 | 2026-04-16 | Native audio-video processing for state-of-the-art |
+
+## Patterns & Insights
+
+- **Shared parameters ≠ unified**: Modality-asymmetric encoding causes pseudo-unification
+- **Entropy reveals divergence**: Text (high entropy) vs image (low entropy) in same model
+- **Contextual prediction helps**: Harmon succeeds because it predicts context for both modalities
 
 ## Open Problems
 
-- **True unification architectures**: What architectural modifications can achieve consistent information flow across modalities without relying on contextual prediction?
-- **Scaling laws for unification**: Does the efficiency advantage of contextual prediction (Harmon vs BAGEL) hold at larger model scales?
-- **Beyond text-image**: Extending unified probing to video generation, 3D synthesis, and other multimodal generation tasks
-- **Training objectives**: Can training objectives be designed to encourage unified rather than split information flow?
+- Detecting pseudo-unification in deployed models
+- Architecture modifications to ensure true unification
+- Evaluating multimodal synergy beyond individual task performance
 
 ## Connections
 
-- [[topics/vision-language-models]] — VLMs provide the visual understanding backbone for UMMs; Pseudo-Unification analyzes why shared VLMs don't guarantee unified generation
-- [[topics/multimodal-reasoning]] — Both address multimodal joint reasoning; multimodal-reasoning focuses on understanding while multimodal-models focuses on unified generation
-- [[topics/video-generation]] — OmniShow extends unified multimodal conditioning to video generation with text, reference images, audio, and pose
+- [[topics/reasoning]] — Multimodal reasoning requires consistent information flow
+- [[entities/bagel]] — Used in process-driven generation, revealed to have pseudo-unification
+- [[entities/harmon]] — Only unified multimodal model achieving genuine unification

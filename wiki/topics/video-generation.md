@@ -1,40 +1,45 @@
 ---
 title: "Video Generation"
 slug: video-generation
-paper_count: 3
-last_updated: 2026-04-14
+paper_count: 4
+last_updated: 2026-04-16
 ---
 
 # Video Generation
 
 ## Overview
 
-Video generation research addresses both numerical precision in representing specified content and expressive character animation. Three papers now span the spectrum: NUMINA's training-free attention-based instance counting, LPM 1.0's full-duplex conversational character animation, and OmniShow's unified multimodal human-object interaction video generation.
+Video generation has advanced to include not just visual quality but temporal coherence, physics plausibility, audio synchronization, and controllable generation through multiple modalities. The papers reveal that the next frontier is **interactive video generation** where users can control aspects like character behavior, object counting, and audio synchronization.
 
-NUMINA identifies a critical limitation in text-to-video diffusion models: inability to accurately represent object counts specified in prompts. The root causes are semantic weakness (numerical tokens exhibit diffuse cross-attention responses compared to nouns, verbs, and adjectives) and instance ambiguity (heavily downsampled spatiotemporal latent space in DiT architectures limits separability of individual object representations). The key insight is that discriminative attention heads expose critical visual information about instance counts, and this can be exploited through a training-free identify-then-guide paradigm.
+The key theme is that **controllable video generation requires unified multimodal conditioning**—text, image, audio, and pose must be processed jointly, not sequentially.
 
-LPM 1.0 addresses the "performance trilemma" in video-based character animation: simultaneously achieving expressive quality, real-time inference, and long-horizon identity stability. The key insight is that conversation is the most comprehensive performance scenario—characters must simultaneously speak, listen, react, and emote while maintaining identity over time.
+## Evolution
 
-OmniShow introduces the first unified framework for Human-Object Interaction Video Generation (HOIVG), supporting all four conditions (text, reference image, audio, pose) in an end-to-end model. Built on Waver 1.0 (12B MMDiT), it achieves state-of-the-art or highly competitive performance across R2V, RA2V, and RP2V settings while being the smallest 10B-scale model (12.3B params). The key innovations are Unified Channel-wise Conditioning for seamless modality injection, Gated Local-Context Attention for precise audio-visual synchronization, and Decoupled-Then-Joint Training via model merging for leveraging heterogeneous datasets.
+In early April 2026, NUMINA showed that counting accuracy in video is achievable through attention head analysis. By mid-April, OmniShow demonstrated unified conditioning for human-object interaction video generation. Seedance 2.0 pushed the frontier on motion quality and audio-visual synchronization, achieving state-of-the-art across T2V, I2V, and R2V tasks. LPM 1.0 focused on character animation with speaking/listening capabilities.
 
 ## Key Papers
 
 | Paper | Date | Contribution |
 |-------|------|-------------|
-| [[2604.08546]] When Numbers Speak: Aligning Textual Numerals and Visual Instances in T2V | 2026-04-08 | Training-free attention-based instance detection and layout-guided regeneration for numerical alignment in T2V; up to 7.4% accuracy improvement |
-| [[2604.07823]] LPM 1.0: Video-based Character Performance Model | 2026-04-08 | Full-duplex conversational character animation with 17B base model and real-time 480P streaming; introduces listening behavior modeling |
-| [[2604.11804]] OmniShow: Unifying Multimodal Conditions for HOIVG | 2026-04-14 | First unified HOIVG framework with text, reference image, audio, and pose; Unified Channel-wise Conditioning; Gated Local-Context Attention; 12.3B params, SOTA on R2V/RA2V/RP2V |
+| [[2604.08546]] NUMINA | 2026-04-10 | Training-free counting alignment in T2V |
+| [[2604.07823]] LPM 1.0 | 2026-04-13 | Character performance with interleaved audio |
+| [[2604.11804]] OmniShow | 2026-04-14 | HOIVG with unified multimodal conditions |
+| [[2604.14148]] Seedance 2.0 | 2026-04-16 | State-of-the-art T2V/I2V/R2V with audio |
+
+## Patterns & Insights
+
+- **Audio is becoming standard**: Videos are expected to include synchronized audio
+- **Counting accuracy matters**: Objects should appear as specified, not just look good
+- **Character animation is specialized**: Different from general video—focus on identity, expression, listening
 
 ## Open Problems
 
-- **Instance separation at high density**: Generating very dense instances (tens or hundreds) remains unexplored due to difficulty separating individual instances in heavily downsampled latent spaces.
-- **Multi-person scenes**: LPM 1.0 currently focuses on single-person full-duplex conversation; extending to multi-person scenes and broader performance scenarios.
-- **Perceptual grouping cues**: When attention heads focus excessively on the most salient parts of an object (e.g., animal heads) rather than their entirety, over-segmented layouts result.
-- **Zero-shot character generalization**: LPM requires identity-aware reference images for best performance, limiting zero-shot generalization.
+- Real-time video generation with all modality controls
+- Long-form video coherence (current models struggle beyond 10+ seconds)
+- Physics simulation in generated video
 
 ## Connections
 
-- [[topics/image-generation]] — NUMINA's numerical alignment techniques apply across image and video generation
-- [[topics/benchmarks]] — Video understanding benchmarks like Video-MME-v2 reveal capabilities that video generation models should eventually exhibit
-- [[topics/multimodal-conditions]] — OmniShow's four-condition unification represents the cutting edge of multimodal control in video generation
-- [[topics/human-object-interaction]] — OmniShow's HOIVG benchmark and method directly advance human-object interaction video generation
+- [[topics/image-generation]] — Video extends image generation temporally
+- [[topics/human-object-interaction]] — OmniShow addresses HOIVG specifically
+- [[entities/waver-1-0]] — Base model for OmniShow's video generation
