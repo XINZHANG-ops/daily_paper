@@ -54,6 +54,14 @@ fi
 
 log "Building wiki for $PAPER_COUNT new paper(s) using model: $MODEL"
 
+# ── Check for notes ───────────────────────────────────────────────────────
+NOTES_DIR="$RAW_DIR/_all_notes"
+NOTES_COUNT=0
+if [[ -d "$NOTES_DIR" ]] && [[ -n "$(ls -A "$NOTES_DIR" 2>/dev/null)" ]]; then
+    NOTES_COUNT=$(find "$NOTES_DIR" -name "*.md" -type f | wc -l | tr -d ' ')
+fi
+log "Found $NOTES_COUNT personal notes in _all_notes/"
+
 # ── Build the task prompt ──────────────────────────────────────────────────
 TASK_PROMPT="$(cat <<PROMPT
 You are maintaining a research paper wiki for the daily_paper project.
@@ -71,14 +79,33 @@ $(cat "$PROJECT_SCHEMA")
 Working directory: $REPO
 
 There are $PAPER_COUNT new paper(s) staged in wiki/raw/ that have not yet been added to the wiki.
+There are $NOTES_COUNT personal reading notes in wiki/raw/_all_notes/ to scan for ideas.
 
-For each subdirectory in wiki/raw/:
-1. Read summary.json and pdf.txt
+STEP 1 — Process each paper:
+For each subdirectory in wiki/raw/ (SKIP _all_notes):
+1. Read summary.json, pdf.txt, and notes.md (if present)
 2. Follow the ingest workflow defined in WIKI.md exactly
-3. Create or update all necessary files in wiki/papers/, wiki/topics/, wiki/index.md, wiki/log.md
-4. After all papers are processed, update wiki/processed.json
+3. Create/update files in wiki/papers/, wiki/topics/, wiki/entities/, wiki/ideas/
+4. CRITICAL: Every ## Connections section must have ANNOTATED [[wikilinks]]. Read the Connection Rules in WIKI.md carefully. Never write "Related:" or "See also:" — always explain WHY.
 
-Be thorough with topic synthesis — the goal is a wiki where each topic page is a genuine cross-paper synthesis, not just a list of papers. Use the full PDF text (pdf.txt) to go beyond the AI summary.
+STEP 2 — Process personal notes:
+After all papers are processed, read notes from wiki/raw/_all_notes/:
+1. Read each note file — these contain the reader's own insights about papers they read
+2. Find connections between note insights and existing wiki content
+3. Create wiki/ideas/ pages for cross-cutting insights found in notes
+4. Add ## Personal Notes section to paper pages where the note date matches a paper date
+5. Update entity and topic pages if notes mention relevant concepts
+
+STEP 3 — Finalize:
+1. Update wiki/index.md with all 4 sections (Papers, Topics, Entities, Ideas)
+2. Update wiki/processed.json
+3. Append to wiki/log.md
+
+Be thorough with:
+- Topic synthesis — each topic's ## Evolution should tell a chronological story, not list papers
+- Entity identification — extract specific named models, datasets, algorithms from papers
+- Idea extraction — find cross-cutting insights, especially from personal notes
+- Connection quality — every [[wikilink]] must have a WHY annotation
 
 Start now.
 PROMPT

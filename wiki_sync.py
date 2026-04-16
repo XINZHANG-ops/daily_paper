@@ -11,6 +11,7 @@ import json
 import re
 import shutil
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from loguru import logger
@@ -23,10 +24,14 @@ WIKI_DIR      = REPO_ROOT / "wiki"
 PDF_CACHE     = WIKI_DIR / "pdf_cache"
 RAW_DIR       = WIKI_DIR / "raw"
 PROCESSED     = WIKI_DIR / "processed.json"
+NOTES_DIR     = REPO_ROOT / "dailies" / "notes"
+ALL_NOTES_DIR = RAW_DIR / "_all_notes"
 
 # Only process papers added on or after this date (YYYY-MM-DD).
-# Papers before this date are ignored for both PDF download and wiki building.
 START_DATE = "2026-04-06"
+
+# How many days of notes to stage for idea extraction (content-based matching)
+NOTES_LOOKBACK_DAYS = 60
 
 # Seconds to wait between arxiv requests to avoid rate-limiting
 DOWNLOAD_DELAY = 3
@@ -170,6 +175,78 @@ def stage_new_papers(papers: list[dict], cached_pdfs: dict[str, Path], processed
     return staged
 
 
+# ── Step 3: stage notes ───────────────────────────────────────────────────
+
+def stage_notes_for_papers(papers: list[dict]) -> int:
+    """
+    Copy date-matched notes into each paper's raw/ directory.
+    Returns count of notes matched.
+    """
+    if not NOTES_DIR.exists():
+        logger.info("No notes directory found, skipping note matching")
+        return 0
+
+    matched = 0
+    paper_dates = set()
+    for paper in papers:
+        date_str = (paper.get("date") or paper.get("published_at") or "").strip()[:10]
+        paper_dates.add(date_str)
+
+    for paper in papers:
+        date_str = (paper.get("date") or paper.get("published_at") or "").strip()[:10]
+        arxiv_id = extract_arxiv_id(paper.get("url", ""))
+        if not arxiv_id or not date_str:
+            continue
+
+        note_path = NOTES_DIR / f"{date_str}.md"
+        if not note_path.exists():
+            continue
+
+        stage_dir = RAW_DIR / f"{date_str}_{arxiv_id}"
+        if not stage_dir.exists():
+            continue
+
+        dest = stage_dir / "notes.md"
+        if dest.exists():
+            continue
+
+        shutil.copy2(note_path, dest)
+        matched += 1
+        logger.info(f"  Matched note {date_str} → {arxiv_id}")
+
+    return matched
+
+
+def stage_all_notes() -> int:
+    """
+    Copy recent notes (last NOTES_LOOKBACK_DAYS) into raw/_all_notes/
+    for the wiki build agent to scan for cross-cutting ideas.
+    Returns count of notes staged.
+    """
+    if not NOTES_DIR.exists():
+        logger.info("No notes directory found, skipping all-notes staging")
+        return 0
+
+    ALL_NOTES_DIR.mkdir(parents=True, exist_ok=True)
+
+    cutoff = (datetime.now() - timedelta(days=NOTES_LOOKBACK_DAYS)).strftime("%Y-%m-%d")
+    staged = 0
+
+    for note_file in sorted(NOTES_DIR.glob("*.md")):
+        date_str = note_file.stem  # e.g. "2026-02-25"
+        if date_str < cutoff:
+            continue
+
+        dest = ALL_NOTES_DIR / note_file.name
+        if dest.exists():
+            continue
+
+        shutil.copy2(note_file, dest)
+        staged += 1
+
+    return staged
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
@@ -193,6 +270,12 @@ def main():
         logger.info("  No new papers to stage — wiki is up to date")
     else:
         logger.info(f"  {staged} papers staged in wiki/raw/")
+
+    logger.info("Step 3: Staging notes for wiki building...")
+    matched = stage_notes_for_papers(papers)
+    logger.info(f"  {matched} notes matched to paper directories")
+    all_notes = stage_all_notes()
+    logger.info(f"  {all_notes} recent notes staged in _all_notes/")
 
     logger.info("=== wiki_sync.py done ===")
     return staged

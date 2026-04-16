@@ -501,10 +501,11 @@ The user asks: {question}
 
 Strategy:
 1. Consider the conversation history above (if any) for context
-2. Check wiki/index.md to see if relevant topic or paper pages exist
-3. Read relevant wiki pages for curated knowledge
-4. If wiki coverage is incomplete, use vector search or SQL to find additional papers
-5. Synthesize a comprehensive answer combining wiki knowledge and tool results
+2. Read wiki/index.md to see all pages across papers/, topics/, entities/, ideas/
+3. Read relevant wiki pages — follow [[wikilinks]] across directories, traversing at least 2 levels of connections
+4. The wiki contains personal notes and cross-cutting ideas — use these for richer context
+5. If wiki coverage is incomplete, use vector search or SQL to find additional papers
+6. Synthesize a comprehensive answer combining wiki knowledge and tool results
 
 Provide a comprehensive answer with citations to specific papers (use [[arxiv_id]] format).
 
@@ -619,22 +620,30 @@ def lint_wiki():
 
 Working directory: {repo_root}
 
-Run a comprehensive health check on wiki/. Look for:
+Run a comprehensive health check on wiki/. Check all 4 directories: papers/, topics/, entities/, ideas/.
 
+STRUCTURAL CHECKS:
 1. **Contradictions**: Do different pages make conflicting claims?
 2. **Stale content**: Has newer content superseded old claims?
 3. **Orphan pages**: Papers not linked from any topic page
-4. **Orphan topics**: Topics not linked from any paper
+4. **Orphan topics/entities/ideas**: Pages with no inbound links
 5. **Missing cross-references**: Papers that should be linked but aren't
 6. **Broken links**: [[references]] that don't have a corresponding page
 7. **Metadata consistency**: paper_count vs actual papers in topic pages
 8. **Data gaps**: Missing fields, incomplete summaries
 
-Read wiki/index.md, wiki/papers/, and wiki/topics/ to perform the check.
+CONNECTION QUALITY CHECKS:
+9. **Shallow links**: Find connections that just say "Related:", "See also:", or link without annotation → REWRITE with WHY
+10. **Missing cross-connections**: Papers that share 2+ entities but have no direct connection → add connection
+11. **Topic pages missing ## Evolution**: Write a chronological narrative, not just a paper list
+12. **Topic pages missing ## Patterns & Insights**: Synthesize from papers
+13. **People in entities/**: Entity pages that are actually about people → flag for removal (entities are for technical things only)
+
+Read wiki/index.md, then systematically check all pages in papers/, topics/, entities/, ideas/.
 
 After identifying issues:
 1. Report all problems found
-2. Fix what you can (update pages, add missing links, correct counts)
+2. Fix what you can (update pages, add missing links, correct counts, rewrite shallow connections)
 3. Update wiki/log.md with a lint entry
 
 Provide a summary report of what you found and fixed.
@@ -679,14 +688,14 @@ Provide a summary report of what you found and fixed.
         return jsonify({'error': str(e)}), 500
 
 
-def run_weekly_lint():
-    """Background thread that runs wiki lint every week."""
-    WEEK_SECONDS = 7 * 24 * 60 * 60
+def run_daily_lint():
+    """Background thread that runs wiki lint every day."""
+    DAY_SECONDS = 24 * 60 * 60
 
     while True:
         try:
-            time.sleep(WEEK_SECONDS)
-            logger.info("Running scheduled weekly wiki lint...")
+            time.sleep(DAY_SECONDS)
+            logger.info("Running scheduled daily wiki lint...")
 
             repo_root = Path(__file__).parent
             wiki_dir = repo_root / 'wiki'
@@ -701,7 +710,7 @@ def run_weekly_lint():
             llm_wiki_content = llm_wiki_path.read_text(encoding='utf-8') if llm_wiki_path.exists() else ""
             project_schema_content = project_schema_path.read_text(encoding='utf-8') if project_schema_path.exists() else ""
 
-            prompt = f"""You are maintaining a research paper wiki. Run a weekly health check (lint operation).
+            prompt = f"""You are maintaining a research paper wiki. Run a daily health check (lint operation).
 
 === WIKI PATTERN (llm-wiki.md) ===
 {llm_wiki_content}
@@ -713,18 +722,24 @@ def run_weekly_lint():
 
 Working directory: {repo_root}
 
-This is a scheduled weekly health check. Run a comprehensive check on wiki/.
+This is a scheduled daily health check. Run a comprehensive check on wiki/.
+Check all 4 directories: papers/, topics/, entities/, ideas/.
 
-Look for:
+STRUCTURAL:
 1. Contradictions between pages
 2. Stale content superseded by newer sources
-3. Orphan pages and topics
+3. Orphan pages (no inbound links) across all directories
 4. Missing cross-references
-5. Broken links
-6. Metadata consistency issues
-7. Data gaps
+5. Broken [[wikilinks]]
+6. Metadata consistency (paper_count vs actual)
 
-Fix what you can, and update wiki/log.md with a lint entry noting this was a scheduled weekly check.
+CONNECTION QUALITY:
+7. Shallow connections that just say "Related:" or "See also:" → rewrite with WHY
+8. Papers sharing 2+ entities but not connected → add connections
+9. Topic pages missing ## Evolution or ## Patterns & Insights → add them
+10. People appearing in entities/ → flag (entities are for technical things only)
+
+Fix what you can, and update wiki/log.md with a lint entry noting this was a scheduled daily check.
 
 Provide a summary report.
 """
@@ -745,12 +760,12 @@ Provide a summary report.
             )
 
             if result.returncode == 0:
-                logger.info(f"Weekly lint completed successfully ({len(result.stdout)} chars)")
+                logger.info(f"Daily lint completed successfully ({len(result.stdout)} chars)")
             else:
-                logger.error(f"Weekly lint failed: {result.stderr}")
+                logger.error(f"Daily lint failed: {result.stderr}")
 
         except Exception as e:
-            logger.error(f"Error in weekly lint thread: {e}")
+            logger.error(f"Error in daily lint thread: {e}")
 
 
 def main():
@@ -822,9 +837,9 @@ def main():
         logger.warning("Summaries file not found. SQLite endpoints will not be available.")
         logger.warning("Use --summaries-path to specify the path to summaries.jsonl")
 
-    # Start weekly lint background thread
-    logger.info("Starting weekly lint background thread...")
-    lint_thread = threading.Thread(target=run_weekly_lint, daemon=True)
+    # Start daily lint background thread
+    logger.info("Starting daily lint background thread...")
+    lint_thread = threading.Thread(target=run_daily_lint, daemon=True)
     lint_thread.start()
 
     # Start Flask server
@@ -833,7 +848,7 @@ def main():
     logger.info("  - POST /query - SQL queries")
     logger.info("  - POST /ask_wiki - Wiki-based Q&A")
     logger.info("  - POST /lint_wiki - Wiki health check (manual)")
-    logger.info("  - Weekly automated lint enabled")
+    logger.info("  - Daily automated lint enabled")
     app.run(host=args.host, port=args.port, debug=False)
 
 
