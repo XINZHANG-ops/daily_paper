@@ -62,6 +62,14 @@ if [[ -d "$NOTES_DIR" ]] && [[ -n "$(ls -A "$NOTES_DIR" 2>/dev/null)" ]]; then
 fi
 log "Found $NOTES_COUNT personal notes in _all_notes/"
 
+# ── Check for chat sessions ───────────────────────────────────────────────
+SESSIONS_DIR="$REPO/wiki_sessions"
+SESSION_COUNT=0
+if [[ -d "$SESSIONS_DIR" ]] && [[ -n "$(ls -A "$SESSIONS_DIR"/*.json 2>/dev/null)" ]]; then
+    SESSION_COUNT=$(find "$SESSIONS_DIR" -name "*.json" -type f | wc -l | tr -d ' ')
+fi
+log "Found $SESSION_COUNT chat sessions in wiki_sessions/"
+
 # ── Build the task prompt ──────────────────────────────────────────────────
 TASK_PROMPT="$(cat <<PROMPT
 You are maintaining a research paper wiki for the daily_paper project.
@@ -80,6 +88,7 @@ Working directory: $REPO
 
 There are $PAPER_COUNT new paper(s) staged in wiki/raw/ that have not yet been added to the wiki.
 There are $NOTES_COUNT personal reading notes in wiki/raw/_all_notes/ to scan for ideas.
+There are $SESSION_COUNT chat sessions in wiki_sessions/ with past Q&A conversations.
 
 STEP 1 — Process each paper:
 For each subdirectory in wiki/raw/ (SKIP _all_notes):
@@ -96,7 +105,16 @@ After all papers are processed, read notes from wiki/raw/_all_notes/:
 4. Add ## Personal Notes section to paper pages where the note date matches a paper date
 5. Update entity and topic pages if notes mention relevant concepts
 
-STEP 3 — Finalize:
+STEP 3 — Learn from chat history:
+If wiki_sessions/ has JSON files, read them. Each file is a JSON array of {role, content} messages.
+Look for:
+- Questions the user asked that reveal knowledge gaps in the wiki → fill those gaps
+- Insights or connections mentioned in Q&A that should be added to idea/topic/entity pages
+- Repeated questions about the same topic → that topic page needs more depth
+- Corrections or clarifications from conversations → update affected pages
+Do NOT copy raw Q&A into the wiki. Extract the useful knowledge and integrate it naturally.
+
+STEP 4 — Finalize:
 1. Update wiki/index.md with all 4 sections (Papers, Topics, Entities, Ideas)
 2. Update wiki/processed.json
 3. Append to wiki/log.md

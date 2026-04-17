@@ -7,6 +7,7 @@ Also provides SQLite database query endpoints for papers.
 Also provides wiki-based Q&A via ollama claude agent.
 """
 import argparse
+import json
 import re
 import subprocess
 import threading
@@ -54,8 +55,34 @@ all_metadata_fields = set()
 # Global SQLite manager instance
 sqlite_manager = None
 
-# Global session storage for wiki Q&A
-wiki_sessions = {}  # {session_id: [{'role': 'user', 'content': '...'}, {'role': 'assistant', 'content': '...'}]}
+# Session storage — persisted to disk so history survives restarts
+SESSIONS_DIR = Path(__file__).parent / "wiki_sessions"
+SESSIONS_DIR.mkdir(exist_ok=True)
+wiki_sessions = {}
+
+
+def _load_session(session_id):
+    """Load session from disk into memory cache if not already loaded."""
+    if session_id in wiki_sessions:
+        return wiki_sessions[session_id]
+    session_file = SESSIONS_DIR / f"{session_id}.json"
+    if session_file.exists():
+        try:
+            wiki_sessions[session_id] = json.loads(session_file.read_text(encoding='utf-8'))
+        except Exception:
+            wiki_sessions[session_id] = []
+    else:
+        wiki_sessions[session_id] = []
+    return wiki_sessions[session_id]
+
+
+def _save_session(session_id):
+    """Persist session to disk."""
+    session_file = SESSIONS_DIR / f"{session_id}.json"
+    try:
+        session_file.write_text(json.dumps(wiki_sessions[session_id], ensure_ascii=False), encoding='utf-8')
+    except Exception as e:
+        logger.error(f"Failed to save session {session_id}: {e}")
 
 
 def init_retriever(index_dir: Path):
@@ -421,13 +448,7 @@ def ask_wiki():
     model = data.get('model', 'minimax-m2.7:cloud')
     session_id = data.get('session_id', None)
 
-    # Get or create session history
-    if session_id:
-        if session_id not in wiki_sessions:
-            wiki_sessions[session_id] = []
-        conversation_history = wiki_sessions[session_id]
-    else:
-        conversation_history = []
+    conversation_history = _load_session(session_id) if session_id else []
 
     # Find repo root (where wiki/ directory is)
     repo_root = Path(__file__).parent
@@ -539,13 +560,12 @@ Answer:
 
         answer = _filter_pii(answer)
 
-        # Save to session history
         if session_id:
             wiki_sessions[session_id].append({'role': 'user', 'content': question})
             wiki_sessions[session_id].append({'role': 'assistant', 'content': answer})
-            # Keep only last 20 messages (10 turns)
             if len(wiki_sessions[session_id]) > 20:
                 wiki_sessions[session_id] = wiki_sessions[session_id][-20:]
+            _save_session(session_id)
 
         return jsonify({
             'question': question,
@@ -638,6 +658,13 @@ CONNECTION QUALITY CHECKS:
 11. **Topic pages missing ## Evolution**: Write a chronological narrative, not just a paper list
 12. **Topic pages missing ## Patterns & Insights**: Synthesize from papers
 13. **People in entities/**: Entity pages that are actually about people → flag for removal (entities are for technical things only)
+
+LEARN FROM CHAT HISTORY:
+14. Read JSON files in wiki_sessions/ (each is a JSON array of [{{"role":"user","content":"..."}}, ...])
+15. Find questions that reveal gaps in the wiki → fill those gaps
+16. Find insights from Q&A worth adding to topic/entity/idea pages
+17. Find repeated questions → that page needs more depth
+Do NOT copy raw Q&A. Extract useful knowledge and integrate naturally.
 
 Read wiki/index.md, then systematically check all pages in papers/, topics/, entities/, ideas/.
 
@@ -738,6 +765,14 @@ CONNECTION QUALITY:
 8. Papers sharing 2+ entities but not connected → add connections
 9. Topic pages missing ## Evolution or ## Patterns & Insights → add them
 10. People appearing in entities/ → flag (entities are for technical things only)
+
+LEARN FROM CHAT HISTORY:
+11. Read JSON files in wiki_sessions/ (each is a JSON array of {{role, content}} messages)
+12. Find questions that reveal gaps in the wiki → fill those gaps with new content
+13. Find insights or connections from Q&A worth adding to topic/entity/idea pages
+14. Find repeated questions about the same subject → that page needs more depth
+
+Do NOT copy raw Q&A into the wiki. Extract useful knowledge and integrate it naturally.
 
 Fix what you can, and update wiki/log.md with a lint entry noting this was a scheduled daily check.
 
