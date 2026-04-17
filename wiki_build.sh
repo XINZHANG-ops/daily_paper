@@ -24,7 +24,7 @@ fi
 
 # ── Extract arxiv IDs from raw/ directory names ────────────────────────────
 # Format: YYYY-MM-DD_arxiv_id or YYYY-MM-DD_XXXX.XXXXX
-RAW_IDS=$(find "$RAW_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed 's/.*_\([0-9]\{4\}\.[0-9]*\)$/\1/')
+RAW_IDS=$(find "$RAW_DIR" -mindepth 1 -maxdepth 1 -type d -not -name '_all_notes' -exec basename {} \; | sed 's/.*_\([0-9]\{4\}\.[0-9]*\)$/\1/')
 
 # ── Check for unprocessed papers ───────────────────────────────────────────
 PROCESSED_FILE="$WIKI_DIR/processed.json"
