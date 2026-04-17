@@ -335,6 +335,60 @@ TEST=FALSE                           # Set TRUE to skip git push
 GENAI_GATEWAY_API_KEY=your_claude_api_key
 ```
 
+## Cross-Repo Architecture
+
+This project is part of a 3-repo system that work together:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  User's Browser (GitHub Pages)                                   │
+│  ├─ daily_paper pages (context_type="paper")                    │
+│  └─ Daily-AI-News pages (context_type="ai_news")                │
+│       ↓ POST /chat via ngrok tunnel                             │
+├──────────────────── Internet / ngrok ───────────────────────────┤
+│  Windows — ai-server, port 8080 + ngrok tunnel                   │
+│  ├─ "paper"   → POST /ask_wiki to Mac LAN IP:5001              │
+│  ├─ "ai_news" → POST /ask_wiki to Mac LAN IP:5002              │
+│  └─ other     → local Ollama LLM                                │
+│       ↓ HTTP over WiFi LAN (e.g. http://10.0.0.28)             │
+├──────────────────── Same WiFi LAN ──────────────────────────────┤
+│  Mac (this repo + Daily-AI-News)                                 │
+│  ├─ serve_search.py (port 5001) — /ask_wiki, /search, /query   │
+│  ├─ serve_ai_news.py (port 5002) — /ask_wiki, /query           │
+│  └─ Ollama (local LLM for wiki building + wiki Q&A)            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Network:** Mac and Windows on same WiFi LAN. Windows runs ngrok to expose port 8080 to the internet for GitHub Pages. Windows→Mac communication uses LAN IP directly (no ngrok).
+
+**Repos:**
+- **daily_paper** (this repo): Paper fetching, wiki, search API on Mac port 5001
+- **Daily-AI-News** (`/Users/xinzhang/Daily-AI-News`): AI news, wiki, search API on Mac port 5002
+- **ai-server** (`/Users/xinzhang/ai-server`): Windows chat router on port 8080 + ngrok
+
+**Session flow:** Frontend generates `client-XXXXX` session_id → ai-server accepts it → forwards same session_id to Mac `/ask_wiki` → Mac `wiki_sessions` tracks history → injected into LLM prompt on subsequent messages.
+
+**Supervisors:** `paper_search_server` (`/Users/xinzhang/Downloads/paper_search_server`) polls git every 5min. On change: `git pull` → `wiki_sync.py` → `wiki_build.sh` → `build_index.py` → `rebuild_faiss.py` → restart `serve_search.py`.
+
+## MR Wiki — Persistent Knowledge Base
+
+The wiki at `wiki/` is an LLM-maintained knowledge base that grows with every paper ingested.
+
+**Directories:** `papers/`, `topics/`, `entities/` (models, datasets, algorithms — never people), `ideas/` (cross-cutting insights from notes)
+
+**Pipeline:** `wiki_sync.py` (stage papers + notes into `wiki/raw/`) → `wiki_build.sh` (ollama claude agent creates/updates pages) → pages use annotated `[[wikilinks]]`
+
+**Key files:**
+- `wiki/WIKI.md` — schema defining page templates, connection rules, ingest workflow
+- `wiki/index.md` — catalog of all pages (4 sections)
+- `wiki_sync.py` — stages papers + personal notes (last 60 days) into `wiki/raw/`
+- `wiki_build.sh` — launches ollama claude agent to build wiki pages
+- `wiki_rebuild.sh` — full rebuild from last 7 days (deletes wiki, re-stages, rebuilds)
+- `serve_search.py` `/ask_wiki` — queries wiki with session memory, follows [[wikilinks]] 2 levels deep
+- `serve_search.py` `/lint_wiki` — daily health check (connection quality, orphans, structural issues)
+
+**Notes integration:** Personal notes from `dailies/notes/` are staged into `wiki/raw/` and used by the wiki agent to create idea pages and annotate paper pages.
+
 ## Known Issues
 
 ### Issue: Index out of sync with summaries.jsonl

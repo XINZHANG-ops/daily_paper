@@ -239,16 +239,37 @@ The assistant connects to the same backend as personal_page:
 - **GitHub Pages**: Uses ngrok tunnel (configure in `js/ai-assistant-config.js`)
 - **Backend Communication**: Sends `context_type: "paper"` and `paper_date` (if on subpage) with each request
 
-## 🔗 Links
+## Wiki Knowledge Base
+
+An LLM-maintained wiki at `wiki/` that grows richer with every paper ingested.
+
+**Structure:** `papers/`, `topics/`, `entities/` (models, datasets, algorithms), `ideas/` (cross-cutting insights from personal notes)
+
+**Pipeline:** `wiki_sync.py` stages papers + notes into `wiki/raw/` -> `wiki_build.sh` launches ollama claude agent -> agent creates pages with annotated `[[wikilinks]]`
+
+**Commands:**
+```bash
+bash wiki_rebuild.sh              # Full rebuild from last 7 days
+bash wiki_build.sh                # Incremental build (new papers only)
+python wiki_sync.py               # Stage new papers + notes
+```
+
+**Query:** The `/ask_wiki` endpoint on `serve_search.py` (port 5001) searches the wiki with session memory, following `[[wikilinks]]` across directories.
+
+## System Architecture
+
+This project is part of a 3-repo system. Mac and Windows are on the same WiFi LAN. Windows runs ngrok to expose port 8080 to the internet for GitHub Pages access.
+
+| Repo | Machine | Role | Port |
+|------|---------|------|------|
+| **daily_paper** (this) | Mac | Paper wiki + search API | 5001 |
+| **Daily-AI-News** | Mac | AI news wiki + search API | 5002 |
+| **ai-server** | Windows | Central chat router + ngrok | 8080 |
+
+**Flow:** GitHub Pages → ngrok → Windows ai-server (port 8080) → routes by `context_type` → Mac LAN IP:5001 or :5002.
+
+## Links
 
 - **Live Site**: https://xinzhang-ops.github.io/daily_paper/
 - **GitHub**: https://github.com/xinzhang-ops/daily_paper
 - **Personal Page**: https://xinzhang-ops.github.io/personal_page/ (shares AI backend)
-
-## 📝 License
-
-Personal project for research paper tracking.
-
----
-
-**Made with Claude Code** 🤖
