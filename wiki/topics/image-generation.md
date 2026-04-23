@@ -1,8 +1,8 @@
 ---
 title: "Image Generation"
 slug: image-generation
-paper_count: 5
-last_updated: 2026-04-16
+paper_count: 8
+last_updated: 2026-04-21
 ---
 
 # Image Generation
@@ -15,7 +15,7 @@ The key theme is that **generation quality depends on the granularity of control
 
 ## Evolution
 
-In early April 2026, Think in Strokes introduced process-driven image generation with Plan→Sketch→Inspect→Refine cycles, showing that self-sampled critiques (learning from own errors) outperform external symbolic corrections. A day later, MegaStyle demonstrated that intra-style consistency in datasets is crucial—generated style pairs must share actual style characteristics, not just artist labels. Near the same time, NUMINA addressed counting accuracy by exploiting discriminative attention heads. By mid-April, OmniShow extended these ideas to video with human-object interaction, and Seedance 2.0 pushed the frontier on motion quality and audio-visual synchronization.
+In early April 2026, Think in Strokes introduced process-driven image generation with Plan→Sketch→Inspect→Refine cycles. MegaStyle demonstrated that intra-style consistency in datasets is crucial. NUMINA addressed counting accuracy by exploiting discriminative attention heads. By mid-April, OmniShow extended these ideas to video with human-object interaction, and Seedance 2.0 pushed the frontier on motion quality and audio-visual synchronization. RationalRewards showed that reasoning-based reward models resist hacking better than scalar scores, and DCW addressed SNR-timestep bias. On April 21, EMF extended MeanFlow's one-step class-conditional generation to text conditioning by identifying discriminability and disentanglement as the two key text representation properties—achieving GenEval 0.90 with only 4 steps.
 
 ## Key Papers
 
@@ -26,6 +26,9 @@ In early April 2026, Think in Strokes introduced process-driven image generation
 | [[2604.08546]] NUMINA | 2026-04-10 | Training-free counting alignment via attention heads |
 | [[2604.11804]] OmniShow | 2026-04-14 | HOIVG with unified multimodal conditions |
 | [[2604.14148]] Seedance 2.0 | 2026-04-16 | State-of-the-art video generation with audio |
+| [[2604.11626]] RationalRewards | 2026-04-17 | Reasoning-based reward model for visual generation |
+| [[2604.16044]] SNR-t Bias | 2026-04-20 | DCW correction for diffusion model SNR-timestep bias |
+| [[2604.18168]] EMF | 2026-04-21 | Extending MeanFlow one-step generation to text conditioning via discriminative text representations |
 
 ## Patterns & Insights
 
@@ -33,6 +36,8 @@ In early April 2026, Think in Strokes introduced process-driven image generation
 - **Dataset quality matters for style**: Intra-style consistency, not artist labels, defines quality style datasets
 - **Attention heads encode structural information**: Discriminative attention heads can identify instance boundaries
 - **Audio-video synchronization is emerging frontier**: Beyond visual quality, audio synchronization becoming standard
+- **Reasoning rewards resist hacking**: Multi-dimensional structured reasoning prevents reward hacking better than scalar scores
+- **SNR-t bias is universal**: All DPMs suffer from misalignment between sample SNR and timestep during inference; DCW provides training-free remedy
 
 ## Open Problems
 

@@ -1,8 +1,8 @@
 ---
 title: "LLM Training"
 slug: llm-training
-paper_count: 7
-last_updated: 2026-04-16
+paper_count: 6
+last_updated: 2026-04-17
 ---
 
 # LLM Training
@@ -26,12 +26,14 @@ Early April 2026 saw Adam's Law establish textual frequency as a fundamental dim
 | [[2604.06628]] Rethinking Generalization | 2026-04-13 | SFT has conditional generalization, not absent |
 | [[2604.12627]] KnowRL | 2026-04-15 | Atomic knowledge points for minimal-sufficient guidance |
 | [[2604.13016]] Rethinking OPD | 2026-04-15 | Thinking-pattern consistency for distillation |
+| [[2604.11626]] RationalRewards | 2026-04-17 | Test-time prompt tuning matches RL fine-tuning |
 
 ## Patterns & Insights
 
 - **Frequency matters**: High-frequency data improves both prompting and fine-tuning
 - **SFT can generalize conditionally**: Not just memorization as previously thought
 - **Distillation requires compatibility**: Thinking patterns must match between teacher and student
+- **Test-time compute scaling**: Prompt tuning can match or exceed parameter-space training (RL)
 
 ## Open Problems
 

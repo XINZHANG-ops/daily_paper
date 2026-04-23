@@ -11,6 +11,10 @@ last_updated: 2026-04-16
 
 Tool-Integrated Reasoning (TIR) enables LLMs to use external tools during reasoning. The papers reveal that **inference efficiency in TIR is fundamentally different from accuracy**—PTE achieves r=0.925 correlation with wall-clock latency while raw token counts show r=-0.375. Four specific inefficiency patterns are identified: Confirmatory Tool Usage, Redundant Tool Usage, Tool-Mixing, and Superfluous Tool Usage, each with 1.77x-2.42x cost multipliers.
 
+## Evolution
+
+Mid-April 2026, Beyond Accuracy established that TIR efficiency is orthogonal to accuracy—inefficient strategies are counterproductive, not just costly. The PTE metric revealed that prefill/decode asymmetry dominates memory-bound decode costs, and that token counts are misleading (r=-0.375 correlation with latency). This shifted focus from accuracy optimization to inference efficiency in tool-augmented reasoning.
+
 ## Key Papers
 
 | Paper | Date | Contribution |

@@ -1,8 +1,8 @@
 ---
 title: "Embodied AI"
 slug: embodied-ai
-paper_count: 4
-last_updated: 2026-04-16
+paper_count: 7
+last_updated: 2026-04-21
 ---
 
 # Embodied AI
@@ -15,7 +15,7 @@ The key theme is that **physical grounding requires deterministic feedback**, no
 
 ## Evolution
 
-Early April 2026 saw HY-Embodied-0.5 introduce Mixture-of-Transformers architecture for modality-adaptive computing with embodied-RL. WildDet3D followed with open-vocabulary 3D detection at scale. By mid-April, SpatialEvo proposed Deterministic Geometric Environments where ground truth comes from geometry computation, not model consensus—eliminating the bias where self-evolution reinforces the model's own errors.
+Early April 2026 saw HY-Embodied-0.5 introduce Mixture-of-Transformers architecture for modality-adaptive computing with embodied-RL. WildDet3D followed with open-vocabulary 3D detection at scale. By mid-April, SpatialEvo proposed Deterministic Geometric Environments where ground truth comes from geometry computation, not model consensus, and HY-World 2.0 extended to unified 3D world reconstruction and generation. RAD-2 applied BEV-Warp simulation to motion planning RL. On April 21, OneVL introduced latent CoT with dual-modal world model supervision, achieving the first latent CoT method to surpass explicit CoT while matching answer-only inference speed—demonstrating that world model prediction (future-frame visual tokens) provides the causal grounding that purely linguistic latents lack.
 
 ## Key Papers
 
@@ -25,6 +25,9 @@ Early April 2026 saw HY-Embodied-0.5 introduce Mixture-of-Transformers architect
 | [[2604.07430]] HY-Embodied-0.5 | 2026-04-10 | MoT architecture with embodied foundation models |
 | [[2604.08626]] WildDet3D | 2026-04-13 | Open-vocabulary 3D detection with 138× more categories |
 | [[2604.14144]] SpatialEvo | 2026-04-16 | Deterministic Geometric Environments for spatial reasoning |
+| [[2604.14268]] HY-World 2.0 | 2026-04-17 | Unified 3D world reconstruction and generation |
+| [[2604.15308]] RAD-2 | 2026-04-20 | BEV-Warp simulation for motion planning RL |
+| [[2604.18486]] OneVL | 2026-04-21 | Latent CoT with world model supervision for VLA planning |
 
 ## Patterns & Insights
 

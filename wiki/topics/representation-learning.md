@@ -11,6 +11,10 @@ last_updated: 2026-04-16
 
 Representation learning focuses on learning representations that are useful for multiple tasks. The papers reveal that **frozen pretrained models have latent capabilities that only need lightweight interfaces to exploit**—SteerViT achieves a new Pareto frontier by adding gated cross-attention to frozen ViTs, simultaneously improving steerability and maintaining representation quality.
 
+## Evolution
+
+Early April 2026, SteerViT revealed that frozen pretrained models like DINOv2 have latent steerability that simple interfaces can unlock. The key insight was gated cross-attention that preserves representation quality while enabling steerability—a new Pareto frontier. The referential segmentation pretext provides natural supervision for vision-language alignment without degrading the frozen ViT representations.
+
 ## Key Papers
 
 | Paper | Date | Contribution |

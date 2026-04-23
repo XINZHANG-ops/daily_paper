@@ -1,8 +1,8 @@
 ---
 title: "Reinforcement Learning"
 slug: reinforcement-learning
-paper_count: 8
-last_updated: 2026-04-16
+paper_count: 10
+last_updated: 2026-04-21
 ---
 
 # Reinforcement Learning
@@ -15,7 +15,7 @@ The key theme emerging across papers is that RL training has multiple **independ
 
 ## Evolution
 
-In early April 2026, RAGEN-2 revealed that template collapse is a fundamental failure mode invisible to entropy-based metrics—reasoning appears diverse within inputs but becomes input-agnostic across inputs. Three days later, 2604.06628 showed that cross-domain generalization in reasoning SFT follows a "dip-and-recovery" dynamic and that safety degradation is an unavoidable cost of reasoning improvement. Around the same time, KnowRL tackled reward sparsity through minimal-sufficient knowledge point guidance, and MEDS addressed sampling diversity collapse through error pattern clustering. By mid-April, 2604.13016 analyzed on-policy distillation and found that thinking-pattern consistency and genuinely new knowledge are the two conditions for successful teacher-student transfer. RLSD (2604.03128) further advanced the field by demonstrating that separating token-level credit assignment magnitude (from privileged information) from update direction (from environment reward) resolves the mutual information gap that plagued earlier on-policy self-distillation approaches.
+In early April 2026, RAGEN-2 revealed that template collapse is a fundamental failure mode invisible to entropy-based metrics. KnowRL tackled reward sparsity through minimal-sufficient knowledge guidance, and MEDS addressed sampling diversity collapse through error pattern clustering. By mid-April, 2604.13016 analyzed on-policy distillation and RLSD demonstrated separating credit assignment magnitude from update direction. RAD-2 applied generator-discriminator RL to motion planning. On April 21, OneVL introduced latent CoT with world model supervision for VLA planning, Agent-World demonstrated multi-environment GRPO with self-evolving training, and Weak Supervision provided a systematic framework for understanding when RLVR generalizes vs memorizes—training reward saturation dynamics and reasoning faithfulness are the key predictors.
 
 ## Key Papers
 
@@ -26,8 +26,12 @@ In early April 2026, RAGEN-2 revealed that template collapse is a fundamental fa
 | [[2604.06628]] Rethinking Generalization | 2026-04-13 | Dip-and-recovery dynamic, safety-asymmetry in reasoning SFT |
 | [[2604.11297]] MEDS | 2026-04-16 | Memory-enhanced reward shaping with error pattern clustering |
 | [[2604.12627]] KnowRL | 2026-04-15 | Minimal-sufficient knowledge guidance for reward sparsity |
-| [[2604.03128]] Self-Distilled RLVR | 2026-04-08 | Token-level credit assignment via privileged information gain |
 | [[2604.13016]] Rethinking OPD | 2026-04-15 | On-policy distillation failure conditions and recovery |
+| [[2604.11626]] RationalRewards | 2026-04-17 | Reasoning-based reward model with dual-space optimization |
+| [[2604.15308]] RAD-2 | 2026-04-20 | Generator-discriminator RL for motion planning with TC-GRPO and BEV-Warp |
+| [[2604.18486]] OneVL | 2026-04-21 | Latent CoT with world model supervision for VLA planning (RL-aligned training pipeline) |
+| [[2604.18292]] Agent-World | 2026-04-21 | Multi-environment GRPO with self-evolving diagnostic arena |
+| [[2604.18574]] Weak Supervision | 2026-04-21 | RLVR saturation dynamics; reasoning faithfulness predicts generalization vs memorization |
 
 ## Patterns & Insights
 
@@ -37,6 +41,7 @@ In early April 2026, RAGEN-2 revealed that template collapse is a fundamental fa
 - **Entropy monitoring is insufficient**: Template collapse is invisible to entropy metrics; MI-based diagnostics are needed
 - **Safety is not free**: Reasoning capability improvement consistently comes with safety degradation
 - **On-policy RL is fragile**: Stable error basin collapse happens when policy repeatedly generates similar errors
+- **Dual-space optimization**: Test-time compute (prompt tuning) can match or exceed parameter-space training (RL)
 
 ## Open Problems
 

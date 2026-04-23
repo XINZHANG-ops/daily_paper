@@ -21,6 +21,7 @@ GRPO is a reinforcement learning algorithm that computes group-relative advantag
 | [[2604.11297]] | core method | MEDS uses GRPO with error pattern clustering for reward shaping |
 | [[2604.12627]] | baseline | KnowRL uses GRPO as baseline, shows it suffers from reward sparsity |
 | [[2604.14144]] | core method | SpatialEvo uses GRPO with adaptive task scheduling for self-evolution |
+| [[2604.18574]] | algorithm | Systematic study of GRPO under three weak supervision settings; saturation dynamics determine generalization vs memorization |
 
 ## Connections
 

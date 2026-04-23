@@ -11,6 +11,10 @@ last_updated: 2026-04-16
 
 KV cache compression addresses the memory bottleneck created by massive KV caches during long chain-of-thought reasoning. The papers reveal that **pre-RoPE concentration is the key to stable long-context importance estimation**—TriAttention exploits the fact that before positional rotation, queries and keys cluster around fixed non-zero centers, providing a stable geometric structure for scoring which tokens to retain.
 
+## Evolution
+
+Early April 2026, TriAttention established the pre-RoPE concentration insight as the foundation for stable long-context importance estimation. This geometric approach to KV compression achieves 10.7x memory reduction while maintaining full accuracy on AIME25 and MATH 500. The approach contrasts with prior methods like SnapKV that suffer from the observation window problem after RoPE rotation.
+
 ## Key Papers
 
 | Paper | Date | Contribution |

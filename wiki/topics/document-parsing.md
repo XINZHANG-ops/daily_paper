@@ -11,6 +11,10 @@ last_updated: 2026-04-16
 
 Document parsing converts unstructured PDFs into structured machine-readable formats. The papers reveal that **the bottleneck in document parsing is training data, not model architecture**. MinerU2.5-Pro achieves state-of-the-art using the same 1.2B architecture as MinerU2.5, improving 2.71 points on OmniDocBench by expanding training data from under 10M to 65.5M samples through a co-designed Data Engine.
 
+## Evolution
+
+Early April 2026, MinerU2.5-Pro demonstrated that architectural improvements are secondary to data quality in document parsing. The key breakthrough was the Data Engine approach that expanded training data from under 10M to 65.5M samples, achieving 95.69 on OmniDocBench. The annotation quality paradox—hardest samples are least reliably annotatable—was addressed through cross-model consistency verification.
+
 ## Key Papers
 
 | Paper | Date | Contribution |

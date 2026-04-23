@@ -2,7 +2,7 @@
 title: "Multimodal Models"
 slug: multimodal-models
 paper_count: 4
-last_updated: 2026-04-16
+last_updated: 2026-04-21
 ---
 
 # Multimodal Models
@@ -15,7 +15,7 @@ The key insight is that true unification requires consistent information flow, n
 
 ## Evolution
 
-Early April 2026, Think in Strokes used BAGEL as base for process-driven image generation, showing strong capabilities. By mid-April, Pseudo-Unification analyzed 10 unified multimodal models and found that most suffer from pseudo-unification—only Harmon (using contextual prediction for both modalities) achieves genuine unification. Seedance 2.0 then showed that native multi-modal audio-video processing can achieve state-of-the-art across multiple generation tasks.
+Early April 2026, Think in Strokes used BAGEL as base for process-driven image generation. By mid-April, Pseudo-Unification analyzed 10 unified multimodal models and found that most suffer from pseudo-unification—only Harmon achieves genuine unification. Seedance 2.0 showed native multi-modal audio-video processing. On April 21, EMF (Extending MeanFlow to T2I) demonstrated that bridging text representations with visual generation requires text encoders with high discriminability and disentanglement—new properties beyond those needed for language-only tasks.
 
 ## Key Papers
 
@@ -24,12 +24,14 @@ Early April 2026, Think in Strokes used BAGEL as base for process-driven image g
 | [[2604.04746]] Think in Strokes | 2026-04-09 | Process-driven generation on unified multimodal backbone |
 | [[2604.10949]] Pseudo-Unification | 2026-04-14 | Entropy probing reveals divergent text/image behaviors |
 | [[2604.14148]] Seedance 2.0 | 2026-04-16 | Native audio-video processing for state-of-the-art |
+| [[2604.18168]] EMF | 2026-04-21 | Text-conditioned MeanFlow generation with discriminative text representations |
 
 ## Patterns & Insights
 
 - **Shared parameters ≠ unified**: Modality-asymmetric encoding causes pseudo-unification
 - **Entropy reveals divergence**: Text (high entropy) vs image (low entropy) in same model
 - **Contextual prediction helps**: Harmon succeeds because it predicts context for both modalities
+- **Text representations need discriminability**: For text-to-image generation, text encoders must have high discriminability and disentanglement
 
 ## Open Problems
 

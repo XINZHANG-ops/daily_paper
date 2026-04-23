@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-04-16 | Papers: 31 | Topics: 15 | Entities: 13 | Ideas: 7
+Last updated: 2026-04-21 | Papers: 42 | Topics: 25 | Entities: 55 | Ideas: 9
 
 ## Papers
 
@@ -36,26 +36,48 @@ Last updated: 2026-04-16 | Papers: 31 | Topics: 15 | Entities: 13 | Ideas: 7
 | [2604.05015](papers/2604.05015.md) | Video-MME-v2: Towards the Next Stage in Benchmarks for Comprehensive Video Understanding | 2026-04-08 | video-understanding, benchmarks, multimodal-models |
 | [2604.05404](papers/2604.05404.md) | Beyond Accuracy: Unveiling Inefficiency Patterns in Tool-Integrated Reasoning | 2026-04-08 | tool-integrated-reasoning, llm-efficiency, reasoning |
 | [2604.06132](papers/2604.06132.md) | Claw-Eval: Toward Trustworthy Evaluation of Autonomous Agents | 2026-04-08 | agent-systems, agent-evaluation, benchmarks |
+| [2604.11626](papers/2604.11626.md) | RationalRewards: Reasoning Rewards Scale Visual Generation Both Training and Test Time | 2026-04-17 | image-generation, llm-training, reinforcement-learning, multimodal-models |
+| [2604.14268](papers/2604.14268.md) | HY-World 2.0: A Multi-Modal World Model for Reconstructing, Generating, and Simulating 3D Worlds | 2026-04-17 | world-models, embodied-ai, video-generation, computer-vision |
+| [2604.14683](papers/2604.14683.md) | DR3-Eval: Towards Realistic and Reproducible Deep Research Evaluation | 2026-04-17 | agent-systems, agent-evaluation, benchmarks, reasoning |
+| [2604.10866](papers/2604.10866.md) | OccuBench: Evaluating AI Agents on Real-World Professional Tasks | 2026-04-20 | agent-evaluation, benchmarks, agent-systems |
+| [2604.15308](papers/2604.15308.md) | RAD-2: Scaling RL in Generator-Discriminator Framework | 2026-04-20 | reinforcement-learning, embodied-ai, computer-vision |
+| [2604.16044](papers/2604.16044.md) | Elucidating the SNR-t Bias of Diffusion Probabilistic Models | 2026-04-20 | image-generation, llm-training |
+| [2604.18168](papers/2604.18168.md) | Extending One-Step Image Generation from Class Labels to Text | 2026-04-21 | image-generation, computer-vision, multimodal-models |
+| [2604.18292](papers/2604.18292.md) | Agent-World | 2026-04-21 | agent-systems, llm-training, reinforcement-learning |
+| [2604.18486](papers/2604.18486.md) | OneVL: One-Step Latent Reasoning and Planning | 2026-04-21 | embodied-ai, computer-vision, reinforcement-learning |
+| [2604.18394](papers/2604.18394.md) | OpenGame: Open Agentic Coding for Games | 2026-04-21 | agent-systems, code-agents |
+| [2604.18564](papers/2604.18564.md) | MultiWorld: Scalable Multi-Agent Multi-View Video World Models | 2026-04-21 | world-models, video-generation, embodied-ai |
+| [2604.18574](papers/2604.18574.md) | When Can LLMs Learn to Reason with Weak Supervision? | 2026-04-21 | reinforcement-learning, reasoning |
 
 ## Topics
 
 | Topic | Papers | Last Updated |
 |-------|--------|-------------|
-| [computer-vision](topics/computer-vision.md) | 9 | 2026-04-16 |
-| [reinforcement-learning](topics/reinforcement-learning.md) | 8 | 2026-04-16 |
-| [llm-training](topics/llm-training.md) | 7 | 2026-04-16 |
-| [agent-systems](topics/agent-systems.md) | 7 | 2026-04-16 |
-| [video-generation](topics/video-generation.md) | 4 | 2026-04-16 |
+| [computer-vision](topics/computer-vision.md) | 9 | 2026-04-18 |
+| [reinforcement-learning](topics/reinforcement-learning.md) | 10 | 2026-04-21 |
+| [llm-training](topics/llm-training.md) | 6 | 2026-04-18 |
+| [agent-systems](topics/agent-systems.md) | 7 | 2026-04-21 |
+| [video-generation](topics/video-generation.md) | 5 | 2026-04-21 |
 | [video-understanding](topics/video-understanding.md) | 2 | 2026-04-16 |
-| [embodied-ai](topics/embodied-ai.md) | 4 | 2026-04-16 |
-| [multimodal-models](topics/multimodal-models.md) | 4 | 2026-04-16 |
-| [image-generation](topics/image-generation.md) | 5 | 2026-04-16 |
-| [world-models](topics/world-models.md) | 1 | 2026-04-16 |
-| [document-parsing](topics/document-parsing.md) | 1 | 2026-04-16 |
+| [embodied-ai](topics/embodied-ai.md) | 5 | 2026-04-17 |
+| [multimodal-models](topics/multimodal-models.md) | 3 | 2026-04-18 |
+| [image-generation](topics/image-generation.md) | 6 | 2026-04-17 |
+| [world-models](topics/world-models.md) | 3 | 2026-04-21 |
+| [document-parsing](topics/document-parsing.md) | 1 | 2026-04-18 |
 | [data-centric-ai](topics/data-centric-ai.md) | 2 | 2026-04-16 |
-| [kv-cache-compression](topics/kv-cache-compression.md) | 1 | 2026-04-16 |
-| [tool-integrated-reasoning](topics/tool-integrated-reasoning.md) | 1 | 2026-04-16 |
-| [representation-learning](topics/representation-learning.md) | 1 | 2026-04-16 |
+| [kv-cache-compression](topics/kv-cache-compression.md) | 1 | 2026-04-18 |
+| [tool-integrated-reasoning](topics/tool-integrated-reasoning.md) | 1 | 2026-04-18 |
+| [representation-learning](topics/representation-learning.md) | 1 | 2026-04-18 |
+| [agent-evaluation](topics/agent-evaluation.md) | 2 | 2026-04-17 |
+| [3d-detection](topics/3d-detection.md) | 2 | 2026-04-18 |
+| [benchmarks](topics/benchmarks.md) | 2 | 2026-04-18 |
+| [code-agents](topics/code-agents.md) | 2 | 2026-04-21 |
+| [human-object-interaction](topics/human-object-interaction.md) | 1 | 2026-04-18 |
+| [knowledge-distillation](topics/knowledge-distillation.md) | 1 | 2026-04-18 |
+| [llm-efficiency](topics/llm-efficiency.md) | 3 | 2026-04-18 |
+| [nlp](topics/nlp.md) | 1 | 2026-04-18 |
+| [reasoning](topics/reasoning.md) | 6 | 2026-04-18 |
+| [spatial-reasoning](topics/spatial-reasoning.md) | 1 | 2026-04-18 |
 
 ## Entities
 
@@ -73,6 +95,48 @@ Last updated: 2026-04-16 | Papers: 31 | Topics: 15 | Entities: 13 | Ideas: 7
 | [video-mme-v2](entities/video-mme-v2.md) | benchmark | 1 | 2026-04-16 |
 | [dinov2](entities/dinov2.md) | model | 1 | 2026-04-16 |
 | [pte](entities/pte.md) | metric | 1 | 2026-04-16 |
+| [rationalrewards](entities/rationalrewards.md) | model | 1 | 2026-04-17 |
+| [parrot](entities/parrot.md) | algorithm | 1 | 2026-04-17 |
+| [diffusionnft](entities/diffusionnft.md) | algorithm | 1 | 2026-04-17 |
+| [qwen3-vl](entities/qwen3-vl.md) | model | 1 | 2026-04-17 |
+| [hy-world-2](entities/hy-world-2.md) | framework | 1 | 2026-04-17 |
+| [hy-pano](entities/hy-pano.md) | algorithm | 1 | 2026-04-17 |
+| [worldnav](entities/worldnav.md) | algorithm | 1 | 2026-04-17 |
+| [worldstereo](entities/worldstereo.md) | algorithm | 1 | 2026-04-17 |
+| [worldmirror](entities/worldmirror.md) | algorithm | 1 | 2026-04-17 |
+| [marble](entities/marble.md) | model | 1 | 2026-04-17 |
+| [dr3-eval](entities/dr3-eval.md) | benchmark | 1 | 2026-04-17 |
+| [dr3-agent](entities/dr3-agent.md) | framework | 1 | 2026-04-17 |
+| [harmon](entities/harmon.md) | model | 1 | 2026-04-18 |
+| [snapkv](entities/snapkv.md) | algorithm | 1 | 2026-04-18 |
+| [less](entities/less.md) | algorithm | 1 | 2026-04-18 |
+| [waver-1-0](entities/waver-1-0.md) | model | 1 | 2026-04-18 |
+| [dreamer](entities/dreamer.md) | algorithm | 1 | 2026-04-18 |
+| [v-jepa](entities/v-jepa.md) | model | 1 | 2026-04-18 |
+| [rope](entities/rope.md) | algorithm | 1 | 2026-04-18 |
+| [streamforest](entities/streamforest.md) | algorithm | 1 | 2026-04-18 |
+| [opsd](entities/opsd.md) | algorithm | 1 | 2026-04-18 |
+| [domi](entities/domi.md) | algorithm | 1 | 2026-04-18 |
+| [llama-factory](entities/llama-factory.md) | framework | 1 | 2026-04-18 |
+| [mvtec-ad](entities/mvtec-ad.md) | benchmark | 1 | 2026-04-18 |
+| [agentbench](entities/agentbench.md) | benchmark | 1 | 2026-04-18 |
+| [les](entities/les.md) | algorithm | 1 | 2026-04-20 |
+| [tc-grpo](entities/tc-grpo.md) | algorithm | 1 | 2026-04-20 |
+| [beV-warp](entities/beV-warp.md) | algorithm | 1 | 2026-04-20 |
+| [dcw](entities/dcw.md) | algorithm | 1 | 2026-04-20 |
+| [blip3o-next](entities/blip3o-next.md) | model | 1 | 2026-04-21 |
+| [meanflow](entities/meanflow.md) | algorithm | 2 | 2026-04-21 |
+| [geneval](entities/geneval.md) | benchmark | 1 | 2026-04-21 |
+| [mcp](entities/mcp.md) | protocol | 1 | 2026-04-21 |
+| [agent-world](entities/agent-world.md) | framework | 1 | 2026-04-21 |
+| [latent-cot](entities/latent-cot.md) | concept | 1 | 2026-04-21 |
+| [gamecoder-27b](entities/gamecoder-27b.md) | model | 1 | 2026-04-21 |
+| [opengame-bench](entities/opengame-bench.md) | benchmark | 1 | 2026-04-21 |
+| [phaser](entities/phaser.md) | framework | 1 | 2026-04-21 |
+| [multiworld](entities/multiworld.md) | model | 1 | 2026-04-21 |
+| [macm](entities/macm.md) | algorithm | 1 | 2026-04-21 |
+| [gse](entities/gse.md) | algorithm | 1 | 2026-04-21 |
+| [vggt](entities/vggt.md) | model | 1 | 2026-04-21 |
 
 ## Ideas
 
@@ -85,3 +149,5 @@ Last updated: 2026-04-16 | Papers: 31 | Topics: 15 | Entities: 13 | Ideas: 7
 | [sampling-is-optimization](ideas/sampling-is-optimization.md) | note | 2026-04-16 |
 | [sae-random-baseline](ideas/sae-random-baseline.md) | note | 2026-04-16 |
 | [on-policy-rl-idling](ideas/on-policy-rl-idling.md) | note | 2026-04-16 |
+| [hallucination-universal](ideas/hallucination-universal.md) | paper | 2026-04-17 |
+| [reward-hacking-resistance](ideas/reward-hacking-resistance.md) | paper | 2026-04-17 |

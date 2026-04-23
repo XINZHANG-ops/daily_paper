@@ -183,8 +183,9 @@ def init_sqlite(summaries_path: Path, sqlite_path: Path, overwrite: bool = False
 def log_request():
     """Log all incoming requests"""
     logger.info(f"→ {request.method} {request.path} from {request.remote_addr}")
-    if request.json:
-        logger.info(f"  Request data: {str(request.json)[:200]}")
+    body = request.get_json(silent=True)
+    if body:
+        logger.info(f"  Request data: {str(body)[:200]}")
 
 
 @app.after_request

@@ -11,6 +11,10 @@ last_updated: 2026-04-16
 
 Computer vision research spans multiple domains: image generation, 3D detection, style transfer, video understanding, and visual representation learning. The papers reveal that **vision capabilities are increasingly measured by controllability and real-world generalization**, not just benchmark accuracy. Key advances include steerable frozen ViTs, simple baselines that beat complex memory mechanisms, and better understanding of the perception-memory tradeoff in streaming scenarios.
 
+## Evolution
+
+Early April 2026 saw representation learning advances: SteerViT unlocked latent steerability in frozen ViTs, while SIMPLESTREAM showed simple sliding windows match complex memory for streaming. Mid-April brought generation improvements—NUMINA addressed counting alignment, MegaStyle handled style transfer, and OmniShow and Seedance 2.0 advanced video generation. WildDet3D extended vision to 3D open-vocabulary detection, and Pseudo-Unification revealed that shared parameters don't guarantee true multimodal unification.
+
 ## Key Papers
 
 | Paper | Date | Contribution |
@@ -24,6 +28,7 @@ Computer vision research spans multiple domains: image generation, 3D detection,
 | [[2604.10949]] Pseudo-Unification | 2026-04-14 | Entropy analysis of visual/linguistic encoding |
 | [[2604.11804]] OmniShow | 2026-04-14 | Human-object interaction video generation |
 | [[2604.14148]] Seedance 2.0 | 2026-04-16 | State-of-the-art video generation |
+| [[2604.15308]] RAD-2 | 2026-04-20 | Motion planning with BEV feature space simulation |
 
 ## Patterns & Insights
 
