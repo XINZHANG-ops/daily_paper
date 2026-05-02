@@ -1,7 +1,7 @@
 ---
 title: "Benchmarks"
 slug: benchmarks
-paper_count: 3
+paper_count: 5
 last_updated: 2026-04-20
 ---
 
@@ -20,6 +20,8 @@ Early April 2026, Video-MME-v2 (2604.05015) established that video understanding
 | Paper | Date | Contribution |
 |-------|------|-------------|
 | [[2604.05015]] Video-MME-v2 | 2026-04-08 | Next-generation video benchmark assessing consistency and coherence |
+| [[2604.06132]] Claw-Eval | 2026-04-08 | Full-trajectory auditing benchmark for agent evaluation |
+| [[2604.08523]] ClawBench | 2026-04-10 | Real-world everyday task benchmark revealing sandbox gap |
 | [[2604.14683]] DR3-Eval | 2026-04-17 | Deep research agent evaluation with hallucination focus |
 | [[2604.10866]] OccuBench | 2026-04-20 | Cross-industry LES-based evaluation revealing model specializations |
 

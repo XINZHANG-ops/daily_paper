@@ -1,7 +1,7 @@
 ---
 title: "LLM Training"
 slug: llm-training
-paper_count: 6
+paper_count: 10
 last_updated: 2026-04-17
 ---
 
@@ -24,9 +24,13 @@ Early April 2026 saw Adam's Law establish textual frequency as a fundamental dim
 | [[2604.02176]] Adam's Law | 2026-04-09 | Textual frequency as training/prompting dimension |
 | [[2603.26164]] DataFlex | 2026-04-06 | Unified framework for data-centric dynamic training |
 | [[2604.06628]] Rethinking Generalization | 2026-04-13 | SFT has conditional generalization, not absent |
+| [[2604.08377]] SkillClaw | 2026-04-10 | Collective skill evolution via agentic evolver |
+| [[2604.11297]] MEDS | 2026-04-16 | Memory-enhanced reward shaping with error clustering |
 | [[2604.12627]] KnowRL | 2026-04-15 | Atomic knowledge points for minimal-sufficient guidance |
 | [[2604.13016]] Rethinking OPD | 2026-04-15 | Thinking-pattern consistency for distillation |
+| [[2604.16044]] Elucidating SNR-t | 2026-04-20 | SNR-t bias in diffusion models affecting training |
 | [[2604.11626]] RationalRewards | 2026-04-17 | Test-time prompt tuning matches RL fine-tuning |
+| [[2604.18292]] Agent-World | 2026-04-21 | Multi-environment GRPO with self-evolving training arena |
 
 ## Patterns & Insights
 

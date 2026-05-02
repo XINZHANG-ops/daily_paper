@@ -1,7 +1,7 @@
 ---
 title: "3D Detection"
 slug: 3d-detection
-paper_count: 2
+paper_count: 1
 last_updated: 2026-04-18
 ---
 
@@ -20,7 +20,12 @@ Mid-April 2026, two papers established complementary approaches to 3D detection.
 | Paper | Date | Contribution |
 |-------|------|-------------|
 | [[2604.08626]] WildDet3D | 2026-04-13 | Open-vocabulary 3D detection at scale (138× more categories) |
-| [[2604.14144]] SpatialEvo | 2026-04-16 | Deterministic geometric environment for spatial reasoning |
+
+## Patterns & Insights
+
+- **Geometric ground truth is deterministic**: Unlike other ML domains where model voting works, 3D detection benefits from deterministic computation—point clouds and camera poses provide objective spatial ground truth
+- **Open-vocabulary over fixed-category**: The 138× improvement from WildDet3D shows that scaling detection to real-world vocabulary matters more than refining fixed categories
+- **Embodied agents need 3D understanding**: Both papers connect to embodied AI, suggesting spatial detection is foundational for robotic systems
 
 ## Connections
 

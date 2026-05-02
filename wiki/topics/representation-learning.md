@@ -1,7 +1,7 @@
 ---
 title: "Representation Learning"
 slug: representation-learning
-paper_count: 1
+paper_count: 2
 last_updated: 2026-04-16
 ---
 
@@ -20,6 +20,7 @@ Early April 2026, SteerViT revealed that frozen pretrained models like DINOv2 ha
 | Paper | Date | Contribution |
 |-------|------|-------------|
 | [[2604.02327]] SteerViT | 2026-04-06 | Steerable frozen ViT via gated cross-attention, new representation/steerability Pareto frontier |
+| [[2604.10949]] Pseudo-Unification | 2026-04-14 | Entropy analysis revealing divergent visual/linguistic encoding |
 
 ## Patterns & Insights
 

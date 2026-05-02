@@ -1,7 +1,7 @@
 ---
 title: "LLM Efficiency"
 slug: llm-efficiency
-paper_count: 3
+paper_count: 2
 last_updated: 2026-04-18
 ---
 
@@ -21,7 +21,6 @@ Early to mid-April 2026, three papers established the efficiency landscape from 
 |-------|------|-------------|
 | [[2604.04921]] TriAttention | 2026-04-07 | Trigonometric KV cache compression for long-context reasoning |
 | [[2604.05404]] Beyond Accuracy | 2026-04-08 | PTE metric and inefficiency patterns in tool-integrated reasoning |
-| [[2604.11297]] MEDS | 2026-04-16 | Memory-enhanced reward shaping |
 
 ## Patterns & Insights
 

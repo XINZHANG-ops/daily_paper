@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-04-21 | Papers: 42 | Topics: 25 | Entities: 55 | Ideas: 9
+Last updated: 2026-05-01 | Papers: 42 | Topics: 25 | Entities: 71 | Ideas: 9
 
 ## Papers
 
@@ -117,6 +117,9 @@ Last updated: 2026-04-21 | Papers: 42 | Topics: 25 | Entities: 55 | Ideas: 9
 | [streamforest](entities/streamforest.md) | algorithm | 1 | 2026-04-18 |
 | [opsd](entities/opsd.md) | algorithm | 1 | 2026-04-18 |
 | [domi](entities/domi.md) | algorithm | 1 | 2026-04-18 |
+| [edm](entities/edm.md) | algorithm | 1 | 2026-04-20 |
+| [flow-matching](entities/flow-matching.md) | algorithm | 2 | 2026-04-21 |
+| [flux](entities/flux.md) | model | 1 | 2026-04-20 |
 | [llama-factory](entities/llama-factory.md) | framework | 1 | 2026-04-18 |
 | [mvtec-ad](entities/mvtec-ad.md) | benchmark | 1 | 2026-04-18 |
 | [agentbench](entities/agentbench.md) | benchmark | 1 | 2026-04-18 |
@@ -128,7 +131,13 @@ Last updated: 2026-04-21 | Papers: 42 | Topics: 25 | Entities: 55 | Ideas: 9
 | [meanflow](entities/meanflow.md) | algorithm | 2 | 2026-04-21 |
 | [geneval](entities/geneval.md) | benchmark | 1 | 2026-04-21 |
 | [mcp](entities/mcp.md) | protocol | 1 | 2026-04-21 |
-| [agent-world](entities/agent-world.md) | framework | 1 | 2026-04-21 |
+| [multiworld](entities/multiworld.md) | model | 1 | 2026-04-21 |
+| [wan-vae](entities/wan-vae.md) | model | 1 | 2026-04-21 |
+| [qwen-image](entities/qwen-image.md) | model | 1 | 2026-04-16 |
+| [qwen3-5-27b](entities/qwen3-5-27b.md) | model | 1 | 2026-04-21 |
+| [rad-2](entities/rad-2.md) | algorithm | 1 | 2026-04-20 |
+| [resad](entities/resad.md) | algorithm | 1 | 2026-04-20 |
+| [senna-2](entities/senna-2.md) | benchmark | 1 | 2026-04-20 |
 | [latent-cot](entities/latent-cot.md) | concept | 1 | 2026-04-21 |
 | [gamecoder-27b](entities/gamecoder-27b.md) | model | 1 | 2026-04-21 |
 | [opengame-bench](entities/opengame-bench.md) | benchmark | 1 | 2026-04-21 |

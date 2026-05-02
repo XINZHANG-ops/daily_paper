@@ -1,7 +1,7 @@
 ---
 title: "Video Generation"
 slug: video-generation
-paper_count: 5
+paper_count: 6
 last_updated: 2026-04-21
 ---
 
@@ -25,6 +25,7 @@ In early April 2026, NUMINA showed that counting accuracy in video is achievable
 | [[2604.07823]] LPM 1.0 | 2026-04-13 | Character performance with interleaved audio |
 | [[2604.11804]] OmniShow | 2026-04-14 | HOIVG with unified multimodal conditions |
 | [[2604.14148]] Seedance 2.0 | 2026-04-16 | State-of-the-art T2V/I2V/R2V with audio |
+| [[2604.14268]] HY-World 2.0 | 2026-04-17 | Unified 3D world reconstruction and generation with video |
 | [[2604.18564]] MultiWorld | 2026-04-21 | Multi-agent multi-view world model for coordinated multi-player video and robot manipulation |
 
 ## Patterns & Insights

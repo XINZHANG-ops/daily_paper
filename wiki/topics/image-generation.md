@@ -1,7 +1,7 @@
 ---
 title: "Image Generation"
 slug: image-generation
-paper_count: 8
+paper_count: 5
 last_updated: 2026-04-21
 ---
 
@@ -23,9 +23,6 @@ In early April 2026, Think in Strokes introduced process-driven image generation
 |-------|------|-------------|
 | [[2604.04746]] Think in Strokes | 2026-04-09 | Process-driven generation with self-sampled critiques |
 | [[2604.08364]] MegaStyle | 2026-04-10 | Intra-style consistent dataset construction |
-| [[2604.08546]] NUMINA | 2026-04-10 | Training-free counting alignment via attention heads |
-| [[2604.11804]] OmniShow | 2026-04-14 | HOIVG with unified multimodal conditions |
-| [[2604.14148]] Seedance 2.0 | 2026-04-16 | State-of-the-art video generation with audio |
 | [[2604.11626]] RationalRewards | 2026-04-17 | Reasoning-based reward model for visual generation |
 | [[2604.16044]] SNR-t Bias | 2026-04-20 | DCW correction for diffusion model SNR-timestep bias |
 | [[2604.18168]] EMF | 2026-04-21 | Extending MeanFlow one-step generation to text conditioning via discriminative text representations |

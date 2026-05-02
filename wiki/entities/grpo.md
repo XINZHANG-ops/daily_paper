@@ -2,8 +2,8 @@
 title: "GRPO"
 slug: grpo
 type: algorithm
-paper_count: 5
-last_updated: 2026-04-16
+paper_count: 6
+last_updated: 2026-04-30
 ---
 
 # GRPO (Group Relative Policy Optimization)

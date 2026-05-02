@@ -22,6 +22,12 @@ Mid-April 2026, CodeTracer revealed the evidence-to-action gap as the primary fa
 | [[2604.11641]] CodeTracer | 2026-04-14 | Debugging infrastructure via evidence-to-action gap diagnosis |
 | [[2604.18394]] OpenGame | 2026-04-21 | Game development as testbed for complex code synthesis with multi-file consistency |
 
+## Patterns & Insights
+
+- **Evidence-to-action gap is the primary failure mode**: CodeTracer shows that debugging failure isn't about wrong answers but misattribution—models know the failure happened but attribute it to wrong causes
+- **Complex multi-file consistency is the real challenge**: OpenGame shows game development requires maintaining consistency across many files with cross-references—simpler than real software but tractable enough to evaluate
+- **Domain-specific infrastructure enables reliability**: GameCoder-27B's Template+Debug skill pattern suggests that scaffolding + cumulative repair is essential for reliable code generation
+
 ## Connections
 
 - [[topics/agent-systems]] — Code agents are a type of agent system

@@ -1,7 +1,7 @@
 ---
 title: "Embodied AI"
 slug: embodied-ai
-paper_count: 7
+paper_count: 8
 last_updated: 2026-04-21
 ---
 
@@ -28,6 +28,7 @@ Early April 2026 saw HY-Embodied-0.5 introduce Mixture-of-Transformers architect
 | [[2604.14268]] HY-World 2.0 | 2026-04-17 | Unified 3D world reconstruction and generation |
 | [[2604.15308]] RAD-2 | 2026-04-20 | BEV-Warp simulation for motion planning RL |
 | [[2604.18486]] OneVL | 2026-04-21 | Latent CoT with world model supervision for VLA planning |
+| [[2604.18564]] MultiWorld | 2026-04-21 | Multi-agent multi-view video world models |
 
 ## Patterns & Insights
 

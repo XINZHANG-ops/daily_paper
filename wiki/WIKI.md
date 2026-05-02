@@ -65,10 +65,10 @@ Every `## Connections` section on every page must use **annotated [[wikilinks]]*
 
 ```markdown
 ## Connections
-- Related: [[topics/reinforcement-learning]]
-- See also: [[2604.03128]]
-- [[entities/ppo]]
-- 相关论文: [[2604.06268]]
+- Related: [[topics/topic-name]]
+- See also: [[0000.00000]]
+- [[entities/entity-name]]
+- 相关论文: [[0000.00000]]
 ```
 
 ### GOOD — always generate these:

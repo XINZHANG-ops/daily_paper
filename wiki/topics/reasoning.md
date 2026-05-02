@@ -1,7 +1,7 @@
 ---
 title: "Reasoning"
 slug: reasoning
-paper_count: 6
+paper_count: 11
 last_updated: 2026-04-18
 ---
 
@@ -20,11 +20,16 @@ Early April 2026 saw Self-Distilled RLVR (2604.03128) advance token-level credit
 | Paper | Date | Contribution |
 |-------|------|-------------|
 | [[2604.03128]] Self-Distilled RLVR | 2026-04-08 | Token-level credit assignment via privileged information gain |
+| [[2604.04921]] TriAttention | 2026-04-07 | Trigonometric KV compression for long reasoning |
 | [[2604.06268]] RAGEN-2 | 2026-04-09 | Template collapse identification and SNR-aware filtering |
 | [[2604.06628]] Rethinking Generalization | 2026-04-13 | Dip-and-recovery dynamic in reasoning SFT |
+| [[2604.10949]] Pseudo-Unification | 2026-04-14 | Entropy probing reveals divergent multimodal reasoning |
 | [[2604.12627]] KnowRL | 2026-04-15 | Minimal-sufficient knowledge guidance for reward sparsity |
 | [[2604.11297]] MEDS | 2026-04-16 | Memory-enhanced reward shaping with error clustering |
 | [[2604.11626]] RationalRewards | 2026-04-17 | Reasoning-based reward model |
+| [[2604.05404]] Beyond Accuracy | 2026-04-08 | Inefficiency patterns in tool-integrated reasoning |
+| [[2604.14683]] DR3-Eval | 2026-04-17 | Deep research evaluation revealing hallucination as primary failure |
+| [[2604.18574]] Weak Supervision | 2026-04-21 | When LLMs can learn to reason with weak supervision |
 
 ## Patterns & Insights
 

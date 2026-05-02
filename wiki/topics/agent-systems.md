@@ -1,7 +1,7 @@
 ---
 title: "Agent Systems"
 slug: agent-systems
-paper_count: 8
+paper_count: 9
 last_updated: 2026-04-21
 ---
 
@@ -21,11 +21,11 @@ Early April 2026 saw ClawBench reveal the massive gap between sandbox benchmarks
 
 | Paper | Date | Contribution |
 |-------|------|-------------|
-| [[2604.08523]] ClawBench | 2026-04-10 | Real-world evaluation gap revelation |
 | [[2604.06132]] Claw-Eval | 2026-04-08 | Trustworthy evaluation via full-trajectory auditing and three evidence channels |
+| [[2604.06268]] RAGEN-2 | 2026-04-09 | Template collapse identification in agentic RL |
 | [[2604.08377]] SkillClaw | 2026-04-10 | Collective skill evolution via agentic evolver |
+| [[2604.08523]] ClawBench | 2026-04-10 | Real-world evaluation gap revelation |
 | [[2604.11784]] ClawGUI | 2026-04-15 | Unified training/evaluation/deployment framework |
-| [[2604.11641]] CodeTracer | 2026-04-14 | Evidence-to-action gap diagnosis |
 | [[2604.14683]] DR3-Eval | 2026-04-17 | Deep research agent evaluation with hallucination as primary failure mode |
 | [[2604.10866]] OccuBench | 2026-04-20 | Professional domain LES simulation, implicit fault handling difficulty |
 | [[2604.18292]] Agent-World | 2026-04-21 | Scaling real-world environment synthesis with 1978 environments and self-evolving training arena |

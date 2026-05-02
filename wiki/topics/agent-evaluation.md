@@ -1,7 +1,7 @@
 ---
 title: "Agent Evaluation"
 slug: agent-evaluation
-paper_count: 3
+paper_count: 5
 last_updated: 2026-04-20
 ---
 
@@ -20,6 +20,8 @@ Mid-April 2026 saw Claw-Eval establish that trustworthy evaluation requires full
 | Paper | Date | Contribution |
 |-------|------|-------------|
 | [[2604.06132]] Claw-Eval | 2026-04-08 | Full-trajectory auditing across three evidence channels |
+| [[2604.08523]] ClawBench | 2026-04-10 | Real-world vs sandbox performance gap revelation |
+| [[2604.11641]] CodeTracer | 2026-04-14 | Evidence-to-action gap diagnosis in code agents |
 | [[2604.14683]] DR3-Eval | 2026-04-17 | Deep research agent evaluation with realistic + reproducible design |
 | [[2604.10866]] OccuBench | 2026-04-20 | LES-based professional domain simulation, revealing implicit fault hardness |
 

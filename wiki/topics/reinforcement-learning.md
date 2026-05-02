@@ -1,7 +1,7 @@
 ---
 title: "Reinforcement Learning"
 slug: reinforcement-learning
-paper_count: 10
+paper_count: 12
 last_updated: 2026-04-21
 ---
 
@@ -32,6 +32,7 @@ In early April 2026, RAGEN-2 revealed that template collapse is a fundamental fa
 | [[2604.18486]] OneVL | 2026-04-21 | Latent CoT with world model supervision for VLA planning (RL-aligned training pipeline) |
 | [[2604.18292]] Agent-World | 2026-04-21 | Multi-environment GRPO with self-evolving diagnostic arena |
 | [[2604.18574]] Weak Supervision | 2026-04-21 | RLVR saturation dynamics; reasoning faithfulness predicts generalization vs memorization |
+| [[2604.11784]] ClawGUI | 2026-04-15 | GUI agent training with unified framework and GRPO |
 
 ## Patterns & Insights
 

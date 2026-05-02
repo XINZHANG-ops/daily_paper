@@ -1,7 +1,7 @@
 ---
 title: "Computer Vision"
 slug: computer-vision
-paper_count: 9
+paper_count: 11
 last_updated: 2026-04-16
 ---
 
@@ -22,13 +22,14 @@ Early April 2026 saw representation learning advances: SteerViT unlocked latent 
 | [[2604.02327]] SteerViT | 2026-04-06 | Steerable frozen ViT via gated cross-attention, new representation quality/steerability Pareto frontier |
 | [[2604.02317]] SIMPLESTREAM | 2026-04-06 | Simple sliding window matches complex memory mechanisms for streaming video |
 | [[2604.04746]] Think in Strokes | 2026-04-09 | Process-driven image generation with self-correction |
+| [[2604.04771]] MinerU2.5-Pro | 2026-04-07 | Document parsing with unified multimodal pipeline |
 | [[2604.08364]] MegaStyle | 2026-04-10 | Style transfer with intra-style consistency |
-| [[2604.08546]] NUMINA | 2026-04-10 | Counting alignment via attention heads |
+| [[2604.08546]] NUMINA | 2026-04-10 | Counting alignment via attention heads in video |
 | [[2604.08626]] WildDet3D | 2026-04-13 | Open-vocabulary 3D detection at scale |
 | [[2604.10949]] Pseudo-Unification | 2026-04-14 | Entropy analysis of visual/linguistic encoding |
 | [[2604.11804]] OmniShow | 2026-04-14 | Human-object interaction video generation |
-| [[2604.14148]] Seedance 2.0 | 2026-04-16 | State-of-the-art video generation |
-| [[2604.15308]] RAD-2 | 2026-04-20 | Motion planning with BEV feature space simulation |
+| [[2604.18168]] EMF | 2026-04-21 | Extending one-step MeanFlow image generation to text-conditioned |
+| [[2604.18486]] OneVL | 2026-04-21 | Latent CoT with world model supervision for embodied vision |
 
 ## Patterns & Insights
 

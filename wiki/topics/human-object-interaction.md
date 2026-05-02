@@ -21,6 +21,12 @@ Mid-April 2026, OmniShow (2604.11804) established HOI video generation through u
 |-------|------|-------------|
 | [[2604.11804]] OmniShow | 2026-04-14 | Unified multimodal conditions for HOIVG |
 
+## Patterns & Insights
+
+- **Unified condition control is essential**: OmniShow's unified multimodal approach (identity + action + environment) shows that separate condition handling leads to inconsistency
+- **HOI enables downstream applications**: Robotics imitation learning and interactive AI assistants both need human-object coherence—HOI is foundational for these applications
+- **Video generation for HOI vs text-to-video**: HOI requires maintaining human identity and object relationships across frames—standard T2V struggles with this specificity
+
 ## Connections
 
 - [[topics/video-generation]] — HOI is a specific video generation task
