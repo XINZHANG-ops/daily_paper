@@ -1,6 +1,7 @@
 ---
 title: "On-Policy RL Training Idling"
 slug: on-policy-rl-idling
+type: idea
 source: note
 last_updated: 2026-04-16
 ---

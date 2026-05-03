@@ -13,7 +13,7 @@ LLM efficiency addresses the challenge of deploying large models at reasonable m
 
 ## Evolution
 
-Early to mid-April 2026, three papers established the efficiency landscape from different angles. TriAttention (2604.04921) introduced trigonometric KV cache compression achieving 10.7x memory reduction while maintaining accuracy on math benchmarks. Beyond Accuracy (2604.05404) revealed that standard token-count metrics are fundamentally misleading (r=-0.375 with latency) and introduced PTE as a hardware-aware alternative (r=0.925). MEDS (2604.11297) then applied efficiency thinking to RL training through memory-enhanced reward shaping, showing that efficiency is relevant not just for inference but for training as well. Together they suggest that memory efficiency and runtime efficiency are related but distinct problems requiring different solutions.
+Early to mid-April 2026, two papers established the efficiency landscape from complementary angles. TriAttention (2604.04921) introduced trigonometric KV cache compression achieving 10.7x memory reduction while maintaining accuracy on math benchmarks. Beyond Accuracy (2604.05404) revealed that standard token-count metrics are fundamentally misleading (r=-0.375 with latency) and introduced PTE as a hardware-aware alternative (r=0.925). Together they suggest that memory efficiency and runtime efficiency are related but distinct problems requiring different solutions.
 
 ## Key Papers
 

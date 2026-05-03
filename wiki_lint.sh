@@ -14,7 +14,9 @@ REPO="$(cd "$(dirname "$0")" && pwd)"
 WIKI_DIR="$REPO/wiki"
 LLM_WIKI="$REPO/llm-wiki.md"
 PROJECT_SCHEMA="$WIKI_DIR/WIKI.md"
-MODEL="${1:-minimax-m2.7:cloud}"
+MODEL="${1:-deepseek-v4-pro:cloud}"
+TODAY="$(date '+%Y-%m-%d')"
+LINT_MARKER="$REPO/logs/lint_done_${TODAY}.json"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
@@ -33,27 +35,22 @@ log "Starting wiki lint using model: $MODEL"
 cd "$REPO"
 git pull --ff-only || true
 
-TASK_PROMPT="$(cat <<PROMPT
+# Build prompt in a temp file to avoid heredoc quoting issues
+PROMPT_FILE="$(mktemp)"
+trap 'rm -f "$PROMPT_FILE"' EXIT
+
+cat > "$PROMPT_FILE" <<'STATIC_PART'
 You are performing a daily self-reflection and health check on the daily_paper research wiki.
-
-=== GENERAL WIKI PATTERN (llm-wiki.md) ===
-$(cat "$LLM_WIKI")
-
-=== PROJECT-SPECIFIC SCHEMA (WIKI.md) ===
-$(cat "$PROJECT_SCHEMA")
 
 === YOUR TASK: WIKI LINT ===
 
-Working directory: $REPO
-Today's date: $(date '+%Y-%m-%d')
-
-Perform a thorough lint of the wiki at wiki/. Go through EVERY check below systematically. Fix problems as you find them — don't just report, actually edit the files.
+Perform a thorough lint of the wiki at wiki/. Go through EVERY check below systematically. Fix problems as you find them — do not just report, actually edit the files.
 
 ## Pass 1 — Structural Integrity
 
 1. Read wiki/index.md. For every page listed, verify the .md file exists. Remove entries for missing files.
 2. Scan wiki/papers/, wiki/topics/, wiki/entities/, wiki/ideas/ for .md files NOT listed in index.md. Add them.
-3. Check all [[wikilinks]] across all pages. For each broken link (target doesn't exist):
+3. Check all [[wikilinks]] across all pages. For each broken link (target does not exist):
    - If the target is a minor reference, remove the link
    - If the target is an important concept that should have a page, create it
 4. Find orphan pages (no inbound links from any other page). Add links from relevant pages or note them for review.
@@ -65,45 +62,60 @@ Perform a thorough lint of the wiki at wiki/. Go through EVERY check below syste
 
 1. Look for duplicate pages covering the same concept (e.g., two entity pages for the same model with slight name variations). Merge them — keep the richer one, redirect links.
 2. Look for duplicate content within pages (same paragraph or section repeated).
-3. Check for factually inconsistent information between pages (e.g., a paper's date differs between its paper page and a topic page).
+3. Check for factually inconsistent information between pages (e.g., a paper date differs between its paper page and a topic page).
 4. Check frontmatter: are dates, slugs, and types consistent and correct?
 5. Remove any people from entities/ — entities are for technical things only.
 
 ## Pass 3 — Connection Quality
 
-1. Find connections that just say "Related:", "See also:", or link without annotation → rewrite with WHY.
-2. Find papers that share 2+ entities but have no direct connection to each other → add annotated connections.
-3. Check topic pages for missing ## Evolution section → write chronological narrative.
-4. Check topic pages for missing ## Patterns & Insights → synthesize from papers.
-5. Check for shallow entity pages with only a name and no description → flesh out from paper content.
+1. Find connections that just say "Related:", "See also:", or link without annotation — rewrite with WHY.
+2. Find papers that share 2+ entities but have no direct connection to each other — add annotated connections.
+3. Check topic pages for missing ## Evolution section — write chronological narrative.
+4. Check topic pages for missing ## Patterns & Insights — synthesize from papers.
+5. Check for shallow entity pages with only a name and no description — flesh out from paper content.
 
 ## Pass 4 — Index & Log
 
 1. Rebuild wiki/index.md with accurate counts and all pages listed.
-2. Append a lint entry to wiki/log.md:
-   ## [$(date '+%Y-%m-%d')] lint | self-reflection
-   - Broken links fixed: N
-   - Duplicates merged: N
-   - Orphans resolved: N
-   - Connections improved: N
+2. Append a lint entry to wiki/log.md with counts of what was fixed.
 
 Start now. Be thorough but efficient.
-PROMPT
-)"
+STATIC_PART
 
-ollama launch claude \
+LINT_OUTPUT="$(ollama launch claude \
     --model "$MODEL" \
     --yes \
     -- \
-    -p "$TASK_PROMPT" \
-    --permission-mode dontAsk 2>&1 | tee -a "$REPO/logs/lint.log"
+    -p "$(cat "$PROMPT_FILE")" \
+    --permission-mode dontAsk 2>&1)"
 
 EXIT_CODE=$?
+echo "$LINT_OUTPUT" >> "$REPO/logs/lint.log"
 log "Wiki lint complete (exit code $EXIT_CODE)."
 
 cd "$REPO"
 git add -A
-git commit -m "wiki: lint $(date '+%Y-%m-%d')" || true
+
+DIFF_STAT="$(git diff --cached --stat 2>/dev/null | tail -1)"
+git commit -m "wiki: lint $TODAY" || true
 git push || true
+
+# Write lint completion marker with summary for xin-knowledge-bot
+python3 -c "
+import json, sys
+summary = sys.stdin.read().strip()
+# Keep last 2000 chars to avoid huge JSON
+if len(summary) > 2000:
+    summary = summary[-2000:]
+marker = {
+    'date': '$TODAY',
+    'project': 'daily_paper',
+    'status': 'done',
+    'diff_stat': '''$DIFF_STAT''',
+    'summary': summary,
+}
+with open('$LINT_MARKER', 'w') as f:
+    json.dump(marker, f, ensure_ascii=False)
+" <<< "$LINT_OUTPUT"
 
 exit $EXIT_CODE

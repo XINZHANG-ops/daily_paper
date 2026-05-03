@@ -27,6 +27,39 @@ Notes integrated: 6 dates scanned from _all_notes/ (no new ideas created; notes 
 
 **Wiki session insights applied:** User asked about "sampling is optimization" idea origin → traced to 2026-02-25 reading notes; User queried SkillClaw paper details → full abstract translation provided.
 
+## [2026-05-02] lint | self-reflection
+
+**Pass 1 — Structural fixes:**
+- Updated index date: 2026-05-01 → 2026-05-02
+- Fixed entity count in header: 71 → 63 (was overcounted; actual count is 63)
+- Removed duplicate multiworld row from entities table
+- Added missing agent-world entity to index
+- Fixed 8 paper frontmatter topics referencing nonexistent topic pages (robotics, style-transfer, skill-evolution, character-animation, gui-agents, debugging, self-evolution → replaced with existing topics)
+- Fixed 16 index topic paper_counts that were stale (computer-vision 9→11, reinforcement-learning 10→12, llm-training 6→10, agent-systems 7→9, video-generation 5→6, embodied-ai 5→8, multimodal-models 3→13, image-generation 6→5, representation-learning 1→2, agent-evaluation 2→5, 3d-detection 2→1, benchmarks 2→5, llm-efficiency 3→2, reasoning 6→11)
+- Fixed grpo paper_count in index: 5 → 6
+- Fixed 2604.04707 frontmatter: removed robotics (embodied-ai covers it)
+
+**Pass 2 — Wrong/duplicate info:**
+- Added `type: idea` to 3 idea pages missing it: sampling-is-optimization, sae-random-baseline, on-policy-rl-idling
+- Fixed llm-efficiency Evolution prose: removed stale MEDS reference (MEDS tracked in llm-training, not llm-efficiency)
+
+**Pass 3 — Connection quality:**
+- Added reciprocal connection 2604.11297 (MEDS) → 2604.03128 (RLSD): both address RL training failure modes via complementary approaches
+- Added reciprocal connection 2604.07430 (HY-Embodied-0.5) → 2604.14144 (SpatialEvo): both use GRPO-based self-evolution for embodied spatial intelligence
+- Added reciprocal connection 2604.12627 (KnowRL) → 2604.18574: both study RL under imperfect conditions
+
+**Pass 4 — Index rebuilt:**
+- wiki/index.md counts: Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
+
+**No broken wikilinks** (all inline [[wikilinks]] in prose resolve to existing files)
+**No orphan entities** (all 63 entities have inbound links)
+**No orphan topics** (all 25 topics have inbound paper links)
+**No orphan papers** (all 42 papers linked from topic Key Papers tables)
+**No orphan ideas** (all 9 ideas have evidence links)
+**No people in entities/** (all entities are technical things)
+**No shallow connections** (all Connections use annotated wikilinks)
+**All 25 topic pages have ## Evolution and ## Patterns & Insights** sections
+
 ## [2026-05-01] lint | self-reflection
 
 **Structural checks:**
@@ -51,24 +84,6 @@ Notes integrated: 6 dates scanned from _all_notes/ (no new ideas created; notes 
 **Index updated:**
 - Entity count: 63→71 (added missing: edm, flux, wan-vae, qwen-image, qwen3-5-27b, rad-2, resad, senna-2, flow-matching)
 - Last updated date: 2026-05-01
-
-## [2026-04-28] lint | Scheduled daily health check
-
-**Issues found and fixed:**
-- Fixed paper_count metadata in all 25 topic pages (all were undercounted by 1-4; e.g., llm-training had 7 but should be 10, multimodal-models had 5 but should be 13)
-- Fixed Key Papers tables in 10+ topic pages: added missing papers (2604.06132 to agent-systems, 2604.14268 to video-generation, 2604.11784 to reinforcement-learning, 2604.08546/2604.18486 to computer-vision) and removed incorrectly included papers (video papers from image-generation, 2604.14144 from 3d-detection)
-- Fixed paper_count in computer-vision (15→11), llm-training (7→10), multimodal-models (5→13), reasoning (7→11), embodied-ai (7→8), agent-systems (8→9), agent-evaluation (4→5), benchmarks (4→5), reinforcement-learning (11→12), video-generation (5→6)
-- Fixed 14 additional topic paper_counts: 3d-detection (3→1), code-agents (3→2), data-centric-ai (3→2), document-parsing (2→1), human-object-interaction (2→1), image-generation (9→5), knowledge-distillation (2→1), kv-cache-compression (2→1), llm-efficiency (4→2), nlp (2→1), spatial-reasoning (2→1), tool-integrated-reasoning (2→1), video-understanding (3→2), world-models (4→3)
-- Updated wiki/index.md entity count (55→63) to reflect actual entity pages
-
-**No broken wikilinks found** (all [[wikilinks]] resolve to existing files)
-**No orphan entities** (all 63 entities have inbound links from papers, topics, or other entities)
-**No orphan papers** (all 42 papers linked from topic Key Papers tables)
-**No orphan topics** (all 25 topics have inbound paper links)
-**No people in entities/** (all entities are technical things: models, datasets, algorithms, benchmarks)
-**No shallow connections** (all Connections use annotated wikilinks with WHY explanations)
-
-**Wiki session insights applied:** User asked about "sampling is optimization" idea origin → traced to 2026-02-25 reading notes; User queried SkillClaw paper details → full abstract translation provided.
 
 ## [2026-04-25] lint | Scheduled daily health check
 
@@ -191,6 +206,8 @@ Topics updated: embodied-ai, image-generation, agent-systems, multimodal-models,
 Entities created: blip3o-next, meanflow, geneval, mcp, agent-world, latent-cot
 Ideas created: (none)
 Notes integrated: 0 dates (personal notes from _all_notes already processed in prior sessions)
+
+## [2026-04-20] ingest | 3 papers
 
 - [[2604.10866]] OccuBench: Evaluating AI Agents on Real-World Professional Tasks via Language World Models
 - [[2604.15308]] RAD-2: Scaling Reinforcement Learning in a Generator-Discriminator Framework

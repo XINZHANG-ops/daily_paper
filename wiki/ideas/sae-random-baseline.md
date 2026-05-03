@@ -1,6 +1,7 @@
 ---
 title: "Random Decoder Matches Trained SAE"
 slug: sae-random-baseline
+type: idea
 source: note
 last_updated: 2026-04-16
 ---

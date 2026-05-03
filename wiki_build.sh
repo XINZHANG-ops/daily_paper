@@ -12,7 +12,7 @@ WIKI_DIR="$REPO/wiki"
 RAW_DIR="$WIKI_DIR/raw"
 LLM_WIKI="$REPO/llm-wiki.md"
 PROJECT_SCHEMA="$WIKI_DIR/WIKI.md"
-MODEL="${1:-minimax-m2.7:cloud}"
+MODEL="${1:-deepseek-v4-pro:cloud}"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 

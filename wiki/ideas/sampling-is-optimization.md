@@ -1,6 +1,7 @@
 ---
 title: "Sampling Is Optimization"
 slug: sampling-is-optimization
+type: idea
 source: note
 last_updated: 2026-04-16
 ---
