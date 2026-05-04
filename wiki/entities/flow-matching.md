@@ -21,5 +21,5 @@ Flow Matching is a generative modeling framework that learns a transformation (f
 
 ## Connections
 
-- [[entities/meanflow]] — MeanFlow is a specific variant of Flow Matching
-- [[topics/image-generation]] — Flow Matching provides an alternative to diffusion models for image generation
+- [[entities/meanflow]] — MeanFlow is a Flow Matching variant that learns average velocity (integrating over the full flow path) rather than instantaneous velocity at each timestep; this averaging makes training more stable and enables efficient one-step generation with fewer sampling steps than standard Flow Matching
+- [[topics/image-generation]] — Flow Matching provides a deterministic (ODE-based) alternative to stochastic diffusion models (SDE-based) for image generation; the key tradeoff is that deterministic flows are more efficient at inference (fewer steps) but may produce less diverse samples than stochastic diffusion

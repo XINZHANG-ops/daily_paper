@@ -39,7 +39,6 @@ In early April 2026, RAGEN-2 revealed that template collapse is a fundamental fa
 - **Multiple independent failure modes**: RL training has template collapse (RAGEN-2), reward sparsity (KnowRL), sampling diversity collapse (MEDS), and credit assignment asymmetry (RLSD)—each requiring different solutions
 - **Entropy monitoring is insufficient**: Template collapse is invisible to entropy metrics; MI-based diagnostics are needed
 - **Credit assignment is distinct from update direction**: RLSD shows that separating magnitude (from privileged info) from direction (from environment reward) resolves OPSD's mutual information gap
-- **Entropy monitoring is insufficient**: Template collapse is invisible to entropy metrics; MI-based diagnostics are needed
 - **Safety is not free**: Reasoning capability improvement consistently comes with safety degradation
 - **On-policy RL is fragile**: Stable error basin collapse happens when policy repeatedly generates similar errors
 - **Dual-space optimization**: Test-time compute (prompt tuning) can match or exceed parameter-space training (RL)

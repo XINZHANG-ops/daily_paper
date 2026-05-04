@@ -25,4 +25,7 @@ WorldNav is the trajectory planning component of HY-World 2.0. It uses five heur
 
 ## Connections
 
-- [[entities/hy-world-2]] — WorldNav is a component of HY-World 2.0
+- [[entities/hy-world-2]] — WorldNav is the second stage of the HY-World 2.0 four-stage pipeline; its five heuristic modes determine which trajectories the system follows, directly affecting the quality of downstream stereo expansion (WorldStereo 2.0) and final composition (WorldMirror 2.0)
+- [[entities/hy-pano]] — WorldNav takes HY-Pano's panorama output as its starting point and plans the optimal exploration path across the scene
+- [[entities/worldstereo]] — WorldStereo 2.0 executes the trajectories that WorldNav plans; poor trajectory planning directly degrades stereo consistency
+- [[topics/embodied-ai]] — Trajectory planning for scene exploration is a core capability for embodied agents navigating previously unseen 3D environments

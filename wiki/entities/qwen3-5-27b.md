@@ -21,5 +21,5 @@ Qwen3.5-27B is a large language model from Alibaba's Qwen family, serving as the
 ## Connections
 
 - [[entities/gamecoder-27b]] — GameCoder-27B is built on Qwen3.5-27B
-- [[entities/qwen3-vl]] — Qwen3-VL is a related multimodal variant of the Qwen family
+- [[entities/qwen3-vl]] — Qwen3-VL is the multimodal (vision-language) branch of the Qwen family, while Qwen3.5-27B is a text-only LLM; their complementary modalities cover different use cases—Qwen3-VL for visual tasks, Qwen3.5-27B as the backbone for text-based specialized models like GameCoder-27B
 - [[topics/llm-training]] — CPT→SFT→RL pipeline demonstrates modern domain adaptation methodology

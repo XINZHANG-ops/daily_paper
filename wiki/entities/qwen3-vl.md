@@ -20,5 +20,5 @@ Qwen3-VL is a multimodal vision-language model from Alibaba's Qwen family. In th
 
 ## Connections
 
-- [[entities/rationalrewards]] — RationalRewards is distilled from Qwen3-VL
-- [[entities/parrot]] — PARROT uses Qwen3-VL as teacher model
+- [[entities/rationalrewards]] — RationalRewards is distilled from Qwen3-VL-32B; the distilled 8B model outperforms the 32B teacher as a judge, demonstrating that rationale-anchored distillation can produce smaller models with superior evaluation capability
+- [[entities/parrot]] — PARROT uses Qwen3-VL as the teacher model for generating structured rationales anchored to preference labels; Qwen3-VL's strong multimodal reasoning makes it an effective rationale generator for visual generation reward modeling

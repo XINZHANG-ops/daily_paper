@@ -9,6 +9,62 @@ Entities created: gamecoder-27b, opengame-bench, phaser, multiworld, macm, gse, 
 Ideas updated: grpo paper_count updated
 Notes integrated: 6 dates scanned from _all_notes/ (no new ideas created; notes focused on earlier topics)
 
+## [2026-05-03] lint | Scheduled daily health check (2nd pass)
+
+**Issues found:**
+- Duplicate line in reinforcement-learning.md ## Patterns & Insights: "Entropy monitoring is insufficient" appeared twice
+- All 25 topic pages have ## Evolution and ## Patterns & Insights sections (verified complete)
+- All 63 entity pages have proper slug/type frontmatter
+- No orphan topics detected (all topics linked from papers or other topics)
+- No orphan entities detected (all have paper appearances)
+- No broken wikilinks found (2604.08564 was already fixed in prior lint)
+
+**Connection quality:**
+- No shallow "Related:" or "See also:" connections found
+- All Connections sections use annotated wikilinks with WHY explanations
+- Chat history reveals user interest in: MEDS/SpatialEvo (sampling + geometric feedback), SkillClaw (collective intelligence), Seedance 2.0 (video generation)
+
+**Chat history insights:**
+- User asked about "sampling is optimization" origin → wiki already has [[ideas/sampling-is-optimization]] from 2026-04-16
+- User reviewed 2026-04-16 papers: MEDS, SpatialEvo, Seedance 2.0 — no new gaps identified
+- User expressed interest in SkillClaw's collective intelligence concept
+
+**Fixed (1st pass):**
+- Removed duplicate "Entropy monitoring is insufficient" line from reinforcement-learning.md Patterns & Insights
+
+## [2026-05-03] lint | comprehensive 4-pass health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 63 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all 753+ [[wikilinks]] across 139 content pages: 0 genuinely broken (8 false positives in WIKI.md/log.md are template placeholders or historical references)
+- 0 orphan pages found (every page has ≥1 inbound link from another page)
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+
+**Pass 2 — Wrong & Duplicate Information:**
+- Fixed factual inconsistency: DoReMi entity described as "Weight Trainer" (sample reweighting), but DataFlex Method section maps DoReMi → Mix Trainer (domain mixture). Fixed domi.md and 2603.26164.md Connections
+- 0 duplicate pages covering same concept
+- 0 duplicate content/paragraphs within pages
+- 0 people in entities/ (all 63 are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+- 0 entities with 0 paper appearances; 0 ideas with 0 evidence links
+
+**Pass 3 — Connection Quality:**
+- Fleshed out 17 thin entity pages with technical detail: domi, dreamer, hy-pano, less, llama-factory, marble, mvtec-ad, opsd, resad, rope, snapkv, streamforest, v-jepa, waver-1-0, worldmirror, worldstereo, agentbench
+- Fixed 9 weak annotations that restated names without explaining significance: worldnav, dr3-agent, dr3-eval (2), qwen3-vl (2), qwen3-5-27b, flow-matching (2)
+- Added 7 missing cross-links between papers sharing 2+ entities but not connected:
+  - 2604.06268 (RAGEN-2) ↔ 2604.13016 (On-Policy Distillation) — both directions added
+  - 2604.06132 (Claw-Eval) → 2604.10866 (OccuBench) — direct descendant
+  - 2604.06628 (Reasoning SFT) → 2604.13016 (On-Policy Distillation)
+  - 2604.08523 (ClawBench) → 2604.06132 (Claw-Eval) — complementary evaluation
+  - 2604.08523 (ClawBench) → 2604.10866 (OccuBench) — shared benchmarks
+
+**Pass 4 — Index & Log:**
+- index.md last_updated: 2026-05-02 → 2026-05-03
+- Counts verified: Papers 42 | Topics 25 | Entities 63 | Ideas 9
+- This lint entry appended to wiki/log.md
+
+**Totals fixed:** 1 factual inconsistency, 17 thin entities fleshed out, 9 weak annotations rewritten, 7 missing cross-links added
+
 ## [2026-04-28] lint | Scheduled daily health check
 
 **Issues found and fixed:**

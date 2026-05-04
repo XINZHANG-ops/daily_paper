@@ -31,5 +31,6 @@ DR3-Eval is a benchmark for evaluating Deep Research Agents (DRAs). It addresses
 
 ## Connections
 
-- [[entities/dr3-agent]] — DR3-Agent is the multi-agent system used in the benchmark
-- [[topics/agent-evaluation]] — DR3-Eval is a contribution to agent evaluation research
+- [[entities/dr3-agent]] — DR3-Agent's hierarchical architecture (planning → retrieval → synthesis → citation) is the evaluation vehicle; the benchmark's finding that hallucination is the primary failure mode was enabled by the agent's component-level traceability, which allows attributing errors to specific subsystems rather than treating output as atomic
+- [[topics/agent-evaluation]] — DR3-Eval introduces reverse-construction methodology (build tasks from known answers backward) for ensuring verifiable solution paths, addressing a reproducibility gap in deep research evaluation where open-ended tasks make scoring ambiguous
+- [[topics/benchmarks]] — DR3-Eval's controlled static sandbox corpus (supportive documents + distractors + noise) provides a reproducible evaluation substrate that existing open-web benchmarks lack
