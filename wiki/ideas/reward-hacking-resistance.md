@@ -1,6 +1,7 @@
 ---
 title: "Reward Hacking Resistance Through Structured Reasoning"
 slug: reward-hacking-resistance
+type: idea
 source: paper
 last_updated: 2026-04-17
 ---

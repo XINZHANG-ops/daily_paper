@@ -1,3 +1,40 @@
+## [2026-05-04] lint | comprehensive 4-pass health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 63 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across 139 content pages: 0 broken links
+- Found 11 orphan entities with zero inbound links from papers or topics
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+
+**Pass 2 — Wrong & Duplicate Information:**
+- Added `type: idea` to 2 idea pages missing it: hallucination-universal, reward-hacking-resistance
+- 0 duplicate pages covering same concept
+- 0 duplicate content/paragraphs within pages
+- 0 people in entities/ (all 63 are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+- 0 ideas with 0 evidence links
+
+**Pass 3 — Connection Quality:**
+- Added 11 missing entity connections to resolve orphan pages:
+  - 2604.18564 (MultiWorld) → [[entities/multiworld]], [[entities/wan-vae]]
+  - 2604.15308 (RAD-2) → [[entities/rad-2]], [[entities/tc-grpo]], [[entities/beV-warp]]
+  - 2604.18486 (OneVL) → [[entities/latent-cot]]
+  - 2604.16044 (SNR-t Bias) → [[entities/dcw]]
+  - 2604.18292 (Agent-World) → [[entities/agent-world]]
+  - 2604.18394 (OpenGame) → [[entities/qwen3-5-27b]]
+  - 2604.18168 (EMF) → [[entities/flow-matching]]
+  - 2604.11626 (RationalRewards) → [[entities/rationalrewards]]
+- 0 shallow "Related:" or "See also:" connections found
+- 0 paper pairs sharing 2+ entities without direct connection
+- 0 shallow entity pages (all have technical descriptions)
+
+**Pass 4 — Index & Log:**
+- index.md last_updated: 2026-05-03 → 2026-05-04
+- Counts verified: Papers 42 | Topics 25 | Entities 63 | Ideas 9
+- This lint entry appended to wiki/log.md
+
+**Totals fixed:** 2 missing frontmatter fields, 11 orphan entities resolved via new annotated connections
+
 ## [2026-04-21] ingest | 3 papers
 
 - [[2604.18394]] OpenGame: Open Agentic Coding for Games
