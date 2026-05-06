@@ -26,4 +26,4 @@ GRPO is a reinforcement learning algorithm that computes group-relative advantag
 ## Connections
 
 - [[topics/reinforcement-learning]] — GRPO is the primary RL algorithm in this period's research
-- [[entities/ppo]] — PPO is an alternative algorithm used in some papers for comparison
+- [[entities/ppo]] — PPO is the critic-based predecessor that GRPO simplifies by removing the value network; both algorithms appear in comparative analyses showing template collapse is algorithm-agnostic but manifests differently in PPO's clipped objective versus GRPO's group-relative normalization

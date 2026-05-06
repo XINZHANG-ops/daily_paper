@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
-"""Cron launcher for Daily Paper — invokes ollama claude to run the daily papers script."""
+"""Cron launcher for Daily Paper — runs daily_papers.py directly."""
 import subprocess, sys, os
 from datetime import datetime
 
 BASE_DIR = "/Users/xinzhang/daily_paper"
+VENV_PYTHON = os.path.join(BASE_DIR, "venv", "bin", "python")
 os.environ["PATH"] = "/usr/local/bin:/Users/xinzhang/.local/bin:/opt/homebrew/bin:" + os.environ.get("PATH", "")
-CLAUDE_CMD = ["/usr/local/bin/ollama", "launch", "claude", "--model", "kimi-k2.6:cloud", "--"]
-
-prompt = "Run the daily paper script: cd /Users/xinzhang/daily_paper && git switch main && git pull && source venv/bin/activate && python daily_papers.py"
 
 os.makedirs(os.path.join(BASE_DIR, "logs"), exist_ok=True)
 
 print(f"[{datetime.now().isoformat()}] Starting Daily Paper")
 sys.stdout.flush()
 
+subprocess.run(["git", "switch", "main"], cwd=BASE_DIR)
+subprocess.run(["git", "pull"], cwd=BASE_DIR)
+
 result = subprocess.run(
-    CLAUDE_CMD + [
-        "--print", "-p", prompt,
-        "--max-turns", "20",
-        "--dangerously-skip-permissions",
-    ],
+    [VENV_PYTHON, "daily_papers.py"],
     cwd=BASE_DIR,
     timeout=3600,
 )

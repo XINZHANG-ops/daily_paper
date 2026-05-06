@@ -5,7 +5,6 @@ Provides unified interface for AI models via local Ollama server.
 """
 import os
 import re
-import ollama
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -52,6 +51,8 @@ def model_response(prompt, model_name=None, max_tokens=8192):
     Returns:
         str: Model response content
     """
+    import ollama
+
     prompt = clean_prompt(prompt)
     model = model_name or OLLAMA_MODEL
     client = ollama.Client(host=OLLAMA_HOST)

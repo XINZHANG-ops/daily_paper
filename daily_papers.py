@@ -304,8 +304,11 @@ if __name__ == "__main__":
         current_paper_list=current_paper_list
     )
     
+    print(f"[daily_papers] {len(new_papers)} new candidates out of {len(grab_papers)} fetched (target: {paper_counts} papers)")
+
     if len(new_papers) > 0:
         processed = 0
+        failed = 0
         paper_summaries = []
         THREAD_KEY_VALUE = str(uuid.uuid4())
         articles = []
@@ -324,9 +327,12 @@ if __name__ == "__main__":
                 continue
             
             if result is None:
+                failed += 1
+                print(f"[daily_papers] Paper skipped (no result), failures so far: {failed}")
                 continue
             elif isinstance(result, str):
-                print(f"Error processing paper: {result}")
+                failed += 1
+                print(f"[daily_papers] Paper failed ({result[:80]}), failures so far: {failed}")
                 continue
             
             paper_info, summary = result
@@ -341,8 +347,10 @@ if __name__ == "__main__":
             articles.append(paper_info)
             
             processed += 1
-            
+            print(f"[daily_papers] Successfully processed {processed}/{paper_counts}: {paper_info.get('title', 'unknown')[:60]}")
+
             if processed >= paper_counts:
+                print(f"[daily_papers] Target reached: {processed} papers processed, {failed} failed")
                 break
 
         # 生成每日小贴士
@@ -376,8 +384,7 @@ if __name__ == "__main__":
         time.sleep(0.2)
         send_articles(articles, THREAD_KEY_VALUE)
 
-        # 生成 GitHub Pages 文件
-        # 1. 创建子页面
+        print(f"[daily_papers] Generating HTML page for {current_date} with {len(articles)} articles")
         create_subpage(current_date, articles, tips=tips)
 
         # 2. 更新主页面

@@ -123,7 +123,8 @@ run_build_steps() {
   git pull --ff-only
 
   log "Step 1/2: rebuild_faiss (rebuild vector index)"
-  if ! python3 -u rebuild_faiss.py; then
+  if ! python3 -u rebuild_faiss.py \
+    --index-dir vector_indices/chunk2500_overlap300_model_embeddinggemma_300m; then
     log "WARNING: rebuild_faiss.py failed (non-fatal), continuing..."
   fi
 

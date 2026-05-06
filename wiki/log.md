@@ -1,3 +1,35 @@
+## [2026-05-05] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 63 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across 139 content pages: 0 broken links
+- 0 orphan pages found (every page has ≥1 inbound link)
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+
+**Pass 2 — Wrong & Duplicate Information:**
+- Removed 10 empty ## Personal Notes sections from paper pages (template artifacts with no actual reader content)
+- Fixed 11 stale last_updated dates in index.md:
+  - Topics: agent-evaluation (2026-04-17→2026-04-20), benchmarks (2026-04-18→2026-04-20), computer-vision (2026-04-18→2026-04-16), document-parsing (2026-04-18→2026-04-16), embodied-ai (2026-04-17→2026-04-21), image-generation (2026-04-17→2026-04-21), kv-cache-compression (2026-04-18→2026-04-16), llm-training (2026-04-18→2026-04-17), multimodal-models (2026-04-18→2026-04-21), representation-learning (2026-04-18→2026-04-16), tool-integrated-reasoning (2026-04-18→2026-04-16)
+  - Entity: grpo (2026-04-16→2026-04-30)
+- 0 duplicate pages covering same concept
+- 0 duplicate content/paragraphs within pages
+- 0 people in entities/ (all 63 are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+- 0 ideas with 0 evidence links (all 9 ideas cite supporting papers via [[2604.XXXXX]] links)
+
+**Pass 3 — Connection Quality:**
+- Strengthened weak connection on entities/grpo.md: replaced generic "PPO is an alternative algorithm" with specific explanation of critic-network removal and template-collapse manifestation differences
+- 0 shallow "Related:" or "See also:" connections found
+- 0 paper pairs sharing 2+ entities without direct connection
+- 0 shallow entity pages (all have technical descriptions)
+
+**Pass 4 — Index & Log:**
+- index.md last_updated: 2026-05-04 → 2026-05-05
+- Counts verified: Papers 42 | Topics 25 | Entities 63 | Ideas 9
+- This lint entry appended to wiki/log.md
+
+**Totals fixed:** 10 empty Personal Notes sections removed, 11 stale dates corrected, 1 weak connection strengthened
+
 ## [2026-05-04] lint | comprehensive 4-pass health check
 
 **Pass 1 — Structural Integrity:**

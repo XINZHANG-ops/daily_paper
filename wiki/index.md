@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-05-04 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
+Last updated: 2026-05-05 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 
 ## Papers
 
@@ -53,24 +53,24 @@ Last updated: 2026-05-04 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 
 | Topic | Papers | Last Updated |
 |-------|--------|-------------|
-| [computer-vision](topics/computer-vision.md) | 11 | 2026-04-18 |
+| [computer-vision](topics/computer-vision.md) | 11 | 2026-04-16 |
 | [reinforcement-learning](topics/reinforcement-learning.md) | 12 | 2026-04-21 |
-| [llm-training](topics/llm-training.md) | 10 | 2026-04-18 |
+| [llm-training](topics/llm-training.md) | 10 | 2026-04-17 |
 | [agent-systems](topics/agent-systems.md) | 9 | 2026-04-21 |
 | [video-generation](topics/video-generation.md) | 6 | 2026-04-21 |
 | [video-understanding](topics/video-understanding.md) | 2 | 2026-04-16 |
-| [embodied-ai](topics/embodied-ai.md) | 8 | 2026-04-17 |
-| [multimodal-models](topics/multimodal-models.md) | 13 | 2026-04-18 |
-| [image-generation](topics/image-generation.md) | 5 | 2026-04-17 |
+| [embodied-ai](topics/embodied-ai.md) | 8 | 2026-04-21 |
+| [multimodal-models](topics/multimodal-models.md) | 13 | 2026-04-21 |
+| [image-generation](topics/image-generation.md) | 5 | 2026-04-21 |
 | [world-models](topics/world-models.md) | 3 | 2026-04-21 |
-| [document-parsing](topics/document-parsing.md) | 1 | 2026-04-18 |
+| [document-parsing](topics/document-parsing.md) | 1 | 2026-04-16 |
 | [data-centric-ai](topics/data-centric-ai.md) | 2 | 2026-04-16 |
-| [kv-cache-compression](topics/kv-cache-compression.md) | 1 | 2026-04-18 |
-| [tool-integrated-reasoning](topics/tool-integrated-reasoning.md) | 1 | 2026-04-18 |
-| [representation-learning](topics/representation-learning.md) | 2 | 2026-04-18 |
-| [agent-evaluation](topics/agent-evaluation.md) | 5 | 2026-04-17 |
+| [kv-cache-compression](topics/kv-cache-compression.md) | 1 | 2026-04-16 |
+| [tool-integrated-reasoning](topics/tool-integrated-reasoning.md) | 1 | 2026-04-16 |
+| [representation-learning](topics/representation-learning.md) | 2 | 2026-04-16 |
+| [agent-evaluation](topics/agent-evaluation.md) | 5 | 2026-04-20 |
 | [3d-detection](topics/3d-detection.md) | 1 | 2026-04-18 |
-| [benchmarks](topics/benchmarks.md) | 5 | 2026-04-18 |
+| [benchmarks](topics/benchmarks.md) | 5 | 2026-04-20 |
 | [code-agents](topics/code-agents.md) | 2 | 2026-04-21 |
 | [human-object-interaction](topics/human-object-interaction.md) | 1 | 2026-04-18 |
 | [knowledge-distillation](topics/knowledge-distillation.md) | 1 | 2026-04-18 |
@@ -83,7 +83,7 @@ Last updated: 2026-05-04 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 
 | Entity | Type | Papers | Last Updated |
 |--------|------|--------|-------------|
-| [grpo](entities/grpo.md) | algorithm | 6 | 2026-04-16 |
+| [grpo](entities/grpo.md) | algorithm | 6 | 2026-04-30 |
 | [ppo](entities/ppo.md) | algorithm | 3 | 2026-04-16 |
 | [bagel](entities/bagel.md) | model | 2 | 2026-04-16 |
 | [rlsd](entities/rlsd.md) | algorithm | 1 | 2026-04-16 |
