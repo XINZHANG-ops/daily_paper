@@ -1,3 +1,38 @@
+## [2026-05-07] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 63 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across 139 content pages: 0 genuinely broken links (1 template placeholder `[[entities/entity-name]]` in WIKI.md line 70 is intentional documentation, not a real link)
+- 0 orphan pages found (all papers linked from topic Key Papers tables; all entities linked from papers or topic Connections)
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+
+**Pass 2 — Wrong & Duplicate Information:**
+- 0 empty ## Personal Notes sections found (all 5 existing sections have substantive reader content)
+- 0 duplicate pages covering same concept
+- 0 duplicate content/paragraphs within pages
+- 0 people in entities/ (all 63 entities are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+- 0 ideas with 0 evidence links (all 9 ideas cite supporting papers via [[2604.XXXXX]] links)
+
+**Pass 3 — Connection Quality:**
+- 0 shallow "Related:" or "See also:" connections found
+- 0 paper pairs sharing 2+ entities without direct connection
+- 0 shallow entity pages (all have technical descriptions with connections explaining WHY)
+
+**Pass 4 — Index & Log:**
+- index.md last_updated: 2026-05-05 → 2026-05-07
+- Counts verified: Papers 42 | Topics 25 | Entities 63 | Ideas 9
+- This lint entry appended to wiki/log.md
+
+**Chat history review (2 sessions):**
+- User asked about "sampling is optimization" origin → traced to 2026-02-25 personal notes
+- User asked about SkillClaw collective intelligence → connected to [[ideas/collective-intelligence]]
+- User asked about MEDS, SpatialEvo, Seedance 2.0 → no new gaps identified
+- User recommended NPO (2604.20733) paper for its near-future checkpoint approach to RL training
+- User asked about "The Past Is Not Past" (MEDS) paper → full summary provided
+
+**Totals fixed:** 0 issues requiring fixes — wiki is in excellent health
+
 ## [2026-05-05] lint | daily health check
 
 **Pass 1 — Structural Integrity:**
