@@ -1,3 +1,44 @@
+## [2026-05-08] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 66 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across 142 content pages: 0 genuinely broken links in content pages (template placeholders in WIKI.md and log.md are intentional documentation)
+- 0 orphan pages found (all content pages have inbound links)
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 66 entity pages have ≥1 paper appearances; all 9 idea pages have ≥1 evidence links
+
+**Pass 2 — Wrong & Duplicate Information:**
+- Removed 35 minor entity references from paper frontmatters (entities referenced in only 1-2 papers with no corresponding wiki pages)
+- Created 3 missing entity pages for frequently-referenced benchmarks: webarena (3 papers), osworld (3 papers), swe-bench (2 papers)
+- Fixed 5 title mismatches between index.md and paper frontmatters:
+  - 2603.26164: "Data-Centric Dynamic Training of LLMs" → "...of Large Language Models"
+  - 2604.02176: "Textual Frequency Law on LLMs" → "...on Large Language Models"
+  - 2604.08546: "NUMINA: Counting in T2V" → full paper title "When Numbers Speak: Aligning Textual Numerals and Visual Instances in Text-to-Video Diffusion Models"
+  - 2604.11297: "MEDS: Memory-Enhanced Dynamic Reward Shaping" → "The Past Is Not Past: Memory-Enhanced Dynamic Reward Shaping"
+  - 2604.15308: "RAD-2: Scaling RL in Generator-Discriminator Framework" → "...Scaling Reinforcement Learning..."
+- Fixed 3 stale last_updated dates in topic pages: computer-vision (2026-04-16→2026-04-21), llm-training (2026-04-17→2026-04-21), reasoning (2026-04-18→2026-04-21)
+- 0 duplicate pages covering the same concept
+- 0 duplicate content/paragraphs within pages
+- 0 people in entities/ (all 66 entities are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+
+**Pass 3 — Connection Quality:**
+- Added 10 annotated connections from papers to new entity pages:
+  - 2604.06132 → [[entities/webarena]], [[entities/osworld]], [[entities/swe-bench]]
+  - 2604.08523 → [[entities/webarena]], [[entities/osworld]]
+  - 2604.10866 → [[entities/webarena]], [[entities/osworld]], [[entities/swe-bench]]
+- 0 shallow "Related:" or "See also:" connections found across all 142 pages
+- 0 paper pairs sharing 2+ entities without direct connections
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions with ≥30 words in "What It Is"
+
+**Pass 4 — Index & Log:**
+- Updated index.md: last_updated 2026-05-07 → 2026-05-08, entity count 63 → 66, papers 42, topics 25, ideas 9
+- Added 3 new entities to index.md entities table: webarena, osworld, swe-bench
+- Updated topic last_updated in index.md for computer-vision, llm-training, reasoning
+- This lint entry appended to wiki/log.md
+
+**Totals fixed:** 35 frontmatter entity references removed, 3 entity pages created, 5 title mismatches corrected, 3 stale dates fixed, 10 annotated connections added
+
 ## [2026-05-07] lint | daily health check
 
 **Pass 1 — Structural Integrity:**

@@ -1,19 +1,19 @@
 # Wiki Index
 
-Last updated: 2026-05-07 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
+Last updated: 2026-05-08 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 
 ## Papers
 
 | arXiv ID | Title | Date Added | Topics |
 |----------|-------|------------|--------|
-| [2604.02176](papers/2604.02176.md) | Adam's Law: Textual Frequency Law on LLMs | 2026-04-09 | llm-training, nlp |
+| [2604.02176](papers/2604.02176.md) | Adam's Law: Textual Frequency Law on Large Language Models | 2026-04-09 | llm-training, nlp |
 | [2604.04746](papers/2604.04746.md) | Think in Strokes, Not Pixels | 2026-04-09 | image-generation, multimodal-models, computer-vision |
 | [2604.06268](papers/2604.06268.md) | RAGEN-2: Reasoning Collapse in Agentic RL | 2026-04-09 | reinforcement-learning, agent-systems, llm-training |
 | [2604.07430](papers/2604.07430.md) | HY-Embodied-0.5 | 2026-04-10 | embodied-ai, multimodal-models |
 | [2604.08364](papers/2604.08364.md) | MegaStyle | 2026-04-10 | image-generation, computer-vision |
 | [2604.08377](papers/2604.08377.md) | SkillClaw | 2026-04-10 | agent-systems, llm-training |
 | [2604.08523](papers/2604.08523.md) | ClawBench | 2026-04-10 | agent-systems, agent-evaluation, benchmarks |
-| [2604.08546](papers/2604.08546.md) | NUMINA: Counting in T2V | 2026-04-10 | video-generation, computer-vision, multimodal-models |
+| [2604.08546](papers/2604.08546.md) | When Numbers Speak: Aligning Textual Numerals and Visual Instances in Text-to-Video Diffusion Models | 2026-04-10 | video-generation, computer-vision, multimodal-models |
 | [2604.06628](papers/2604.06628.md) | Rethinking Generalization in Reasoning SFT | 2026-04-13 | reinforcement-learning, reasoning, llm-training |
 | [2604.07823](papers/2604.07823.md) | LPM 1.0: Video-based Character Performance | 2026-04-13 | video-generation, multimodal-models |
 | [2604.08626](papers/2604.08626.md) | WildDet3D | 2026-04-13 | 3d-detection, embodied-ai, computer-vision |
@@ -23,10 +23,10 @@ Last updated: 2026-05-07 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 | [2604.11784](papers/2604.11784.md) | ClawGUI | 2026-04-15 | agent-systems, reinforcement-learning |
 | [2604.12627](papers/2604.12627.md) | KnowRL | 2026-04-15 | reinforcement-learning, reasoning, llm-training |
 | [2604.13016](papers/2604.13016.md) | Rethinking On-Policy Distillation | 2026-04-15 | knowledge-distillation, llm-training, reinforcement-learning |
-| [2604.11297](papers/2604.11297.md) | MEDS: Memory-Enhanced Dynamic Reward Shaping | 2026-04-16 | reinforcement-learning, reasoning, llm-training |
+| [2604.11297](papers/2604.11297.md) | The Past Is Not Past: Memory-Enhanced Dynamic Reward Shaping | 2026-04-16 | reinforcement-learning, reasoning, llm-training |
 | [2604.14144](papers/2604.14144.md) | SpatialEvo | 2026-04-16 | embodied-ai, spatial-reasoning, reinforcement-learning |
 | [2604.14148](papers/2604.14148.md) | Seedance 2.0 | 2026-04-16 | video-generation, multimodal-models, computer-vision |
-| [2603.26164](papers/2603.26164.md) | DataFlex: A Unified Framework for Data-Centric Dynamic Training of LLMs | 2026-04-06 | llm-training, data-centric-ai |
+| [2603.26164](papers/2603.26164.md) | DataFlex: A Unified Framework for Data-Centric Dynamic Training of Large Language Models | 2026-04-06 | llm-training, data-centric-ai |
 | [2604.02317](papers/2604.02317.md) | A Simple Baseline for Streaming Video Understanding | 2026-04-06 | video-understanding, computer-vision, multimodal-models |
 | [2604.02327](papers/2604.02327.md) | Steerable Visual Representations | 2026-04-06 | computer-vision, multimodal-models, representation-learning |
 | [2604.03128](papers/2604.03128.md) | Self-Distilled RLVR | 2026-04-08 | reinforcement-learning, multimodal-models, reasoning |
@@ -40,7 +40,7 @@ Last updated: 2026-05-07 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 | [2604.14268](papers/2604.14268.md) | HY-World 2.0: A Multi-Modal World Model for Reconstructing, Generating, and Simulating 3D Worlds | 2026-04-17 | world-models, embodied-ai, video-generation, computer-vision |
 | [2604.14683](papers/2604.14683.md) | DR3-Eval: Towards Realistic and Reproducible Deep Research Evaluation | 2026-04-17 | agent-systems, agent-evaluation, benchmarks, reasoning |
 | [2604.10866](papers/2604.10866.md) | OccuBench: Evaluating AI Agents on Real-World Professional Tasks | 2026-04-20 | agent-evaluation, benchmarks, agent-systems |
-| [2604.15308](papers/2604.15308.md) | RAD-2: Scaling RL in Generator-Discriminator Framework | 2026-04-20 | reinforcement-learning, embodied-ai, computer-vision |
+| [2604.15308](papers/2604.15308.md) | RAD-2: Scaling Reinforcement Learning in a Generator-Discriminator Framework | 2026-04-20 | reinforcement-learning, embodied-ai, computer-vision |
 | [2604.16044](papers/2604.16044.md) | Elucidating the SNR-t Bias of Diffusion Probabilistic Models | 2026-04-20 | image-generation, llm-training |
 | [2604.18168](papers/2604.18168.md) | Extending One-Step Image Generation from Class Labels to Text | 2026-04-21 | image-generation, computer-vision, multimodal-models |
 | [2604.18292](papers/2604.18292.md) | Agent-World | 2026-04-21 | agent-systems, llm-training, reinforcement-learning |
@@ -53,9 +53,9 @@ Last updated: 2026-05-07 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 
 | Topic | Papers | Last Updated |
 |-------|--------|-------------|
-| [computer-vision](topics/computer-vision.md) | 11 | 2026-04-16 |
+| [computer-vision](topics/computer-vision.md) | 11 | 2026-04-21 |
 | [reinforcement-learning](topics/reinforcement-learning.md) | 12 | 2026-04-21 |
-| [llm-training](topics/llm-training.md) | 10 | 2026-04-17 |
+| [llm-training](topics/llm-training.md) | 10 | 2026-04-21 |
 | [agent-systems](topics/agent-systems.md) | 9 | 2026-04-21 |
 | [video-generation](topics/video-generation.md) | 6 | 2026-04-21 |
 | [video-understanding](topics/video-understanding.md) | 2 | 2026-04-16 |
@@ -76,7 +76,7 @@ Last updated: 2026-05-07 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 | [knowledge-distillation](topics/knowledge-distillation.md) | 1 | 2026-04-18 |
 | [llm-efficiency](topics/llm-efficiency.md) | 2 | 2026-04-18 |
 | [nlp](topics/nlp.md) | 1 | 2026-04-18 |
-| [reasoning](topics/reasoning.md) | 11 | 2026-04-18 |
+| [reasoning](topics/reasoning.md) | 11 | 2026-04-21 |
 | [spatial-reasoning](topics/spatial-reasoning.md) | 1 | 2026-04-18 |
 
 ## Entities
@@ -91,6 +91,7 @@ Last updated: 2026-05-07 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 | [simplestream](entities/simplestream.md) | model | 1 | 2026-04-16 |
 | [claw-eval](entities/claw-eval.md) | benchmark | 1 | 2026-04-16 |
 | [openworldlib](entities/openworldlib.md) | framework | 1 | 2026-04-16 |
+| [osworld](entities/osworld.md) | benchmark | 3 | 2026-04-20 |
 | [mineru](entities/mineru.md) | framework | 1 | 2026-04-16 |
 | [video-mme-v2](entities/video-mme-v2.md) | benchmark | 1 | 2026-04-16 |
 | [dinov2](entities/dinov2.md) | model | 1 | 2026-04-16 |
@@ -146,6 +147,8 @@ Last updated: 2026-05-07 | Papers: 42 | Topics: 25 | Entities: 63 | Ideas: 9
 | [macm](entities/macm.md) | algorithm | 1 | 2026-04-21 |
 | [gse](entities/gse.md) | algorithm | 1 | 2026-04-21 |
 | [vggt](entities/vggt.md) | model | 1 | 2026-04-21 |
+| [swe-bench](entities/swe-bench.md) | benchmark | 2 | 2026-04-20 |
+| [webarena](entities/webarena.md) | benchmark | 3 | 2026-04-20 |
 
 ## Ideas
 

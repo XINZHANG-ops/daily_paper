@@ -2,7 +2,7 @@
 title: "Computer Vision"
 slug: computer-vision
 paper_count: 11
-last_updated: 2026-04-16
+last_updated: 2026-04-21
 ---
 
 # Computer Vision

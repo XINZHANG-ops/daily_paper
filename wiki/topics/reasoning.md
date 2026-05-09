@@ -2,7 +2,7 @@
 title: "Reasoning"
 slug: reasoning
 paper_count: 11
-last_updated: 2026-04-18
+last_updated: 2026-04-21
 ---
 
 # Reasoning
