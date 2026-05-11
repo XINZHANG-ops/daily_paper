@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-05-09 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
+Last updated: 2026-05-10 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 
 ## Papers
 
@@ -86,6 +86,7 @@ Last updated: 2026-05-09 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 | [grpo](entities/grpo.md) | algorithm | 6 | 2026-04-30 |
 | [ppo](entities/ppo.md) | algorithm | 3 | 2026-04-16 |
 | [bagel](entities/bagel.md) | model | 2 | 2026-04-16 |
+| [beV-warp](entities/beV-warp.md) | algorithm | 1 | 2026-04-20 |
 | [rlsd](entities/rlsd.md) | algorithm | 1 | 2026-04-16 |
 | [steervit](entities/steervit.md) | model | 1 | 2026-04-16 |
 | [simplestream](entities/simplestream.md) | model | 1 | 2026-04-16 |

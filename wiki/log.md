@@ -1,3 +1,69 @@
+## [2026-05-10] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 66 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted (1 entity added to index)
+- Scanned all [[wikilinks]] across 142 content pages: 0 genuinely broken links in content pages (WIKI.md template placeholders and log.md historical references are intentional)
+- 0 orphan pages found (every page has >=1 inbound link from index.md tables or annotated wikilinks)
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 66 entity pages have >=1 paper appearances; all 9 idea pages have >=1 evidence links
+
+**Pass 2 — Wrong & Duplicate Information:**
+- Added missing entity `beV-warp` to wiki/index.md entities table (was on disk but not listed in index)
+- 0 duplicate pages covering same concept
+- 0 duplicate content/paragraphs within pages
+- 0 factually inconsistent dates between paper frontmatter and topic Key Papers tables
+- 0 stale last_updated dates requiring correction (all dates reflect last actual content change on 2026-04-21)
+- All frontmatter dates, slugs, and types consistent and correct
+- 0 people in entities/ (all 66 entities are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+
+**Pass 3 — Connection Quality:**
+- 0 shallow "Related:", "See also:", or bare unannotated connections found across all 142 pages
+- All Connections sections use annotated [[wikilinks]] with WHY explanations
+- 0 paper pairs sharing 2+ entities without direct connections
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions with >=20 words in "What It Is"
+
+**Pass 4 — Index & Log:**
+- Updated index.md: last_updated 2026-05-09 → 2026-05-10
+- Counts verified: Papers 42 | Topics 25 | Entities 66 | Ideas 9
+- This lint entry appended to wiki/log.md
+
+**Totals fixed:** 1 missing index entry (beV-warp)
+
+## [2026-05-09] lint | daily health check (2nd pass)
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 66 entities, 9 ideas exist on disk — 0 missing, 0 orphans
+- 0 genuinely broken [[wikilinks]] in content pages (all 43 bare arxiv IDs, 24 topic links, 66 entity links, 8 idea links resolve to existing files)
+- All 25 topic paper_counts match actual Key Papers table rows
+- All 66 entity pages have valid slug/type/paper_count/appearances
+- All 9 idea pages have slug/source/evidence links
+
+**Pass 2 — Wrong & Duplicate Information:**
+- 0 duplicate pages or content
+- 0 factually inconsistent dates
+- 0 stale last_updated dates
+- 0 people in entities/ (all 66 are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+- 2 entity pages (video-mme-v2, waver-1-0) contain "human expert" in benchmark description — this is factual description of benchmark quality metric, not a person → no fix needed
+
+**Pass 3 — Connection Quality:**
+- 0 shallow "Related:", "See also:", or bare unannotated connections (verified across 42 paper pages + 25 topic pages)
+- All 25 topic pages have both ## Evolution (chronological narrative) and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions ≥30 words
+- 0 paper pairs sharing 2+ entities without direct connections
+
+**Pass 4 — Chat History Review (2 sessions):**
+- Session acd03855: User asked about sampling-is-optimization origin → traced to 2026-02-25 notes; User asked about SkillClaw abstract translation → provided full translation; User asked about "The Past Is Not Past" (MEDS) paper → full summary; User recommended NPO (2604.20733) for near-future checkpoint approach to RL training
+- Session ccd705ef: User asked about "sampling is optimization" origin → traced to 2026-02-25; User reviewed SkillClaw collective intelligence; User asked about 2026-04-16 papers: MEDS, SpatialEvo, Seedance 2.0
+- No new gaps identified; wiki adequately covers user interests
+
+**Pass 5 — Index & Log:**
+- index.md last_updated: 2026-05-09 (already current)
+- Counts verified: Papers 42 | Topics 25 | Entities 66 | Ideas 9
+- Note: 41 summary.json files in wiki/raw/ representing papers from 2026-04-06 to 2026-04-21 plus _all_notes (6 files from 2026-02) — all have been processed into wiki pages
+
+**Totals fixed:** 0 issues requiring fixes — wiki remains in excellent health
+
 ## [2026-05-09] lint | daily health check
 
 **Pass 1 — Structural Integrity:**
