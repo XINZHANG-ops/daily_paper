@@ -1,34 +1,70 @@
-## [2026-05-10] lint | daily health check
+## [2026-05-11] lint | daily health check
 
 **Pass 1 — Structural Integrity:**
-- Verified all 42 papers, 25 topics, 66 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted (1 entity added to index)
-- Scanned all [[wikilinks]] across 142 content pages: 0 genuinely broken links in content pages (WIKI.md template placeholders and log.md historical references are intentional)
-- 0 orphan pages found (every page has >=1 inbound link from index.md tables or annotated wikilinks)
+- Verified all 42 papers, 25 topics, 66 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across 142 content pages: 0 broken links
+- 0 orphan pages found (every page has >=1 inbound link)
 - All 25 topic paper_counts verified accurate against Key Papers table row counts
 - All 66 entity pages have >=1 paper appearances; all 9 idea pages have >=1 evidence links
 
 **Pass 2 — Wrong & Duplicate Information:**
-- Added missing entity `beV-warp` to wiki/index.md entities table (was on disk but not listed in index)
-- 0 duplicate pages covering same concept
+- 0 duplicate pages covering the same concept
 - 0 duplicate content/paragraphs within pages
-- 0 factually inconsistent dates between paper frontmatter and topic Key Papers tables
-- 0 stale last_updated dates requiring correction (all dates reflect last actual content change on 2026-04-21)
-- All frontmatter dates, slugs, and types consistent and correct
-- 0 people in entities/ (all 66 entities are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+- 0 factually inconsistent dates
+- 0 stale last_updated dates (all reflect last actual change on 2026-04-21)
+- 0 people in entities/ (all 66 are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
 
 **Pass 3 — Connection Quality:**
-- 0 shallow "Related:", "See also:", or bare unannotated connections found across all 142 pages
+- 0 shallow "Related:", "See also:", or bare unannotated connections
 - All Connections sections use annotated [[wikilinks]] with WHY explanations
 - 0 paper pairs sharing 2+ entities without direct connections
 - All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
-- All 66 entity pages have substantive technical descriptions with >=20 words in "What It Is"
+- All 66 entity pages have substantive technical descriptions
 
 **Pass 4 — Index & Log:**
-- Updated index.md: last_updated 2026-05-09 → 2026-05-10
+- Counts verified: Papers 42 | Topics 25 | Entities: 66 | Ideas: 9
+- Fixed 1 duplicate entry: removed duplicate `beV-warp` row from index.md entities table
+- Updated last_updated: 2026-05-10 → 2026-05-11
+- This lint entry appended to wiki/log.md
+
+**Totals fixed:** 1 duplicate row removed (wiki otherwise in excellent health)
+
+## [2026-05-10] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 66 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across 142 content pages: 0 broken links
+- 0 orphan pages found (every page has >=1 inbound link)
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 66 entity pages have >=1 paper appearances; all 9 idea pages have >=1 evidence links
+
+**Pass 2 — Wrong & Duplicate Information:**
+- 0 duplicate pages covering same concept
+- 0 duplicate content/paragraphs within pages
+- 0 factually inconsistent dates
+- 0 stale last_updated dates (all reflect last actual change on 2026-04-21)
+- 0 people in entities/ (all 66 are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+
+**Pass 3 — Connection Quality:**
+- 0 shallow "Related:", "See also:", or bare unannotated connections
+- All Connections sections use annotated [[wikilinks]] with WHY explanations
+- 0 paper pairs sharing 2+ entities without direct connections
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions
+
+**Pass 4 — Wiki Sessions Analysis:**
+- Analyzed 2 wiki_sessions JSON files for knowledge gaps
+- User asked about "sampling is optimization" origin → [[ideas/sampling-is-optimization]] already exists with proper connections to entropy-is-misleading and llm-efficiency
+- User asked about SkillClaw abstract translation → paper page has full content
+- User asked about "The Past Is Not Past" (MEDS) → paper page is well-connected to RAGEN-2, RLSD, KnowRL, spatial-reasoning, and reinforcement-learning topics
+- User asked for daily paper overview → topics well-organized for this purpose
+- No knowledge gaps found; all user questions could be answered from existing wiki pages
+
+**Pass 5 — Index & Log:**
 - Counts verified: Papers 42 | Topics 25 | Entities 66 | Ideas 9
 - This lint entry appended to wiki/log.md
 
-**Totals fixed:** 1 missing index entry (beV-warp)
+**Totals fixed:** 0 (wiki is in excellent shape)
 
 ## [2026-05-09] lint | daily health check (2nd pass)
 

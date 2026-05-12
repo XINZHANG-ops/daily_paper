@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-05-10 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
+Last updated: 2026-05-11 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 
 ## Papers
 
@@ -127,7 +127,6 @@ Last updated: 2026-05-10 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 | [agentbench](entities/agentbench.md) | benchmark | 1 | 2026-04-18 |
 | [les](entities/les.md) | algorithm | 1 | 2026-04-20 |
 | [tc-grpo](entities/tc-grpo.md) | algorithm | 1 | 2026-04-20 |
-| [beV-warp](entities/beV-warp.md) | algorithm | 1 | 2026-04-20 |
 | [dcw](entities/dcw.md) | algorithm | 1 | 2026-04-20 |
 | [blip3o-next](entities/blip3o-next.md) | model | 1 | 2026-04-21 |
 | [meanflow](entities/meanflow.md) | algorithm | 2 | 2026-04-21 |
