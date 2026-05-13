@@ -1,3 +1,35 @@
+## [2026-05-12] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- Verified all 42 papers, 25 topics, 66 entities, 9 ideas exist on disk and match index.md entries — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across 142 content pages: 0 broken links
+- 0 orphan pages found (every page has >=1 inbound link)
+- All 25 topic paper_counts verified accurate against Key Papers table row counts
+- All 66 entity pages have >=1 paper appearances; all 9 idea pages have >=1 evidence links
+
+**Pass 2 — Wrong & Duplicate Information:**
+- 0 duplicate pages covering the same concept
+- 0 duplicate content/paragraphs within pages
+- 0 factually inconsistent dates between paper frontmatter and index.md
+- 0 stale last_updated dates (all reflect last actual change on 2026-04-21)
+- 0 people in entities/ (all 66 are technical: algorithms, models, benchmarks, frameworks, protocols, concepts, metrics)
+- All paper frontmatter topic/entity references resolve to existing pages
+- All entity paper_count values match actual appearances table rows
+
+**Pass 3 — Connection Quality:**
+- 0 shallow "Related:", "See also:", or bare unannotated connections
+- All Connections sections use annotated [[wikilinks]] with WHY explanations
+- 0 paper pairs sharing 2+ entities without direct connections
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions
+
+**Pass 4 — Index & Log:**
+- Counts verified: Papers 42 | Topics 25 | Entities: 66 | Ideas: 9
+- Updated last_updated: 2026-05-11 → 2026-05-12
+- This lint entry appended to wiki/log.md
+
+**Totals fixed:** 0 (wiki in excellent health)
+
 ## [2026-05-11] lint | daily health check
 
 **Pass 1 — Structural Integrity:**
