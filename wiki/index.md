@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-05-14 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
+Last updated: 2026-05-15 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 
 ## Papers
 
