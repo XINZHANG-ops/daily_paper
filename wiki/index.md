@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last updated: 2026-05-15 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
+Last updated: 2026-05-17 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 
 ## Papers
 
@@ -53,9 +53,9 @@ Last updated: 2026-05-15 | Papers: 42 | Topics: 25 | Entities: 66 | Ideas: 9
 
 | Topic | Papers | Last Updated |
 |-------|--------|-------------|
-| [computer-vision](topics/computer-vision.md) | 11 | 2026-04-21 |
-| [reinforcement-learning](topics/reinforcement-learning.md) | 12 | 2026-04-21 |
-| [llm-training](topics/llm-training.md) | 10 | 2026-04-21 |
+| [computer-vision](topics/computer-vision.md) | 14 | 2026-05-16 |
+| [reinforcement-learning](topics/reinforcement-learning.md) | 13 | 2026-05-16 |
+| [llm-training](topics/llm-training.md) | 11 | 2026-05-16 |
 | [agent-systems](topics/agent-systems.md) | 9 | 2026-04-21 |
 | [video-generation](topics/video-generation.md) | 6 | 2026-04-21 |
 | [video-understanding](topics/video-understanding.md) | 2 | 2026-04-16 |

@@ -1,8 +1,8 @@
 ---
 title: "Computer Vision"
 slug: computer-vision
-paper_count: 11
-last_updated: 2026-04-21
+paper_count: 14
+last_updated: 2026-05-16
 ---
 
 # Computer Vision
@@ -30,6 +30,9 @@ Early April 2026 saw representation learning advances: SteerViT unlocked latent 
 | [[2604.11804]] OmniShow | 2026-04-14 | Human-object interaction video generation |
 | [[2604.18168]] EMF | 2026-04-21 | Extending one-step MeanFlow image generation to text-conditioned |
 | [[2604.18486]] OneVL | 2026-04-21 | Latent CoT with world model supervision for embodied vision |
+| [[2604.14148]] Seedance 2.0 | 2026-04-16 | Advancing video generation for world complexity |
+| [[2604.14268]] HY-World 2.0 | 2026-04-17 | Multi-modal world model for reconstructing, generating, and simulating 3D worlds |
+| [[2604.15308]] RAD-2 | 2026-04-20 | Generator-discriminator RL for motion planning with visual world model |
 
 ## Patterns & Insights
 

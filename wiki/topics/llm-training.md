@@ -1,8 +1,8 @@
 ---
 title: "LLM Training"
 slug: llm-training
-paper_count: 10
-last_updated: 2026-04-21
+paper_count: 11
+last_updated: 2026-05-16
 ---
 
 # LLM Training
@@ -31,6 +31,7 @@ Early April 2026 saw Adam's Law establish textual frequency as a fundamental dim
 | [[2604.16044]] Elucidating SNR-t | 2026-04-20 | SNR-t bias in diffusion models affecting training |
 | [[2604.11626]] RationalRewards | 2026-04-17 | Test-time prompt tuning matches RL fine-tuning |
 | [[2604.18292]] Agent-World | 2026-04-21 | Multi-environment GRPO with self-evolving training arena |
+| [[2604.06268]] RAGEN-2 | 2026-04-09 | Template collapse identification and SNR-aware filtering |
 
 ## Patterns & Insights
 
