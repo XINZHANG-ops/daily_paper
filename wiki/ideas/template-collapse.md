@@ -4,6 +4,7 @@ slug: template-collapse
 type: idea
 source: paper
 last_updated: 2026-04-16
+evidence_count: 3
 ---
 
 # Template Collapse

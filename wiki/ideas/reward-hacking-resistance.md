@@ -4,6 +4,7 @@ slug: reward-hacking-resistance
 type: idea
 source: paper
 last_updated: 2026-04-17
+evidence_count: 2
 ---
 
 # Reward Hacking Resistance Through Structured Reasoning

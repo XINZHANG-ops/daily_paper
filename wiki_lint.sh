@@ -14,7 +14,7 @@ REPO="$(cd "$(dirname "$0")" && pwd)"
 WIKI_DIR="$REPO/wiki"
 LLM_WIKI="$REPO/llm-wiki.md"
 PROJECT_SCHEMA="$WIKI_DIR/WIKI.md"
-MODEL="${1:-kimi-k2.6:cloud}"
+MODEL="${1:-minimax-m2.5:cloud}"
 TODAY="$(date '+%Y-%m-%d')"
 LINT_MARKER="$REPO/logs/lint_done_${TODAY}.json"
 

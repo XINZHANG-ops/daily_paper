@@ -4,6 +4,7 @@ slug: sampling-is-optimization
 type: idea
 source: note
 last_updated: 2026-04-16
+evidence_count: 1
 ---
 
 # Sampling Is Optimization

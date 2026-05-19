@@ -4,6 +4,7 @@ slug: collective-intelligence
 type: idea
 source: synthesis
 last_updated: 2026-04-16
+evidence_count: 2
 ---
 
 # Collective Intelligence in AI Systems

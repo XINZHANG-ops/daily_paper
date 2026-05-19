@@ -4,6 +4,7 @@ slug: agent-reliability-systems
 type: idea
 source: synthesis
 last_updated: 2026-04-16
+evidence_count: 4
 ---
 
 # Agent Reliability Is a Systems Problem

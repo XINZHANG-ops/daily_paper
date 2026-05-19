@@ -4,6 +4,7 @@ slug: on-policy-rl-idling
 type: idea
 source: note
 last_updated: 2026-04-16
+evidence_count: 1
 ---
 
 # On-Policy RL Training Idling

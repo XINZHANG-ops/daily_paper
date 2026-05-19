@@ -4,6 +4,7 @@ slug: hallucination-universal
 type: idea
 source: paper
 last_updated: 2026-04-17
+evidence_count: 2
 ---
 
 # Hallucination Is Universal Across Model Scale

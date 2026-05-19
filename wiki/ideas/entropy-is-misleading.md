@@ -4,6 +4,7 @@ slug: entropy-is-misleading
 type: idea
 source: synthesis
 last_updated: 2026-04-16
+evidence_count: 3
 ---
 
 # Entropy Is Misleading
