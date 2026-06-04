@@ -12,7 +12,14 @@ WIKI_DIR="$REPO/wiki"
 RAW_DIR="$WIKI_DIR/raw"
 LLM_WIKI="$REPO/llm-wiki.md"
 PROJECT_SCHEMA="$WIKI_DIR/WIKI.md"
-MODEL="${1:-minimax-m2.5:cloud}"
+_read_model() {
+    python3 -c "
+import json, os
+c = json.load(open(os.path.expanduser('~/Desktop/model-config.json')))
+print(c.get('projects', {}).get('$1') or c['default_model'])
+" 2>/dev/null || echo "minimax-m3:cloud"
+}
+MODEL="${1:-$(_read_model daily-paper)}"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
