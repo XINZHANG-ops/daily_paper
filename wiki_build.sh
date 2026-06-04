@@ -148,3 +148,10 @@ ollama launch claude \
     --permission-mode dontAsk 2>&1 | tee -a "$REPO/wiki_build.log"
 
 log "Wiki build complete."
+
+cd "$REPO"
+git add -A wiki/
+DIFF_STAT="$(git diff --cached --stat 2>/dev/null | tail -1)"
+git commit -m "wiki: build $(date '+%Y-%m-%d')" || true
+git push || true
+log "Pushed wiki changes. ($DIFF_STAT)"
