@@ -299,3 +299,38 @@
 - No new gaps requiring wiki updates identified
 
 **Totals fixed:** 2 (opengame-bench.md paper_count, 2604.04746.md topic links)
+
+## [2026-06-09] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- 6 broken wikilinks in WIKI.md (template examples: 0000.00000, 2503.01785, 2503.01786, wikilink, wikilinks) — documentation only, not in real content
+- 0 broken wikilinks in actual wiki content (papers/, topics/, entities/, ideas/)
+- All 42 papers, 25 topics, 66 entities, 9 ideas verified on disk
+- processed.json count (42) matches actual paper files (42)
+
+**Pass 2 — Metadata Consistency:**
+- All topic paper_counts match Key Papers table rows (verified 25/25)
+- All entity paper_counts match Appearances table rows (verified 66/66)
+- All paper frontmatter topic/entity slugs resolve to existing files
+
+**Pass 3 — Orphan Analysis (corrected):**
+- 7 papers appear "orphan" by Connections analysis, but ALL are properly referenced in topic pages (orphan detection was methodologically incorrect — topic pages DO link to these papers)
+- 3 entities (wan-vae, rad-2, qwen3-5-27b) not in paper frontmatter but properly referenced in Connections sections — acceptable
+
+**Pass 4 — Connection Quality:**
+- 0 shallow "Related:" or "See also:" connections in paper Connections
+- Topic Connections use descriptive-only explanations (explains WHAT, not WHY) — acceptable for topic-level context
+- All paper pairs sharing 2+ entities have direct cross-connections (verified 6 pairs)
+
+**Pass 5 — Session Insights (from wiki_sessions/):**
+- NPO (2604.20733) and DR-Venus (2604.19859) mentioned in chat but not in wiki — these papers are beyond current wiki coverage (2026-04-21 cutoff)
+- Stable error basin concept from MEDS (2604.11297) not documented as idea page
+- Physical grounding concept from SpatialEvo (2604.14144) not documented as idea page
+- Current wiki covers papers up to 2026-04-21; sessions reference papers from 2026-04-23 onwards
+
+**Gaps Identified:**
+1. Wiki coverage gap: papers from 2026-04-23+ (NPO, DR-Venus, etc.) not yet ingested
+2. Stable error basin idea not created (MEDS concept)
+3. Physical grounding idea not created (SpatialEvo concept)
+
+**Totals fixed:** 0 (no issues requiring fixes in current content)
