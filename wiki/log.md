@@ -334,3 +334,49 @@
 3. Physical grounding idea not created (SpatialEvo concept)
 
 **Totals fixed:** 0 (no issues requiring fixes in current content)
+
+## [2026-06-11] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- 0 broken wikilinks across all 4 directories (papers/topics/entities/ideas) — resolved correctly: bare `[[2604.xxxxx]]` → papers/, `[[entities/foo]]` → entities/, `[[topics/bar]]` → topics/
+- All 25 topic paper_counts match actual Key Papers table rows
+- All 66 entity paper_counts match actual Appearances table rows
+- 0 orphan papers — all 42 papers linked from at least 1 topic page
+- 3 entity orphans flagged (harmon, ppo, waver-1-0) but all have inbound links from topic/entity pages — not true orphans
+- All 9 idea pages have >=1 evidence links
+
+**Pass 2 — Wrong & Duplicate Information:**
+- 0 duplicate pages or paragraphs
+- 0 factually inconsistent dates between paper frontmatter and index.md
+- 10 entities flagged by heuristic (possible person names) but ALL are valid technical constructs:
+  - mcp (type=protocol): Model Context Protocol — valid technical protocol
+  - pte (type=metric): Performance to Estimated — valid technical metric concept
+  - latent-cot (type=concept): Latent Chain-of-Thought — valid technical concept
+  - dcw, tc-grpo, flow-matching, les, gse — all algorithm/framework acronyms, not people
+- 0 actual people in entities/ — all 66 are technical
+
+**Pass 3 — Connection Quality:**
+- 0 shallow "Related:" or "See also:" connections — all Connections use annotated [[wikilinks]] with WHY explanations
+- 0 paper pairs sharing 2+ entities without direct cross-connections (verified all pairs)
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions
+
+**Pass 4 — Session Insights (from wiki_sessions/):**
+- 3 chat sessions reviewed (2026-05-19, 2026-05-23, 2026-06-11 context)
+- User confirmed "sampling is optimization" idea from 2026-02-25 notes is in wiki
+- User asked about SkillClaw (2604.08377) abstract translation — paper properly in wiki
+- User asked about "The Past Is Not Past" (2604.11297) — paper properly in wiki (MEDS concept)
+- User asked about SpatialEvo (2604.14144) — paper properly in wiki (DGE concept)
+- User asked about Seedance 2.0 (2604.14148) — paper properly in wiki
+- User explored 2026-04-23 papers: LLaDA2.0-Uni (2604.20796), NPO (2604.20733), DR-Venus (2604.19859) — all beyond wiki coverage (2026-04-21 cutoff)
+- User asked for today's paper recommendations (2605.18739 LongLive-2.0, 2605.18678 Lance, 2605.18401 SkillsVote) — beyond wiki coverage
+- User explored 2026-04-24 papers: WorldMark (2604.21686), StyleID (2604.21689), DeVI (2604.20841) — all beyond wiki coverage
+
+**Gaps Identified (same as prior lint):**
+1. Wiki coverage gap: papers from 2026-04-22 onwards NOT in wiki (latest: 2604.18574 from 2026-04-21)
+2. Stable error basin idea from MEDS (2604.11297) — mentioned in chat but not created as separate idea page
+3. Physical grounding / DGE idea from SpatialEvo (2604.14144) — mentioned in chat but not created as separate idea page
+4. Both MEDS and SpatialEvo concepts are properly documented within their paper pages but not extracted as standalone ideas
+
+**Totals fixed:** 0 (no issues requiring fixes — wiki is structurally sound)
+**Recommended action:** No structural fixes needed. Wiki is healthy. Outstanding gap remains: 770 papers from summaries.jsonl not yet ingested (2026-04-22 onwards).
