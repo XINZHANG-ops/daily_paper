@@ -380,3 +380,90 @@
 
 **Totals fixed:** 0 (no issues requiring fixes — wiki is structurally sound)
 **Recommended action:** No structural fixes needed. Wiki is healthy. Outstanding gap remains: 770 papers from summaries.jsonl not yet ingested (2026-04-22 onwards).
+
+## [2026-06-12] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- Verified 42 papers, 25 topics, 66 entities, 9 ideas exist on disk — 0 missing, 0 unlisted
+- Scanned all [[wikilinks]] across wiki: 0 broken links to papers, topics, entities, or ideas
+- No orphan papers (all papers linked from at least one topic)
+- No orphan topics (all topics referenced in paper frontmatter)
+- All topic paper_counts match actual Key Papers table rows (verified via lint_check3.py)
+- All entity paper_counts match actual Appearances table rows
+
+**Pass 2 — Connection Quality:**
+- 0 shallow connections found (no "Related:" or "See also:" without WHY annotation)
+- All topic pages have ## Evolution and ## Patterns & Insights sections
+- No people found in entities/ (correctly restricted to technical things only)
+- All ideas have evidence links (2-7 per idea)
+
+**Pass 3 — Metadata Consistency:**
+- index.md matches wiki/papers/ directory (all listed papers exist)
+- WIKI.md template examples (2503.01785, 0000.00000) are in schema docs only — intentional
+
+**Status: HEALTHY** — No fixes needed.
+
+## [2026-06-13] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- 0 broken wikilinks across all 4 directories (papers/topics/entities/ideas)
+- 0 orphan pages — all 142 pages have >=1 inbound links
+- All 25 topic paper_counts match actual Key Papers table rows
+- All 66 entity paper_counts match actual Appearances table rows
+- 0 duplicate paper titles or arxiv IDs
+- All 9 idea pages have >=1 evidence links
+- processed.json count (42) matches actual paper files (42)
+- index.md counts verified: Papers=42, Topics=25, Entities=66, Ideas=9
+
+**Pass 2 — Wrong & Duplicate Information:**
+- 0 duplicate pages or paragraphs
+- 0 factually inconsistent dates
+- 1 potential false positive: flow-matching.md has title "Flow Matching" — appears technical (flow matching algorithm), not a person
+
+**Pass 3 — Connection Quality:**
+- 0 shallow "Related:" or "See also:" connections — all Connections use annotated [[wikilinks]] with WHY explanations
+- 0 paper pairs sharing 2+ entities without direct cross-connections
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions
+- All 9 idea pages have complete sections (The Insight, Evidence, Implications, Connections)
+
+**Pass 4 — Session Insights (from wiki_sessions/):**
+- 3 chat sessions reviewed
+- User asked about "sampling is optimization" — confirmed in wiki/ideas/sampling-is-optimization.md (origin: 2026-02-25 notes on Decoding as Optimisation paper)
+- User asked about SkillClaw (2604.08377) abstract translation — paper properly in wiki
+- User asked about "The Past Is Not Past" (2604.11297) — MEDS paper properly in wiki
+- User asked about SpatialEvo (2604.14144) — paper properly in wiki
+- User asked about Seedance 2.0 (2604.14148) — paper properly in wiki
+- User explored 2026-04-23 papers (LLaDA2.0, NPO, DR-Venus) — beyond wiki coverage
+- User explored 2026-04-24 papers (WorldMark, StyleID, DeVI) — beyond wiki coverage
+- User explored 2026-05-19 papers (LongLive-2.0) — beyond wiki coverage
+- No new gaps requiring wiki updates identified
+
+**Status: HEALTHY** — No fixes needed.
+
+## [2026-06-14] lint | daily health check
+
+**Pass 1 — Structural Integrity:**
+- 0 broken wikilinks across all 4 directories (papers/topics/entities/ideas)
+- 0 orphan pages — all 142 pages have >=1 inbound links
+- All 25 topic paper_counts match actual Key Papers table rows
+- All 66 entity paper_counts match actual Appearances table rows
+- 0 duplicate paper titles or arxiv IDs
+- All 9 idea pages have >=1 evidence links
+- processed.json in sync with actual paper files
+- index.md counts verified: Papers=42, Topics=25, Entities=66, Ideas=9
+
+**Pass 2 — Connection Quality:**
+- 0 shallow "Related:" or "See also:" connections — all Connections use annotated [[wikilinks]] with WHY explanations
+- 0 paper pairs sharing 2+ entities without direct cross-connections
+- All 25 topic pages have both ## Evolution and ## Patterns & Insights sections
+- All 66 entity pages have substantive technical descriptions
+- All 9 idea pages have complete sections (The Insight, Evidence, Implications, Connections)
+- No people found in entities/ (correctly restricted to technical things only)
+
+**Pass 3 — Session Insights (from wiki_sessions/):**
+- 3 chat sessions reviewed
+- User explored papers across multiple dates (2026-04-23, 2026-04-24, 2026-05-19) — beyond wiki coverage
+- No new gaps requiring wiki updates identified
+
+**Status: HEALTHY** — No fixes needed.
