@@ -467,3 +467,30 @@
 - No new gaps requiring wiki updates identified
 
 **Status: HEALTHY** — No fixes needed.
+
+## [2026-06-16] lint | Daily health check
+
+**Structural Integrity (4/4 passed):**
+- Topic paper_count vs actual: 0 mismatches (25 topics checked)
+- Entity paper_count vs actual: 0 mismatches (66 entities checked)
+- Orphan detection: 0 orphan papers, 0 orphan topics
+- Broken wikilinks: 0 broken paper links (WIKI.md schema examples excluded)
+
+**Connection Quality (4/4 passed):**
+- Shallow connections: 0 found (all use annotated [[wikilinks]])
+- Cross-entity paper connections: 0 pairs missing direct links
+- Topic sections: All 25 topics have ## Evolution and ## Patterns & Insights
+- Entity depth: All 66 entities have substantive "What It Is" descriptions (>50 chars)
+
+**Index Consistency:**
+- Papers in index: 42, Paper files: 42 ✓
+- Topic coverage: 121 topic-paper links (79 cross-references = papers in multiple topics) ✓
+- Entities with appearances: 100% (66/66) ✓
+- Ideas with evidence: 100% (9/9) ✓
+
+**Session Insights:**
+- 3 wiki_sessions reviewed (2026-04-23, 2026-04-24, 2026-05-19 dates)
+- User asked about "sampling is optimization" origin → already documented in ideas/sampling-is-optimization.md (2026-04-16)
+- No new knowledge gaps identified
+
+**Status: HEALTHY** — No fixes needed.
