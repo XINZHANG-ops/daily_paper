@@ -345,7 +345,7 @@ if __name__ == "__main__":
                     f.write(json.dumps(paper_info) + '\n')
             
             articles.append(paper_info)
-            
+
             processed += 1
             print(f"[daily_papers] Successfully processed {processed}/{paper_counts}: {paper_info.get('title', 'unknown')[:60]}")
 
@@ -400,7 +400,6 @@ if __name__ == "__main__":
     def push_to_github():
         subprocess.run(["git", "add", "index.html", "dailies/pages/", "dailies/notes/", "dailies/images/", "dailies/tips/"])
         subprocess.run(["git", "add", "summaries.jsonl"])
-        subprocess.run(["git", "add", "wiki/"])
         subprocess.run(["git", "commit", "-m", "Daily Paper Push"])
         subprocess.run(["git", "push", "origin", "main"])
     

@@ -4,10 +4,14 @@ arXiv integration utilities.
 Functions for downloading and processing papers from arXiv.
 """
 import io
+import os
 import re
+from datetime import date
 import requests
 from pypdf import PdfReader
 from loguru import logger
+
+PDF_CACHE_DIR = os.path.expanduser("~/daily_paper/pdf_cache")
 
 
 def extract_arxiv_id(paper_info):
@@ -91,6 +95,20 @@ def download_paper_text(paper_info):
         for page_num in range(num_pages):
             page = pdf_reader.pages[page_num]
             text += page.extract_text() + "\n\n"
+
+        # Cache parsed PDF text by <today>_<arxiv_id>.txt — local artifact
+        # of daily_paper's own parsing, reused by downstream consumers
+        # (e.g. ~/Desktop/Wiki/daily_paper/sync_from_daily_paper.py).
+        try:
+            arxiv_id = extract_arxiv_id(paper_info)
+            if arxiv_id:
+                os.makedirs(PDF_CACHE_DIR, exist_ok=True)
+                today = date.today().strftime("%Y-%m-%d")
+                cache_path = os.path.join(PDF_CACHE_DIR, f"{today}_{arxiv_id}.txt")
+                with open(cache_path, "w", encoding="utf-8") as f:
+                    f.write(text)
+        except Exception as e:
+            logger.warning(f"PDF cache write failed: {e}")
 
         return {
             "success": True,
