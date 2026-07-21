@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-07-21 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Language toggle */
+        #lang-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10000;
+        }
+        #lang-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        #lang-btn:hover {
+            background-color: #1557b0;
+        }
+
+        /* Daily tips */
+        .daily-tips-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0 20px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .tips-heading {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .tips-content {
+            background-color: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #333;
+            font-size: 1em;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="lang-toggle">
+        <button id="lang-btn" onclick="toggleLang()">ZH</button>
+    </div>
+    <h1>2026-07-21 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/black-orchid.png');">
+                    <h2 style="color: #ffffff;">Paper 1</h2>
+                    <p style="color: #badb12;"><strong>SWE-Pruner Pro: The Coder LLM Already Knows What to Prune</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-07-19</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2607.18213" target="_blank">http://arxiv.org/pdf/2607.18213</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper addresses context pruning for coding agents, specifically focusing on efficient long-context management in multi-turn software engineering workflows using Large Language Models (LLMs).</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on prior context pruning work like SWE-Pruner, which uses a separate scoring model conditioned on an explicit goal-hint query, and general-purpose compressors like LLMLingua2 and LongCodeZip. The new idea is to read the pruning signal directly from the agent backbone's own internal representations (hidden states) rather than relying on an external scoring model, eliminating the need for additional model calls or goal-hint queries.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper solves the problem of redundant long tool outputs accumulating in coding agents' context windows during multi-turn interactions, which inflates costs, triggers long-context degradation, and limits efficiency, while existing pruning methods require extra models or queries that add overhead.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The method attaches a lightweight pruning head (FFN with LayerNorm, dropout, and length-aware embedding) to the frozen agent backbone that reads last-layer hidden states from the prefill pass, using a per-sample balanced focal loss and length-aware embedding indexed by line count to produce per-token keep-or-prune logits aggregated into per-line decisions.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> SWE-Pruner Pro saves up to 39% of prompt and completion tokens across two backbones (MiMo-V2-Flash and Qwen3-Coder-Next) and four benchmarks (SWE-Bench Verified, SWE-QA, SWE-QA-Pro, Oolong), while preserving or improving task quality—boosting MiMo-V2-Flash's SWE-Bench Verified resolve rate by +3.8% and Oolong accuracy by +2.2 points, with only 15% added inference overhead.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 本文聚焦于编码代理的上下文剪枝，属于多轮软件工程工作流中大语言模型（LLM）长上下文高效管理的研究领域。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 本文基于先前上下文剪枝工作，如使用独立评分模型并依赖显式目标提示查询的 SWE-Pruner，以及 LLMLingua2、LongCodeZip 等通用压缩器。创新之处在于直接从代理主干的内部表征（隐藏状态）中读取剪枝信号，无需额外的评分模型、模型调用或目标提示查询。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 本文解决了编码代理在多轮交互中累积冗长工具输出导致上下文窗口膨胀、推理成本上升及长上下文性能退化的问题，同时克服现有剪枝方法需额外模型或查询带来开销的局限性。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 该方法在冻结的代理主干上附加一个轻量级剪枝头（含 LayerNorm、Dropout 的 FFN 及长度感知嵌入），从前缀填充过程中读取最后一层隐藏状态，使用逐样本平衡焦点损失和按行数索引的长度感知嵌入生成逐 token 的保留/剪枝 logits，再聚合成逐行决策。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> SWE-Pruner Pro 在两个主干模型（MiMo-V2-Flash 和 Qwen3-Coder-Next）和四个基准测试（SWE-Bench Verified、SWE-QA、SWE-QA-Pro、Oolong）上最多节省 39% 的 prompt 和 completion token，同时保持或提升任务质量——将 MiMo-V2-Flash 在 SWE-Bench Verified 的解决率提升 +3.8%，Oolong 准确率提升 +2.2 分，且仅增加 15% 的推理开销。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It reads the pruning signal directly from the agent backbone's internal hidden states, eliminating the need for a separate scoring model or goal-hint query" data-lang="en">
+                        <div class="quiz-question">1. What is the key innovation of SWE-Pruner Pro compared to the original SWE-Pruner?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It uses a larger language model as the scoring backbone">It uses a larger language model as the scoring backbone</div><div class="quiz-choice long-text" data-value="It reads the pruning signal directly from the agent backbone's internal hidden states, eliminating the need for a separate scoring model or goal-hint query">It reads the pruning signal directly from the agent backbone's internal hidden states, eliminating the need for a separate scoring model or goal-hint query</div><div class="quiz-choice" data-value="It replaces line-level pruning with token-level perplexity scoring">It replaces line-level pruning with token-level perplexity scoring</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="它直接从 agent 骨干网络的内部隐藏状态中读取剪枝信号，无需单独的评分模型或目标提示查询" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. SWE-Pruner Pro 与原始 SWE-Pruner 相比的关键创新是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="它使用更大的语言模型作为评分骨干">它使用更大的语言模型作为评分骨干</div><div class="quiz-choice" data-value="它直接从 agent 骨干网络的内部隐藏状态中读取剪枝信号，无需单独的评分模型或目标提示查询">它直接从 agent 骨干网络的内部隐藏状态中读取剪枝信号，无需单独的评分模型或目标提示查询</div><div class="quiz-choice" data-value="它用 token 级别的困惑度评分取代了行级剪枝">它用 token 级别的困惑度评分取代了行级剪枝</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Because the keep/prune imbalance is per-sample rather than global, and rebalancing within each sample protects the recall of the minority class in each sample" data-lang="en">
+                        <div class="quiz-question">2. Why does SWE-Pruner Pro use a per-sample balanced focal loss instead of standard cross-entropy or batch-level focal loss?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Because the keep/prune imbalance is per-sample rather than global, and rebalancing within each sample protects the recall of the minority class in each sample">Because the keep/prune imbalance is per-sample rather than global, and rebalancing within each sample protects the recall of the minority class in each sample</div><div class="quiz-choice" data-value="Because the backbone is frozen and requires a special loss to update it">Because the backbone is frozen and requires a special loss to update it</div><div class="quiz-choice" data-value="Because the model only outputs binary decisions at inference time">Because the model only outputs binary decisions at inference time</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="因为 keep/prune 的不平衡是 per-sample 的而非全局的，在每个样本内重新平衡可以保护每个样本中少数类的召回率" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 为什么 SWE-Pruner Pro 使用 per-sample balanced focal loss 而不是标准的交叉熵或 batch 级别的 focal loss？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="因为 keep/prune 的不平衡是 per-sample 的而非全局的，在每个样本内重新平衡可以保护每个样本中少数类的召回率">因为 keep/prune 的不平衡是 per-sample 的而非全局的，在每个样本内重新平衡可以保护每个样本中少数类的召回率</div><div class="quiz-choice" data-value="因为骨干网络是冻结的，需要特殊的损失函数来更新它">因为骨干网络是冻结的，需要特殊的损失函数来更新它</div><div class="quiz-choice" data-value="因为模型在推理时只输出二值决策">因为模型在推理时只输出二值决策</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It lets the head behave differently on short and long responses, since mis-pruning a few lines from a 5-line response is far more harmful than from a 300-line response" data-lang="en">
+                        <div class="quiz-question">3. Why is the length-aware embedding (indexed by line count) important in the pruning head?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It allows the head to predict the total token count for each response">It allows the head to predict the total token count for each response</div><div class="quiz-choice" data-value="It reduces the number of model parameters needed for the head">It reduces the number of model parameters needed for the head</div><div class="quiz-choice long-text" data-value="It lets the head behave differently on short and long responses, since mis-pruning a few lines from a 5-line response is far more harmful than from a 300-line response">It lets the head behave differently on short and long responses, since mis-pruning a few lines from a 5-line response is far more harmful than from a 300-line response</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="它使头部在短响应和长响应上有不同行为，因为从 5 行响应中错误剪掉几行的危害远大于从 300 行响应中剪掉同样数量的行" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 为什么按行数索引的长度感知嵌入（length-aware embedding）在剪枝头中很重要？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="它允许头部预测每个响应的总 token 数">它允许头部预测每个响应的总 token 数</div><div class="quiz-choice" data-value="它减少了头部所需的模型参数数量">它减少了头部所需的模型参数数量</div><div class="quiz-choice" data-value="它使头部在短响应和长响应上有不同行为，因为从 5 行响应中错误剪掉几行的危害远大于从 300 行响应中剪掉同样数量的行">它使头部在短响应和长响应上有不同行为，因为从 5 行响应中错误剪掉几行的危害远大于从 300 行响应中剪掉同样数量的行</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/stressed-linen.png');">
+                    <h2 style="color: #ffffff;">Paper 2</h2>
+                    <p style="color: #badb12;"><strong>RynnBrain 1.1: Towards More Capable and Generalizable Embodied Foundation Model</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-07-19</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2607.17977" target="_blank">http://arxiv.org/pdf/2607.17977</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> Embodied foundation models for robotics, covering perception, spatial reasoning, 3D grounding, contact-point prediction, and Vision-Language-Action (VLA) policy post-training.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Built upon RynnBrain 1.0 and Qwen3.5, introducing contact-point prediction, native 3D grounding, and a unified cross-embodiment action space with embodiment-specific masking to better align representations with robot manipulation.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> How to bring embodied foundation model representations closer to robot manipulation, enable effective VLA post-training across heterogeneous embodiments, and understand how embodied capabilities scale with model size.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> A unified spatio-temporal and physically grounded training framework with three model scales (2B, 9B, 122B-A10B), explicit 3D-grounded pretraining using WildDet3D and FoundationPose, a compact contact-centered grasp representation, an 81-dimensional unified action space with embodiment-specific masking, flow-matching VLA architecture, and Real-Time Chunking (RTC) for low-latency control.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> RynnBrain 1.1-122B-A10B surpasses proprietary and open-source models on VSI-Bench (75.0), MMSI (52.0), and RefSpatial-Bench (79.1); achieves 34.28/41.12 AP@15 on SUN RGB-D and 17.36/23.44 AP3D on WildDet3D-Bench for 3D grounding; and RynnBrain-VLA achieves 86.67% success rate on real robots, outperforming Qwen-Based-VLA (60%) and GR00T N1.7 (73.33%), with the generalist version reaching 91.67%.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 面向机器人的具身基础模型，涵盖感知、空间推理、3D定位、接触点预测以及视觉-语言-动作（VLA）策略的后训练。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 基于RynnBrain 1.0和Qwen3.5，引入接触点预测、原生3D定位以及带有本体特定掩码的统一跨本体动作空间，使表征更好地与机器人操作对齐。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 如何让具身基础模型的表征更接近机器人操作，如何实现跨异构本体的有效VLA后训练，以及具身能力如何随模型规模扩展。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 统一的时空与物理基础训练框架，覆盖三种模型规模（2B、9B、122B-A10B），使用WildDet3D和FoundationPose进行显式3D预训练，紧凑的接触中心抓取表示，81维统一动作空间配合本体特定掩码，流匹配VLA架构，以及用于低延迟控制的实时分块（RTC）。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> RynnBrain 1.1-122B-A10B在VSI-Bench（75.0）、MMSI（52.0）和RefSpatial-Bench（79.1）上超越专有和开源模型；在SUN RGB-D上取得34.28/41.12 AP@15，在WildDet3D-Bench上取得17.36/23.44 AP3D；RynnBrain-VLA在真实机器人上取得86.67%成功率，优于Qwen-Based-VLA（60%）和GR00T N1.7（73.33%），通用版达91.67%。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="14 dimensions of the Hand group" data-lang="en">
+                        <div class="quiz-question">1. In RynnBrain 1.1, the unified cross-embodiment action space has a total dimensionality of 81, partitioned into semantically aligned body-part groups. When deployed on the Unitree G1 humanoid, how many dimensions of this unified action space are actually activated (excluding the separate SONIC latent token)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="14 dimensions of the Hand group">14 dimensions of the Hand group</div><div class="quiz-choice" data-value="40 dimensions of the Hand group">40 dimensions of the Hand group</div><div class="quiz-choice" data-value="54 dimensions spanning Arm-Joint and Hand groups">54 dimensions spanning Arm-Joint and Hand groups</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="Hand 组中的 14 维" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 在 RynnBrain 1.1 中，统一的跨具身动作空间总维度为 81，按语义对齐的身体部位分组进行划分。当部署在 Unitree G1 人形机器人上时，激活了多少维度的统一动作空间（不包括单独的 SONIC 潜在令牌）？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Hand 组中的 14 维">Hand 组中的 14 维</div><div class="quiz-choice" data-value="Hand 组中的 40 维">Hand 组中的 40 维</div><div class="quiz-choice" data-value="横跨 Arm-Joint 和 Hand 组的 54 维">横跨 Arm-Joint 和 Hand 组的 54 维</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It shows negative scaling, with performance declining as the model grows larger" data-lang="en">
+                        <div class="quiz-question">2. According to the scaling analysis in the paper, what striking behavior does the raw Qwen3.5 model exhibit on reasoning-intensive cognition tasks (e.g., MMSI, MindCube) as model size scales from 2B to 122B-A10B?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It shows positive scaling but with diminishing returns">It shows positive scaling but with diminishing returns</div><div class="quiz-choice" data-value="It shows negative scaling, with performance declining as the model grows larger">It shows negative scaling, with performance declining as the model grows larger</div><div class="quiz-choice" data-value="It remains essentially flat across all scales">It remains essentially flat across all scales</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="表现出负向扩展，即随着模型规模增大性能反而下降" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 根据论文中的可扩展性分析，原始的 Qwen3.5 模型在推理密集型认知任务（例如 MMSI、MindCube）上从 2B 扩展到 122B-A10B 时表现出了什么引人注目的行为？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="表现出正向扩展但收益递减">表现出正向扩展但收益递减</div><div class="quiz-choice" data-value="表现出负向扩展，即随着模型规模增大性能反而下降">表现出负向扩展，即随着模型规模增大性能反而下降</div><div class="quiz-choice" data-value="在所有规模上基本保持不变">在所有规模上基本保持不变</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Because a target object typically admits multiple functionally valid grasps, and the rectangle extent depends on gripper geometry, making IoU against a single reference poorly correlated with execution success" data-lang="en">
+                        <div class="quiz-question">3. Why did RynnBrain 1.1 replace the four-corner grasp rectangle representation from RynnBrain 1.0 with a compact contact-centered representation (p, θ)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Because the four-corner format was computationally too expensive for real-time inference">Because the four-corner format was computationally too expensive for real-time inference</div><div class="quiz-choice long-text" data-value="Because a target object typically admits multiple functionally valid grasps, and the rectangle extent depends on gripper geometry, making IoU against a single reference poorly correlated with execution success">Because a target object typically admits multiple functionally valid grasps, and the rectangle extent depends on gripper geometry, making IoU against a single reference poorly correlated with execution success</div><div class="quiz-choice long-text" data-value="Because the four-corner format could not be integrated with the autoregressive token generation framework">Because the four-corner format could not be integrated with the autoregressive token generation framework</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="因为目标物体通常存在多个功能上有效的抓取方式，且矩形范围取决于夹爪几何形状，导致与单一参考矩形的 IoU 与执行成功相关性较差" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 为什么 RynnBrain 1.1 用紧凑的以接触点为中心的表示 (p, θ) 取代了 RynnBrain 1.0 中的四角抓取矩形表示？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="因为四角格式在实时推理中计算开销过大">因为四角格式在实时推理中计算开销过大</div><div class="quiz-choice" data-value="因为目标物体通常存在多个功能上有效的抓取方式，且矩形范围取决于夹爪几何形状，导致与单一参考矩形的 IoU 与执行成功相关性较差">因为目标物体通常存在多个功能上有效的抓取方式，且矩形范围取决于夹爪几何形状，导致与单一参考矩形的 IoU 与执行成功相关性较差</div><div class="quiz-choice" data-value="因为四角格式无法与自回归令牌生成框架集成">因为四角格式无法与自回归令牌生成框架集成</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <div class="card-counter">1/2</div>
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>HOMIE: Human-object Centric Video Personalization via Multimodal Intelligent Enchancement</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-07-19</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2607.18217" target="_blank">http://arxiv.org/pdf/2607.18217</a></p>
+                        <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper focuses on Human-Object Centric Video Personalization (HOCVP), a subfield of subject-driven controllable video generation that synthesizes videos featuring diverse human-object interactions from reference images of humans and objects.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds upon DiT-based text-to-video diffusion models (Wan2.1/2.2-14B) and prior MLLM-integration strategies, which either align MLLM features with text embeddings (UmT5) or replace the text encoder entirely. The new idea is to preserve the original text encoder while using MLLM (Qwen3-VL-2B-Thinking) solely for extracting reference-level relationships, introducing two novel modules: Global Multimodal Guidance (GMG) and Modality-Reference Embedding (MRE).</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses two key limitations: (1) existing inter-subject personalization methods struggle to balance subject fidelity with accurate interaction patterns, especially for abstract concepts like logos that require inferential reasoning, and (2) existing methods lack effective mechanisms to understand latent correspondences in intra-subject references such as OCR maps and multi-view inputs.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> HOMIE employs a unified multimodal input paradigm concatenating video tokens, reference image tokens, and MLLM feature tokens. The Global Multimodal Guidance (GMG) module applies feature-wise affine transformations on video token queries and keys using pooled MLLM representations to inject semantic guidance into self-attention. The Modality-Reference Embedding (MRE) module adds learnable embeddings to distinguish tokens by modality type and to bind intra-subject references sharing the same identity while separating inter-subject references.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> HOMIE achieves state-of-the-art performance on multiple HOCVP metrics, including a 21.8% relative improvement in OCR accuracy compared to SkyReels-V3, the best DINO-I score (0.543), and the best object similarity (0.891) among open-source methods. A user study with 40 participants showed HOMIE was preferred 64.7% overall, 66.1% for subject consistency, and 57.9% for text following over baselines including Kling, Phantom, SkyReels-V3, and UniVideo.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 本论文聚焦于以人-物为中心的视频个性化（HOCVP），这是受主体驱动的可控视频生成子领域，旨在从人类和物体的参考图像合成包含多样化人-物交互的视频。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 本文基于基于DiT的文生视频扩散模型（Wan2.1/2.2-14B）以及先前的MLLM集成策略——要么将MLLM特征与文本嵌入（UmT5）对齐，要么完全替换文本编码器。新思路在于保留原始文本编码器的同时，将MLLM（Qwen3-VL-2B-Thinking）专门用于提取参考级关系，并引入了两个新模块：全局多模态引导（GMG）和模态-参考嵌入（MRE）。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文解决了两个关键局限性：（1）现有的跨主体个性化方法难以在主体保真度与准确的人-物交互模式之间取得平衡，尤其是对于需要推理能力的抽象概念（如标志）；（2）现有方法缺乏理解主体内参考（如OCR图谱和多视图输入）潜在对应关系的有效机制。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> HOMIE采用统一的多模态输入范式，将视频标记、参考图像标记和MLLM特征标记进行拼接。全局多模态引导（GMG）模块使用池化的MLLM表示对视频标记的查询和键应用特征仿射变换，将语义引导注入自注意力机制。模态-参考嵌入（MRE）模块添加可学习的嵌入以按模态类型区分标记，并绑定共享同一身份的主体内参考，同时分离跨主体参考。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> HOMIE在多项HOCVP指标上取得了最先进的性能，包括相比SkyReels-V3在OCR准确率上实现了21.8%的相对提升，以及在开源方法中取得最佳DINO-I分数（0.543）和最佳物体相似度（0.891）。一项40名参与者参与的用户研究表明，HOMIE在整体质量（64.7%）、主体一致性（66.1%）和文本遵循（57.9%）方面均优于Kling、Phantom、SkyReels-V3和UniVideo等基线方法。</div></div></div>
+                    </div>
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>HOMIE: Human-object Centric Video Personalization via Multimodal Intelligent Enchancement</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="inputGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="vaeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fee140;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#30cfd0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#330867;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="mllmGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8edea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fed6e3;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="ditGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gmgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="mreGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffecd2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fcb69f;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#38f9d7;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#ffffff"/>
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="800" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="500" y="35" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="bold">HOMIE: Human-Object Centric Video Personalization</text>
+  <text x="500" y="58" text-anchor="middle" fill="#a8edea" font-family="Arial, sans-serif" font-size="14" font-style="italic">Method Workflow with MLLM Integration, GMG, and MRE</text>
+  
+  <!-- Input Section -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="90" width="200" height="80" rx="10" fill="url(#inputGrad)" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="140" y="115" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="13" font-weight="bold">Inter & Intra-subject</text>
+    <text x="140" y="135" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="13" font-weight="bold">Reference Images</text>
+    <text x="140" y="155" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10">(Human + Object)</text>
+  </g>
+  
+  <g filter="url(#shadow)">
+    <rect x="40" y="195" width="200" height="60" rx="10" fill="url(#inputGrad)" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="140" y="220" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="13" font-weight="bold">Text Prompt</text>
+    <text x="140" y="240" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10">Interaction Description</text>
+  </g>
+  
+  <g filter="url(#shadow)">
+    <rect x="40" y="280" width="200" height="60" rx="10" fill="url(#inputGrad)" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="140" y="305" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="13" font-weight="bold">Input Video (Latent)</text>
+    <text x="140" y="325" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10">Noisy z_t</text>
+  </g>
+  
+  <!-- VAE Block -->
+  <g filter="url(#shadow)">
+    <rect x="320" y="200" width="150" height="80" rx="10" fill="url(#vaeGrad)" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="395" y="225" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="14" font-weight="bold">3D VAE</text>
+    <text x="395" y="248" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">(Encoder)</text>
+    <text x="395" y="268" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10">Pre-trained</text>
+  </g>
+  
+  <!-- Text Encoder Block -->
+  <g filter="url(#shadow)">
+    <rect x="320" y="90" width="150" height="80" rx="10" fill="url(#textGrad)" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="395" y="115" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="14" font-weight="bold">UmT5</text>
+    <text x="395" y="135" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="11">Text Encoder</text>
+    <text x="395" y="155" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="10">(Frozen)</text>
+  </g>
+  
+  <!-- MLLM Block -->
+  <g filter="url(#shadow)">
+    <rect x="320" y="310" width="150" height="80" rx="10" fill="url(#mllmGrad)" stroke="#1a1a2e" stroke-width="1.5"/>
+    <text x="395" y="335" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="14" font-weight="bold">MLLM</text>
+    <text x="395" y="355" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">Qwen3-VL-2B</text>
+    <text x="395" y="375" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10">Semantic Features</text>
+  </g>
+  
+  <!-- Arrows from inputs -->
+  <path d="M 140 170 L 140 195" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 140 255 L 140 280" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 240 130 L 320 130" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 240 225 L 320 240" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 240 130 Q 290 130 290 240 L 320 240" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="4,2"/>
+  <path d="M 240 310 L 320 340" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- MLP Alignment -->
+  <g filter="url(#shadow)">
+    <rect x="540" y="310" width="120" height="80" rx="10" fill="url(#mllmGrad)" stroke="#1a1a2e" stroke-width="1.5"/>
+    <text x="600" y="340" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="14" font-weight="bold">MLP (ϕ)</text>
+    <text x="600" y="360" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">2-layer Alignment</text>
+    <text x="600" y="378" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10">F_M aligned to VAE</text>
+  </g>
+  
+  <path d="M 470 350 L 540 350" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Tokens representation -->
+  <g>
+    <rect x="540" y="200" width="120" height="35" rx="5" fill="#fa709a" stroke="#ffffff" stroke-width="1"/>
+    <text x="600" y="222" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="12" font-weight="bold">F^r (Reference Tokens)</text>
+  </g>
+  <g>
+    <rect x="540" y="240" width="120" height="35" rx="5" fill="#fa709a" stroke="#ffffff" stroke-width="1"/>
+    <text x="600" y="262" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="12" font-weight="bold">F^v (Video Tokens)</text>
+  </g>
+  
+  <path d="M 470 240 L 540 217" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 470 240 L 540 257" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- MRE Block -->
+  <g filter="url(#shadow)">
+    <rect x="730" y="195" width="220" height="115" rx="10" fill="url(#mreGrad)" stroke="#1a1a2e" stroke-width="2"/>
+    <text x="840" y="220" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="14" font-weight="bold">Modality-Reference</text>
+    <text x="840" y="238" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="14" font-weight="bold">Embedding (MRE)</text>
+    <line x1="745" y1="250" x2="935" y2="250" stroke="#1a1a2e" stroke-width="1"/>
+    <text x="760" y="270" fill="#1a1a2e" font-family="Arial" font-size="11">• Modality Embedding (ME)</text>
+    <text x="760" y="288" fill="#1a1a2e" font-family="Arial" font-size="11">• Reference Embedding (RE)</text>
+    <text x="760" y="304" fill="#1a1a2e" font-family="Arial" font-size="10" font-style="italic">Binds intra-subject,</text>
+    <text x="760" y="316" fill="#1a1a2e" font-family="Arial" font-size="10" font-style="italic">disentangles inter-subject</text>
+  </g>
+  
+  <!-- MLLM features token -->
+  <g>
+    <rect x="540" y="395" width="120" height="35" rx="5" fill="#a8edea" stroke="#1a1a2e" stroke-width="1"/>
+    <text x="600" y="417" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="12" font-weight="bold">F^M (MLLM Tokens)</text>
+  </g>
+  
+  <path d="M 600 390 L 600 380 L 600 350" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Concatenation -->
+  <g>
+    <rect x="730" y="350" width="220" height="55" rx="8" fill="#ffffff" stroke="#1a1a2e" stroke-width="2"/>
+    <text x="840" y="372" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="13" font-weight="bold">Token Concatenation (⊕)</text>
+    <text x="840" y="392" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">F = [F^v ⊕ F^r ⊕ F^M]</text>
+  </g>
+  
+  <path d="M 660 217 L 730 240" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 660 257 L 730 260" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 660 412 L 730 385" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- DiT Block -->
+  <g filter="url(#shadow)">
+    <rect x="320" y="470" width="630" height="220" rx="15" fill="url(#ditGrad)" stroke="#ffffff" stroke-width="2"/>
+    <text x="635" y="498" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="16" font-weight="bold">DiT Backbone (× N Blocks)</text>
+    <text x="635" y="518" text-anchor="middle" fill="#e0e0ff" font-family="Arial" font-size="11" font-style="italic">Flow Matching: v_θ(zt, t, c)</text>
+  </g>
+  
+  <!-- Self-Attention with GMG -->
+  <g filter="url(#shadow)">
+    <rect x="345" y="540" width="200" height="130" rx="10" fill="url(#gmgGrad)" stroke="#ffffff" stroke-width="2"/>
+    <text x="445" y="565" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="13" font-weight="bold">Self-Attention</text>
+    <text x="445" y="582" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="12" font-weight="bold">+ Global Multimodal</text>
+    <text x="445" y="598" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="12" font-weight="bold">Guidance (GMG)</text>
+    <line x1="360" y1="608" x2="530" y2="608" stroke="#ffffff" stroke-width="1"/>
+    <text x="445" y="624" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="10">1. Pool Q_M, K_M</text>
+    <text x="445" y="638" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="10">2. γ, β projections</text>
+    <text x="445" y="652" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="10">3. Affine Q_v, K_v</text>
+    <text x="445" y="666" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="10" font-style="italic">Modulate video tokens</text>
+  </g>
+  
+  <!-- Cross-Attention -->
+  <g filter="url(#shadow)">
+    <rect x="565" y="540" width="170" height="130" rx="10" fill="#43e97b" stroke="#ffffff" stroke-width="2"/>
+    <text x="650" y="565" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="13" font-weight="bold">Cross-Attention</text>
+    <line x1="580" y1="575" x2="720" y2="575" stroke="#1a1a2e" stroke-width="1"/>
+    <text x="650" y="595" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">with UmT5</text>
+    <text x="650" y="612" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">Text Embeddings</text>
+    <line x1="580" y1="625" x2="720" y2="625" stroke="#1a1a2e" stroke-width="1"/>
+    <text x="650" y="645" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10" font-style="italic">Text-video semantic</text>
+    <text x="650" y="660" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10" font-style="italic">alignment</text>
+  </g>
+  
+  <!-- FFN -->
+  <g filter="url(#shadow)">
+    <rect x="755" y="540" width="170" height="130" rx="10" fill="#fee140" stroke="#1a1a2e" stroke-width="2"/>
+    <text x="840" y="585" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="14" font-weight="bold">FFN</text>
+    <line x1="775" y1="600" x2="905" y2="600" stroke="#1a1a2e" stroke-width="1"/>
+    <text x="840" y="620" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">Feed-Forward</text>
+    <text x="840" y="637" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11">Network</text>
+    <text x="840" y="660" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="10" font-style="italic">Residual + Norm</text>
+  </g>
+  
+  <!-- Arrows from MRE to DiT -->
+  <path d="M 840 405 L 840 470" stroke="#ffffff" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- UmT5 to Cross-Attention -->
+  <path d="M 395 170 L 395 200 L 650 200 L 650 540" stroke="#ffffff" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Output Video -->
+  <g filter="url(#shadow)">
+    <rect x="350" y="715" width="570" height="65" rx="12" fill="url(#outputGrad)" stroke="#ffffff" stroke-width="2"/>
+    <text x="635" y="742" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="16" font-weight="bold">Generated Output Video</text>
+    <text x="635" y="763" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="11" font-style="italic">High-fidelity human-object interactions with subject consistency</text>
+  </g>
+  
+  <path d="M 635 690 L 635 715" stroke="#ffffff" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Legend -->
+  <g>
+    <rect x="20" y="420" width="200" height="160" rx="8" fill="#ffffff" opacity="0.95" stroke="#1a1a2e" stroke-width="1"/>
+    <text x="120" y="442" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="13" font-weight="bold">Legend</text>
+    <line x1="35" y1="452" x2="205" y2="452" stroke="#1a1a2e" stroke-width="1"/>
+    <rect x="35" y="460" width="14" height="14" fill="url(#inputGrad)"/>
+    <text x="55" y="472" fill="#1a1a2e" font-family="Arial" font-size="10">Inputs</text>
+    <rect x="35" y="480" width="14" height="14" fill="url(#vaeGrad)"/>
+    <text x="55" y="492" fill="#1a1a2e" font-family="Arial" font-size="10">VAE Encoder</text>
+    <rect x="35" y="500" width="14" height="14" fill="url(#textGrad)"/>
+    <text x="55" y="512" fill="#1a1a2e" font-family="Arial" font-size="10">Text Encoder</text>
+    <rect x="35" y="520" width="14" height="14" fill="url(#mllmGrad)"/>
+    <text x="55" y="532" fill="#1a1a2e" font-family="Arial" font-size="10">MLLM + MLP</text>
+    <rect x="35" y="540" width="14" height="14" fill="url(#gmgGrad)"/>
+    <text x="55" y="552" fill="#1a1a2e" font-family="Arial" font-size="10">GMG Module</text>
+    <rect x="35" y="560" width="14" height="14" fill="url(#mreGrad)"/>
+    <text x="55" y="572" fill="#1a1a2e" font-family="Arial" font-size="10">MRE Module</text>
+  </g>
+  
+  <!-- Key Insight Box -->
+  <g>
+    <rect x="20" y="600" width="290" height="90" rx="8" fill="#ffecd2" stroke="#f5576c" stroke-width="2"/>
+    <text x="165" y="622" text-anchor="middle" fill="#1a1a2e" font-family="Arial" font-size="12" font-weight="bold">Key Innovations</text>
+    <line x1="35" y1="630" x2="295" y2="630" stroke="#f5576c" stroke-width="1"/>
+    <text x="30" y="650" fill="#1a1a2e" font-family="Arial" font-size="10">✓ Unified multimodal input paradigm</text>
+    <text x="30" y="665" fill="#1a1a2e" font-family="Arial" font-size="10">✓ Preserves text encoder controllability</text>
+    <text x="30" y="680" fill="#1a1a2e" font-family="Arial" font-size="10">✓ Handles abstract concepts & intra-subject</text>
+  </g>
+  
+  <!-- Training info -->
+  <g>
+    <rect x="540" y="715" width="180" height="65" rx="8" fill="#330867" stroke="#a8edea" stroke-width="1.5" opacity="0.9"/>
+    <text x="630" y="735" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="11" font-weight="bold">3-Stage Training</text>
+    <text x="630" y="752" text-anchor="middle" fill="#a8edea" font-family="Arial" font-size="9">Stage 1: Single-Subject (300K)</text>
+    <text x="630" y="765" text-anchor="middle" fill="#a8edea" font-family="Arial" font-size="9">Stage 2: HOC (80K) → Stage 3: 720P</text>
+  </g>
+  
+  <g>
+    <rect x="730" y="715" width="200" height="65" rx="8" fill="#1a1a2e" stroke="#43e97b" stroke-width="1.5" opacity="0.9"/>
+    <text x="830" y="735" text-anchor="middle" fill="#43e97b" font-family="Arial" font-size="11" font-weight="bold">Condition: c = {c_txt, c_img}</text>
+    <text x="830" y="755" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="9">L_FM = E||v_θ(zt,t,c) - (z1-z0)||²</text>
+  </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="To allow the MLLM to focus exclusively on extracting reference-level relationships without the burden of reconstructing general text-to-video control" data-lang="en">
+                        <div class="quiz-question">1. Why does HOMIE preserve the original text encoder (UmT5) instead of replacing it with the MLLM, unlike some prior methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="To allow the MLLM to focus exclusively on extracting reference-level relationships without the burden of reconstructing general text-to-video control">To allow the MLLM to focus exclusively on extracting reference-level relationships without the burden of reconstructing general text-to-video control</div><div class="quiz-choice" data-value="To reduce the total number of trainable parameters and enable single-stage training">To reduce the total number of trainable parameters and enable single-stage training</div><div class="quiz-choice" data-value="To eliminate the need for cross-attention mechanisms in the DiT backbone">To eliminate the need for cross-attention mechanisms in the DiT backbone</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="为了让MLLM能够专注于提取参考级关系，而不必承担重建通用文本到视频控制的重任" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 为什么HOMIE选择保留原始文本编码器(UmT5)而不是像某些先前方法那样用MLLM完全替换它?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="为了让MLLM能够专注于提取参考级关系，而不必承担重建通用文本到视频控制的重任">为了让MLLM能够专注于提取参考级关系，而不必承担重建通用文本到视频控制的重任</div><div class="quiz-choice" data-value="为了减少可训练参数的总量并支持单阶段训练">为了减少可训练参数的总量并支持单阶段训练</div><div class="quiz-choice" data-value="为了消除DiT主干网络中交叉注意力机制的需求">为了消除DiT主干网络中交叉注意力机制的需求</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It derives global representations that are fed into projection networks to produce scaling and shifting factors for feature-wise affine transformation of video tokens" data-lang="en">
+                        <div class="quiz-question">2. In the Global Multimodal Guidance (GMG) module, what role does the pooling operation along the temporal dimension of the MLLM query and key play?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It compresses the entire video sequence to save GPU memory during self-attention">It compresses the entire video sequence to save GPU memory during self-attention</div><div class="quiz-choice long-text" data-value="It derives global representations that are fed into projection networks to produce scaling and shifting factors for feature-wise affine transformation of video tokens">It derives global representations that are fed into projection networks to produce scaling and shifting factors for feature-wise affine transformation of video tokens</div><div class="quiz-choice" data-value="It randomly samples tokens from the MLLM features to perform cross-modal data augmentation">It randomly samples tokens from the MLLM features to perform cross-modal data augmentation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="推导全局表示,并将其送入投影网络以生成用于视频令牌特征仿射变换的缩放和偏移因子" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 在全局多模态引导(GMG)模块中,沿时间维度对MLLM的查询和键进行池化操作的作用是什么?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="压缩整个视频序列以节省自注意力计算中的GPU内存">压缩整个视频序列以节省自注意力计算中的GPU内存</div><div class="quiz-choice" data-value="推导全局表示,并将其送入投影网络以生成用于视频令牌特征仿射变换的缩放和偏移因子">推导全局表示,并将其送入投影网络以生成用于视频令牌特征仿射变换的缩放和偏移因子</div><div class="quiz-choice" data-value="从MLLM特征中随机采样令牌以执行跨模态数据增强">从MLLM特征中随机采样令牌以执行跨模态数据增强</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="It assigns identical reference embeddings to intra-subject references sharing the same identity, and distinct reference embeddings to inter-subject references with different identities" data-lang="en">
+                        <div class="quiz-question">3. How does the Modality-Reference Embedding (MRE) module differentiate between inter-subject and intra-subject references in its reference embedding assignment?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="It assigns the same reference embedding to all reference tokens regardless of subject identity">It assigns the same reference embedding to all reference tokens regardless of subject identity</div><div class="quiz-choice long-text" data-value="It assigns identical reference embeddings to intra-subject references sharing the same identity, and distinct reference embeddings to inter-subject references with different identities">It assigns identical reference embeddings to intra-subject references sharing the same identity, and distinct reference embeddings to inter-subject references with different identities</div><div class="quiz-choice" data-value="It randomly shuffles reference embeddings during each training step to improve generalization">It randomly shuffles reference embeddings during each training step to improve generalization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="为共享同一身份的intra-subject参考分配相同的参考嵌入,为不同身份的inter-subject参考分配不同的参考嵌入" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 模态-参考嵌入(MRE)模块如何在参考嵌入分配中区分主体间(inter-subject)和主体内(intra-subject)参考?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="无论主体身份如何,为所有参考令牌分配相同的参考嵌入">无论主体身份如何,为所有参考令牌分配相同的参考嵌入</div><div class="quiz-choice" data-value="为共享同一身份的intra-subject参考分配相同的参考嵌入,为不同身份的inter-subject参考分配不同的参考嵌入">为共享同一身份的intra-subject参考分配相同的参考嵌入,为不同身份的inter-subject参考分配不同的参考嵌入</div><div class="quiz-choice" data-value="在每个训练步骤中随机打乱参考嵌入以提高泛化能力">在每个训练步骤中随机打乱参考嵌入以提高泛化能力</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    
+    <div class="daily-tips-section">
+        <h2 class="tips-heading">
+            <span data-lang="en">Today's Reading Tips</span>
+            <span data-lang="zh" style="display:none">今日阅读推荐</span>
+        </h2>
+        <div class="tips-content" data-lang="en">Start with RynnBrain 1.1 for the broadest impact—it's a comprehensive embodied foundation model spanning 3D grounding, VLA post-training, and cross-embodiment control, offering the most to digest. Then move to SWE-Pruner Pro if you care about practical LLM efficiency, as its insight of reading pruning signals directly from a frozen backbone's hidden states is elegant and likely generalizable. A unifying thread across all three papers is their use of Qwen-family backbones (Qwen3-Coder, Qwen3.5, Qwen3-VL) and the growing trend of leveraging internal representations or auxiliary lightweight modules to extend foundation model capabilities without retraining the core.</div>
+        <div class="tips-content" data-lang="zh" style="display:none"></div>
+    </div>
+    
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        function toggleLang() {
+            var btn = document.getElementById('lang-btn');
+            var isZh = document.body.classList.contains('lang-zh');
+            if (isZh) {
+                document.body.classList.remove('lang-zh');
+                btn.textContent = 'ZH';
+                localStorage.setItem('-paper-lang', 'en');
+            } else {
+                document.body.classList.add('lang-zh');
+                btn.textContent = 'EN';
+                localStorage.setItem('-paper-lang', 'zh');
+            }
+            var enEls = document.querySelectorAll('[data-lang="en"]');
+            var zhEls = document.querySelectorAll('[data-lang="zh"]');
+            for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = isZh ? '' : 'none'; }
+            for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = isZh ? 'none' : ''; }
+        }
+
+        function getActivePopup(tab) {
+            var lang = document.body.classList.contains('lang-zh') ? 'zh' : 'en';
+            return tab.querySelector('.quiz-popup[data-lang="' + lang + '"]');
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore language preference
+            var savedLang = localStorage.getItem('-paper-lang');
+            if (savedLang === 'zh') {
+                document.body.classList.add('lang-zh');
+                document.getElementById('lang-btn').textContent = 'EN';
+                var enEls = document.querySelectorAll('[data-lang="en"]');
+                var zhEls = document.querySelectorAll('[data-lang="zh"]');
+                for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = 'none'; }
+                for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = ''; }
+            }
+
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                // 为所有 popup 阻止冒泡
+                tab.querySelectorAll('.quiz-popup').forEach(function(p) {
+                    p.addEventListener('click', function(e) { e.stopPropagation(); });
+                });
+
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var popup = getActivePopup(tab);
+                    if (!popup) return;
+
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.quiz-popup').forEach(function(p) {
+                            p.classList.remove('active');
+                        });
+                        document.body.appendChild(popup);
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
