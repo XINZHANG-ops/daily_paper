@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-07-27 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Language toggle */
+        #lang-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10000;
+        }
+        #lang-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        #lang-btn:hover {
+            background-color: #1557b0;
+        }
+
+        /* Daily tips */
+        .daily-tips-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0 20px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .tips-heading {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .tips-content {
+            background-color: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #333;
+            font-size: 1em;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="lang-toggle">
+        <button id="lang-btn" onclick="toggleLang()">ZH</button>
+    </div>
+    <h1>2026-07-27 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <div class="card-counter">1/2</div>
+                    <div class="paper-card active" style="background-image: url('bg/robots.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>DataFlow-Harness: A Grounded Code-Agent Platform for Constructing Editable LLM Data Pipelines</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-07-17</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2607.16617" target="_blank">http://arxiv.org/pdf/2607.16617</a></p>
+                        <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper belongs to the intersection of LLM-based code agents, data engineering, and workflow synthesis, specifically proposing a grounded agent platform for constructing editable LLM data pipelines.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> It builds on prior work on code-generation agents (e.g., Claude Code, SWE-agent, Reflexion), data-pipeline systems (Data-Juicer, DataFlow, DSPy), and LLM workflow synthesis (AutoFlow), while introducing the novel idea of bridging the "NL2Pipeline gap" by guiding agents to construct platform-native DAGs via typed mutations and procedural Skills rather than free-form scripts.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the disconnect between natural-language workflow intent and persistent, platform-native, editable pipeline artifacts, where coding agents typically produce disposable scripts that are hard to audit, reuse, or integrate with platform governance.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> It proposes DataFlow-Harness, which combines DataFlow-Skills (procedural blueprints and compositional constraints), an MCP Tools Layer (live operator registry and Request-Validate-Commit protocol), DataFlow-WebUI (synchronized conversational and visual DAG editor), and typed incremental DAG mutations validated for acyclicity and schema compatibility.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> On a 12-task benchmark, it achieves a 93.3% end-to-end pass rate, reduces monetary cost by 72.5% and latency by 49.9% versus Vanilla Claude Code, matches Context-Aware CC within 0.9 points at 42.8% lower cost, and downstream training case studies show that its synthesized data yields higher benchmark accuracy for fine-tuned Qwen2.5 models.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 该论文属于LLM代码智能体、数据工程与工作流合成的交叉领域，具体提出了一种用于构建可编辑LLM数据管道的接地式智能体平台。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 该研究基于代码生成智能体（如Claude Code、SWE-agent、Reflexion）、数据管道系统（Data-Juicer、DataFlow、DSPy）以及LLM工作流合成（AutoFlow）等先前工作，并创新性地提出通过类型化突变和过程性技能引导智能体构建平台原生DAG，以弥合"NL2Pipeline鸿沟"。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文解决了自然语言工作流意图与持久化、平台原生、可编辑的管道资产之间的脱节问题，即编码智能体通常生成难以审计、复用或与平台治理集成的临时脚本。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 提出了DataFlow-Harness，结合DataFlow-Skills（过程性蓝图与组合约束）、MCP工具层（实时算子注册表与请求-验证-提交协议）、DataFlow-WebUI（同步对话式与可视化DAG编辑器）以及经过无环性和模式兼容性验证的类型化增量DAG突变。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 在12项任务基准上实现了93.3%的端到端通过率，相比Vanilla Claude Code降低了72.5%的成本和49.9%的延迟，与Context-Aware CC性能相差仅0.9个百分点但成本降低42.8%，且下游训练案例研究表明其所合成数据可使微调后的Qwen2.5模型获得更高的基准准确率。</div></div></div>
+                    </div>
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>DataFlow-Harness: A Grounded Code-Agent Platform for Constructing Editable LLM Data Pipelines</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+  <defs>
+    <linearGradient id="userGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6c5ce7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a29bfe;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="skillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0984e3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#74b9ff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="mcpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00b894;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#55efc4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="backendGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e17055;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fab1a0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="webuiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00cec9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#81ecec;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="validGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fdcb6e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffeaa7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fd79a8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fab1a0;stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <polygon points="0 0, 12 6, 0 12" fill="#2d3436" />
+    </marker>
+    <marker id="arrowheadSmall" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <polygon points="0 0, 8 4, 0 8" fill="#636e72" />
+    </marker>
+  </defs>
+
+  <rect width="1000" height="800" fill="#f8f9fa"/>
+
+  <text x="500" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2d3436">DataFlow-Harness Workflow</text>
+  <text x="500" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#636e72">Grounded Code-Agent Platform for Editable LLM Data Pipelines</text>
+
+  <!-- User Input -->
+  <rect x="370" y="85" width="260" height="60" rx="30" fill="url(#userGrad)" stroke="#5f4dd4" stroke-width="2"/>
+  <text x="500" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold" fill="white">User's Natural Language Prompt</text>
+  <text x="500" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white" font-style="italic">"I have a JSONL about... please help me build a pipeline to..."</text>
+
+  <!-- Arrow to MCP -->
+  <line x1="500" y1="145" x2="500" y2="175" stroke="#2d3436" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Main MCP Section -->
+  <rect x="280" y="175" width="440" height="280" rx="15" fill="url(#mcpGrad)" stroke="#019875" stroke-width="3" opacity="0.95"/>
+  <text x="500" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">MCP Tools Layer</text>
+  <text x="500" y="218" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Request → Validate → Commit Protocol</text>
+
+  <!-- Step 1: State Retrieval -->
+  <rect x="310" y="235" width="180" height="50" rx="8" fill="white" stroke="#019875" stroke-width="2"/>
+  <text x="400" y="256" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2d3436">1. State Retrieval</text>
+  <text x="400" y="272" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#636e72">Fetch latest pipeline state</text>
+
+  <!-- Step 2: Mediated Mutation -->
+  <rect x="510" y="235" width="190" height="50" rx="8" fill="white" stroke="#019875" stroke-width="2"/>
+  <text x="605" y="256" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2d3436">2. Mediated Mutation</text>
+  <text x="605" y="272" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#636e72">Typed structured changes</text>
+
+  <!-- Step 3: Validation -->
+  <rect x="310" y="300" width="380" height="60" rx="8" fill="url(#validGrad)" stroke="#e17055" stroke-width="2"/>
+  <text x="500" y="322" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2d3436">3. Validation Engine</text>
+<text x="390" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">✓ DAG Acyclicity Check</text>
+<text x="610" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">✓ Schema Compatibility</text>
+
+  <!-- Step 4: Commitment -->
+  <rect x="310" y="380" width="380" height="50" rx="8" fill="white" stroke="#019875" stroke-width="2"/>
+  <text x="500" y="401" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2d3436">4. Atomic Commitment</text>
+<text x="500" y="418" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#636e72">Validated changes written to backend</text>
+
+  <!-- DataFlow-Skills (Left) -->
+  <rect x="30" y="230" width="220" height="170" rx="15" fill="url(#skillGrad)" stroke="#0667b3" stroke-width="3"/>
+  <text x="140" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold" fill="white">DataFlow-Skills</text>
+  <text x="140" y="273" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" font-style="italic">Procedural Guidance</text>
+  
+  <line x1="50" y1="290" x2="210" y2="290" stroke="white" stroke-width="1" opacity="0.5"/>
+  <text x="140" y="308" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Procedural Blueprints:</text>
+  <text x="140" y="323" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Schema inference</text>
+  <text x="140" y="336" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Operator selection</text>
+  <text x="140" y="349" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Parameter configuration</text>
+  <text x="140" y="362" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Serving verification</text>
+  
+  <text x="140" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">Constraints:</text>
+  <text x="140" y="393" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">• Modality matching rules</text>
+
+  <!-- Skills to MCP arrow -->
+  <line x1="250" y1="315" x2="280" y2="315" stroke="#2d3436" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+  <text x="265" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2d3436" font-weight="bold">guides</text>
+
+  <!-- DataFlow-WebUI (Right) -->
+  <rect x="750" y="200" width="220" height="230" rx="15" fill="url(#webuiGrad)" stroke="#00838f" stroke-width="3"/>
+  <text x="860" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold" fill="white">DataFlow-WebUI</text>
+  <text x="860" y="243" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" font-style="italic">Dual-Modality Interface</text>
+  
+  <line x1="770" y1="258" x2="950" y2="258" stroke="white" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Conversational Interface -->
+  <rect x="770" y="270" width="180" height="65" rx="8" fill="white" stroke="#00838f" stroke-width="2"/>
+  <text x="860" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">Conversational</text>
+  <text x="860" y="306" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">Interface</text>
+  <text x="860" y="322" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">NL-based authoring</text>
+
+  <!-- Visual DAG Editor -->
+  <rect x="770" y="350" width="180" height="65" rx="8" fill="white" stroke="#00838f" stroke-width="2"/>
+  <text x="860" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">Visual DAG Editor</text>
+  <text x="860" y="386" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">Inspect, edit, relink</text>
+  <text x="860" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">operators &amp; edges</text>
+
+  <!-- Sync label -->
+  <line x1="720" y1="300" x2="750" y2="300" stroke="#2d3436" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="750" y1="385" x2="720" y2="385" stroke="#2d3436" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="735" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2d3436" font-weight="bold">WebSocket</text>
+  <text x="735" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2d3436" font-weight="bold">edit</text>
+
+  <!-- Backend -->
+  <rect x="280" y="490" width="440" height="170" rx="15" fill="url(#backendGrad)" stroke="#c0392b" stroke-width="3"/>
+  <text x="500" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">Data Pipeline Backend</text>
+  <text x="500" y="533" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white" font-style="italic">Authoritative Source of Truth</text>
+  
+  <line x1="300" y1="548" x2="700" y2="548" stroke="white" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Pipeline representation -->
+  <rect x="310" y="560" width="120" height="85" rx="8" fill="white" stroke="#c0392b" stroke-width="2"/>
+  <text x="370" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2d3436">Pipeline</text>
+  <text x="370" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2d3436">P = (D, O, E, S, R)</text>
+  <text x="370" y="613" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">D: data sources</text>
+  <text x="370" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">O: operators</text>
+  <text x="370" y="637" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">E: edges</text>
+
+  <!-- Registry -->
+  <rect x="445" y="560" width="120" height="85" rx="8" fill="white" stroke="#c0392b" stroke-width="2"/>
+  <text x="505" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2d3436">Operator</text>
+  <text x="505" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2d3436">Registry</text>
+  <text x="505" y="613" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">Live metadata</text>
+  <text x="505" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">Schema info</text>
+  <text x="505" y="637" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">Compatibility</text>
+
+  <!-- Runtime State -->
+  <rect x="580" y="560" width="120" height="85" rx="8" fill="white" stroke="#c0392b" stroke-width="2"/>
+  <text x="640" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2d3436">Runtime</text>
+  <text x="640" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2d3436">State R</text>
+  <text x="640" y="613" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">Model endpoints</text>
+  <text x="640" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">Serving config</text>
+  <text x="640" y="637" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#636e72">Env state</text>
+
+  <!-- MCP to Backend -->
+  <line x1="500" y1="430" x2="500" y2="485" stroke="#2d3436" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+  <text x="525" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436" font-weight="bold">write</text>
+
+  <!-- WebUI to Backend -->
+  <line x1="750" y1="490" x2="700" y2="510" stroke="#2d3436" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+  <text x="730" y="490" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2d3436" font-weight="bold">edit</text>
+
+  <!-- Backend to WebUI -->
+  <line x1="700" y1="540" x2="750" y2="500" stroke="#2d3436" stroke-width="2" marker-end="url(#arrowhead)" stroke-dasharray="4,3"/>
+  <text x="745" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#2d3436" font-weight="bold">notify</text>
+
+  <!-- Output: Editable DAG -->
+  <rect x="320" y="700" width="360" height="75" rx="15" fill="url(#outputGrad)" stroke="#c0392b" stroke-width="3"/>
+  <text x="500" y="725" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Output: Editable Native DAG</text>
+  <text x="500" y="745" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Persistent • Visualizable • Governable • Reusable</text>
+  <text x="500" y="762" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white" font-style="italic">Bridges the NL2Pipeline gap</text>
+
+  <line x1="500" y1="660" x2="500" y2="695" stroke="#2d3436" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+
+  <!-- Bottom annotation -->
+  <rect x="30" y="700" width="270" height="75" rx="10" fill="white" stroke="#b2bec3" stroke-width="2"/>
+  <text x="165" y="722" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">Key Results (12-task benchmark)</text>
+  <text x="165" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">E2E Pass Rate: 93.3%</text>
+  <text x="165" y="755" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">Cost ↓ 72.5% vs Vanilla CC</text>
+  <text x="165" y="770" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">Latency ↓ 49.9%</text>
+
+  <!-- Right bottom annotation -->
+  <rect x="710" y="700" width="270" height="75" rx="10" fill="white" stroke="#b2bec3" stroke-width="2"/>
+  <text x="845" y="722" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3436">Mutation Types</text>
+  <text x="845" y="740" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">• Add / Remove operators</text>
+  <text x="845" y="755" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">• Update parameters</text>
+  <text x="845" y="770" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">• Connect / Reroute edges</text>
+
+  <!-- Iterative loop indicator -->
+  <path d="M 720 250 Q 740 250 740 300" stroke="#636e72" stroke-width="1.5" fill="none" stroke-dasharray="3,3" marker-end="url(#arrowheadSmall)"/>
+  <text x="755" y="275" text-anchor="start" font-family="Arial, sans-serif" font-size="9" fill="#636e72" font-style="italic">iterative</text>
+  <text x="755" y="287" text-anchor="start" font-family="Arial, sans-serif" font-size="9" fill="#636e72" font-style="italic">refinement</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="MCP-only lacks procedural guidance (DataFlow-Skills) needed for complex workflow assembly" data-lang="en">
+                        <div class="quiz-question">1. According to the paper, what is the primary reason that the MCP-only baseline achieves a lower end-to-end pass rate (83.3%) than the full DataFlow-Harness system (93.3%)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="MCP-only uses a weaker underlying LLM">MCP-only uses a weaker underlying LLM</div><div class="quiz-choice" data-value="MCP-only lacks procedural guidance (DataFlow-Skills) needed for complex workflow assembly">MCP-only lacks procedural guidance (DataFlow-Skills) needed for complex workflow assembly</div><div class="quiz-choice" data-value="MCP-only cannot validate DAG acyclicity and schema compatibility">MCP-only cannot validate DAG acyclicity and schema compatibility</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="仅MCP方法缺乏复杂工作流组装所需的过程性指导（DataFlow-Skills）" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 根据论文，仅使用MCP的基线方法（83.3%）的端到端通过率低于完整DataFlow-Harness系统（93.3%）的主要原因是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="仅MCP方法使用了较弱的底层大语言模型">仅MCP方法使用了较弱的底层大语言模型</div><div class="quiz-choice" data-value="仅MCP方法缺乏复杂工作流组装所需的过程性指导（DataFlow-Skills）">仅MCP方法缺乏复杂工作流组装所需的过程性指导（DataFlow-Skills）</div><div class="quiz-choice" data-value="仅MCP方法无法验证DAG的无环性和模式兼容性">仅MCP方法无法验证DAG的无环性和模式兼容性</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="0.972 precision and 0.873 coverage" data-lang="en">
+                        <div class="quiz-question">2. In the textbook-to-VQA extraction case study, what precision and coverage rate did DataFlow-Harness achieve compared to the other configurations?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="0.972 precision and 0.873 coverage">0.972 precision and 0.873 coverage</div><div class="quiz-choice" data-value="0.893 precision and 0.801 coverage">0.893 precision and 0.801 coverage</div><div class="quiz-choice" data-value="0.784 precision and 0.621 coverage">0.784 precision and 0.621 coverage</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="精确率0.972，覆盖率0.873" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 在教科书到VQA提取的案例研究中，DataFlow-Harness相比其他配置达到了怎样的精确率和覆盖率？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="精确率0.972，覆盖率0.873">精确率0.972，覆盖率0.873</div><div class="quiz-choice" data-value="精确率0.893，覆盖率0.801">精确率0.893，覆盖率0.801</div><div class="quiz-choice" data-value="精确率0.784，覆盖率0.621">精确率0.784，覆盖率0.621</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="AIME25@32 (rising from 21.6 to 34.5)" data-lang="en">
+                        <div class="quiz-question">3. In the downstream math training case study at 1 epoch, which benchmark showed the largest accuracy improvement when training on data produced by the DataFlow-Harness pipeline versus the Vanilla CC pipeline?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="GSM8K">GSM8K</div><div class="quiz-choice" data-value="AIME25@32 (rising from 21.6 to 34.5)">AIME25@32 (rising from 21.6 to 34.5)</div><div class="quiz-choice" data-value="Olympiad">Olympiad</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="AIME25@32（从21.6提升到34.5）" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 在下游数学训练案例研究中，1个epoch时，用DataFlow-Harness流水线生成的数据训练的模型在哪个基准测试上相比Vanilla CC显示出最大准确率提升？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="GSM8K">GSM8K</div><div class="quiz-choice" data-value="AIME25@32（从21.6提升到34.5）">AIME25@32（从21.6提升到34.5）</div><div class="quiz-choice" data-value="Olympiad">Olympiad</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <div class="card-counter">1/2</div>
+                    <div class="paper-card active" style="background-image: url('bg/buried.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>ReferTrack: Referring Then Tracking for Embodied Visual Tracking</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-07-21</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2607.20061" target="_blank">http://arxiv.org/pdf/2607.20061</a></p>
+                        <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper addresses embodied visual tracking (EVT) within robotics and embodied AI, proposing a vision-language-action (VLA) model that enables a mobile agent to follow a specific person described in natural language using a single forward-facing camera.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> It builds on recent VLA-based EVT methods such as TrackVLA, TrackVLA++, and NavFoM (which uses TVI tokens for spatiotemporal encoding), as well as referring expression comprehension works like RexSeek. The new idea is the "referring-then-tracking" paradigm, which grounds chain-of-thought reasoning in discrete image-space bounding boxes rather than abstract spatial latents.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper tackles the problem that existing VLA policies for EVT perform reasoning in abstract spatial latent spaces that are hard to supervise and weakly aligned with explicit visual detections, making target identification unreliable in crowded or ambiguous scenes—particularly under the constraint of a single forward-view camera.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> ReferTrack reformulates target identification as a multiple-choice selection over an indexed catalog of detected bounding boxes, predicts a single Refer-CoT token (or ⟨NO EXIST⟩), and conditions trajectory planning on this decision. It maintains a sliding-window FIFO queue of historical target bboxes, injects their geometric features into visual history via temporal-viewpoint-bbox indicator (TVBI) tokens, and is co-trained on a custom 1.3M-sample Refer-QA dataset synthesized from SYNTH-PEDES using a 4B Qwen3 backbone with only supervised fine-tuning.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> ReferTrack achieves state-of-the-art single-view performance on EVT-Bench with success rates of 89.4% (Single-Target), 73.3% (Distracted), and 74.1% (Ambiguity) tracking—outperforming TrackVLA++ by +6.8 SR and +13.0 TR on DT and +22.9 SR and +22.3 TR on AT, while matching or surpassing several multi-camera baselines. Ablations confirm Refer-CoT is the primary robustness driver, and real-world deployments on Unitree Go2 quadruped and G1 humanoid robots at 10.6 Hz demonstrate robust sim-to-real transfer.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 该论文聚焦于机器人与具身智能领域中的具身视觉跟踪（EVT），提出了一种视觉-语言-动作（VLA）模型，使移动智能体能够仅依靠单个前向摄像头，通过自然语言描述持续跟踪特定行人。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 该工作基于近期基于 VLA 的 EVT 方法（如 TrackVLA、TrackVLA++ 和使用 TVI token 进行时空编码的 NavFoM）以及指代表达理解工作（如 RexSeek）。新思路是提出"先指代再跟踪"（referring-then-tracking）范式，将思维链推理锚定在离散的图像空间边界框上，而非抽象的空间潜变量上。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文解决了现有 EVT 的 VLA 策略在抽象空间潜变量中进行推理、难以监督且与显式视觉检测对齐较弱的问题，导致在拥挤或存在歧义场景中、尤其在仅使用单个前向摄像头的约束下，目标识别不可靠。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> ReferTrack 将目标识别重新定义为对检测到的边界框索引目录的多选问题，预测单个 Refer-CoT token（或 ⟨NO EXIST⟩），并以此为条件进行轨迹规划。它维护一个滑动窗口 FIFO 队列存储历史目标边界框，通过时序-视点-边界框指示（TVBI）token 将其几何特征注入视觉历史，并使用基于 SYNTH-PEDES 合成的 130 万样本 Refer-QA 数据集进行联合训练，采用 4B 参数的 Qwen3 主干网络且仅使用监督微调。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> ReferTrack 在 EVT-Bench 上以单视角设置取得了最先进的性能，单目标、干扰跟踪和歧义跟踪的成功率分别为 89.4%、73.3% 和 74.1%，在 DT 上比 TrackVLA++ 提升 +6.8 SR 和 +13.0 TR，在 AT 上提升 +22.9 SR 和 +22.3 TR，并匹配或超越多个多摄像头基线。消融实验证实 Refer-CoT 是鲁棒性的主要来源，在 Unitree Go2 四足机器人和 G1 人形机器人上以 10.6 Hz 频率的实际部署验证了良好的仿真到现实迁移能力。</div></div></div>
+                    </div>
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>ReferTrack: Referring Then Tracking for Embodied Visual Tracking</h2>
+                        <svg width="100%" viewBox="0 0 1000 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="inputGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8e6cf;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#56c596;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="visionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd3b6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffaaa5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="candidateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8d4f0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7fb1d3;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="llmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4a5ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9b59b6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="actionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffeaa7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fdcb6e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="queueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fab1a0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e17055;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="trainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#81ecec;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00cec9;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2c3e50"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="900" fill="#f8f9fa"/>
+
+  <!-- Title -->
+  <text x="500" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">ReferTrack: Referring-Then-Tracking Pipeline</text>
+  <text x="500" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#7f8c8d" font-style="italic">Single forward camera VLA policy for embodied visual tracking</text>
+
+  <!-- INPUTS -->
+  <rect x="40" y="90" width="180" height="70" rx="10" fill="url(#inputGrad)" filter="url(#shadow)" stroke="#27ae60" stroke-width="2"/>
+  <text x="130" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1e3a2e">🌐 Natural Language</text>
+  <text x="130" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1e3a2e">"Follow the man in blue..."</text>
+
+  <rect x="260" y="90" width="180" height="70" rx="10" fill="url(#inputGrad)" filter="url(#shadow)" stroke="#27ae60" stroke-width="2"/>
+  <text x="350" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1e3a2e">📷 RGB Observations</text>
+  <text x="350" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1e3a2e">O₁, O₂, ..., O_T (forward view)</text>
+
+  <!-- TEXT ENCODER -->
+  <rect x="40" y="200" width="180" height="60" rx="10" fill="#dfe6e9" filter="url(#shadow)" stroke="#636e72" stroke-width="2"/>
+  <text x="130" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2d3436">Text Encoder</text>
+  <text x="130" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#2d3436">→ Language Tokens E_L</text>
+
+  <!-- VISION ENCODER (DUAL) -->
+  <rect x="260" y="200" width="180" height="60" rx="10" fill="url(#visionGrad)" filter="url(#shadow)" stroke="#e17055" stroke-width="2"/>
+  <text x="350" y="222" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6c2018">Vision Encoder (Dual)</text>
+  <text x="350" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c2018">SigLIP + DINOv2 → Grid Pooling</text>
+  <text x="350" y="252" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c2018">V_fine (64) + V_coarse (4)</text>
+
+  <!-- CANDIDATE GENERATOR -->
+  <rect x="480" y="90" width="220" height="70" rx="10" fill="url(#candidateGrad)" filter="url(#shadow)" stroke="#2980b9" stroke-width="2"/>
+  <text x="590" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1a3a52">🎯 Candidate Generator</text>
+  <text x="590" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1a3a52">YOLO11 + ByteTrack</text>
+  <text x="590" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1a3a52">Pedestrian Bbox Detection</text>
+
+  <!-- CANDIDATE CATALOG -->
+  <rect x="480" y="200" width="220" height="110" rx="10" fill="#d6eaf8" filter="url(#shadow)" stroke="#2980b9" stroke-width="2"/>
+  <text x="590" y="222" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1a3a52">📋 Indexed Bbox Catalog C_T</text>
+  <text x="590" y="243" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1a3a52">&lt;ped_1&gt;, &lt;ped_2&gt;, ..., &lt;ped_K&gt;</text>
+  <text x="590" y="261" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1a3a52">+ &lt;NO_EXIST&gt; (virtual slot)</text>
+  <text x="590" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-style="italic" fill="#1a3a52">Each entry: slot ID + P_bbox(b)</text>
+  <text x="590" y="298" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-style="italic" fill="#1a3a52">Multi-choice identification</text>
+
+  <!-- TVBI VISION ENCODER -->
+  <rect x="260" y="320" width="200" height="80" rx="10" fill="#fadbd8" filter="url(#shadow)" stroke="#c0392b" stroke-width="2"/>
+  <text x="360" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6c2018">⏱️ TVBI Vision Encoder</text>
+  <text x="360" y="365" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c2018">Temporal-Viewpoint-Bbox</text>
+  <text x="360" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c2018">Indicator Tokens</text>
+  <text x="360" y="393" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-style="italic" fill="#6c2018">E_TVBI(t) = E_TVI(t) + P_bbox(b_t)</text>
+
+  <!-- Referred-Target Bbox Queue -->
+  <rect x="700" y="200" width="200" height="110" rx="10" fill="url(#queueGrad)" filter="url(#shadow)" stroke="#d35400" stroke-width="2"/>
+  <text x="800" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#5d2a0c">📦 Target Bbox Queue (FIFO)</text>
+  <text x="800" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#5d2a0c">Sliding window of size H-1</text>
+  <text x="800" y="266" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#5d2a0c">Stores selected bboxes:</text>
+  <text x="800" y="283" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#5d2a0c">b_{T-H}, ..., b_{T-1}</text>
+  <text x="800" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-style="italic" fill="#5d2a0c">Injects motion cues into history</text>
+
+  <!-- LLM - ReferTrack VLA (CENTRAL) -->
+  <rect x="340" y="450" width="320" height="120" rx="15" fill="url(#llmGrad)" filter="url(#shadow)" stroke="#6c3483" stroke-width="3"/>
+  <text x="500" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fff">🧠 ReferTrack VLA (LLM Backbone)</text>
+  <text x="500" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#fff" font-weight="bold">Stage 1: Refer-CoT Token Prediction</text>
+  <text x="500" y="518" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#f5eef8">E_ref_T ∈ {&lt;ped_1&gt;...&lt;ped_K&gt;, &lt;NO_EXIST&gt;}</text>
+  <text x="500" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#fff" font-weight="bold">Stage 2: Action Token Generation</text>
+  <text x="500" y="556" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#f5eef8">E_A_T = LLM(L, C_T, E_V, E_ref_T)</text>
+
+  <!-- Action Head -->
+  <rect x="380" y="610" width="240" height="70" rx="10" fill="url(#actionGrad)" filter="url(#shadow)" stroke="#d68910" stroke-width="2"/>
+  <text x="500" y="635" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#5d4506">⚙️ Action Head (MLP)</text>
+  <text x="500" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#5d4506">W_T = {w_1, w_2, ..., w_M}</text>
+  <text x="500" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#5d4506">M waypoints: (x, y, θ) displacements</text>
+
+  <!-- Output: Trajectory -->
+  <rect x="380" y="720" width="240" height="65" rx="10" fill="#d5f5e3" filter="url(#shadow)" stroke="#229954" stroke-width="2"/>
+  <text x="500" y="748" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#145a32">🏃 Trajectory Output</text>
+  <text x="500" y="768" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#145a32">Continuous tracking waypoints</text>
+
+  <!-- Training Box (side) -->
+  <rect x="20" y="450" width="300" height="170" rx="12" fill="url(#trainGrad)" filter="url(#shadow)" stroke="#00838f" stroke-width="2"/>
+  <text x="170" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#00363a">📚 Training (Co-training 1:1)</text>
+  <text x="170" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#00363a">Navigation Data (1.3M)</text>
+  <text x="170" y="516" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#00363a">EVT-Bench expert trajectories (Habitat 3.0)</text>
+  <text x="170" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#00363a">Refer-QA Data (1.3M)</text>
+  <text x="170" y="554" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#00363a">Synthetic from SYNTH-PEDES</text>
+  <text x="170" y="578" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#00363a">Two-Stage SFT (AdamW, full FT)</text>
+  <text x="170" y="600" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#00363a">ℒ = α·ℒ_traj + ℒ_refer + ℒ_text  (α=10)</text>
+
+  <!-- Real-world Deployment Box -->
+  <rect x="680" y="450" width="300" height="170" rx="12" fill="#fdebd0" filter="url(#shadow)" stroke="#b9770e" stroke-width="2"/>
+  <text x="830" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#5d3a06">🤖 Real-world Deployment</text>
+  <text x="830" y="502" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#5d3a06">Unitree Go2 (Quadruped)</text>
+  <text x="830" y="518" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#5d3a06">Unitree G1 (Humanoid)</text>
+  <text x="830" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#5d3a06">RealSense D455 (single fwd cam)</text>
+  <text x="830" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#5d3a06">Inference: 10.6 Hz, det: 12 ms</text>
+  <text x="830" y="578" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#5d3a06">EVT-Bench SOTA (Single-View):</text>
+  <text x="830" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#5d3a06">STT 89.4% | DT 73.3% | AT 74.1%</text>
+  <text x="830" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-style="italic" fill="#5d3a06">4B Qwen3 + YOLO11 backbone</text>
+
+  <!-- Loss supervision arrows (to LLM) -->
+  <path d="M 320 510 L 340 510" stroke="#00838f" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="4,3"/>
+  <text x="330" y="502" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#00838f" font-weight="bold">L_ref + L_text</text>
+
+  <path d="M 320 560 L 340 540" stroke="#00838f" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="4,3"/>
+  <text x="330" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#00838f" font-weight="bold">L_traj</text>
+
+  <!-- Main Flow Arrows -->
+  <!-- Input to Text Encoder -->
+  <path d="M 130 160 L 130 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Input to Vision Encoder -->
+  <path d="M 350 160 L 350 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Input to Candidate Generator -->
+  <path d="M 440 125 L 480 125" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Candidate Generator to Catalog -->
+  <path d="M 590 160 L 590 200" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Text Encoder to LLM -->
+  <path d="M 130 260 Q 130 380, 340 460" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Vision Encoder to TVBI -->
+  <path d="M 350 260 L 360 320" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- TVBI to LLM -->
+  <path d="M 360 400 Q 400 425, 380 460" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Catalog to LLM -->
+  <path d="M 590 310 Q 590 400, 480 460" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Queue to TVBI (curved feedback) -->
+  <path d="M 700 290 Q 500 340, 460 360" stroke="#d35400" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="5,3"/>
+  <text x="560" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#d35400" font-weight="bold">inject historical bbox</text>
+
+  <!-- LLM to Action Head -->
+  <path d="M 500 570 L 500 610" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Action Head to Trajectory -->
+  <path d="M 500 680 L 500 720" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- LLM Refer-CoT back to Queue (feedback loop) -->
+  <path d="M 660 480 Q 720 380, 800 310" stroke="#9b59b6" stroke-width="2.5" fill="none" marker-end="url(#arrow)" stroke-dasharray="6,3"/>
+  <text x="755" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#9b59b6" font-weight="bold">Refer-CoT token:</text>
+  <text x="755" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#9b59b6" font-weight="bold">selected target index</text>
+
+  <!-- Bottom legend -->
+  <rect x="20" y="820" width="960" height="60" rx="8" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+  <text x="40" y="843" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2c3e50">Key Insight: </text>
+  <text x="115" y="843" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">"Referring then Tracking" — frame target ID as a single-token multiple-choice over indexed image-space bboxes,</text>
+  <text x="40" y="862" font-family="Arial, sans-serif" font-size="11" fill="#2c3e50">then decode trajectory waypoints conditioned on this image-grounded CoT decision. TVBI tokens propagate geometric motion cues via a sliding-window bbox queue.</text>
+
+  <!-- Decorative dashed arrow for queue feedback loop at bottom -->
+  <path d="M 800 685 Q 850 750, 800 820" stroke="#d35400" stroke-width="1.5" fill="none" stroke-dasharray="3,3" opacity="0.4"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="The model first selects a target via a single Refer-CoT token from an indexed bbox catalog, then plans trajectory waypoints conditioned on this image-grounded decision" data-lang="en">
+                        <div class="quiz-question">1. What is the core design choice of ReferTrack's 'referring-then-tracking' paradigm?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The model first plans a trajectory and then identifies the target during execution">The model first plans a trajectory and then identifies the target during execution</div><div class="quiz-choice long-text" data-value="The model first selects a target via a single Refer-CoT token from an indexed bbox catalog, then plans trajectory waypoints conditioned on this image-grounded decision">The model first selects a target via a single Refer-CoT token from an indexed bbox catalog, then plans trajectory waypoints conditioned on this image-grounded decision</div><div class="quiz-choice" data-value="The model bypasses identification and directly predicts waypoints from language only">The model bypasses identification and directly predicts waypoints from language only</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="模型先通过单个Refer-CoT token从索引化的边界框目录中选择目标，然后基于这一图像空间决策规划轨迹waypoints" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. ReferTrack的'先指代后跟踪'范式的核心设计选择是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="模型先规划轨迹，然后在执行过程中识别目标">模型先规划轨迹，然后在执行过程中识别目标</div><div class="quiz-choice" data-value="模型先通过单个Refer-CoT token从索引化的边界框目录中选择目标，然后基于这一图像空间决策规划轨迹waypoints">模型先通过单个Refer-CoT token从索引化的边界框目录中选择目标，然后基于这一图像空间决策规划轨迹waypoints</div><div class="quiz-choice" data-value="模型绕过识别步骤，直接仅从语言预测waypoints">模型绕过识别步骤，直接仅从语言预测waypoints</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Geometric features of the referred target's bounding boxes from historical frames, embedded via a shared P_bbox MLP" data-lang="en">
+                        <div class="quiz-question">2. What specific information do TVBI (temporal-viewpoint-bbox indicator) tokens inject into the visual history stream?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Geometric features of the referred target's bounding boxes from historical frames, embedded via a shared P_bbox MLP">Geometric features of the referred target's bounding boxes from historical frames, embedded via a shared P_bbox MLP</div><div class="quiz-choice" data-value="Raw RGB pixel patches of the target's previous appearances">Raw RGB pixel patches of the target's previous appearances</div><div class="quiz-choice" data-value="Future-predicted waypoint coordinates for trajectory planning">Future-predicted waypoint coordinates for trajectory planning</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="通过共享的P_bbox MLP嵌入的、所指代目标在历史帧中的边界框几何特征" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. TVBI（temporal-viewpoint-bbox indicator）tokens向视觉历史流中注入了什么具体信息？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="通过共享的P_bbox MLP嵌入的、所指代目标在历史帧中的边界框几何特征">通过共享的P_bbox MLP嵌入的、所指代目标在历史帧中的边界框几何特征</div><div class="quiz-choice" data-value="目标先前外观的原始RGB像素块">目标先前外观的原始RGB像素块</div><div class="quiz-choice" data-value="用于轨迹规划的未来预测waypoint坐标">用于轨迹规划的未来预测waypoint坐标</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Target identification, rather than motion planning, is the primary bottleneck in distracted scenarios" data-lang="en">
+                        <div class="quiz-question">3. According to the ablation study on EVT-Bench Distracted Tracking, what conclusion can be drawn from the gap between the full ReferTrack (73.3% SR) and the oracle variant TVBI w/ GT bbox (81.5% SR)?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Motion planning is the primary bottleneck in distracted scenarios">Motion planning is the primary bottleneck in distracted scenarios</div><div class="quiz-choice long-text" data-value="Target identification, rather than motion planning, is the primary bottleneck in distracted scenarios">Target identification, rather than motion planning, is the primary bottleneck in distracted scenarios</div><div class="quiz-choice" data-value="The YOLO11 detector is the main source of performance degradation">The YOLO11 detector is the main source of performance degradation</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="在受干扰场景中，目标识别而非运动规划是主要瓶颈" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 根据EVT-Bench Distracted Tracking的消融实验，从完整ReferTrack（73.3% SR）和oracle变体TVBI w/ GT bbox（81.5% SR）之间的差距可以得出什么结论？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="在受干扰场景中，运动规划是主要瓶颈">在受干扰场景中，运动规划是主要瓶颈</div><div class="quiz-choice" data-value="在受干扰场景中，目标识别而非运动规划是主要瓶颈">在受干扰场景中，目标识别而非运动规划是主要瓶颈</div><div class="quiz-choice" data-value="YOLO11检测器是性能下降的主要来源">YOLO11检测器是性能下降的主要来源</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/black-lozenge.png');">
+                    <h2 style="color: #ffffff;">Paper 3</h2>
+                    <p style="color: #badb12;"><strong>Show, Don't Tell: Evaluating Spatial Cognition in Generative Pixels Rather Than LLM Text</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-07-22</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2607.21072" target="_blank">http://arxiv.org/pdf/2607.21072</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on evaluating spatial cognition in multimodal AI systems, specifically comparing image-generation models against text-output vision-language models (VLMs) across spatial reasoning tasks.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Built upon existing spatial reasoning benchmarks (e.g., VSR, BLINK, MindCube, OmniSpatial, SpatialScore) that rely on textual or coordinate-based outputs, it introduces the new idea of allowing image-generation models to externalize spatial answers directly in pixel space through protocolized visual responses that remain compatible with original evaluation metrics.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> It addresses the "answer-interface mismatch" where existing spatial benchmarks force continuous visual judgments into textual or coordinate-based formats, making it impossible to fairly evaluate image-generation models under the same task semantics and metrics as text-output VLMs.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper proposes ProVisE (Protocolized Visual Evaluation), a benchmark-agnostic framework combining visual protocols with deterministic parsers, an Agentic builder that automatically constructs task-specific protocols, and SpatialGen-Bench, a curated diagnostic benchmark of 470 samples spanning 14 subtasks across four capability levels (perception, understanding, reasoning, interaction).</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Experiments on 31 model systems show image-generation models are competitive when answers can be externalized as pixel-space evidence (e.g., depth, relationship tasks), while text-output VLMs retain advantages in compositional spatial reasoning; the Agentic builder successfully transferred protocols to six external benchmarks, and failure analysis revealed that 88% of visual failures stem from incorrect spatial predictions rather than generation/parsing breakdowns.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 论文聚焦于多模态AI系统的空间认知评估,具体比较图像生成模型与文本输出视觉语言模型(VLM)在空间推理任务上的表现。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 基于现有空间推理基准(如VSR、BLINK、MindCube、OmniSpatial、SpatialScore)依赖文本或坐标输出的方式,提出了通过协议化视觉响应让图像生成模型直接在像素空间中外化空间答案的新思路,同时保持与原始评估指标的兼容性。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文解决了"答案接口不匹配"问题——现有空间基准将连续视觉判断强制转化为文本或坐标格式,使得图像生成模型无法在相同任务语义和评估指标下与文本输出VLM进行公平比较。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 论文提出了ProVisE(协议化视觉评估)框架,结合视觉协议与确定性解析器、自动构建任务特定协议的Agentic构建器,以及SpatialGen-Bench基准(包含470个样本,涵盖感知、理解、推理、交互四个能力层级的14个子任务)。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 对31个模型系统的实验表明,当答案可以外化为像素空间证据时(如深度、关系任务)图像生成模型具有竞争力,而文本输出VLM在组合空间推理上保持优势;Agentic构建器成功将协议迁移到六个外部基准;失败分析显示88%的视觉失败源于错误的空间预测而非生成/解析问题。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Existing benchmarks force continuous visual judgments into textual or coordinate-based outputs, creating an answer-interface mismatch that prevents fair comparison between image-generation models and text-output VLMs" data-lang="en">
+                        <div class="quiz-question">1. What is the primary problem ProVisE aims to solve in spatial reasoning evaluation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Image-generation models are slower than VLMs at processing spatial inputs">Image-generation models are slower than VLMs at processing spatial inputs</div><div class="quiz-choice long-text" data-value="Existing benchmarks force continuous visual judgments into textual or coordinate-based outputs, creating an answer-interface mismatch that prevents fair comparison between image-generation models and text-output VLMs">Existing benchmarks force continuous visual judgments into textual or coordinate-based outputs, creating an answer-interface mismatch that prevents fair comparison between image-generation models and text-output VLMs</div><div class="quiz-choice" data-value="VLMs cannot process images at sufficient resolution for spatial tasks">VLMs cannot process images at sufficient resolution for spatial tasks</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="现有基准将连续视觉判断强制转化为文本或基于坐标的输出，造成答案接口不匹配，使图像生成模型无法与文本输出VLM在同一任务语义下公平比较" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. ProVisE旨在解决空间推理评估中的什么核心问题？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="图像生成模型处理空间输入的速度比VLM慢">图像生成模型处理空间输入的速度比VLM慢</div><div class="quiz-choice" data-value="现有基准将连续视觉判断强制转化为文本或基于坐标的输出，造成答案接口不匹配，使图像生成模型无法与文本输出VLM在同一任务语义下公平比较">现有基准将连续视觉判断强制转化为文本或基于坐标的输出，造成答案接口不匹配，使图像生成模型无法与文本输出VLM在同一任务语义下公平比较</div><div class="quiz-choice" data-value="VLM无法以足够分辨率处理图像以完成空间任务">VLM无法以足够分辨率处理图像以完成空间任务</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Tasks where the answer can remain as a visible, inspectable pixel-space state (e.g., depth fields, grounded overlays)" data-lang="en">
+                        <div class="quiz-question">2. According to the paper, in which type of tasks do image-generation models show the strongest performance compared to text-output VLMs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Compositional reasoning tasks requiring multiple inference steps">Compositional reasoning tasks requiring multiple inference steps</div><div class="quiz-choice long-text" data-value="Tasks where the answer can remain as a visible, inspectable pixel-space state (e.g., depth fields, grounded overlays)">Tasks where the answer can remain as a visible, inspectable pixel-space state (e.g., depth fields, grounded overlays)</div><div class="quiz-choice" data-value="Tasks requiring precise numerical coordinate calculations">Tasks requiring precise numerical coordinate calculations</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="答案可以保持为可见、可检视的像素空间状态的任务（例如深度场、叠加定位标记）" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 根据论文，图像生成模型相对于文本输出VLM在哪类任务上表现最强？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="需要多步推理的组合推理任务">需要多步推理的组合推理任务</div><div class="quiz-choice" data-value="答案可以保持为可见、可检视的像素空间状态的任务（例如深度场、叠加定位标记）">答案可以保持为可见、可检视的像素空间状态的任务（例如深度场、叠加定位标记）</div><div class="quiz-choice" data-value="需要精确数值坐标计算的任务">需要精确数值坐标计算的任务</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Most failures (88.03%) stem from incorrect spatial predictions, while only small fractions result from protocol noncompliance (8.46%), parser failures (3.45%), or generation failures (0.06%)" data-lang="en">
+                        <div class="quiz-question">3. What does the failure attribution analysis reveal about why visual answering fails?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Most failures (88.03%) stem from incorrect spatial predictions, while only small fractions result from protocol noncompliance (8.46%), parser failures (3.45%), or generation failures (0.06%)">Most failures (88.03%) stem from incorrect spatial predictions, while only small fractions result from protocol noncompliance (8.46%), parser failures (3.45%), or generation failures (0.06%)</div><div class="quiz-choice" data-value="Generation failures account for the majority of visual answering breakdowns">Generation failures account for the majority of visual answering breakdowns</div><div class="quiz-choice long-text" data-value="Parser failures are the dominant cause, indicating that image-generation models produce correct visual answers but parsers cannot interpret them">Parser failures are the dominant cause, indicating that image-generation models produce correct visual answers but parsers cannot interpret them</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="大多数失败（88.03%）源于不正确的空间预测，仅有少数源于协议不遵守（8.46%）、解析器失败（3.45%）或生成失败（0.06%）" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 失败归因分析揭示了视觉回答失败的主要原因是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="大多数失败（88.03%）源于不正确的空间预测，仅有少数源于协议不遵守（8.46%）、解析器失败（3.45%）或生成失败（0.06%）">大多数失败（88.03%）源于不正确的空间预测，仅有少数源于协议不遵守（8.46%）、解析器失败（3.45%）或生成失败（0.06%）</div><div class="quiz-choice" data-value="生成失败是视觉回答崩溃的主要原因">生成失败是视觉回答崩溃的主要原因</div><div class="quiz-choice" data-value="解析器失败是主要原因，表明图像生成模型生成了正确的视觉答案但解析器无法解读">解析器失败是主要原因，表明图像生成模型生成了正确的视觉答案但解析器无法解读</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    
+    <div class="daily-tips-section">
+        <h2 class="tips-heading">
+            <span data-lang="en">Today's Reading Tips</span>
+            <span data-lang="zh" style="display:none">今日阅读推荐</span>
+        </h2>
+        <div class="tips-content" data-lang="en">Start with the DataFlow-Harness paper (Paper 1) as it has the most immediate practical value: its 93.3% pass rate and 72.5% cost reduction on a concrete 12-task benchmark make the contributions easy to evaluate, and the 'NL2Pipeline gap' framing is broadly relevant to anyone building LLM agents. Then read ReferTrack (Paper 2) if you work on embodied AI—the 'referring-then-tracking' paradigm with discrete bounding-box grounding is a clean and generalizable idea worth understanding. Paper 3 (ProVisE) is best read last as a meta-evaluation piece; interestingly, it connects to Paper 1 through the theme of structured/synthesized benchmarks and to Paper 2 by offering an alternative evaluation protocol for spatial reasoning tasks.</div>
+        <div class="tips-content" data-lang="zh" style="display:none">建议优先阅读 DataFlow-Harness（论文1），其实用价值最直接：在12个任务基准上达到93.3%的通过率并将成本降低72.5%，贡献易于评估，且'NL2Pipeline gap'的框架对所有构建LLM智能体的研究者都相关。如果你从事具身智能方向，可以接着读 ReferTrack（论文2），其'先指代再跟踪'的范式利用离散的边界框作为推理锚点，思路清晰且可推广。论文3（ProVisE）建议最后阅读，作为元评测类研究，它与论文1都涉及结构化/合成基准的设计思想，与论文2则在空间推理评估方法上形成有趣的对比。</div>
+    </div>
+    
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        function toggleLang() {
+            var btn = document.getElementById('lang-btn');
+            var isZh = document.body.classList.contains('lang-zh');
+            if (isZh) {
+                document.body.classList.remove('lang-zh');
+                btn.textContent = 'ZH';
+                localStorage.setItem('-paper-lang', 'en');
+            } else {
+                document.body.classList.add('lang-zh');
+                btn.textContent = 'EN';
+                localStorage.setItem('-paper-lang', 'zh');
+            }
+            var enEls = document.querySelectorAll('[data-lang="en"]');
+            var zhEls = document.querySelectorAll('[data-lang="zh"]');
+            for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = isZh ? '' : 'none'; }
+            for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = isZh ? 'none' : ''; }
+        }
+
+        function getActivePopup(tab) {
+            var lang = document.body.classList.contains('lang-zh') ? 'zh' : 'en';
+            return tab.querySelector('.quiz-popup[data-lang="' + lang + '"]');
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore language preference
+            var savedLang = localStorage.getItem('-paper-lang');
+            if (savedLang === 'zh') {
+                document.body.classList.add('lang-zh');
+                document.getElementById('lang-btn').textContent = 'EN';
+                var enEls = document.querySelectorAll('[data-lang="en"]');
+                var zhEls = document.querySelectorAll('[data-lang="zh"]');
+                for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = 'none'; }
+                for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = ''; }
+            }
+
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                // 为所有 popup 阻止冒泡
+                tab.querySelectorAll('.quiz-popup').forEach(function(p) {
+                    p.addEventListener('click', function(e) { e.stopPropagation(); });
+                });
+
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var popup = getActivePopup(tab);
+                    if (!popup) return;
+
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.quiz-popup').forEach(function(p) {
+                            p.classList.remove('active');
+                        });
+                        document.body.appendChild(popup);
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
