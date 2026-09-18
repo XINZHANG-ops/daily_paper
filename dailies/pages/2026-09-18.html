@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-09-18 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Language toggle */
+        #lang-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10000;
+        }
+        #lang-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        #lang-btn:hover {
+            background-color: #1557b0;
+        }
+
+        /* Daily tips */
+        .daily-tips-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0 20px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .tips-heading {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .tips-content {
+            background-color: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #333;
+            font-size: 1em;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="lang-toggle">
+        <button id="lang-btn" onclick="toggleLang()">ZH</button>
+    </div>
+    <h1>2026-09-18 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="card-deck">
+                    <div class="card-counter">1/2</div>
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 1</h2>
+                        <p style="color: #badb12;"><strong>LimiX-2: A Contextual Mechanism Network Towards General Structured-Data Intelligence</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-09-14</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2609.17488" target="_blank">http://arxiv.org/pdf/2609.17488</a></p>
+                        <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on building a general-purpose foundation model for structured (tabular) data, situated at the intersection of machine learning, causal inference, and large-scale pretraining.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on Prior-Data Fitted Networks (PFNs), the earlier LimiX framework, and synthetic pretraining via structural causal models (SCMs); its new idea is the Contextual Mechanism Networks (CMNs) paradigm, which shifts from target-centric p(y|x, D_context) prediction to learning the joint mechanism p(x, y|D_context), enabling unified supervised prediction, imputation, and causal reasoning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> It addresses the limitation that conventional tabular PFNs are confined to single-target label prediction and fail to support diverse conditional reasoning tasks, as well as the lack of a unified, task-agnostic pretrained model for general structured-data intelligence.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper proposes CMNs trained via Context-Conditional Masked Modeling (CCMM) on synthetic SCM-generated data, using a Transformer backbone with cell-level representations, separate feature/task pathways with K=4 task embeddings, asymmetric feature-axis attention, independent SwiGLU FFNs, 5000-bin regression heads, and varied mask patterns; it also presents scaling-law analyses across model sizes from 12.5M to 406.2M parameters.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> LimiX-2 achieves the highest Elo scores on TabArena (1935), TALENT (1506), and BCCO (1432), outperforming all compared tabular foundation models and AutoGluon while being 4× smaller than TabFM; it also achieves a mean F1 of 0.7972 in causal skeleton recovery (ranking first on six datasets), demonstrating both strong predictive performance and emergent causal awareness.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 论文聚焦于面向结构化（表格）数据的通用基础模型研究,横跨机器学习、因果推断与大规模预训练领域。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 论文基于先验数据拟合网络(PFNs)、前作 LimiX 框架以及基于结构因果模型(SCM)的合成预训练方法;核心新思路是提出上下文机制网络(CMNs)范式,将目标驱动的 p(y|x, D_context) 预测转向学习联合机制 p(x, y|D_context),从而统一支持监督预测、缺失值填补与因果推理。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文旨在解决传统表格 PFNs 局限于单一目标标签预测、无法支持多样化条件推理任务的问题,以及缺乏面向通用结构化数据智能的统一、与任务无关的预训练模型的问题。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 论文采用 CMNs 范式,基于上下文条件掩码建模(CCMM)在 SCM 生成的合成数据上进行训练;使用 Transformer 主干与单元级(cell-level)表示,采用独立的特征/任务通路与 K=4 的任务嵌入、非对称特征轴注意力、独立 SwiGLU FFN、5000-bin 回归头以及多样化掩码模式;并在 12.5M 到 406.2M 参数范围内进行了扩展律分析。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> LimiX-2 在 TabArena (1935)、TALENT (1506) 和 BCCO (1432) 三个基准上均取得最高 Elo 评分,在参数量仅为 TabFM 四分之一的情况下超越所有对比的表格基础模型和 AutoGluon;同时在因果骨架恢复任务上以平均 F1=0.7972 位居六项数据集之首,展现了强大的预测性能与涌现的因果感知能力。</div></div></div>
+                    </div>
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>LimiX-2: A Contextual Mechanism Network Towards General Structured-Data Intelligence</h2>
+                        <svg width="100%" viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="inputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="archGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6d28d9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="pretrainGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#be185d;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dataGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#475569"/>
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="1600" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <rect x="300" y="20" width="600" height="60" rx="30" fill="url(#archGrad)" filter="url(#shadow)"/>
+  <text x="600" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white">LimiX-2: Methodology Flow Chart</text>
+  <text x="600" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#475569" font-style="italic">Contextual Mechanism Networks (CMNs) with CCMM Pretraining</text>
+  
+  <!-- Section 1: Data Generation Pipeline -->
+  <rect x="40" y="140" width="540" height="460" rx="15" fill="#f0fdf4" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="140" width="540" height="40" rx="15" fill="url(#dataGrad)"/>
+  <text x="310" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Pretraining Data Generation (SCM-based)</text>
+  
+  <!-- Step 1 -->
+  <rect x="70" y="200" width="480" height="60" rx="10" fill="white" stroke="#10b981" stroke-width="1.5"/>
+  <circle cx="90" cy="230" r="15" fill="#10b981"/>
+  <text x="90" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">1</text>
+  <text x="120" y="225" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#047857">Hyperparameter Sampling</text>
+  <text x="120" y="245" font-family="Arial, sans-serif" font-size="11" fill="#475569">Sample size, feature dim, task type, eval position</text>
+  
+  <!-- Step 2 -->
+  <rect x="70" y="275" width="480" height="60" rx="10" fill="white" stroke="#10b981" stroke-width="1.5"/>
+  <circle cx="90" cy="305" r="15" fill="#10b981"/>
+  <text x="90" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">2</text>
+  <text x="120" y="300" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#047857">DAG Generation</text>
+  <text x="120" y="320" font-family="Arial, sans-serif" font-size="11" fill="#475569">Causal motifs (chain, confounding, collider) + topology transforms</text>
+  
+  <!-- Step 3 -->
+  <rect x="70" y="350" width="480" height="60" rx="10" fill="white" stroke="#10b981" stroke-width="1.5"/>
+  <circle cx="90" cy="380" r="15" fill="#10b981"/>
+  <text x="90" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">3</text>
+  <text x="120" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#047857">SCM Propagation</text>
+  <text x="120" y="395" font-family="Arial, sans-serif" font-size="11" fill="#475569">Edge functions (MLP, CNN, Tree, Linear) + aggregations</text>
+  
+  <!-- Step 4 -->
+  <rect x="70" y="425" width="480" height="60" rx="10" fill="white" stroke="#10b981" stroke-width="1.5"/>
+  <circle cx="90" cy="455" r="15" fill="#10b981"/>
+  <text x="90" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">4</text>
+  <text x="120" y="450" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#047857">Feature & Target Sampling</text>
+  <text x="120" y="470" font-family="Arial, sans-serif" font-size="11" fill="#475569">Multi-attribute selection: subgraph + redundancy</text>
+  
+  <!-- Step 5 -->
+  <rect x="70" y="500" width="480" height="60" rx="10" fill="white" stroke="#10b981" stroke-width="1.5"/>
+  <circle cx="90" cy="530" r="15" fill="#10b981"/>
+  <text x="90" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">5</text>
+  <text x="120" y="525" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#047857">Task Adaptation</text>
+  <text x="120" y="545" font-family="Arial, sans-serif" font-size="11" fill="#475569">Discretization (CLS), scale/skew transforms (REG)</text>
+  
+  <!-- Down arrow -->
+  <line x1="310" y1="560" x2="310" y2="580" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Synthetic Dataset Output -->
+  <rect x="160" y="580" width="300" height="20" rx="10" fill="#10b981"/>
+  <text x="310" y="594" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Synthetic Datasets</text>
+  
+  <!-- Section 2: Architecture (right side) -->
+  <rect x="620" y="140" width="540" height="600" rx="15" fill="#faf5ff" stroke="#8b5cf6" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="620" y="140" width="540" height="40" rx="15" fill="url(#archGrad)"/>
+  <text x="890" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">LimiX-2 Architecture</text>
+  
+  <!-- Embedding -->
+  <rect x="650" y="200" width="480" height="80" rx="10" fill="white" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="890" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6d28d9">Tabular Data Embedding (d=256)</text>
+  <text x="660" y="250" font-family="Arial, sans-serif" font-size="11" fill="#475569">• MLP encoder (Enum) for cells</text>
+  <text x="660" y="267" font-family="Arial, sans-serif" font-size="11" fill="#475569">• Shared missing-cell embedding (Emiss)</text>
+  
+  <!-- DFE -->
+  <rect x="650" y="295" width="480" height="55" rx="10" fill="white" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="890" y="318" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6d28d9">Discriminative Feature Encoding (DFE)</text>
+  <text x="660" y="340" font-family="Arial, sans-serif" font-size="11" fill="#475569">Low-rank column identity codes (s=d/4)</text>
+  
+  <!-- Target Embedding -->
+  <rect x="650" y="365" width="480" height="55" rx="10" fill="white" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="890" y="388" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6d28d9">Target Embedding (K=4 slots + task type)</text>
+  <text x="660" y="410" font-family="Arial, sans-serif" font-size="11" fill="#475569">EY_num (REG) | EY_cat (CLS) | MASK tokens</text>
+  
+  <!-- Backbone -->
+  <rect x="650" y="435" width="480" height="200" rx="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="890" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6d28d9">Dual-Axis Transformer Backbone (M=24 layers)</text>
+  
+  <!-- Sub-blocks -->
+  <rect x="670" y="475" width="440" height="35" rx="5" fill="white" stroke="#a78bfa"/>
+  <text x="890" y="498" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#6d28d9">Sample-Axis Attention</text>
+  
+  <rect x="670" y="515" width="440" height="35" rx="5" fill="white" stroke="#a78bfa"/>
+  <text x="890" y="538" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#6d28d9">Independent X/Y SwiGLU FFN</text>
+  
+  <rect x="670" y="555" width="440" height="35" rx="5" fill="white" stroke="#a78bfa"/>
+  <text x="890" y="578" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#6d28d9">Asymmetric Feature-Axis Attention</text>
+  
+  <rect x="670" y="595" width="440" height="35" rx="5" fill="white" stroke="#a78bfa"/>
+  <text x="890" y="618" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6d28d9">Length-stable Multi-Head + RMSNorm</text>
+  
+  <!-- Prediction Heads -->
+  <rect x="650" y="650" width="480" height="80" rx="10" fill="white" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="890" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6d28d9">Prediction Heads</text>
+  <text x="660" y="697" font-family="Arial, sans-serif" font-size="11" fill="#475569">• Classification (C-way logits)</text>
+  <text x="660" y="713" font-family="Arial, sans-serif" font-size="11" fill="#475569">• Regression (B=5000 bin probabilities)</text>
+  <text x="660" y="727" font-family="Arial, sans-serif" font-size="11" fill="#475569">• Feature Reconstruction (shallow depth)</text>
+  
+  <!-- Section 3: Pretraining Strategy -->
+  <rect x="40" y="620" width="540" height="350" rx="15" fill="#fdf2f8" stroke="#ec4899" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="620" width="540" height="40" rx="15" fill="url(#pretrainGrad)"/>
+  <text x="310" y="647" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Pretraining: CCMM Strategy</text>
+  
+  <!-- CCMM Core -->
+  <rect x="70" y="680" width="480" height="65" rx="10" fill="white" stroke="#ec4899" stroke-width="1.5"/>
+  <text x="310" y="703" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#be185d">Context-Conditional Masked Modeling</text>
+  <text x="310" y="722" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Joint distribution: p(x,y | Dctx) over masked variables</text>
+  <text x="310" y="737" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Query rows attend only to context rows</text>
+  
+  <!-- Mask Patterns -->
+  <rect x="70" y="760" width="480" height="90" rx="10" fill="white" stroke="#ec4899" stroke-width="1.5"/>
+  <text x="310" y="783" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#be185d">Mask Pattern Design (3 schemes)</text>
+  <text x="90" y="805" font-family="Arial, sans-serif" font-size="11" fill="#475569">• Individual entry masking</text>
+  <text x="90" y="822" font-family="Arial, sans-serif" font-size="11" fill="#475569">• Selected columns across query rows</text>
+  <text x="90" y="839" font-family="Arial, sans-serif" font-size="11" fill="#475569">• Block masking (groups of entries)</text>
+  
+  <!-- Mask Embedding -->
+  <rect x="70" y="865" width="480" height="50" rx="10" fill="white" stroke="#ec4899" stroke-width="1.5"/>
+  <text x="310" y="888" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#be185d">Mask Embedding</text>
+  <text x="310" y="905" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Shared Emiss + DFE column code ej</text>
+  
+  <!-- Objective -->
+  <rect x="70" y="930" width="480" height="30" rx="15" fill="#fce7f3"/>
+  <text x="310" y="950" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#be185d">Denser supervision → stronger data reasoning</text>
+  
+  <!-- Connector arrow from data generation to pretraining/architecture -->
+  <line x1="460" y1="595" x2="620" y2="380" stroke="#475569" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+  <text x="540" y="475" font-family="Arial, sans-serif" font-size="11" fill="#475569" font-style="italic">feeds</text>
+  
+  <!-- Section 4: Output Tasks -->
+  <rect x="40" y="1000" width="1120" height="200" rx="15" fill="#fffbeb" stroke="#f59e0b" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="1000" width="1120" height="40" rx="15" fill="url(#outputGrad)"/>
+  <text x="600" y="1027" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Multi-Task Inference (No Parameter Updates Required)</text>
+  
+  <!-- Task 1: Classification -->
+  <rect x="70" y="1060" width="250" height="110" rx="10" fill="white" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="195" y="1085" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#d97706">Classification</text>
+  <text x="195" y="1108" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">C-way logits</text>
+  <text x="195" y="1125" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Cross-entropy loss</text>
+  <text x="195" y="1148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#d97706" font-weight="bold">Binary | Multiclass</text>
+  
+  <!-- Task 2: Regression -->
+  <rect x="340" y="1060" width="250" height="110" rx="10" fill="white" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="465" y="1085" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#d97706">Regression</text>
+  <text x="465" y="1108" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">5000-bin discretization</text>
+  <text x="465" y="1125" text-anchor="Arial" font-family="Arial, sans-serif" font-size="11" fill="#475569">Probabilistic prediction</text>
+  <text x="465" y="1148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#d97706" font-weight="bold">Continuous targets</text>
+  
+  <!-- Task 3: Imputation -->
+  <rect x="610" y="1060" width="250" height="110" rx="10" fill="white" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="735" y="1085" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#d97706">Missing Value Imputation</text>
+  <text x="735" y="1108" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Shallow feature embeddings</text>
+  <text x="735" y="1125" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Reconstruction head</text>
+  <text x="735" y="1148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#d97706" font-weight="bold">Arbitrary masked columns</text>
+  
+  <!-- Task 4: Causal Discovery -->
+  <rect x="880" y="1060" width="250" height="110" rx="10" fill="white" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="1005" y="1085" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#d97706">Causal Discovery</text>
+  <text x="1005" y="1108" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Feature attention scores</text>
+  <text x="1005" y="1125" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Causal skeleton recovery</text>
+  <text x="1005" y="1148" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#d97706" font-weight="bold">F1=0.7972 (avg)</text>
+  
+  <!-- Section 5: Evaluation Benchmarks -->
+  <rect x="40" y="1230" width="1120" height="320" rx="15" fill="#eff6ff" stroke="#3b82f6" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="1230" width="1120" height="40" rx="15" fill="url(#inputGrad)"/>
+  <text x="600" y="1257" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Evaluation & Scaling Law Results</text>
+  
+  <!-- Three Benchmarks -->
+  <rect x="70" y="1290" width="340" height="240" rx="10" fill="white" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="240" y="1315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1d4ed8">TabArena</text>
+  <text x="240" y="1337" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">51 real-world datasets</text>
+  <text x="240" y="1356" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">CLS + REG tasks</text>
+  <rect x="100" y="1375" width="280" height="40" rx="20" fill="#dbeafe"/>
+  <text x="240" y="1400" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8">Elo: 1935 (Rank 1)</text>
+  <text x="240" y="1430" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Classification Elo: 1917</text>
+  <text x="240" y="1448" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Regression Elo: 2206</text>
+  <text x="240" y="1475" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Practical predictive performance</text>
+  <text x="240" y="1493" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Bradley-Terry Elo evaluation</text>
+  <text x="240" y="1518" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1d4ed8" font-weight="bold">β=34.68 Elo / doubling</text>
+  
+  <rect x="430" y="1290" width="340" height="240" rx="10" fill="white" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="600" y="1315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1d4ed8">TALENT</text>
+  <text x="600" y="1337" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">288 datasets</text>
+  <text x="600" y="1356" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Binary + Multiclass + REG</text>
+  <rect x="460" y="1375" width="280" height="40" rx="20" fill="#dbeafe"/>
+  <text x="600" y="1400" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8">Elo: 1506 (Rank 1)</text>
+  <text x="600" y="1430" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">CLS Elo: 1475</text>
+  <text x="600" y="1448" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">REG Elo: 1584</text>
+  <text x="600" y="1475" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Generalization across diverse tasks</text>
+  <text x="600" y="1493" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">15 random seeds</text>
+  <text x="600" y="1518" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1d4ed8" font-weight="bold">β=22.16 / 18.26 Elo</text>
+  
+  <rect x="790" y="1290" width="340" height="240" rx="10" fill="white" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="960" y="1315" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1d4ed8">BCCO</text>
+  <text x="960" y="1337" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">156 datasets (imperfect data)</text>
+  <text x="960" y="1356" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Missing + incomplete features</text>
+  <rect x="820" y="1375" width="280" height="40" rx="20" fill="#dbeafe"/>
+  <text x="960" y="1400" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8">Elo: 1432 (Rank 1)</text>
+  <text x="960" y="1430" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">CLS Elo: 1321</text>
+  <text x="960" y="1448" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">REG Elo: 1859</text>
+  <text x="960" y="1475" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Robustness evaluation</text>
+  <text x="960" y="1493" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#475569">Challenging & incomplete data</text>
+  <text x="960" y="1518" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1d4ed8" font-weight="bold">β=11.24 / 30.06 Elo</text>
+  
+  <!-- Flow arrows -->
+  <line x1="890" y1="740" x2="890" y2="1000" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="310" y1="740" x2="310" y2="1000" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Legend -->
+  <rect x="40" y="1560" width="1120" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <circle cx="60" cy="1575" r="8" fill="url(#dataGrad)"/>
+  <text x="75" y="1580" font-family="Arial, sans-serif" font-size="11" fill="#475569">Data Generation</text>
+  <circle cx="220" cy="1575" r="8" fill="url(#archGrad)"/>
+  <text x="235" y="1580" font-family="Arial, sans-serif" font-size="11" fill="#475569">Architecture</text>
+  <circle cx="350" cy="1575" r="8" fill="url(#pretrainGrad)"/>
+  <text x="365" y="1580" font-family="Arial, sans-serif" font-size="11" fill="#475569">Pretraining</text>
+  <circle cx="470" cy="1575" r="8" fill="url(#outputGrad)"/>
+  <text x="485" y="1580" font-family="Arial, sans-serif" font-size="11" fill="#475569">Multi-Task Outputs</text>
+  <circle cx="620" cy="1575" r="8" fill="url(#inputGrad)"/>
+  <text x="635" y="1580" font-family="Arial, sans-serif" font-size="11" fill="#475569">Evaluation Results</text>
+  <text x="800" y="1580" font-family="Arial, sans-serif" font-size="11" fill="#475569" font-style="italic">Single forward pass, no task-specific training</text>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="From predicting a single target y to learning the joint dependency structure p(x, y|D_context)" data-lang="en">
+                        <div class="quiz-question">1. What is the core conceptual shift introduced by the Contextual Mechanism Networks (CMNs) paradigm compared to conventional tabular PFNs?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="From predicting a single target y to learning the joint dependency structure p(x, y|D_context)">From predicting a single target y to learning the joint dependency structure p(x, y|D_context)</div><div class="quiz-choice" data-value="From using synthetic data to using real-world datasets for pretraining">From using synthetic data to using real-world datasets for pretraining</div><div class="quiz-choice" data-value="From supervised fine-tuning to in-context learning only">From supervised fine-tuning to in-context learning only</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="从预测单一目标y转变为学习联合依赖结构p(x, y|D_context)" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 与传统表格PFN相比，上下文机制网络（CMNs）范式引入的核心概念转变是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="从预测单一目标y转变为学习联合依赖结构p(x, y|D_context)">从预测单一目标y转变为学习联合依赖结构p(x, y|D_context)</div><div class="quiz-choice" data-value="从使用合成数据预训练转变为使用真实世界数据集">从使用合成数据预训练转变为使用真实世界数据集</div><div class="quiz-choice" data-value="从监督微调转变为仅使用上下文学习">从监督微调转变为仅使用上下文学习</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="5000 bins" data-lang="en">
+                        <div class="quiz-question">2. In LimiX-2, the regression head partitions the target range into how many ordered bins to derive the regression value?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1000 bins">1000 bins</div><div class="quiz-choice" data-value="5000 bins">5000 bins</div><div class="quiz-choice" data-value="10000 bins">10000 bins</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="5000个箱" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 在LimiX-2中，回归头将目标范围划分为多少个有序预测箱以推导回归值？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1000个箱">1000个箱</div><div class="quiz-choice" data-value="5000个箱">5000个箱</div><div class="quiz-choice" data-value="10000个箱">10000个箱</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="0.7972" data-lang="en">
+                        <div class="quiz-question">3. What was LimiX-2's mean F1 score across the six causal skeleton recovery datasets, ranking first compared to all other tabular foundation models and dedicated causal discovery methods?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="0.6591">0.6591</div><div class="quiz-choice" data-value="0.5519">0.5519</div><div class="quiz-choice" data-value="0.7972">0.7972</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="0.7972" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. LimiX-2在六个因果骨架恢复数据集上的平均F1分数是多少，该分数在所有其他表格基础模型和专用因果发现方法中排名第一？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="0.6591">0.6591</div><div class="quiz-choice" data-value="0.5519">0.5519</div><div class="quiz-choice" data-value="0.7972">0.7972</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/black-orchid.png');">
+                    <h2 style="color: #ffffff;">Paper 2</h2>
+                    <p style="color: #badb12;"><strong>DeepSeek-V4.1-Flash: Pushing the Limits of KV Cache Compression</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-09-16</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2609.19969" target="_blank">http://arxiv.org/pdf/2609.19969</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper introduces DeepSeek-V4.1-Flash, a multimodal Mixture-of-Experts (MoE) language model focused on aggressive KV cache compression for long-context agentic workloads, at the intersection of large language model architecture, efficient inference systems, and AI deployment cost reduction.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building upon DeepSeek-V4 (combining global attention with sliding window attention), YOCO's encoder-decoder sharing concept, sparse attention methods (CSA/HCA), and cross-layer attention techniques, the paper proposes the Causal Encoder-Decoder (CED) architecture, Compressed Sparse Attention 2 (CSA2) with cross-layer KV/index reuse, FP4 main KV caching, and SWA Bounded Replay as novel integrated solutions.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the KV cache bottleneck in long-context LLM inference, specifically the computational expense of prefill, the strain on HBM and SSD capacity from large KV caches, and the data-transfer bandwidth limitations that collectively constrain serving throughput and increase deployment costs for long-horizon agents.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper employs a Causal Encoder-Decoder (CED) architecture where decoder global KV is projected from encoder hidden states, halving prefill activation; CSA2 with three modes (Full, Reindex, Reuse) for cross-layer KV and Top-K index sharing; a Hierarchical Sparse Indexer for decoder; FP4 quantization-aware training for main KV cache; SWA Bounded Replay for approximate SWA KV reconstruction; Single-Pass mHC kernel fusion; and specialized infrastructure optimizations including disaggregated vision-encoder execution and Encoder-Prefill-Decode (EPD) deployment.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> DeepSeek-V4.1-Flash (552B backbone parameters, 8B/16B activation for prefill/decode) achieves a global KV cache footprint of 890 bytes per token (1/4 of V4-Flash) and persistent KV cache footprint of 1/8 of V4-Flash, while delivering superior performance—achieving a Codeforces rating of 3471, 74.2% pass rate on DeepSWE v1.1 (surpassing Opus-5 and GPT-5.6), 90.6% on Terminal-Bench 2.1, and 54.8% on AutomationBench—matching or exceeding frontier closed-source models on most agentic benchmarks.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 本文介绍了 DeepSeek-V4.1-Flash，一种多模态专家混合（MoE）语言模型，专注于长上下文智能体工作负载下 KV 缓存的极致压缩，涵盖大语言模型架构、高效推理系统和 AI 部署成本优化领域。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 在 DeepSeek-V4（结合全局注意力与滑动窗口注意力）、YOCO 的编解码器共享概念、稀疏注意力方法（CSA/HCA）以及跨层注意力技术的基础上，本文提出了因果编码器-解码器（CED）架构、带跨层 KV/索引复用的压缩稀疏注意力 2（CSA2）、FP4 主 KV 缓存和 SWA 有界回放等新颖的综合解决方案。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文解决了长上下文 LLM 推理中的 KV 缓存瓶颈问题，具体包括预填充的计算开销、大型 KV 缓存对 HBM 和 SSD 容量的压力以及数据传输带宽限制，这些因素共同制约了服务吞吐量并增加了长时程智能体的部署成本。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 论文采用了因果编码器-解码器（CED）架构，解码器全局 KV 由编码器隐藏状态投影而来，将预填充激活参数减半；具有 Full、Reindex、Reuse 三种模式的 CSA2 用于跨层 KV 和 Top-K 索引共享；用于解码器的分层稀疏索引器；用于主 KV 缓存的 FP4 量化感知训练；用于近似 SWA KV 重建的 SWA 有界回放；单次遍历 mHC 核融合；以及专门的推理优化基础设施，包括解耦的视觉编码器执行和编码-预填充-解码（EPD）分离部署。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> DeepSeek-V4.1-Flash（552B 骨干参数，预填充/解码激活 8B/16B 参数）实现了每 token 890 字节的全局 KV 缓存占用（为 V4-Flash 的 1/4）和 V4-Flash 1/8 的持久化 KV 缓存占用，同时表现出色——在 Codeforces 评分达到 3471，DeepSWE v1.1 通过率达 74.2%（超越 Opus-5 和 GPT-5.6），Terminal-Bench 2.1 达 90.6%，AutomationBench 达 54.8%——在大多数智能体基准测试中匹配或超越前沿闭源模型。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Causal Encoder-Decoder (CED)" data-lang="en">
+                        <div class="quiz-question">1. Which architectural component in DeepSeek-V4.1-Flash is responsible for projecting the decoder's global KV cache directly from the final encoder hidden states?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Hierarchical Sparse Indexer">Hierarchical Sparse Indexer</div><div class="quiz-choice" data-value="Causal Encoder-Decoder (CED)">Causal Encoder-Decoder (CED)</div><div class="quiz-choice" data-value="Compressed Sparse Attention 2 (CSA2)">Compressed Sparse Attention 2 (CSA2)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="因果编码器-解码器 (Causal Encoder-Decoder, CED)" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. DeepSeek-V4.1-Flash中哪个架构组件负责将解码器的全局KV缓存直接从编码器的最终隐藏状态投影而来？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="分层稀疏索引器 (Hierarchical Sparse Indexer)">分层稀疏索引器 (Hierarchical Sparse Indexer)</div><div class="quiz-choice" data-value="因果编码器-解码器 (Causal Encoder-Decoder, CED)">因果编码器-解码器 (Causal Encoder-Decoder, CED)</div><div class="quiz-choice" data-value="压缩稀疏注意力2 (Compressed Sparse Attention 2, CSA2)">压缩稀疏注意力2 (Compressed Sparse Attention 2, CSA2)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="512" data-lang="en">
+                        <div class="quiz-question">2. In CSA2, what is the attention top-k value configured for sparse selection across all CSA2 layers?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="128">128</div><div class="quiz-choice" data-value="256">256</div><div class="quiz-choice" data-value="512">512</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="512" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 在CSA2中，所有CSA2层的稀疏选择注意力top-k值配置为多少？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="128">128</div><div class="quiz-choice" data-value="256">256</div><div class="quiz-choice" data-value="512">512</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Replaying only the most recent lwin tokens instead of the full l×lwin tokens" data-lang="en">
+                        <div class="quiz-question">3. The SWA Bounded Replay technique achieves persistent storage savings by:</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Compressing SWA KV states to FP4 precision">Compressing SWA KV states to FP4 precision</div><div class="quiz-choice" data-value="Replaying only the most recent lwin tokens instead of the full l×lwin tokens">Replaying only the most recent lwin tokens instead of the full l×lwin tokens</div><div class="quiz-choice" data-value="Removing sliding window attention from all transformer layers">Removing sliding window attention from all transformer layers</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="仅回放最近的lwin个token，而非完整的l×lwin个token" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. SWA有界回放 (SWA Bounded Replay) 技术通过以下哪种方式实现持久存储节省？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="将SWA KV状态压缩为FP4精度">将SWA KV状态压缩为FP4精度</div><div class="quiz-choice" data-value="仅回放最近的lwin个token，而非完整的l×lwin个token">仅回放最近的lwin个token，而非完整的l×lwin个token</div><div class="quiz-choice" data-value="从所有Transformer层中移除滑动窗口注意力">从所有Transformer层中移除滑动窗口注意力</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/dark-geometric.png');">
+                    <h2 style="color: #ffffff;">Paper 3</h2>
+                    <p style="color: #badb12;"><strong>SoL-Pi: Recursively Scaling Auto-Research Loops for Efficient Agent Harness</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-09-16</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2609.20519" target="_blank">http://arxiv.org/pdf/2609.20519</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper focuses on optimizing the agent harness layer—the system that mediates interactions between an LLM and its environment—for token efficiency in long-horizon AI agent tasks, situated within the domains of agentic AI systems, recursive self-improvement (RSI), and automated agent design.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> The paper builds on automated harness optimization works (Meta-Harness, Recursive Harness Self-Improvement, AutoHarness, Darwin Gödel Machine, Hyperagents) and context-compression methods (AgentFold, ACE, Context-Folding); its new idea is a broad-to-deep funnel with strict isolation between search feedback and held-out validation, scaling auto-research across ~150 directions and ~500 executable environments to discover transferable harness mechanisms.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper addresses the challenge that optimizing an agent harness is difficult because locally beneficial changes can cause downstream failures, and prior evolved harnesses tend to overfit development tasks and yield only marginal gains on unseen tasks, motivating a search process that can discover reusable efficiency improvements.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The paper employs an RSI-inspired auto-research loop guided by three principles (breadth and depth, independent validation, scalable orchestration) that iterates through Oracle Analysis, candidate proposal, implementation, review, and capability/efficiency gating; the search yields four retained mechanisms—Action Fusion, Online Context Compact, ObservationPack, and Evidence-Preserving Reducer—integrated and frozen into the SoL-Pi harness before held-out evaluation.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> On EdgeBench, SoL-Pi reduces token traffic by 44.7–49.0% and API cost by ~33% while retaining ~94% of Pi's score, saving 50.0% vs. Codex and 54.3% vs. Claude Code; best single-mechanism candidates improve performance by 5.3–12.8% and token efficiency by 9.8–18.2%, the complete stack transfers from GPT-5.6 Sol to Opus 5 without adaptation, costs drop 26.3% on Terminal-Bench 4 vs. Pi, and SoL-Pi achieves the lowest cost per passed problem on IMO 2026.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 论文聚焦于智能体底层架构（harness）——即LLM与环境之间的中介层——在长时程智能体任务中的token效率优化，属于智能体AI系统、递归自我改进（RSI）以及自动化智能体设计领域。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 论文基于自动化底层架构优化工作（Meta-Harness、Recursive Harness Self-Improvement、AutoHarness、Darwin Gödel Machine、Hyperagents）以及上下文压缩方法（AgentFold、ACE、Context-Folding）；其新思路是采用广度到深度的漏斗结构，严格隔离搜索反馈与留出验证，并在大约150个方向和500个可执行环境中扩展自动研究，以发现可迁移的底层架构机制。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文解决的问题是：底层架构优化因局部有益的更改可能导致下游失败而难以进行，且先前演化出的底层架构倾向于对开发任务过拟合，在未见任务上仅能带来微小提升，这促使需要一种能够发现可复用效率改进的搜索过程。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 论文采用受RSI启发的自动研究循环，由三项原则（广度与深度、独立验证、可扩展编排）指导，迭代执行Oracle分析、候选提议、实现、审查以及能力/效率门控；搜索最终保留了四种机制——Action Fusion、Online Context Compact、ObservationPack和Evidence-Preserving Reducer——将其集成并在冻结后通过SoL-Pi底层架构进行留出评估。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 在EdgeBench上，SoL-Pi将token流量减少44.7–49.0%，API成本降低约33%，同时保留Pi约94%的得分，相比Codex节省50.0%，相比Claude Code节省54.3%；最佳单机制候选将性能提升5.3–12.8%、token效率提升9.8–18.2%，完整堆栈无需适配即可从GPT-5.6 Sol迁移到Opus 5，在Terminal-Bench 4上相比Pi成本降低26.3%，并在IMO 2026上实现最低的每通过问题成本。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Evidence-Preserving Reducer" data-lang="en">
+                        <div class="quiz-question">1. Which mechanism in SoL-Pi employs a low-cost auxiliary model to compress build/test logs while preserving key evidence through deterministic verification, with the exact original archived so the harness can fall back to it on failure?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Action Fusion">Action Fusion</div><div class="quiz-choice" data-value="Online Context Compact">Online Context Compact</div><div class="quiz-choice" data-value="Evidence-Preserving Reducer">Evidence-Preserving Reducer</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="Evidence-Preserving Reducer（证据保留归约器）" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. SoL-Pi 中的哪种机制使用低成本辅助模型压缩构建/测试日志，同时通过确定性验证保留关键证据，并归档原始日志以便验证失败时回退？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Action Fusion（动作融合）">Action Fusion（动作融合）</div><div class="quiz-choice" data-value="Online Context Compact（在线上下文压缩）">Online Context Compact（在线上下文压缩）</div><div class="quiz-choice" data-value="Evidence-Preserving Reducer（证据保留归约器）">Evidence-Preserving Reducer（证据保留归约器）</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="1,127 cycles (SoL-Pi) vs. 1,366 cycles (Pi baseline)" data-lang="en">
+                        <div class="quiz-question">2. In the two-hour kernel-optimization swarm experiment (1 Codex coordinator + 20 workers), how did the SoL-Pi swarm's final cycle count compare with the Pi baseline swarm?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1,127 cycles (SoL-Pi) vs. 1,366 cycles (Pi baseline)">1,127 cycles (SoL-Pi) vs. 1,366 cycles (Pi baseline)</div><div class="quiz-choice" data-value="1,366 cycles (SoL-Pi) vs. 1,127 cycles (Pi baseline)">1,366 cycles (SoL-Pi) vs. 1,127 cycles (Pi baseline)</div><div class="quiz-choice" data-value="1,333 cycles (SoL-Pi) vs. 1,127 cycles (Pi baseline)">1,333 cycles (SoL-Pi) vs. 1,127 cycles (Pi baseline)</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="1,127 cycles（SoL-Pi）对比 1,366 cycles（Pi 基线）" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 在两小时的内核优化群体实验中（1 个 Codex 协调器 + 20 个工作者），SoL-Pi 群体的最终 cycle 数与 Pi 基线群体相比如何？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="1,127 cycles（SoL-Pi）对比 1,366 cycles（Pi 基线）">1,127 cycles（SoL-Pi）对比 1,366 cycles（Pi 基线）</div><div class="quiz-choice" data-value="1,366 cycles（SoL-Pi）对比 1,127 cycles（Pi 基线）">1,366 cycles（SoL-Pi）对比 1,127 cycles（Pi 基线）</div><div class="quiz-choice" data-value="1,333 cycles（SoL-Pi）对比 1,127 cycles（Pi 基线）">1,333 cycles（SoL-Pi）对比 1,127 cycles（Pi 基线）</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="11 for acceptance and 40 for generalization" data-lang="en">
+                        <div class="quiz-question">3. Of EdgeBench's 51 publicly released tasks, how many are used for one-way acceptance of frozen candidates versus reserved for final generalization evaluation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="11 for acceptance and 40 for generalization">11 for acceptance and 40 for generalization</div><div class="quiz-choice" data-value="21 for acceptance and 30 for generalization">21 for acceptance and 30 for generalization</div><div class="quiz-choice" data-value="25 for acceptance and 26 for generalization">25 for acceptance and 26 for generalization</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="11 个用于接受，40 个用于泛化" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 在 EdgeBench 公开的 51 个任务中，多少个用于冻结候选的单向接受，多少个保留用于最终的泛化评估？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="11 个用于接受，40 个用于泛化">11 个用于接受，40 个用于泛化</div><div class="quiz-choice" data-value="21 个用于接受，30 个用于泛化">21 个用于接受，30 个用于泛化</div><div class="quiz-choice" data-value="25 个用于接受，26 个用于泛化">25 个用于接受，26 个用于泛化</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    
+    <div class="daily-tips-section">
+        <h2 class="tips-heading">
+            <span data-lang="en">Today's Reading Tips</span>
+            <span data-lang="zh" style="display:none">今日阅读推荐</span>
+        </h2>
+        <div class="tips-content" data-lang="en">Start with DeepSeek-V4.1-Flash (Paper 2): its aggressive KV-cache compression (FP4, CSA2, CED architecture) is the infrastructure layer that makes long-horizon agents economically viable, and it directly complements Paper 3's harness-level optimizations in SoL-Pi—together they represent a coordinated attack on agent deployment cost from two different stack layers. Paper 1 (LimiX-2) is more standalone but intellectually provocative, showing that emergent causal reasoning can arise in tabular foundation models via joint mechanism learning rather than autoregressive next-token prediction.</div>
+        <div class="tips-content" data-lang="zh" style="display:none">建议先读 DeepSeek-V4.1-Flash（论文2）：其激进的 KV 缓存压缩（FP4、CSA2、CED 架构）是让长程智能体在经济上可行的基础设施层，并与论文 3 中 SoL-Pi 的 harness 层优化形成直接互补——二者从架构栈的不同层面协同解决智能体部署成本问题。论文 1（LimiX-2）相对独立但思路令人耳目一新：通过联合机制学习而非自回归下一 token 预测，在表格基础模型中实现了涌现的因果推理能力。</div>
+    </div>
+    
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        function toggleLang() {
+            var btn = document.getElementById('lang-btn');
+            var isZh = document.body.classList.contains('lang-zh');
+            if (isZh) {
+                document.body.classList.remove('lang-zh');
+                btn.textContent = 'ZH';
+                localStorage.setItem('-paper-lang', 'en');
+            } else {
+                document.body.classList.add('lang-zh');
+                btn.textContent = 'EN';
+                localStorage.setItem('-paper-lang', 'zh');
+            }
+            var enEls = document.querySelectorAll('[data-lang="en"]');
+            var zhEls = document.querySelectorAll('[data-lang="zh"]');
+            for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = isZh ? '' : 'none'; }
+            for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = isZh ? 'none' : ''; }
+        }
+
+        function getActivePopup(tab) {
+            var lang = document.body.classList.contains('lang-zh') ? 'zh' : 'en';
+            return tab.querySelector('.quiz-popup[data-lang="' + lang + '"]');
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore language preference
+            var savedLang = localStorage.getItem('-paper-lang');
+            if (savedLang === 'zh') {
+                document.body.classList.add('lang-zh');
+                document.getElementById('lang-btn').textContent = 'EN';
+                var enEls = document.querySelectorAll('[data-lang="en"]');
+                var zhEls = document.querySelectorAll('[data-lang="zh"]');
+                for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = 'none'; }
+                for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = ''; }
+            }
+
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                // 为所有 popup 阻止冒泡
+                tab.querySelectorAll('.quiz-popup').forEach(function(p) {
+                    p.addEventListener('click', function(e) { e.stopPropagation(); });
+                });
+
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var popup = getActivePopup(tab);
+                    if (!popup) return;
+
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.quiz-popup').forEach(function(p) {
+                            p.classList.remove('active');
+                        });
+                        document.body.appendChild(popup);
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
