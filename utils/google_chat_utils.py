@@ -21,6 +21,26 @@ SPACE_ID = os.getenv("SPACE_ID")
 KEY = os.getenv("KEY")
 
 
+def _delivery_url():
+    mode = os.getenv("DAILY_NOTIFICATION_MODE", "production")
+    if mode == "test":
+        from urllib.parse import urlparse
+        path = os.environ.get("DAILY_TEST_WEBHOOK_FILE")
+        if not path:
+            raise RuntimeError("Test delivery requires its dedicated webhook file")
+        url = Path(path).read_text().strip()
+        parsed = urlparse(url)
+        if (parsed.scheme, parsed.hostname, parsed.path) != (
+            "https", "chat.googleapis.com", "/v1/spaces/AAAAFHF-DrE/messages"
+        ):
+            raise RuntimeError("Test delivery is restricted to the approved test space")
+    elif mode == "production":
+        url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}"
+    else:
+        raise RuntimeError("Message sending is disabled")
+    return url + "&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
+
+
 def _checked_delivery(response, operation):
     status = int(response[0].status)
     if not 200 <= status < 300:
@@ -173,7 +193,7 @@ def send_articles(articles, thread_id):
     Returns:
         tuple: HTTP response from the Google Chat API
     """
-    url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
+    url = _delivery_url()
 
     app_message = create_article_message(articles)
 
@@ -206,7 +226,7 @@ def start_thread(current_date, additional_content, thread_key_value):
     Returns:
         tuple: HTTP response from the Google Chat API
     """
-    url = f"https://chat.googleapis.com/v1/spaces/{SPACE_ID}/messages?key={KEY}&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
+    url = _delivery_url()
     reminder = """Treat it as a tool for selecting papers rather than for fully understanding them. It will help you understand the standing of a paper in the field, and once you've chosen one, you'll read it more efficiently with a questioning mindset."""
 
     # Construct the correct GitHub Pages subpage URL
