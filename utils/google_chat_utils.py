@@ -9,6 +9,9 @@ and thread management for daily paper notifications.
 import os
 import re
 from json import dumps
+import json
+from pathlib import Path
+from datetime import datetime, timezone
 from httplib2 import Http
 from dotenv import load_dotenv
 
@@ -16,6 +19,24 @@ from dotenv import load_dotenv
 load_dotenv()
 SPACE_ID = os.getenv("SPACE_ID")
 KEY = os.getenv("KEY")
+
+
+def _checked_delivery(response, operation):
+    status = int(response[0].status)
+    if not 200 <= status < 300:
+        raise RuntimeError(f"Google Chat {operation} failed (HTTP {status})")
+    payload = json.loads(response[1])
+    if not payload.get("name"):
+        raise RuntimeError("Google Chat did not return a message identifier")
+    receipt = os.getenv("DAILY_MESSAGE_RECEIPTS")
+    if receipt:
+        path = Path(receipt)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a") as stream:
+            stream.write(dumps({"operation": operation, "status": status,
+                                "message": payload["name"],
+                                "time": datetime.now(timezone.utc).isoformat()}) + "\n")
+    return response
 
 
 def format_text(content):
@@ -167,7 +188,7 @@ def send_articles(articles, thread_id):
         headers=message_headers,
         body=dumps(app_message),
     )
-    return response
+    return _checked_delivery(response, "articles")
 
 
 def start_thread(current_date, additional_content, thread_key_value):
@@ -236,4 +257,4 @@ def start_thread(current_date, additional_content, thread_key_value):
         headers=message_headers,
         body=dumps(app_message),
     )
-    return response
+    return _checked_delivery(response, "header")
