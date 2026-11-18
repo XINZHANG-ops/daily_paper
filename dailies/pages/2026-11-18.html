@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-11-18 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Language toggle */
+        #lang-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10000;
+        }
+        #lang-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        #lang-btn:hover {
+            background-color: #1557b0;
+        }
+
+        /* Daily tips */
+        .daily-tips-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0 20px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .tips-heading {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .tips-content {
+            background-color: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #333;
+            font-size: 1em;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="lang-toggle">
+        <button id="lang-btn" onclick="toggleLang()">ZH</button>
+    </div>
+    <h1>2026-11-18 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/my-little-plaid-dark.png');">
+                    <h2 style="color: #ffffff;">Paper 1</h2>
+                    <p style="color: #badb12;"><strong>TeleChat to Xing4: Advancing Frontier Agentic Models on Domestic Chips and Frameworks</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-11-16</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2611.22115" target="_blank">http://arxiv.org/pdf/2611.22115</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This technical report presents Xing 4, a family of sparse MoE foundation models and an Ascend/MindSpore training stack for long-context reasoning and agentic workloads.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Extending TeleChat and prior work on MLA, DSA, mHC, MTP, IndexShare, speculative decoding, FSDP, and Muon, it co-designs wide-and-shallow MoE architectures with topology-aware HSDP, owner-executed Muon, operator-level recomputation, DSA workload compaction, CPU isolation, and TeleGym-based asynchronous reinforcement learning.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> It addresses how to scale high-capacity, million-context agentic models on domestic Ascend hardware while reducing KV-cache and activation memory, pipeline and communication overhead, host-scheduling jitter, and rollout stragglers in heterogeneous multi-turn RL.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The study evaluates an open 29B-total/4B-active MoE and a 285B-total/17B-active configuration using MLA+DSA+IndexShare, wider expert layouts, DSpark, HyperParallel HSDP, owner-based Muon, selective checkpointing, document-aware DSA balancing, and TeleGym/Slime partial-rollout training.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Simulation and cluster measurements report up to 4.68× prefill and 2.67–3.77× decoding speedups, a 1.14× gain over 1F1B pipelining, 9.1%, 6.9%, and 15.2% step-time reductions from three pretraining optimizations, and 5–10% large-cluster throughput gains from CPU isolation, although the attention results are partly simulation-based and comprehensive model-quality improvements are not demonstrated.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 本技术报告介绍了Xing 4稀疏混合专家基础模型系列，以及面向长上下文推理和智能体任务的昇腾与MindSpore训练技术栈。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 论文在TeleChat及MLA、DSA、mHC、MTP、IndexShare、推测解码、FSDP和Muon等工作基础上，联合设计宽而浅的MoE架构、拓扑感知HSDP、所有者执行Muon、算子级重计算、DSA负载压缩、CPU隔离及基于TeleGym的异步强化学习。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文旨在解决在国产昇腾硬件上扩展高容量、百万上下文智能体模型时，KV缓存与激活内存、流水线和通信开销、主机调度抖动以及异构多轮RL中长尾 rollout 等问题。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 研究评估了公开的29B总参数/4B激活参数MoE和285B总参数/17B激活参数配置，并结合使用MLA+DSA+IndexShare、宽专家布局、DSpark、HyperParallel HSDP、所有者式Muon、选择性检查点、文档感知DSA负载均衡以及TeleGym/Slime部分rollout训练。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 仿真与集群测试报告了最高4.68×的预填充和2.67–3.77×的解码加速、相对1F1B流水线的1.14×提速、三项预训练优化分别带来的9.1%、6.9%和15.2%步时下降，以及大集群中CPU隔离带来的5–10%吞吐提升，但注意力结果部分来自仿真，且未充分展示全面的模型质量提升。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Assigning each matrix to an owner rank for full-matrix orthogonalization" data-lang="en">
+                        <div class="quiz-question">1. Which Xing 4 mechanism eliminates duplicated Newton–Schulz full-matrix computation across shards without changing where parameters and momentum are stored?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Assigning each matrix to an owner rank for full-matrix orthogonalization">Assigning each matrix to an owner rank for full-matrix orthogonalization</div><div class="quiz-choice" data-value="Backpropagating every DSA indexer only after the language-model backward pass">Backpropagating every DSA indexer only after the language-model backward pass</div><div class="quiz-choice" data-value="Compacting each query block's KV window to its first active document">Compacting each query block's KV window to its first active document</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="为每个矩阵指定一个 owner rank，统一执行全矩阵正交化" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. Xing 4 的哪种机制能在不改变参数和动量存储布局的情况下，消除各分片之间重复的 Newton–Schulz 全矩阵计算？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="为每个矩阵指定一个 owner rank，统一执行全矩阵正交化">为每个矩阵指定一个 owner rank，统一执行全矩阵正交化</div><div class="quiz-choice" data-value="等语言模型反向传播完成后，再反向传播所有 DSA indexer">等语言模型反向传播完成后，再反向传播所有 DSA indexer</div><div class="quiz-choice" data-value="把每个查询块的 KV 窗口压缩到其首个活跃文档">把每个查询块的 KV 窗口压缩到其首个活跃文档</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Pause request admission, interrupt generation at a safe boundary, install the updated weights and policy version, and resume the episode with its identity and sampling-time log probabilities intact" data-lang="en">
+                        <div class="quiz-question">2. During a TeleGym policy publication, a multi-turn agent episode is still running. Which sequence best matches the paper's design?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Mix old and new weights within the active generation segment, then relabel every token with the new policy">Mix old and new weights within the active generation segment, then relabel every token with the new policy</div><div class="quiz-choice long-text" data-value="Pause request admission, interrupt generation at a safe boundary, install the updated weights and policy version, and resume the episode with its identity and sampling-time log probabilities intact">Pause request admission, interrupt generation at a safe boundary, install the updated weights and policy version, and resume the episode with its identity and sampling-time log probabilities intact</div><div class="quiz-choice long-text" data-value="Discard every unfinished episode so that each query group contains only samples from the newest policy">Discard every unfinished episode so that each query group contains only samples from the newest policy</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="暂停新请求接入，在安全边界中断生成，安装新权重并推进策略版本，随后保留执行身份和采样时 log probability 继续 episode" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. TeleGym 发布新策略时，一个多轮智能体 episode 仍在运行。下列哪种流程最符合论文设计？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="在当前生成片段中混合新旧权重，并把所有 token 都重新标记为新策略采样">在当前生成片段中混合新旧权重，并把所有 token 都重新标记为新策略采样</div><div class="quiz-choice" data-value="暂停新请求接入，在安全边界中断生成，安装新权重并推进策略版本，随后保留执行身份和采样时 log probability 继续 episode">暂停新请求接入，在安全边界中断生成，安装新权重并推进策略版本，随后保留执行身份和采样时 log probability 继续 episode</div><div class="quiz-choice" data-value="丢弃所有未完成 episode，确保每个查询组只包含最新策略生成的样本">丢弃所有未完成 episode，确保每个查询组只包含最新策略生成的样本</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="In Zhanlu simulation, MLA + DSA + IndexShare delivered 4.68× prefill throughput and 1.27× decode throughput relative to MLA, although production overhead was not fully captured" data-lang="en">
+                        <div class="quiz-question">3. Which statement about the 285B attention comparison at a 256K context is supported by the paper?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="In Zhanlu simulation, MLA + DSA + IndexShare delivered 4.68× prefill throughput and 1.27× decode throughput relative to MLA, although production overhead was not fully captured">In Zhanlu simulation, MLA + DSA + IndexShare delivered 4.68× prefill throughput and 1.27× decode throughput relative to MLA, although production overhead was not fully captured</div><div class="quiz-choice long-text" data-value="The 4.68× prefill gain was an end-to-end production measurement on 8,192 Ascend 910C cards and directly demonstrated improved model quality">The 4.68× prefill gain was an end-to-end production measurement on 8,192 Ascend 910C cards and directly demonstrated improved model quality</div><div class="quiz-choice long-text" data-value="Adding IndexShare increased historical KV access and produced no simulated throughput gain over MLA + DSA">Adding IndexShare increased historical KV access and produced no simulated throughput gain over MLA + DSA</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="在 Zhanlu 仿真中，MLA + DSA + IndexShare 相比 MLA 实现了 4.68× 的预填充吞吐和 1.27× 的解码吞吐，但该仿真未完全覆盖生产服务开销" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 关于 285B 模型在 256K 上下文下的注意力对比，论文支持下列哪项结论？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="在 Zhanlu 仿真中，MLA + DSA + IndexShare 相比 MLA 实现了 4.68× 的预填充吞吐和 1.27× 的解码吞吐，但该仿真未完全覆盖生产服务开销">在 Zhanlu 仿真中，MLA + DSA + IndexShare 相比 MLA 实现了 4.68× 的预填充吞吐和 1.27× 的解码吞吐，但该仿真未完全覆盖生产服务开销</div><div class="quiz-choice" data-value="4.68× 的预填充增益是在 8,192 张昇腾 910C 上测得的端到端生产结果，并直接证明了模型质量提升">4.68× 的预填充增益是在 8,192 张昇腾 910C 上测得的端到端生产结果，并直接证明了模型质量提升</div><div class="quiz-choice" data-value="加入 IndexShare 会增加历史 KV 访问量，且相比 MLA + DSA 没有任何仿真吞吐增益">加入 IndexShare 会增加历史 KV 访问量，且相比 MLA + DSA 没有任何仿真吞吐增益</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <div class="card-counter">1/2</div>
+                    <div class="paper-card active" style="background-image: url('bg/stressed-linen.png');">
+                        <h2 style="color: #ffffff;">Paper 2</h2>
+                        <p style="color: #badb12;"><strong>Weight-Space Programming Doesn't Need Transformers</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-11-16</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2611.22055" target="_blank">http://arxiv.org/pdf/2611.22055</a></p>
+                        <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This preprint studies weight-space programming, where frontier LLMs directly write target-model weights and architectures without gradient-based training, with emphasis on neural architecture design and associative memory.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on prior WSP, Transformers-as-associative-memory analyses, neural architecture search, and model editing, the paper lets LLMs choose their architecture and introduces a fixed hashed sparse-table architecture that preserves line-by-line writable knowledge.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The paper asks whether Transformers remain appropriate for WSP when their gradient-optimization and dense-GPU advantages no longer apply, seeking models whose weights are traceable, locally editable, accurate, and efficient.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors gave three frontier LLMs ten labeled ARC examples and a sandbox, compared fixed written architectures with freely designed models and iterative lineages, and conducted locality, BM25, contamination, benchmark, pretraining, generation, vision, and RTX 3090 speed experiments.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> All writers converged on sparse fact tables, a 0.94M-parameter design beat the best 1.72B-parameter written released architecture using about 1,800× fewer parameters, the strongest lineage reached 54.4% ARC accuracy, and the authors’ fixed associative-memory model remained within about three points while running up to 17× faster than same-sized Transformers.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 本预印本研究权重空间编程，即前沿大语言模型在无梯度训练的情况下直接编写目标模型的权重与架构，重点涉及神经架构设计和联想记忆。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 论文以既有权重空间编程、Transformer作为联想记忆的分析、神经架构搜索和模型编辑研究为基础，首次让大语言模型自主选择架构，并提出保留逐行知识编写能力的固定哈希稀疏表架构。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文考察当梯度优化和密集GPU优势不再存在时，Transformer是否仍适用于权重空间编程，并寻求权重可追溯、修改局部化、准确且高效的新架构。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 作者向三个前沿大语言模型提供十个带标签的ARC样例和沙箱，比较固定架构与自主设计模型及多代迭代，并开展局部性、BM25、污染、其他基准、预训练权重、生成、视觉和RTX 3090速度实验。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 三位编写者均选择了稀疏事实表，其中一个仅0.94M参数的模型以约1,800倍更少参数超过了最佳的1.72B参数已发布架构，最强谱系达到54.4%的ARC准确率，而作者提出的固定联想记忆模型精度仅低约三个百分点，却可比同规模Transformer快至多17倍。</div></div></div>
+                    </div>
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Weight-Space Programming Doesn't Need Transformers</h2>
+                        <svg width="100%" viewBox="0 0 1000 800">
+<defs>
+  <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#0f172a"/>
+    <stop offset="55%" stop-color="#131c33"/>
+    <stop offset="100%" stop-color="#1b1030"/>
+  </linearGradient>
+  <linearGradient id="headGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#6366f1"/>
+    <stop offset="50%" stop-color="#8b5cf6"/>
+    <stop offset="100%" stop-color="#ec4899"/>
+  </linearGradient>
+  <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#38bdf8"/>
+    <stop offset="100%" stop-color="#2563eb"/>
+  </linearGradient>
+  <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#34d399"/>
+    <stop offset="100%" stop-color="#059669"/>
+  </linearGradient>
+  <linearGradient id="amberGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#fbbf24"/>
+    <stop offset="100%" stop-color="#f59e0b"/>
+  </linearGradient>
+  <linearGradient id="roseGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#fb7185"/>
+    <stop offset="100%" stop-color="#e11d48"/>
+  </linearGradient>
+  <linearGradient id="tealGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#2dd4bf"/>
+    <stop offset="100%" stop-color="#0d9488"/>
+  </linearGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.45"/>
+  </filter>
+  <marker id="arrowBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#7dd3fc"/>
+  </marker>
+  <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#6ee7b7"/>
+  </marker>
+  <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#fcd34d"/>
+  </marker>
+  <marker id="arrowGray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+  </marker>
+  <style>
+    .t { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .ttl { font-size: 21px; font-weight: 700; fill: #ffffff; }
+    .sub { font-size: 11.5px; fill: #cbd5e1; }
+    .boxT { font-size: 12.5px; font-weight: 700; fill: #ffffff; }
+    .boxS { font-size: 10.5px; fill: #e2e8f0; }
+    .sec { font-size: 13px; font-weight: 700; fill: #f8fafc; letter-spacing: 0.6px; }
+    .tag { font-size: 9.5px; font-weight: 700; fill: #0f172a; }
+    .num { font-size: 10px; font-weight: 700; fill: #ffffff; }
+    .small { font-size: 9.5px; fill: #94a3b8; }
+  </style>
+</defs>
+
+<rect width="1000" height="800" fill="url(#bgGrad)"/>
+<circle cx="930" cy="80" r="170" fill="#8b5cf6" opacity="0.10"/>
+<circle cx="60" cy="740" r="150" fill="#38bdf8" opacity="0.08"/>
+
+<!-- ============ HEADER ============ -->
+<rect x="24" y="18" width="952" height="66" rx="14" fill="url(#headGrad)" filter="url(#shadow)"/>
+<text class="t ttl" x="48" y="45">Weight-Space Programming Doesn't Need Transformers</text>
+<text class="t sub" x="48" y="65">Ok &amp; Lee (POSTECH) · arXiv:2611.22055 · Method workflow: how frontier LLMs write weights by hand, and the sparse associative-memory model derived from it</text>
+<rect x="830" y="34" width="128" height="34" rx="17" fill="#0b1220" opacity="0.45"/>
+<text class="t tag" x="894" y="56" text-anchor="middle" fill="#fde68a">METHOD FLOW</text>
+
+<!-- ============ STAGE 1 : SETUP ============ -->
+<text class="t sec" x="30" y="110">①  SETUP — WEIGHT-SPACE PROGRAMMING (WSP) PROTOCOL</text>
+
+<rect x="24" y="120" width="300" height="86" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6" filter="url(#shadow)"/>
+<circle cx="46" cy="142" r="11" fill="url(#blueGrad)"/>
+<text class="t num" x="46" y="146" text-anchor="middle">1</text>
+<text class="t boxT" x="64" y="146">Writer LLM + sandbox</text>
+<text class="t boxS" x="40" y="165">Claude Opus 5.5 · GPT-6.1 Sol · GPT-6 Astra</text>
+<text class="t boxS" x="40" y="179">Isolated sandbox: no network, no benchmark data</text>
+<text class="t boxS" x="40" y="193">Only 10 labeled ARC examples (5 Easy / 5 Chall.)</text>
+
+<rect x="348" y="120" width="300" height="86" rx="12" fill="#1e293b" stroke="#a78bfa" stroke-width="1.6" filter="url(#shadow)"/>
+<circle cx="370" cy="142" r="11" fill="#a78bfa"/>
+<text class="t num" x="370" y="146" text-anchor="middle">2</text>
+<text class="t boxT" x="388" y="146">Task file &amp; deliverable</text>
+<text class="t boxS" x="364" y="165">Task description, scoring rule, example items, rules</text>
+<text class="t boxS" x="364" y="179">Deliverable: word list + hand-written text files +</text>
+<text class="t boxS" x="364" y="193">build.py (+ arch.py in free design), no gradients allowed</text>
+
+<rect x="672" y="120" width="304" height="86" rx="12" fill="#1e293b" stroke="#f472b6" stroke-width="1.6" filter="url(#shadow)"/>
+<circle cx="694" cy="142" r="11" fill="url(#roseGrad)"/>
+<text class="t num" x="694" y="146" text-anchor="middle">3</text>
+<text class="t boxT" x="712" y="146">Host builds &amp; scores</text>
+<text class="t boxS" x="688" y="165">build.py → weight tensors → forward pass</text>
+<text class="t boxS" x="688" y="179">3,530 ARC-Easy + ARC-Challenge test questions</text>
+<text class="t boxS" x="688" y="193">Only parent's validation acc. passes to next generation</text>
+
+<path d="M 324 163 L 344 163" stroke="#7dd3fc" stroke-width="2" marker-end="url(#arrowBlue)" opacity="0.8"/>
+<path d="M 648 163 L 668 163" stroke="#f9a8d4" stroke-width="2" marker-end="url(#arrowBlue)" opacity="0.8"/>
+
+<!-- ============ STAGE 2 : TWO REGIMES ============ -->
+<text class="t sec" x="30" y="238">②  TWO REGIMES — WHAT THE WRITER MAY CHOOSE</text>
+
+<rect x="24" y="248" width="462" height="96" rx="12" fill="#1b2438" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3" filter="url(#shadow)"/>
+<rect x="24" y="248" width="462" height="24" rx="12" fill="#334155"/>
+<rect x="24" y="262" width="462" height="10" fill="#334155"/>
+<text class="t boxT" x="38" y="265" fill="#e2e8f0">REGIME A — Fixed architectures (weights written over released arch.)</text>
+<text class="t boxS" x="40" y="290">Transformers, state-space models (Mamba-2), RNNs (RWKV-7), encoders</text>
+<text class="t boxS" x="40" y="304">plus a given two-layer Transformer baseline (no starting weights)</text>
+<text class="t boxS" x="40" y="320">Writer edits an edit-script over a random init / pretrained checkpoint</text>
+<text class="t tag" x="40" y="336" fill="#fca5a5">Result: 43.1 / 35.0 / 34.4 % ARC — dense keys interfere</text>
+
+<rect x="514" y="248" width="462" height="96" rx="12" fill="#122b2b" stroke="#34d399" stroke-width="1.6" filter="url(#shadow)"/>
+<rect x="514" y="248" width="462" height="24" rx="12" fill="#065f46"/>
+<rect x="514" y="262" width="462" height="10" fill="#065f46"/>
+<text class="t boxT" x="528" y="265" fill="#ecfdf5">REGIME B — LLM-designed models (structure chosen by the writer)</text>
+<text class="t boxS" x="530" y="290">Architecture file + build script + plain-text knowledge files</text>
+<text class="t boxS" x="530" y="304">Syntax check bans Python control flow; only tensor ops allowed</text>
+<text class="t boxS" x="530" y="320">All 3 LLMs converge: plain-text facts → sparse table + fixed reader</text>
+<text class="t tag" x="530" y="336" fill="#6ee7b7">Result: 54.4 / 47.4 / 46.2 % ARC — ~1,800× fewer parameters</text>
+
+<!-- ============ STAGE 3 : WHY A TABLE ============ -->
+<text class="t sec" x="30" y="376">③  WHY A TABLE? — TWO PROPERTIES OF WRITTEN WEIGHTS (Section 3.2)</text>
+
+<rect x="24" y="386" width="226" height="76" rx="12" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6" filter="url(#shadow)"/>
+<circle cx="46" cy="408" r="11" fill="url(#amberGrad)"/>
+<text class="t num" x="46" y="412" text-anchor="middle">A</text>
+<text class="t boxT" x="64" y="412">Traceable answers</text>
+<text class="t boxS" x="40" y="432">Each prediction traces to a small,</text>
+<text class="t boxS" x="40" y="446">identifiable set of written lines.</text>
+<text class="t tag" x="40" y="458" fill="#fcd34d">One best fact/option ≈ full model</text>
+
+<rect x="272" y="386" width="226" height="76" rx="12" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6" filter="url(#shadow)"/>
+<circle cx="294" cy="408" r="11" fill="url(#amberGrad)"/>
+<text class="t num" x="294" y="412" text-anchor="middle">B</text>
+<text class="t boxT" x="312" y="412">Local edits</text>
+<text class="t boxS" x="288" y="432">Adding / removing one line changes</text>
+<text class="t boxS" x="288" y="446">only dependent predictions.</text>
+<text class="t tag" x="288" y="458" fill="#fcd34d">0.5–1.8 answers changed / line</text>
+
+<rect x="520" y="386" width="456" height="76" rx="12" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6" filter="url(#shadow)"/>
+<circle cx="542" cy="408" r="11" fill="url(#amberGrad)"/>
+<text class="t num" x="542" y="412" text-anchor="middle">C</text>
+<text class="t boxT" x="560" y="412">Associative-memory view (Eq. 1)</text>
+<text class="t boxS" x="536" y="432">f(x) = Σ vᵢ σ(kᵢᵀx): every model = memories with keys &amp; selection σ</text>
+<text class="t boxS" x="536" y="446">Trained Transformer: dense overlapping keys, GELU/softmax σ → interference</text>
+<text class="t tag" x="536" y="458" fill="#fcd34d">Written Transformer trails BM25 over its own text by 8.0 points</text>
+
+<path d="M 137 462 L 137 480 L 700 480 L 700 462" stroke="#fcd34d" stroke-width="1.6" fill="none" opacity="0.6"/>
+<path d="M 385 462 L 385 472 L 748 472 L 748 462" stroke="#fcd34d" stroke-width="1.6" fill="none" opacity="0.6"/>
+<path d="M 748 462 L 748 492" stroke="#fcd34d" stroke-width="2" marker-end="url(#arrowAmber)" opacity="0.85"/>
+
+<!-- ============ STAGE 4 : LLM-DESIGNED MODEL PIPELINE ============ -->
+<text class="t sec" x="30" y="508">④  LLM-DESIGNED MODEL PIPELINE (Claude Opus 5.5, gen-1)</text>
+
+<rect x="24" y="518" width="176" height="70" rx="12" fill="#122b3d" stroke="#38bdf8" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="40" y="540">Plain-text facts</text>
+<text class="t boxS" x="40" y="556">"Hollow bones make birds</text>
+<text class="t boxS" x="40" y="569">light so they can fly."</text>
+<text class="t small" x="40" y="582">4,288 facts · 29,502 non-zeros</text>
+
+<rect x="222" y="518" width="176" height="70" rx="12" fill="#122b3d" stroke="#38bdf8" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="238" y="540">Word → Concept</text>
+<text class="t boxS" x="238" y="556">361,150 words → 3,368 concepts</text>
+<text class="t boxS" x="238" y="569">Rarer concepts weighted higher</text>
+<text class="t small" x="238" y="582">bird / birds / bird's → one concept</text>
+
+<rect x="420" y="518" width="176" height="70" rx="12" fill="#122b3d" stroke="#38bdf8" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="436" y="540">Fact table (sparse)</text>
+<text class="t boxS" x="436" y="556">Row = fact, key = value = 0/1</text>
+<text class="t boxS" x="436" y="569">concept vector kᵢ</text>
+<text class="t small" x="436" y="582">score: maxᵢ (kᵢᵀq)(kᵢᵀo_c)</text>
+
+<rect x="618" y="518" width="176" height="70" rx="12" fill="#2a1f3d" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="634" y="540">Rules + 2nd pass</text>
+<text class="t boxS" x="634" y="556">Negation, absolutes, word order</text>
+<text class="t boxS" x="634" y="569">2nd pass adds top-fact concepts</text>
+<text class="t small" x="634" y="582">Option score → pick best option</text>
+
+<rect x="816" y="518" width="160" height="70" rx="12" fill="#3b1d2b" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="832" y="540">Answer</text>
+<text class="t boxS" x="832" y="556">50.8 % ARC test</text>
+<text class="t boxS" x="832" y="569">0.94 M parameters</text>
+<text class="t small" x="832" y="582">Cost: every fact scored per question</text>
+
+<path d="M 200 553 L 218 553" stroke="#7dd3fc" stroke-width="2" marker-end="url(#arrowBlue)" opacity="0.8"/>
+<path d="M 398 553 L 416 553" stroke="#7dd3fc" stroke-width="2" marker-end="url(#arrowBlue)" opacity="0.8"/>
+<path d="M 596 553 L 614 553" stroke="#c4b5fd" stroke-width="2" marker-end="url(#arrowBlue)" opacity="0.8"/>
+<path d="M 794 553 L 812 553" stroke="#fda4af" stroke-width="2" marker-end="url(#arrowBlue)" opacity="0.8"/>
+
+<!-- ============ STAGE 5 : PROBLEM ============ -->
+<text class="t sec" x="30" y="620">⑤  THE PROBLEM — LLM-DESIGNED MODELS ARE SLOW ON GPU (Section 6.1)</text>
+
+<rect x="24" y="630" width="222" height="78" rx="12" fill="#2b1620" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="40" y="652">Cost grows with facts</text>
+<text class="t boxS" x="40" y="668">Every stored fact scored for</text>
+<text class="t boxS" x="40" y="681">every question; intermediate table</text>
+<text class="t boxS" x="40" y="694">passed over several times</text>
+<text class="t tag" x="40" y="706" fill="#fda4af">Kernel/question: 13 → 118 (gen 1→5)</text>
+
+<rect x="266" y="630" width="222" height="78" rx="12" fill="#2b1620" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="282" y="652">Many kernel launches</text>
+<text class="t boxS" x="282" y="668">2 → ~300 kernels/question vs ~1 for</text>
+<text class="t boxS" x="282" y="681">a Transformer; sparse tables built</text>
+<text class="t boxS" x="282" y="694">inside forward pass → no CUDA graph</text>
+<text class="t tag" x="282" y="706" fill="#fda4af">r = 0.95 time vs. kernels/question</text>
+
+<rect x="508" y="630" width="222" height="78" rx="12" fill="#2b1620" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="524" y="652">Measured slowdown</text>
+<text class="t boxS" x="524" y="668">Only 1 of 46 designed variants</text>
+<text class="t boxS" x="524" y="681">beats a same-sized Transformer;</text>
+<text class="t boxS" x="524" y="694">median 9.4× slower</text>
+<text class="t tag" x="524" y="706" fill="#fda4af">Gen-1: 11× · Gen-5: 90× slower</text>
+
+<rect x="750" y="630" width="226" height="78" rx="12" fill="#2b1620" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow)"/>
+<text class="t boxT" x="766" y="652">LLM's own GPU rewrite fails</text>
+<text class="t boxS" x="766" y="668">Asking Claude to rewrite for GPU keeps</text>
+<text class="t boxS" x="766" y="681">accuracy but still scores every row</text>
+<text class="t boxS" x="766" y="694">for every question</text>
+<text class="t tag" x="766" y="706" fill="#fda4af">Still 6–33× slower than Transformer</text>
+
+<!-- ============ STAGE 6 : OUR MODEL ============ -->
+<text class="t sec" x="30" y="740">⑥  PROPOSAL — ASSOCIATIVE-MEMORY-BASED MODEL (OURS, Section 3.4)</text>
+
+<rect x="24" y="748" width="952" height="44" rx="12" fill="#0b2b2b" stroke="#2dd4bf" stroke-width="1.6" filter="url(#shadow)"/>
+<rect x="38" y="758" width="150" height="24" rx="12" fill="url(#tealGrad)"/>
+<text class="t tag" x="113" y="774" text-anchor="middle">FIX THE FORWARD PASS</text>
+<text class="t boxS" x="200" y="775">LLM writes word list + text files + build script only → two tables: concept table A (1st-order) &amp; pair table (2nd-order, hashed rows) · per question: read 120 pair rows + 1 product with A · cost independent of fact count</text>
+<rect x="812" y="758" width="150" height="24" rx="12" fill="#fbbf24"/>
+<text class="t tag" x="887" y="774" text-anchor="middle">17× FASTER · 52.4 % ARC</text>
+
+<path d="M 744 708 L 744 730 L 500 730 L 500 744" stroke="#6ee7b7" stroke-width="2.2" fill="none" marker-end="url(#arrowGreen)" opacity="0.9"/>
+<path d="M 135 708 L 135 722 L 400 722 L 400 744" stroke="#6ee7b7" stroke-width="2.2" fill="none" marker-end="url(#arrowGreen)" opacity="0.9"/>
+<path d="M 617 708 L 617 722 L 640 722 L 640 744" stroke="#6ee7b7" stroke-width="2.2" fill="none" marker-end="url(#arrowGreen)" opacity="0.9"/>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="Each question reads a fixed set of 120 pair-table rows and computes a single product with the concept table A, rather than scanning all stored facts" data-lang="en">
+                        <div class="quiz-question">1. In the authors' associative-memory-based model, how is per-question inference cost kept independent of how many facts the LLM writes?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Each question reads a fixed set of 120 pair-table rows and computes a single product with the concept table A, rather than scanning all stored facts">Each question reads a fixed set of 120 pair-table rows and computes a single product with the concept table A, rather than scanning all stored facts</div><div class="quiz-choice long-text" data-value="It scores every stored fact for every option and then prunes the lowest-scoring rows with a hard top-k cut">It scores every stored fact for every option and then prunes the lowest-scoring rows with a hard top-k cut</div><div class="quiz-choice" data-value="It converts the sparse fact table into one dense matrix and runs it through two Transformer layers">It converts the sparse fact table into one dense matrix and runs it through two Transformer layers</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="每题只读取固定的 120 行配对表，并与概念表 A 做一次乘积，而不是扫描所有已存事实" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 在作者提出的联想记忆模型中，每道题的计算开销是如何做到与 LLM 写入的事实数量无关的？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="每题只读取固定的 120 行配对表，并与概念表 A 做一次乘积，而不是扫描所有已存事实">每题只读取固定的 120 行配对表，并与概念表 A 做一次乘积，而不是扫描所有已存事实</div><div class="quiz-choice" data-value="先对每个选项给所有已存事实打分，再用硬性 top-k 截断掉低分行">先对每个选项给所有已存事实打分，再用硬性 top-k 截断掉低分行</div><div class="quiz-choice" data-value="把稀疏事实表转换成单个稠密矩阵，再送入两个 Transformer 层">把稀疏事实表转换成单个稠密矩阵，再送入两个 Transformer 层</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Removing one written line changed only 0.5–1.8 answers on average in table models, versus 4.8 in the first written Transformer and about 1,350 in the second (whose random stream made almost every weight change)" data-lang="en">
+                        <div class="quiz-question">2. Which line-removal result best supports the claim that weights written into a Transformer suffer from interference between dense, overlapping keys?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Removing one written line changed only 0.5–1.8 answers on average in table models, versus 4.8 in the first written Transformer and about 1,350 in the second (whose random stream made almost every weight change)">Removing one written line changed only 0.5–1.8 answers on average in table models, versus 4.8 in the first written Transformer and about 1,350 in the second (whose random stream made almost every weight change)</div><div class="quiz-choice long-text" data-value="Removing one line changed exactly one answer in both the table models and the written Transformers, showing interference is absent">Removing one line changed exactly one answer in both the table models and the written Transformers, showing interference is absent</div><div class="quiz-choice" data-value="Both table models and written Transformers changed more than a thousand answers per removed line">Both table models and written Transformers changed more than a thousand answers per removed line</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="在表格模型中删除一行平均只改变 0.5–1.8 个答案，而第一个写入的 Transformer 改变 4.8 个，第二个（用同一随机流生成所有向量码）改变约 1,350 个" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 哪一项“删除某一行”的实验结果最能支持这样的论断：把权重写进 Transformer 会因稠密重叠的键而产生相互干扰？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="在表格模型中删除一行平均只改变 0.5–1.8 个答案，而第一个写入的 Transformer 改变 4.8 个，第二个（用同一随机流生成所有向量码）改变约 1,350 个">在表格模型中删除一行平均只改变 0.5–1.8 个答案，而第一个写入的 Transformer 改变 4.8 个，第二个（用同一随机流生成所有向量码）改变约 1,350 个</div><div class="quiz-choice" data-value="在表格模型和写入的 Transformer 中，删除一行都恰好只改变一个答案，说明不存在干扰">在表格模型和写入的 Transformer 中，删除一行都恰好只改变一个答案，说明不存在干扰</div><div class="quiz-choice" data-value="表格模型与写入的 Transformer 在删除一行时都改变了超过一千个答案">表格模型与写入的 Transformer 在删除一行时都改变了超过一千个答案</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The accuracy is attributable to the pretrained encoder: gradient descent on the same tokens reaches a similar 95.8% with only 100 labels" data-lang="en">
+                        <div class="quiz-question">3. On CIFAR-10 with DINOv2 tokens, a table written by Claude Opus 5.5 reached 96.1% accuracy without provided image labels. What did the paper conclude about this result?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="The accuracy is attributable to the pretrained encoder: gradient descent on the same tokens reaches a similar 95.8% with only 100 labels">The accuracy is attributable to the pretrained encoder: gradient descent on the same tokens reaches a similar 95.8% with only 100 labels</div><div class="quiz-choice long-text" data-value="The written table learned visual representations from raw pixels that gradient descent cannot match even with 45,000 labels">The written table learned visual representations from raw pixels that gradient descent cannot match even with 45,000 labels</div><div class="quiz-choice" data-value="The result came from CIFAR-10 test labels leaking into the writer's sandbox">The result came from CIFAR-10 test labels leaking into the writer's sandbox</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="该准确率应归功于预训练编码器：在相同词元上做梯度下降，用 100 个标签即可达到相近的 95.8%" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 在 CIFAR-10 上使用 DINOv2 词元时，Claude Opus 5.5 写出的表格在没有提供图像标签的情况下达到 96.1% 准确率。论文对这一结果的结论是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="该准确率应归功于预训练编码器：在相同词元上做梯度下降，用 100 个标签即可达到相近的 95.8%">该准确率应归功于预训练编码器：在相同词元上做梯度下降，用 100 个标签即可达到相近的 95.8%</div><div class="quiz-choice" data-value="写出的表格从原始像素中学到了梯度下降即使使用 45,000 个标签也无法匹敌的视觉表征">写出的表格从原始像素中学到了梯度下降即使使用 45,000 个标签也无法匹敌的视觉表征</div><div class="quiz-choice" data-value="该结果源于 CIFAR-10 测试标签泄漏进了写作沙箱">该结果源于 CIFAR-10 测试标签泄漏进了写作沙箱</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/black-orchid.png');">
+                    <h2 style="color: #ffffff;">Paper 3</h2>
+                    <p style="color: #badb12;"><strong>TCP4D: A Unified Tool-Center-Point Tracking and Generation Model for Robot Manipulation</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-11-16</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2611.23143" target="_blank">http://arxiv.org/pdf/2611.23143</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper addresses embodied robot manipulation, integrating monocular RGB-based 4D scene understanding, SE(3) tool-center-point (TCP) tracking, future action generation, and cross-embodiment data augmentation.
+2. **💡 Previous Research and New Ideas:** Building on 4D reconstruction, point tracking, diffusion policies, and retargeting methods, TCP4D introduces a unified embodiment-agnostic TCP interface that directly tracks virtual SE(3) poses and gripper states from RGB and uses the same 4D representation to generate future actions.
+3. **❓ Problem:** The work addresses the lack of reliable action labels in ordinary manipulation videos, the inability of conventional point trackers to recover virtual TCP orientation without robot-specific priors and post-processing, and the source-state requirements of existing cross-embodiment augmentation pipelines.
+4. **🛠️ Methods:** TCP4D combines a DINOv2-based 4D backbone, Dual-DPT geometry decoder, and sparse cross-attention TCP tracker with a flow-matching DiT generator, then retrieves TCP motion from RGB, segments and inpaints the source robot, retargets motion via inverse kinematics, and renders demonstrations for other embodiments.
+5. **📊 Results and Evaluation:** The tracker achieves ATE of 7.60 mm on DROID, 16.07 mm on RoboLab, and 8.85 mm on UR5 with ten demonstrations, while the generator reaches 69.19% on clean RoboTwin and 78.33% on real-world tasks, and joint source–augmented training raises ARX-X5 success from 30.5% to 72.0%, although clean-to-random performance remains weak at 10.94%.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on 4D reconstruction, point tracking, diffusion policies, and retargeting methods, TCP4D introduces a unified embodiment-agnostic TCP interface that directly tracks virtual SE(3) poses and gripper states from RGB and uses the same 4D representation to generate future actions.
+3. **❓ Problem:** The work addresses the lack of reliable action labels in ordinary manipulation videos, the inability of conventional point trackers to recover virtual TCP orientation without robot-specific priors and post-processing, and the source-state requirements of existing cross-embodiment augmentation pipelines.
+4. **🛠️ Methods:** TCP4D combines a DINOv2-based 4D backbone, Dual-DPT geometry decoder, and sparse cross-attention TCP tracker with a flow-matching DiT generator, then retrieves TCP motion from RGB, segments and inpaints the source robot, retargets motion via inverse kinematics, and renders demonstrations for other embodiments.
+5. **📊 Results and Evaluation:** The tracker achieves ATE of 7.60 mm on DROID, 16.07 mm on RoboLab, and 8.85 mm on UR5 with ten demonstrations, while the generator reaches 69.19% on clean RoboTwin and 78.33% on real-world tasks, and joint source–augmented training raises ARX-X5 success from 30.5% to 72.0%, although clean-to-random performance remains weak at 10.94%.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> The work addresses the lack of reliable action labels in ordinary manipulation videos, the inability of conventional point trackers to recover virtual TCP orientation without robot-specific priors and post-processing, and the source-state requirements of existing cross-embodiment augmentation pipelines.
+4. **🛠️ Methods:** TCP4D combines a DINOv2-based 4D backbone, Dual-DPT geometry decoder, and sparse cross-attention TCP tracker with a flow-matching DiT generator, then retrieves TCP motion from RGB, segments and inpaints the source robot, retargets motion via inverse kinematics, and renders demonstrations for other embodiments.
+5. **📊 Results and Evaluation:** The tracker achieves ATE of 7.60 mm on DROID, 16.07 mm on RoboLab, and 8.85 mm on UR5 with ten demonstrations, while the generator reaches 69.19% on clean RoboTwin and 78.33% on real-world tasks, and joint source–augmented training raises ARX-X5 success from 30.5% to 72.0%, although clean-to-random performance remains weak at 10.94%.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> TCP4D combines a DINOv2-based 4D backbone, Dual-DPT geometry decoder, and sparse cross-attention TCP tracker with a flow-matching DiT generator, then retrieves TCP motion from RGB, segments and inpaints the source robot, retargets motion via inverse kinematics, and renders demonstrations for other embodiments.
+5. **📊 Results and Evaluation:** The tracker achieves ATE of 7.60 mm on DROID, 16.07 mm on RoboLab, and 8.85 mm on UR5 with ten demonstrations, while the generator reaches 69.19% on clean RoboTwin and 78.33% on real-world tasks, and joint source–augmented training raises ARX-X5 success from 30.5% to 72.0%, although clean-to-random performance remains weak at 10.94%.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> The tracker achieves ATE of 7.60 mm on DROID, 16.07 mm on RoboLab, and 8.85 mm on UR5 with ten demonstrations, while the generator reaches 69.19% on clean RoboTwin and 78.33% on real-world tasks, and joint source–augmented training raises ARX-X5 success from 30.5% to 72.0%, although clean-to-random performance remains weak at 10.94%.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 该论文研究具身机器人操作，将单目 RGB 的 4D 场景理解、SE(3) 工具中心点（TCP）跟踪、未来动作生成与跨形态数据增强统一起来。
+2. **💡 先前研究与新思路：** 在 4D 重建、点跟踪、扩散策略与动作重定向工作的基础上，TCP4D 提出了统一的跨形态 TCP 接口，可直接从 RGB 跟踪虚拟 SE(3) 位姿和夹爪状态，并利用同一 4D 表征生成未来动作。
+3. **❓ 问题：** 论文旨在解决普通机器人操作视频缺少可靠动作标签、传统点跟踪器无法在无机器人先验和后处理时恢复虚拟 TCP 朝向，以及现有跨形态增强流程依赖源机器人状态的问题。
+4. **🛠️ 方法：** TCP4D 采用基于 DINOv2 的 4D 骨干网络、Dual-DPT 几何解码器和稀疏交叉注意力 TCP 跟踪器，并结合流匹配 DiT 生成器；其增强流程从 RGB 恢复 TCP 运动，分割并修复源机器人图像，通过逆运动学重定向后渲染其他形态的演示数据。
+5. **📊 结果与评估：** 跟踪器在 DROID、RoboLab 和仅用十次演示适配的 UR5 上分别达到 7.60、16.07 和 8.85 毫米的 ATE，生成器在干净 RoboTwin 和真实任务上分别取得 69.19% 与 78.33% 的成功率，源数据与增强数据联合训练还将 ARX-X5 成功率从 30.5% 提升至 72.0%，但干净到随机环境泛化仅有 10.94%。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 在 4D 重建、点跟踪、扩散策略与动作重定向工作的基础上，TCP4D 提出了统一的跨形态 TCP 接口，可直接从 RGB 跟踪虚拟 SE(3) 位姿和夹爪状态，并利用同一 4D 表征生成未来动作。
+3. **❓ 问题：** 论文旨在解决普通机器人操作视频缺少可靠动作标签、传统点跟踪器无法在无机器人先验和后处理时恢复虚拟 TCP 朝向，以及现有跨形态增强流程依赖源机器人状态的问题。
+4. **🛠️ 方法：** TCP4D 采用基于 DINOv2 的 4D 骨干网络、Dual-DPT 几何解码器和稀疏交叉注意力 TCP 跟踪器，并结合流匹配 DiT 生成器；其增强流程从 RGB 恢复 TCP 运动，分割并修复源机器人图像，通过逆运动学重定向后渲染其他形态的演示数据。
+5. **📊 结果与评估：** 跟踪器在 DROID、RoboLab 和仅用十次演示适配的 UR5 上分别达到 7.60、16.07 和 8.85 毫米的 ATE，生成器在干净 RoboTwin 和真实任务上分别取得 69.19% 与 78.33% 的成功率，源数据与增强数据联合训练还将 ARX-X5 成功率从 30.5% 提升至 72.0%，但干净到随机环境泛化仅有 10.94%。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文旨在解决普通机器人操作视频缺少可靠动作标签、传统点跟踪器无法在无机器人先验和后处理时恢复虚拟 TCP 朝向，以及现有跨形态增强流程依赖源机器人状态的问题。
+4. **🛠️ 方法：** TCP4D 采用基于 DINOv2 的 4D 骨干网络、Dual-DPT 几何解码器和稀疏交叉注意力 TCP 跟踪器，并结合流匹配 DiT 生成器；其增强流程从 RGB 恢复 TCP 运动，分割并修复源机器人图像，通过逆运动学重定向后渲染其他形态的演示数据。
+5. **📊 结果与评估：** 跟踪器在 DROID、RoboLab 和仅用十次演示适配的 UR5 上分别达到 7.60、16.07 和 8.85 毫米的 ATE，生成器在干净 RoboTwin 和真实任务上分别取得 69.19% 与 78.33% 的成功率，源数据与增强数据联合训练还将 ARX-X5 成功率从 30.5% 提升至 72.0%，但干净到随机环境泛化仅有 10.94%。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> TCP4D 采用基于 DINOv2 的 4D 骨干网络、Dual-DPT 几何解码器和稀疏交叉注意力 TCP 跟踪器，并结合流匹配 DiT 生成器；其增强流程从 RGB 恢复 TCP 运动，分割并修复源机器人图像，通过逆运动学重定向后渲染其他形态的演示数据。
+5. **📊 结果与评估：** 跟踪器在 DROID、RoboLab 和仅用十次演示适配的 UR5 上分别达到 7.60、16.07 和 8.85 毫米的 ATE，生成器在干净 RoboTwin 和真实任务上分别取得 69.19% 与 78.33% 的成功率，源数据与增强数据联合训练还将 ARX-X5 成功率从 30.5% 提升至 72.0%，但干净到随机环境泛化仅有 10.94%。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 跟踪器在 DROID、RoboLab 和仅用十次演示适配的 UR5 上分别达到 7.60、16.07 和 8.85 毫米的 ATE，生成器在干净 RoboTwin 和真实任务上分别取得 69.19% 与 78.33% 的成功率，源数据与增强数据联合训练还将 ARX-X5 成功率从 30.5% 提升至 72.0%，但干净到随机环境泛化仅有 10.94%。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="It forms a rigid group consisting of the TCP center plus six points offset by +/-0.03 m along the local axes, so that aligning the group constrains both translation and orientation without any extra annotations." data-lang="en">
+                        <div class="quiz-question">1. In TCP4D's Stage-1 pose supervision, each TCP is expanded into seven virtual points. What is the purpose and geometry of this construction?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="It forms a rigid group consisting of the TCP center plus six points offset by +/-0.03 m along the local axes, so that aligning the group constrains both translation and orientation without any extra annotations.">It forms a rigid group consisting of the TCP center plus six points offset by +/-0.03 m along the local axes, so that aligning the group constrains both translation and orientation without any extra annotations.</div><div class="quiz-choice long-text" data-value="It samples seven real surface points on the gripper mesh from the RGB frames so that orientation can be recovered by fitting a rigid transformation to the tracked points.">It samples seven real surface points on the gripper mesh from the RGB frames so that orientation can be recovered by fitting a rigid transformation to the tracked points.</div><div class="quiz-choice long-text" data-value="It emulates the seven moving fingers of a gripper so that the opening state of the gripper can be inferred directly from point motion.">It emulates the seven moving fingers of a gripper so that the opening state of the gripper can be inferred directly from point motion.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="它构成一个刚性点组：包含 TCP 中心点以及沿局部坐标轴正负方向偏移 +/-0.03 米的六个点，从而在无需额外标注的情况下同时约束平移与朝向。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 在 TCP4D 的第一阶段位姿监督中，每个 TCP 被扩展为七个虚拟点。这种构造的目的与几何形式是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="它构成一个刚性点组：包含 TCP 中心点以及沿局部坐标轴正负方向偏移 +/-0.03 米的六个点，从而在无需额外标注的情况下同时约束平移与朝向。">它构成一个刚性点组：包含 TCP 中心点以及沿局部坐标轴正负方向偏移 +/-0.03 米的六个点，从而在无需额外标注的情况下同时约束平移与朝向。</div><div class="quiz-choice" data-value="它从 RGB 图像中在夹爪网格表面采样七个真实点，再通过刚体配准来恢复朝向。">它从 RGB 图像中在夹爪网格表面采样七个真实点，再通过刚体配准来恢复朝向。</div><div class="quiz-choice" data-value="它用于模拟带七个活动手指的夹爪，以便直接从点的运动推断夹爪开合状态。">它用于模拟带七个活动手指的夹爪，以便直接从点的运动推断夹爪开合状态。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="It automatically searches nearby translations of the target robot base while keeping the base orientation fixed, retries IK across the full trajectory, and accepts the arm only if every frame solves successfully." data-lang="en">
+                        <div class="quiz-question">2. During cross-embodiment retargeting, the target robot's inverse kinematics fails with its initial base placement. What does the 'auto_base' procedure in TCP4D do in this situation?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="It fine-tunes the TCP tracker on the target robot's URDF and optimizes the base placement by backpropagating through the IK solver.">It fine-tunes the TCP tracker on the target robot's URDF and optimizes the base placement by backpropagating through the IK solver.</div><div class="quiz-choice long-text" data-value="It automatically searches nearby translations of the target robot base while keeping the base orientation fixed, retries IK across the full trajectory, and accepts the arm only if every frame solves successfully.">It automatically searches nearby translations of the target robot base while keeping the base orientation fixed, retries IK across the full trajectory, and accepts the arm only if every frame solves successfully.</div><div class="quiz-choice long-text" data-value="It uniformly rescales the recovered TCP trajectory until IK converges and then renders the target robot with correspondingly resized link geometry.">It uniformly rescales the recovered TCP trajectory until IK converges and then renders the target robot with correspondingly resized link geometry.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="它在保持基座朝向不变的前提下自动搜索附近的目标基座平移，对整条轨迹重新尝试 IK，仅当每一帧都求解成功时才接受该机械臂。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 在跨形态动作重定向过程中，目标机器人初始基座位姿导致逆运动学求解失败。此时 TCP4D 中的 'auto_base' 机制会如何处理？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="它在目标机器人的 URDF 上微调 TCP 跟踪器，并通过反向传播穿过 IK 求解器来优化基座位姿。">它在目标机器人的 URDF 上微调 TCP 跟踪器，并通过反向传播穿过 IK 求解器来优化基座位姿。</div><div class="quiz-choice" data-value="它在保持基座朝向不变的前提下自动搜索附近的目标基座平移，对整条轨迹重新尝试 IK，仅当每一帧都求解成功时才接受该机械臂。">它在保持基座朝向不变的前提下自动搜索附近的目标基座平移，对整条轨迹重新尝试 IK，仅当每一帧都求解成功时才接受该机械臂。</div><div class="quiz-choice" data-value="它对恢复出的 TCP 轨迹做均匀缩放直到 IK 收敛，并以相应缩放后的连杆几何渲染目标机器人。">它对恢复出的 TCP 轨迹做均匀缩放直到 IK 收敛，并以相应缩放后的连杆几何渲染目标机器人。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Each arm contributes a 10D action (3D position + 6D rotation + gripper), the model is trained with flow matching, and inference denoises Gaussian noise into 32 future TCP states using four Euler updates." data-lang="en">
+                        <div class="quiz-question">3. Which description correctly matches the TCP4D Generator's action interface, training objective, and inference procedure?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Each arm contributes a 10D action (3D position + 6D rotation + gripper), the model is trained with flow matching, and inference denoises Gaussian noise into 32 future TCP states using four Euler updates.">Each arm contributes a 10D action (3D position + 6D rotation + gripper), the model is trained with flow matching, and inference denoises Gaussian noise into 32 future TCP states using four Euler updates.</div><div class="quiz-choice long-text" data-value="Each arm contributes a 7D action (position + quaternion + gripper), the model is trained with a DDPM objective, and inference requires 100 denoising steps to decode 32 future TCP states.">Each arm contributes a 7D action (position + quaternion + gripper), the model is trained with a DDPM objective, and inference requires 100 denoising steps to decode 32 future TCP states.</div><div class="quiz-choice long-text" data-value="Each arm contributes a 10D action (3D position + 6D rotation + gripper), but the model is trained by autoregressive next-token prediction, so decoding 32 future states requires 32 sequential forward passes.">Each arm contributes a 10D action (3D position + 6D rotation + gripper), but the model is trained by autoregressive next-token prediction, so decoding 32 future states requires 32 sequential forward passes.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="每条手臂输出 10 维动作（3 维位置 + 6 维旋转 + 夹爪），采用流匹配训练，推理时通过四步欧拉更新将高斯噪声解码为未来 32 个 TCP 状态。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 下列哪一项准确对应了 TCP4D 生成器的动作接口、训练目标与推理流程？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="每条手臂输出 10 维动作（3 维位置 + 6 维旋转 + 夹爪），采用流匹配训练，推理时通过四步欧拉更新将高斯噪声解码为未来 32 个 TCP 状态。">每条手臂输出 10 维动作（3 维位置 + 6 维旋转 + 夹爪），采用流匹配训练，推理时通过四步欧拉更新将高斯噪声解码为未来 32 个 TCP 状态。</div><div class="quiz-choice" data-value="每条手臂输出 7 维动作（位置 + 四元数 + 夹爪），采用 DDPM 目标训练，推理需要 100 步去噪才能解码未来 32 个 TCP 状态。">每条手臂输出 7 维动作（位置 + 四元数 + 夹爪），采用 DDPM 目标训练，推理需要 100 步去噪才能解码未来 32 个 TCP 状态。</div><div class="quiz-choice" data-value="每条手臂输出 10 维动作（3 维位置 + 6 维旋转 + 夹爪），但采用自回归的下一词元预测训练，因此解码 32 个未来状态需要 32 次串行前向推理。">每条手臂输出 10 维动作（3 维位置 + 6 维旋转 + 夹爪），但采用自回归的下一词元预测训练，因此解码 32 个未来状态需要 32 次串行前向推理。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    
+    <div class="daily-tips-section">
+        <h2 class="tips-heading">
+            <span data-lang="en">Today's Reading Tips</span>
+            <span data-lang="zh" style="display:none">今日阅读推荐</span>
+        </h2>
+        <div class="tips-content" data-lang="en">Read paper 2 first: its central claim—that LLMs can directly synthesize a tiny, locally editable sparse associative-memory architecture—is unusually compelling, with the 0.94M-vs.-1.72B parameter result standing out, though the evaluation remains limited. Its focus on sparse, traceable representations connects naturally to paper 1’s sparse MoE and memory-efficient long-context stack, while paper 3 provides a contrasting robotics example of imposing explicit, embodiment-agnostic structure on learned models.</div>
+        <div class="tips-content" data-lang="zh" style="display:none">建议优先阅读论文2：其核心主张——由大模型直接生成可局部编辑的稀疏联想记忆架构——十分新颖，0.94M参数模型优于1.72B模型的结果尤其亮眼，但评测规模仍较有限。论文2对稀疏、可追溯表示的探索与论文1的稀疏MoE和长上下文内存优化直接呼应；论文3则从机器人领域展示了另一种思路，即为学习模型引入明确的、与本体无关的SE(3)工具中心点结构。</div>
+    </div>
+    
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        function toggleLang() {
+            var btn = document.getElementById('lang-btn');
+            var isZh = document.body.classList.contains('lang-zh');
+            if (isZh) {
+                document.body.classList.remove('lang-zh');
+                btn.textContent = 'ZH';
+                localStorage.setItem('-paper-lang', 'en');
+            } else {
+                document.body.classList.add('lang-zh');
+                btn.textContent = 'EN';
+                localStorage.setItem('-paper-lang', 'zh');
+            }
+            var enEls = document.querySelectorAll('[data-lang="en"]');
+            var zhEls = document.querySelectorAll('[data-lang="zh"]');
+            for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = isZh ? '' : 'none'; }
+            for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = isZh ? 'none' : ''; }
+        }
+
+        function getActivePopup(tab) {
+            var lang = document.body.classList.contains('lang-zh') ? 'zh' : 'en';
+            return tab.querySelector('.quiz-popup[data-lang="' + lang + '"]');
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore language preference
+            var savedLang = localStorage.getItem('-paper-lang');
+            if (savedLang === 'zh') {
+                document.body.classList.add('lang-zh');
+                document.getElementById('lang-btn').textContent = 'EN';
+                var enEls = document.querySelectorAll('[data-lang="en"]');
+                var zhEls = document.querySelectorAll('[data-lang="zh"]');
+                for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = 'none'; }
+                for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = ''; }
+            }
+
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                // 为所有 popup 阻止冒泡
+                tab.querySelectorAll('.quiz-popup').forEach(function(p) {
+                    p.addEventListener('click', function(e) { e.stopPropagation(); });
+                });
+
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var popup = getActivePopup(tab);
+                    if (!popup) return;
+
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.quiz-popup').forEach(function(p) {
+                            p.classList.remove('active');
+                        });
+                        document.body.appendChild(popup);
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
