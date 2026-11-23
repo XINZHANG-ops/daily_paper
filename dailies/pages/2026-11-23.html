@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-11-23 Papers</title>
+    <!-- AI Assistant Styles -->
+    <link rel="stylesheet" href="../../css/ai-assistant.css">
+    <style>
+        * {
+            box-sizing: border-box; /* 确保所有元素使用border-box模型 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #4d4042;
+            background-image: url('../../bg.png');
+            background-size: auto;
+            background-repeat: repeat;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        h1 {
+            color: #333;
+        }
+        .paper-container {
+            position: relative;
+            display: flex;
+            margin-bottom: 30px;
+            justify-content: space-between;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* 卡片容器样式 - 新增 */
+        .card-deck {
+            width: 100%;
+            position: relative;
+            margin-right: 20px;
+            min-height: 600px; /* 改为最小高度而不是固定高度 */
+            max-height: 90vh; /* 限制最大高度防止溢出 */
+            height: auto; /* 自适应内容高度 */
+            /* cursor removed - only cards should show pointer */
+        }
+        
+        /* 卡片通用样式 */
+        .paper-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('');
+            background-blend-mode: overlay;
+            overflow-wrap: break-word;
+            cursor: pointer; /* Show pointer on cards to indicate they're clickable */
+        }
+        
+        /* 轮播卡片样式 - 新增 */
+        .card-deck .paper-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%; /* 使用容器的100%高度 */
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 非激活卡片的样式 - 新增 */
+        .card-deck .paper-card:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+        
+        /* 激活卡片的样式 - 新增 */
+        .card-deck .paper-card.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            z-index: 1;
+        }
+        
+        /* 第一张卡片（文本内容）不需要滚动 */
+        .card-deck .paper-card:first-child {
+            overflow-y: auto;
+        }
+
+        .card-deck .paper-card:first-child:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 第二张卡片（流程图）支持滚动 */
+        .flowchart-card {
+            text-align: center;
+            background-color: #fff !important;
+            overflow-y: auto !important; /* 允许垂直滚动 */
+            overflow-x: hidden !important; /* 防止横向滚动 */
+            padding: 20px; /* 添加内边距 */
+            padding-bottom: 50px; /* 添加底部填充确保能看到底部 */
+        }
+
+        .flowchart-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* 确保不超出容器宽度 */
+            display: block; /* 防止底部空白 */
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        /* 传统卡片样式 */
+        .paper-container > .paper-card {
+            width: 100%;
+            margin-right: 20px;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .paper-card p {
+            margin: 5px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .paper-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .paper-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .category-chunk {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .category-chunk * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .category-chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-chunk:nth-child(1) {
+            background-color: #d3e3fd;
+        }
+        
+        .category-chunk:nth-child(2) {
+            background-color: #e6d6fa;
+        }
+        
+        .category-chunk:nth-child(3) {
+            background-color: #d4f8d9;
+        }
+        
+        .category-chunk:nth-child(4) {
+            background-color: #ffd7d5;
+        }
+        
+        .category-chunk:nth-child(5) {
+            background-color: #d3e3fd;
+        }
+        
+        /* 卡片计数器 - 新增 */
+        .card-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* Quiz tabs and popup styles */
+        .quiz-tabs {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            width: fit-content;
+            min-width: 50px;
+            margin-left: auto;
+        }
+        .quiz-tab {
+            width: 50px;
+            height: 50px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .quiz-tab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-popup {
+            position: fixed; /* 改为固定定位，不随滚动而移动 */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 居中显示 */
+            width: 90%;
+            max-width: 500px; /* 增加最大宽度，适应长内容 */
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 9999; /* 确保显示在最上层 */
+        }
+        
+        /* 添加遮罩层，防止问题卡被其他内容遮挡 */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.active {
+            display: block;
+        }
+        /* 使用JavaScript控制问题卡的显示和隐藏，不再使用hover */
+        .quiz-popup.active {
+            display: block;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.5;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            hyphens: auto; /* 在必要时使用连字符 */
+        }
+        .quiz-choices {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-choice {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* 确保长单词自动换行 */
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            text-align: left; /* 长文本左对齐 */
+            display: block; /* 确保是块级元素 */
+            white-space: normal; /* 允许自动换行 */
+        }
+        .quiz-choice:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-choice.selected {
+            background-color: #d3e3fd;
+            border-color: #1a73e8;
+        }
+        .quiz-choice.correct {
+            background-color: #d4f8d9;
+            border-color: #0f9d58;
+        }
+        .quiz-choice.incorrect {
+            background-color: #ffd7d5;
+            border-color: #d93025;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4f8d9;
+            color: #0f9d58;
+            display: block;
+            border: 1px solid #0f9d58;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #ffd7d5;
+            color: #d93025;
+            display: block;
+            border: 1px solid #d93025;
+        }
+        
+        /* 长文本选项的特殊样式 */
+        .quiz-choice.long-text {
+            font-size: 13px;
+            line-height: 1.3;
+            padding: 10px 12px;
+        }
+        
+        /* 确保弹窗中的按钮文本不会溢出 */
+        .quiz-choice button,
+        .quiz-choice a {
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 适应超长选项文本 */
+        @media (max-width: 500px) {
+            .quiz-popup {
+                width: 95%;
+                padding: 12px;
+            }
+            .quiz-question {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            .quiz-choice {
+                padding: 8px 10px;
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            .quiz-feedback {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+        
+        /* 中等屏幕设备（如平板） */
+        @media (max-width: 1024px) {
+            .card-deck {
+                min-height: 500px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 88vh;
+            }
+        }
+
+        /* 移动设备和小屏幕 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* 减少移动设备上的内边距 */
+            }
+
+            .paper-container {
+                flex-direction: column;
+            }
+
+            .card-deck {
+                margin-right: 0;
+                margin-bottom: 40px;
+                min-height: 400px; /* 移动设备上使用更小的最小高度 */
+                height: auto; /* 自适应高度 */
+            }
+
+            .card-deck .paper-card {
+                max-height: 85vh; /* 移动设备上限制更多 */
+                font-size: 0.95em; /* 稍微减小字体 */
+            }
+
+            .paper-card h2 {
+                font-size: 1.1em; /* 移动设备上调整标题大小 */
+            }
+
+            .paper-container > .paper-card {
+                width: 100% !important;
+                margin-bottom: 20px;
+                margin-right: 0;
+            }
+
+            .quiz-tabs {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                position: relative;
+                margin-left: 0;
+            }
+
+            .quiz-tab {
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: 45px; /* 移动设备上稍小的按钮 */
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 极小屏幕（如小手机） */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .card-deck {
+                min-height: 300px;
+            }
+
+            .card-deck .paper-card {
+                max-height: 80vh;
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .paper-card h2 {
+                font-size: 1em;
+            }
+
+            .category-chunk {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .quiz-tab {
+                width: 40px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+
+        /* Personal Takeaways Section Styles */
+        .takeaways-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .takeaways-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .takeaways-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .takeaways-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .takeaways-content p {
+            margin: 15px 0;
+        }
+
+        .takeaways-content ul, .takeaways-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .takeaways-content li {
+            margin: 8px 0;
+        }
+
+        .takeaways-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 4px;
+        }
+
+        .takeaways-content code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+
+        .takeaways-content pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+
+        .takeaways-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Language toggle */
+        #lang-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10000;
+        }
+        #lang-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        #lang-btn:hover {
+            background-color: #1557b0;
+        }
+
+        /* Daily tips */
+        .daily-tips-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0 20px 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .tips-heading {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .tips-content {
+            background-color: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #333;
+            font-size: 1em;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="lang-toggle">
+        <button id="lang-btn" onclick="toggleLang()">ZH</button>
+    </div>
+    <h1>2026-11-23 Papers</h1>
+    
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/shattered-dark.png');">
+                    <h2 style="color: #ffffff;">Paper 1</h2>
+                    <p style="color: #badb12;"><strong>cmHC: Balancing Stream Mixing in Hyper-Connections via Geometric Contraction</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-11-19</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2611.27193" target="_blank">http://arxiv.org/pdf/2611.27193</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper studies geometrically constrained residual-stream mixing for stable and effective hyper-connections in large language-model pretraining.
+2. **💡 Previous Research and New Ideas:** Building on Hyper-Connections, Sinkhorn-constrained mHC, and permutation-based mHC-lite, it introduces cmHC, which geometrically contracts the Birkhoff polytope and applies moderate contraction only to shallow layers to balance under-mixing and over-mixing.
+3. **❓ Problem:** Existing manifold-constrained methods can remain near permutation vertices and under-mix streams, whereas excessive contraction homogenizes streams and weakens their distinguishability and gradient diversity.
+4. **🛠️ Methods:** cmHC replaces each permutation basis with \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\), preserves exact double stochasticity and spectral bounds, proves cumulative mixing, stream-difference, and coefficient-gradient bounds, applies contraction to the first \(K\) layers, and provides fused Ascend NPU operators.
+5. **📊 Results and Evaluation:** Across nanoGPT models and 6B/300B MoEs, cmHC generally lowers training loss while maintaining smoother gradients, with \(\lambda=0.97\) and \(K=2\) performing best on average in GPT-2 experiments, while fused Ascend implementations reduce total hyper-connection latency by up to 44.8%.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on Hyper-Connections, Sinkhorn-constrained mHC, and permutation-based mHC-lite, it introduces cmHC, which geometrically contracts the Birkhoff polytope and applies moderate contraction only to shallow layers to balance under-mixing and over-mixing.
+3. **❓ Problem:** Existing manifold-constrained methods can remain near permutation vertices and under-mix streams, whereas excessive contraction homogenizes streams and weakens their distinguishability and gradient diversity.
+4. **🛠️ Methods:** cmHC replaces each permutation basis with \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\), preserves exact double stochasticity and spectral bounds, proves cumulative mixing, stream-difference, and coefficient-gradient bounds, applies contraction to the first \(K\) layers, and provides fused Ascend NPU operators.
+5. **📊 Results and Evaluation:** Across nanoGPT models and 6B/300B MoEs, cmHC generally lowers training loss while maintaining smoother gradients, with \(\lambda=0.97\) and \(K=2\) performing best on average in GPT-2 experiments, while fused Ascend implementations reduce total hyper-connection latency by up to 44.8%.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing manifold-constrained methods can remain near permutation vertices and under-mix streams, whereas excessive contraction homogenizes streams and weakens their distinguishability and gradient diversity.
+4. **🛠️ Methods:** cmHC replaces each permutation basis with \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\), preserves exact double stochasticity and spectral bounds, proves cumulative mixing, stream-difference, and coefficient-gradient bounds, applies contraction to the first \(K\) layers, and provides fused Ascend NPU operators.
+5. **📊 Results and Evaluation:** Across nanoGPT models and 6B/300B MoEs, cmHC generally lowers training loss while maintaining smoother gradients, with \(\lambda=0.97\) and \(K=2\) performing best on average in GPT-2 experiments, while fused Ascend implementations reduce total hyper-connection latency by up to 44.8%.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> cmHC replaces each permutation basis with \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\), preserves exact double stochasticity and spectral bounds, proves cumulative mixing, stream-difference, and coefficient-gradient bounds, applies contraction to the first \(K\) layers, and provides fused Ascend NPU operators.
+5. **📊 Results and Evaluation:** Across nanoGPT models and 6B/300B MoEs, cmHC generally lowers training loss while maintaining smoother gradients, with \(\lambda=0.97\) and \(K=2\) performing best on average in GPT-2 experiments, while fused Ascend implementations reduce total hyper-connection latency by up to 44.8%.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Across nanoGPT models and 6B/300B MoEs, cmHC generally lowers training loss while maintaining smoother gradients, with \(\lambda=0.97\) and \(K=2\) performing best on average in GPT-2 experiments, while fused Ascend implementations reduce total hyper-connection latency by up to 44.8%.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 该论文研究大语言模型预训练中几何约束的残差流混合，以实现稳定且有效的超连接。
+2. **💡 先前研究与新思路：** 在超连接、Sinkhorn 约束的 mHC 和基于置换矩阵的 mHC-lite 基础上，论文提出 cmHC，通过几何收缩 Birkhoff 多面体并仅在浅层施加适度收缩来平衡混合不足与过度混合。
+3. **❓ 问题：** 现有多流约束方法可能停留在置换顶点附近而混合不足，而过强收缩又会使各流趋于同质，削弱流间可区分性和系数梯度的多样性。
+4. **🛠️ 方法：** cmHC 将各置换基替换为 \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\)，在保持精确双随机性和谱范数界的同时，证明累积混合、流差异及系数梯度界，并仅对前 \(K\) 层收缩且实现昇腾融合算子。
+5. **📊 Results and Evaluation：** 在 nanoGPT、6B 和 300B MoE 实验中，cmHC 通常能降低训练损失并保持更平滑的梯度，其中 \(\lambda=0.97\)、\(K=2\) 在 GPT-2 实验中平均表现最佳，而昇腾融合实现最高可降低 44.8% 的超连接总执行延迟。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 在超连接、Sinkhorn 约束的 mHC 和基于置换矩阵的 mHC-lite 基础上，论文提出 cmHC，通过几何收缩 Birkhoff 多面体并仅在浅层施加适度收缩来平衡混合不足与过度混合。
+3. **❓ 问题：** 现有多流约束方法可能停留在置换顶点附近而混合不足，而过强收缩又会使各流趋于同质，削弱流间可区分性和系数梯度的多样性。
+4. **🛠️ 方法：** cmHC 将各置换基替换为 \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\)，在保持精确双随机性和谱范数界的同时，证明累积混合、流差异及系数梯度界，并仅对前 \(K\) 层收缩且实现昇腾融合算子。
+5. **📊 Results and Evaluation：** 在 nanoGPT、6B 和 300B MoE 实验中，cmHC 通常能降低训练损失并保持更平滑的梯度，其中 \(\lambda=0.97\)、\(K=2\) 在 GPT-2 实验中平均表现最佳，而昇腾融合实现最高可降低 44.8% 的超连接总执行延迟。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 现有多流约束方法可能停留在置换顶点附近而混合不足，而过强收缩又会使各流趋于同质，削弱流间可区分性和系数梯度的多样性。
+4. **🛠️ 方法：** cmHC 将各置换基替换为 \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\)，在保持精确双随机性和谱范数界的同时，证明累积混合、流差异及系数梯度界，并仅对前 \(K\) 层收缩且实现昇腾融合算子。
+5. **📊 Results and Evaluation：** 在 nanoGPT、6B 和 300B MoE 实验中，cmHC 通常能降低训练损失并保持更平滑的梯度，其中 \(\lambda=0.97\)、\(K=2\) 在 GPT-2 实验中平均表现最佳，而昇腾融合实现最高可降低 44.8% 的超连接总执行延迟。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> cmHC 将各置换基替换为 \(P'=\lambda P+(1-\lambda)(11^\top-P)/(n-1)\)，在保持精确双随机性和谱范数界的同时，证明累积混合、流差异及系数梯度界，并仅对前 \(K\) 层收缩且实现昇腾融合算子。
+5. **📊 Results and Evaluation：** 在 nanoGPT、6B 和 300B MoE 实验中，cmHC 通常能降低训练损失并保持更平滑的梯度，其中 \(\lambda=0.97\)、\(K=2\) 在 GPT-2 实验中平均表现最佳，而昇腾融合实现最高可降低 44.8% 的超连接总执行延迟。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 在 nanoGPT、6B 和 300B MoE 实验中，cmHC 通常能降低训练损失并保持更平滑的梯度，其中 \(\lambda=0.97\)、\(K=2\) 在 GPT-2 实验中平均表现最佳，而昇腾融合实现最高可降低 44.8% 的超连接总执行延迟。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="0.01" data-lang="en">
+                        <div class="quiz-question">1. In cmHC with n = 4 streams and contraction coefficient λ = 0.97, what is the guaranteed minimum entry of the smoothed permutation basis P′?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="0">0</div><div class="quiz-choice" data-value="0.01">0.01</div><div class="quiz-choice" data-value="0.03">0.03</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="0.01" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 在 cmHC 中，若流数 n = 4 且收缩系数 λ = 0.97，收缩后的置换基 P′ 的每个元素至少是多少？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="0">0</div><div class="quiz-choice" data-value="0.01">0.01</div><div class="quiz-choice" data-value="0.03">0.03</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="The product of all α′ℓ values" data-lang="en">
+                        <div class="quiz-question">2. If the normalized contraction coefficient at layer ℓ is α′ℓ, which expression gives the cumulative Dobrushin-coefficient upper bound across multiple layers?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="The sum of all α′ℓ values">The sum of all α′ℓ values</div><div class="quiz-choice" data-value="The product of all α′ℓ values">The product of all α′ℓ values</div><div class="quiz-choice" data-value="The minimum of all α′ℓ values">The minimum of all α′ℓ values</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="所有 α′ℓ 之积" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 若第 ℓ 层的归一化收缩系数为 α′ℓ，根据 Dobrushin 系数分析，多层累积混合的上界采用哪种形式？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="所有 α′ℓ 之和">所有 α′ℓ 之和</div><div class="quiz-choice" data-value="所有 α′ℓ 之积">所有 α′ℓ 之积</div><div class="quiz-choice" data-value="所有 α′ℓ 中的最小值">所有 α′ℓ 中的最小值</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Using λ = 0.97 with contraction in the first K = 2 layers achieved the best average loss rank in the GPT-2 experiments, while fused Ascend operators reduced total hyper-connection latency by up to 44.8%." data-lang="en">
+                        <div class="quiz-question">3. Which statement accurately summarizes the main empirical and systems findings?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Applying λ = 0.70 to every layer consistently produced the best results, showing that stronger mixing is always preferable.">Applying λ = 0.70 to every layer consistently produced the best results, showing that stronger mixing is always preferable.</div><div class="quiz-choice long-text" data-value="Using λ = 0.97 with contraction in the first K = 2 layers achieved the best average loss rank in the GPT-2 experiments, while fused Ascend operators reduced total hyper-connection latency by up to 44.8%.">Using λ = 0.97 with contraction in the first K = 2 layers achieved the best average loss rank in the GPT-2 experiments, while fused Ascend operators reduced total hyper-connection latency by up to 44.8%.</div><div class="quiz-choice" data-value="The 300B-MoE experiment disabled residual-stream mixing and used no doubly stochastic constraint.">The 300B-MoE experiment disabled residual-stream mixing and used no doubly stochastic constraint.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="采用 λ = 0.97 并仅收缩前 K = 2 层时，在 GPT-2 实验中取得了最佳平均损失排名；融合式 Ascend 算子还将超连接总延迟最多降低 44.8%。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 根据实验，哪项陈述准确概括了主要实证结果与系统实现成果？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="在所有层使用 λ = 0.70 始终获得最佳结果，说明混合越强越好。">在所有层使用 λ = 0.70 始终获得最佳结果，说明混合越强越好。</div><div class="quiz-choice" data-value="采用 λ = 0.97 并仅收缩前 K = 2 层时，在 GPT-2 实验中取得了最佳平均损失排名；融合式 Ascend 算子还将超连接总延迟最多降低 44.8%。">采用 λ = 0.97 并仅收缩前 K = 2 层时，在 GPT-2 实验中取得了最佳平均损失排名；融合式 Ascend 算子还将超连接总延迟最多降低 44.8%。</div><div class="quiz-choice" data-value="300B-MoE 实验禁用了残差流混合，也没有使用双随机约束。">300B-MoE 实验禁用了残差流混合，也没有使用双随机约束。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="paper-card" style="background-image: url('bg/shley-tree-2.png');">
+                    <h2 style="color: #ffffff;">Paper 2</h2>
+                    <p style="color: #badb12;"><strong>Non-penetrating World Models</strong></p>
+                    <p style="color: #ffffff;"><strong>Published: </strong>2026-11-19</p>
+                    <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2611.27963" target="_blank">http://arxiv.org/pdf/2611.27963</a></p>
+                    <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> This paper studies collision-aware interactive video world models and the enforcement of non-penetration in generative visual simulation.
+2. **💡 Previous Research and New Ideas:** Building on action-conditioned diffusion world models, learned 3D representations, and geometry-based collision solvers, it introduces NoPeBench and the insight that frozen DiT hidden states can anticipate obstacle contact before pixels are generated.
+3. **❓ Problem:** Existing world models lack geometric feedback and often pass through, tunnel past, or erase solid obstacles when commanded into them, while prompt-based and stop-only depth-guard approaches either fail or undermine user intent.
+4. **🛠️ Methods:** NoPeWorld freezes each generator and trains a sub-2M-parameter cross-attention head on Unreal Engine collision, clearance, and intent labels to rank stop, shortened-motion, turning, and sliding candidates in collision or prediction mode before chunk generation.
+5. **📊 Results and Evaluation:** Across six generators and NoPeBench’s teacher-forced, geometry-validated closed-loop, and human-validated VLM evaluations, NoPeWorld reduces average violations from 74% to 16%, improves Safe-Intent performance, and transfers zero-shot to open-domain imagery and moving obstacles.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on action-conditioned diffusion world models, learned 3D representations, and geometry-based collision solvers, it introduces NoPeBench and the insight that frozen DiT hidden states can anticipate obstacle contact before pixels are generated.
+3. **❓ Problem:** Existing world models lack geometric feedback and often pass through, tunnel past, or erase solid obstacles when commanded into them, while prompt-based and stop-only depth-guard approaches either fail or undermine user intent.
+4. **🛠️ Methods:** NoPeWorld freezes each generator and trains a sub-2M-parameter cross-attention head on Unreal Engine collision, clearance, and intent labels to rank stop, shortened-motion, turning, and sliding candidates in collision or prediction mode before chunk generation.
+5. **📊 Results and Evaluation:** Across six generators and NoPeBench’s teacher-forced, geometry-validated closed-loop, and human-validated VLM evaluations, NoPeWorld reduces average violations from 74% to 16%, improves Safe-Intent performance, and transfers zero-shot to open-domain imagery and moving obstacles.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> Existing world models lack geometric feedback and often pass through, tunnel past, or erase solid obstacles when commanded into them, while prompt-based and stop-only depth-guard approaches either fail or undermine user intent.
+4. **🛠️ Methods:** NoPeWorld freezes each generator and trains a sub-2M-parameter cross-attention head on Unreal Engine collision, clearance, and intent labels to rank stop, shortened-motion, turning, and sliding candidates in collision or prediction mode before chunk generation.
+5. **📊 Results and Evaluation:** Across six generators and NoPeBench’s teacher-forced, geometry-validated closed-loop, and human-validated VLM evaluations, NoPeWorld reduces average violations from 74% to 16%, improves Safe-Intent performance, and transfers zero-shot to open-domain imagery and moving obstacles.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> NoPeWorld freezes each generator and trains a sub-2M-parameter cross-attention head on Unreal Engine collision, clearance, and intent labels to rank stop, shortened-motion, turning, and sliding candidates in collision or prediction mode before chunk generation.
+5. **📊 Results and Evaluation:** Across six generators and NoPeBench’s teacher-forced, geometry-validated closed-loop, and human-validated VLM evaluations, NoPeWorld reduces average violations from 74% to 16%, improves Safe-Intent performance, and transfers zero-shot to open-domain imagery and moving obstacles.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Across six generators and NoPeBench’s teacher-forced, geometry-validated closed-loop, and human-validated VLM evaluations, NoPeWorld reduces average violations from 74% to 16%, improves Safe-Intent performance, and transfers zero-shot to open-domain imagery and moving obstacles.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 本文研究具备碰撞感知能力的交互式视频世界模型，以及生成式视觉仿真中的非穿透约束。
+2. **💡 先前研究与新思路：** 该工作以动作条件扩散世界模型、学习式三维表示和基于几何的碰撞求解器为基础，提出 NoPeBench，并发现冻结 DiT 的隐藏状态能够在像素生成前预测即将发生的障碍物接触。
+3. **❓ 问题：** 现有世界模型缺乏几何反馈，面对撞向障碍物的指令时经常穿墙、隧穿或抹除障碍物，而提示词方法和仅停止的深度防护方法要么无效，要么损害用户意图。
+4. **🛠️ 方法：** NoPeWorld 冻结各生成器，并利用 Unreal Engine 的碰撞、间隙和意图标签训练不足两百万参数的交叉注意力头，在生成视频块前以碰撞或预测模式评估停止、缩短、转向和滑行候选动作。
+5. **📊 结果与评估：** 在六个生成器及 NoPeBench 的教师强制、几何验证闭环和人工验证 VLM 评估中，NoPeWorld 将平均违规率从 74% 降至 16%，提升安全意图表现，并零样本迁移到开放域图像和移动障碍物。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 该工作以动作条件扩散世界模型、学习式三维表示和基于几何的碰撞求解器为基础，提出 NoPeBench，并发现冻结 DiT 的隐藏状态能够在像素生成前预测即将发生的障碍物接触。
+3. **❓ 问题：** 现有世界模型缺乏几何反馈，面对撞向障碍物的指令时经常穿墙、隧穿或抹除障碍物，而提示词方法和仅停止的深度防护方法要么无效，要么损害用户意图。
+4. **🛠️ 方法：** NoPeWorld 冻结各生成器，并利用 Unreal Engine 的碰撞、间隙和意图标签训练不足两百万参数的交叉注意力头，在生成视频块前以碰撞或预测模式评估停止、缩短、转向和滑行候选动作。
+5. **📊 结果与评估：** 在六个生成器及 NoPeBench 的教师强制、几何验证闭环和人工验证 VLM 评估中，NoPeWorld 将平均违规率从 74% 降至 16%，提升安全意图表现，并零样本迁移到开放域图像和移动障碍物。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 现有世界模型缺乏几何反馈，面对撞向障碍物的指令时经常穿墙、隧穿或抹除障碍物，而提示词方法和仅停止的深度防护方法要么无效，要么损害用户意图。
+4. **🛠️ 方法：** NoPeWorld 冻结各生成器，并利用 Unreal Engine 的碰撞、间隙和意图标签训练不足两百万参数的交叉注意力头，在生成视频块前以碰撞或预测模式评估停止、缩短、转向和滑行候选动作。
+5. **📊 结果与评估：** 在六个生成器及 NoPeBench 的教师强制、几何验证闭环和人工验证 VLM 评估中，NoPeWorld 将平均违规率从 74% 降至 16%，提升安全意图表现，并零样本迁移到开放域图像和移动障碍物。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> NoPeWorld 冻结各生成器，并利用 Unreal Engine 的碰撞、间隙和意图标签训练不足两百万参数的交叉注意力头，在生成视频块前以碰撞或预测模式评估停止、缩短、转向和滑行候选动作。
+5. **📊 结果与评估：** 在六个生成器及 NoPeBench 的教师强制、几何验证闭环和人工验证 VLM 评估中，NoPeWorld 将平均违规率从 74% 降至 16%，提升安全意图表现，并零样本迁移到开放域图像和移动障碍物。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 在六个生成器及 NoPeBench 的教师强制、几何验证闭环和人工验证 VLM 评估中，NoPeWorld 将平均违规率从 74% 降至 16%，提升安全意图表现，并零样本迁移到开放域图像和移动障碍物。</div></div></div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="A lightweight head can read impending-contact information from the hidden states of a frozen DiT before pixels are generated." data-lang="en">
+                        <div class="quiz-question">1. What is the central insight that enables NoPeWorld to prevent collisions without an external depth estimator?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Prompts explicitly describing nearby obstacles reliably teach the generator to respect them.">Prompts explicitly describing nearby obstacles reliably teach the generator to respect them.</div><div class="quiz-choice long-text" data-value="A lightweight head can read impending-contact information from the hidden states of a frozen DiT before pixels are generated.">A lightweight head can read impending-contact information from the hidden states of a frozen DiT before pixels are generated.</div><div class="quiz-choice long-text" data-value="The method reconstructs a complete 3D occupancy map from every generated frame before selecting an action.">The method reconstructs a complete 3D occupancy map from every generated frame before selecting an action.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="一个轻量级预测头可以在像素生成之前，从冻结DiT的隐藏状态中读出即将发生接触的信息。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. NoPeWorld无需外部深度估计器便能避免碰撞，其核心依据是什么？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="只要在提示词中准确描述附近障碍物，生成器就会自然遵守碰撞约束。">只要在提示词中准确描述附近障碍物，生成器就会自然遵守碰撞约束。</div><div class="quiz-choice" data-value="一个轻量级预测头可以在像素生成之前，从冻结DiT的隐藏状态中读出即将发生接触的信息。">一个轻量级预测头可以在像素生成之前，从冻结DiT的隐藏状态中读出即将发生接触的信息。</div><div class="quiz-choice" data-value="该方法会先从每一帧生成视频中重建完整的三维占据地图，再选择动作。">该方法会先从每一帧生成视频中重建完整的三维占据地图，再选择动作。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Collision mode reads the current chunk's first denoising step and reruns that step if the action changes, whereas prediction mode reads the previous chunk's commit pass and requires no DiT rerun." data-lang="en">
+                        <div class="quiz-question">2. How do NoPeWorld's prediction and collision modes differ during inference?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Prediction mode decodes the next chunk and estimates depth, while collision mode relies solely on a text prompt.">Prediction mode decodes the next chunk and estimates depth, while collision mode relies solely on a text prompt.</div><div class="quiz-choice long-text" data-value="Collision mode reads the current chunk's first denoising step and reruns that step if the action changes, whereas prediction mode reads the previous chunk's commit pass and requires no DiT rerun.">Collision mode reads the current chunk's first denoising step and reruns that step if the action changes, whereas prediction mode reads the previous chunk's commit pass and requires no DiT rerun.</div><div class="quiz-choice" data-value="Both modes operate on VAE latents and must regenerate the entire chunk whenever they intervene.">Both modes operate on VAE latents and must regenerate the entire chunk whenever they intervene.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="碰撞模式读取当前块第一次去噪步骤的状态，并在动作改变时仅重跑该步骤；预测模式读取上一块的提交阶段状态，无需重跑DiT。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 推理时，NoPeWorld的预测模式与碰撞模式有何不同？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="预测模式解码下一视频块并估计深度，而碰撞模式完全依赖文本提示。">预测模式解码下一视频块并估计深度，而碰撞模式完全依赖文本提示。</div><div class="quiz-choice" data-value="碰撞模式读取当前块第一次去噪步骤的状态，并在动作改变时仅重跑该步骤；预测模式读取上一块的提交阶段状态，无需重跑DiT。">碰撞模式读取当前块第一次去噪步骤的状态，并在动作改变时仅重跑该步骤；预测模式读取上一块的提交阶段状态，无需重跑DiT。</div><div class="quiz-choice" data-value="两种模式都作用于VAE潜变量，并且每次干预都必须重新生成整个视频块。">两种模式都作用于VAE潜变量，并且每次干预都必须重新生成整个视频块。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="The feasible candidate with the highest predicted intent score, while keeping the raw command when it is safe and remains within the configured margin." data-lang="en">
+                        <div class="quiz-question">3. Suppose several candidate motions are judged safe, including a slide, a shortened step, and a turn. According to the paper's selection rule, which candidate should NoPeWorld prefer?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Always the raw user command, even if it was predicted unsafe.">Always the raw user command, even if it was predicted unsafe.</div><div class="quiz-choice" data-value="The feasible candidate with the smallest estimated clearance, regardless of user intent.">The feasible candidate with the smallest estimated clearance, regardless of user intent.</div><div class="quiz-choice long-text" data-value="The feasible candidate with the highest predicted intent score, while keeping the raw command when it is safe and remains within the configured margin.">The feasible candidate with the highest predicted intent score, while keeping the raw command when it is safe and remains within the configured margin.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="采用预测意图得分最高的可行候选；若原始命令安全且未超出设定余量，则保留原始命令。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 如果滑动、缩短步长和转向等多个候选动作都被判定为安全，NoPeWorld依据论文中的选择规则应优先采用哪一个？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="始终采用原始用户命令，即使它已被预测为不安全。">始终采用原始用户命令，即使它已被预测为不安全。</div><div class="quiz-choice" data-value="采用估计间隙最小的可行候选，而不考虑用户意图。">采用估计间隙最小的可行候选，而不考虑用户意图。</div><div class="quiz-choice" data-value="采用预测意图得分最高的可行候选；若原始命令安全且未超出设定余量，则保留原始命令。">采用预测意图得分最高的可行候选；若原始命令安全且未超出设定余量，则保留原始命令。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="paper-container">
+                <div class="card-deck">
+                    <div class="card-counter">1/2</div>
+                    <div class="paper-card active" style="background-image: url('bg/shley-tree-2.png');">
+                        <h2 style="color: #ffffff;">Paper 3</h2>
+                        <p style="color: #badb12;"><strong>Probing the "Conscious" Mind: Selective Access and Global Workspace in Vision-Language Models</strong></p>
+                        <p style="color: #ffffff;"><strong>Published: </strong>2026-11-18</p>
+                        <p><strong>Link: </strong><a href="http://arxiv.org/pdf/2611.26590" target="_blank">http://arxiv.org/pdf/2611.26590</a></p>
+                        <div><div data-lang="en"><div class="category-chunk">1.  <strong>📘 Topic and Domain:</strong> The paper investigates global-workspace-like functions in vision-language models, spanning mechanistic interpretability, multimodal cognition, and machine consciousness without claiming that the models possess subjective experience.
+2. **💡 Previous Research and New Ideas:** Building on global workspace theory and the language-model J-Lens, it introduces MC-Lens to jointly probe visual and language representations, expands single-token concepts into multi-token direction sets, and tests their causal roles through counterfactual interventions.
+3. **❓ Problem:** It addresses the opacity of VLM outputs by determining when multimodal concepts become internally accessible, whether queries selectively control that access, and how these concepts influence downstream reasoning.
+4. **🛠️ Methods:** The authors fit averaged encoder, connector, and decoder Jacobians to a shared vocabulary space, perform vocabulary readouts with reference centering, construct word-form and greedy concept directions, apply four activation-intervention operators, compare nine VLMs, and track alignment and selection during controlled connector training with J-state cosine and reconstruction coverage.
+5. **📊 Results and Evaluation:** Experiments show that concepts are readable and spatially localizable, query-dependent selection emerges mainly within estimated workspace regions, interventions causally redirect direct, one-hop, multi-hop, and cross-task answers, and shared workspace functions persist across model families, while concept accessibility develops earlier than reliable selective access.</div><div class="category-chunk">2.  <strong>💡 Previous Research and New Ideas:</strong> Building on global workspace theory and the language-model J-Lens, it introduces MC-Lens to jointly probe visual and language representations, expands single-token concepts into multi-token direction sets, and tests their causal roles through counterfactual interventions.
+3. **❓ Problem:** It addresses the opacity of VLM outputs by determining when multimodal concepts become internally accessible, whether queries selectively control that access, and how these concepts influence downstream reasoning.
+4. **🛠️ Methods:** The authors fit averaged encoder, connector, and decoder Jacobians to a shared vocabulary space, perform vocabulary readouts with reference centering, construct word-form and greedy concept directions, apply four activation-intervention operators, compare nine VLMs, and track alignment and selection during controlled connector training with J-state cosine and reconstruction coverage.
+5. **📊 Results and Evaluation:** Experiments show that concepts are readable and spatially localizable, query-dependent selection emerges mainly within estimated workspace regions, interventions causally redirect direct, one-hop, multi-hop, and cross-task answers, and shared workspace functions persist across model families, while concept accessibility develops earlier than reliable selective access.</div><div class="category-chunk">3.  <strong>❓ Problem:</strong> It addresses the opacity of VLM outputs by determining when multimodal concepts become internally accessible, whether queries selectively control that access, and how these concepts influence downstream reasoning.
+4. **🛠️ Methods:** The authors fit averaged encoder, connector, and decoder Jacobians to a shared vocabulary space, perform vocabulary readouts with reference centering, construct word-form and greedy concept directions, apply four activation-intervention operators, compare nine VLMs, and track alignment and selection during controlled connector training with J-state cosine and reconstruction coverage.
+5. **📊 Results and Evaluation:** Experiments show that concepts are readable and spatially localizable, query-dependent selection emerges mainly within estimated workspace regions, interventions causally redirect direct, one-hop, multi-hop, and cross-task answers, and shared workspace functions persist across model families, while concept accessibility develops earlier than reliable selective access.</div><div class="category-chunk">4.  <strong>🛠️ Methods:</strong> The authors fit averaged encoder, connector, and decoder Jacobians to a shared vocabulary space, perform vocabulary readouts with reference centering, construct word-form and greedy concept directions, apply four activation-intervention operators, compare nine VLMs, and track alignment and selection during controlled connector training with J-state cosine and reconstruction coverage.
+5. **📊 Results and Evaluation:** Experiments show that concepts are readable and spatially localizable, query-dependent selection emerges mainly within estimated workspace regions, interventions causally redirect direct, one-hop, multi-hop, and cross-task answers, and shared workspace functions persist across model families, while concept accessibility develops earlier than reliable selective access.</div><div class="category-chunk">5.  <strong>📊 Results and Evaluation:</strong> Experiments show that concepts are readable and spatially localizable, query-dependent selection emerges mainly within estimated workspace regions, interventions causally redirect direct, one-hop, multi-hop, and cross-task answers, and shared workspace functions persist across model families, while concept accessibility develops earlier than reliable selective access.</div></div><div data-lang="zh" style="display:none"><div class="category-chunk">1.  <strong>📘 主题与领域:</strong> 本文研究视觉语言模型中的类全局工作空间功能，涵盖机制可解释性、多模态认知与机器意识，但不主张模型具有主观体验。
+2. **💡 先前研究与新思路：** 在全局工作空间理论和面向大语言模型的 J-Lens 基础上，作者提出 MC-Lens 以联合探查视觉与语言表征，将单词元概念扩展为多词元方向集合，并通过反事实干预检验其因果作用。
+3. **❓ 问题：** 论文针对 VLM 输出无法揭示内部概念表征的问题，考察多模态概念何时可被访问、查询能否选择性调控这种访问，以及这些概念如何影响下游推理。
+4. **🛠️ 方法：** 作者将编码器、连接器和解码器的平均雅可比映射到共享词表空间，实施带参考中心化的词表读出，构造词形与贪心概念方向，应用四类激活干预算子，比较九个 VLM，并借助 J-state 余弦和重建覆盖率追踪受控连接器训练中的对齐与选择过程。
+5. **📊 结果与评估：** 实验表明，概念可在中间状态中被读出并实现空间定位，查询依赖的选择主要出现在估计的工作空间区间内，干预可因果地改变直接、单跳、多跳及跨任务答案，不同模型家族呈现共享的工作空间功能，同时概念可访问性的形成早于可靠的选择性访问。</div><div class="category-chunk">2.  <strong>💡 先前研究与新思路:</strong> 在全局工作空间理论和面向大语言模型的 J-Lens 基础上，作者提出 MC-Lens 以联合探查视觉与语言表征，将单词元概念扩展为多词元方向集合，并通过反事实干预检验其因果作用。
+3. **❓ 问题：** 论文针对 VLM 输出无法揭示内部概念表征的问题，考察多模态概念何时可被访问、查询能否选择性调控这种访问，以及这些概念如何影响下游推理。
+4. **🛠️ 方法：** 作者将编码器、连接器和解码器的平均雅可比映射到共享词表空间，实施带参考中心化的词表读出，构造词形与贪心概念方向，应用四类激活干预算子，比较九个 VLM，并借助 J-state 余弦和重建覆盖率追踪受控连接器训练中的对齐与选择过程。
+5. **📊 结果与评估：** 实验表明，概念可在中间状态中被读出并实现空间定位，查询依赖的选择主要出现在估计的工作空间区间内，干预可因果地改变直接、单跳、多跳及跨任务答案，不同模型家族呈现共享的工作空间功能，同时概念可访问性的形成早于可靠的选择性访问。</div><div class="category-chunk">3.  <strong>❓ 问题:</strong> 论文针对 VLM 输出无法揭示内部概念表征的问题，考察多模态概念何时可被访问、查询能否选择性调控这种访问，以及这些概念如何影响下游推理。
+4. **🛠️ 方法：** 作者将编码器、连接器和解码器的平均雅可比映射到共享词表空间，实施带参考中心化的词表读出，构造词形与贪心概念方向，应用四类激活干预算子，比较九个 VLM，并借助 J-state 余弦和重建覆盖率追踪受控连接器训练中的对齐与选择过程。
+5. **📊 结果与评估：** 实验表明，概念可在中间状态中被读出并实现空间定位，查询依赖的选择主要出现在估计的工作空间区间内，干预可因果地改变直接、单跳、多跳及跨任务答案，不同模型家族呈现共享的工作空间功能，同时概念可访问性的形成早于可靠的选择性访问。</div><div class="category-chunk">4.  <strong>🛠️ 方法:</strong> 作者将编码器、连接器和解码器的平均雅可比映射到共享词表空间，实施带参考中心化的词表读出，构造词形与贪心概念方向，应用四类激活干预算子，比较九个 VLM，并借助 J-state 余弦和重建覆盖率追踪受控连接器训练中的对齐与选择过程。
+5. **📊 结果与评估：** 实验表明，概念可在中间状态中被读出并实现空间定位，查询依赖的选择主要出现在估计的工作空间区间内，干预可因果地改变直接、单跳、多跳及跨任务答案，不同模型家族呈现共享的工作空间功能，同时概念可访问性的形成早于可靠的选择性访问。</div><div class="category-chunk">5.  <strong>📊 结果与评估:</strong> 实验表明，概念可在中间状态中被读出并实现空间定位，查询依赖的选择主要出现在估计的工作空间区间内，干预可因果地改变直接、单跳、多跳及跨任务答案，不同模型家族呈现共享的工作空间功能，同时概念可访问性的形成早于可靠的选择性访问。</div></div></div>
+                    </div>
+                    <div class="paper-card flowchart-card" style="background-color: white;">
+                        <h2>Probing the "Conscious" Mind: Selective Access and Global Workspace in Vision-Language Models</h2>
+                        <svg width="100%" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="55%" stop-color="#131c33"/>
+      <stop offset="100%" stop-color="#1b1533"/>
+    </linearGradient>
+    <linearGradient id="encGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="connGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="decGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="lensGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="intGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="wsGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#8b5cf6" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.15"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowLight" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#e2e8f0"/>
+    </marker>
+    <marker id="arrowPink" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#f472b6"/>
+    </marker>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <style>
+      .t { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+      .title { font-size: 25px; font-weight: 700; fill: #f8fafc; letter-spacing: 0.4px; }
+      .subtitle { font-size: 12.5px; fill: #94a3b8; }
+      .h { font-size: 14px; font-weight: 700; fill: #f8fafc; }
+      .hsm { font-size: 11.5px; font-weight: 700; fill: #cbd5e1; letter-spacing: 0.6px; }
+      .body { font-size: 11px; fill: #cbd5e1; }
+      .bodyD { font-size: 10.5px; fill: #94a3b8; }
+      .tiny { font-size: 9.5px; fill: #94a3b8; }
+      .tinyL { font-size: 9.5px; fill: #64748b; }
+      .tag { font-size: 9.5px; font-weight: 700; fill: #0f172a; }
+      .formula { font-family: 'Georgia', serif; font-size: 11px; fill: #e2e8f0; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="800" fill="url(#bgGrad)"/>
+  <circle cx="930" cy="60" r="140" fill="#6366f1" opacity="0.07"/>
+  <circle cx="70" cy="740" r="130" fill="#06b6d4" opacity="0.07"/>
+
+  <!-- Header -->
+  <rect x="26" y="20" width="948" height="52" rx="12" fill="#1e293b" opacity="0.85" stroke="#334155"/>
+  <text class="t title" x="46" y="45">Multimodal Concept Lens (MC-Lens) — Method &amp; Experimental Workflow</text>
+  <text class="t subtitle" x="46" y="63">Probing the “Conscious” Mind: Selective Access and Global Workspace in Vision-Language Models — Huang &amp; Wang</text>
+  <g transform="translate(830,30)">
+    <rect x="0" y="0" width="132" height="28" rx="14" fill="#0f172a" stroke="#22d3ee" stroke-width="1.2"/>
+    <text class="t tag" x="66" y="18" text-anchor="middle" fill="#67e8f9">GWT-inspired analysis</text>
+  </g>
+
+  <!-- ================= STAGE 1: PIPELINE ================= -->
+  <rect x="26" y="88" width="948" height="132" rx="12" fill="#0f172a" opacity="0.6" stroke="#1e293b"/>
+  <text class="t hsm" x="42" y="108">STAGE 1 · MODEL PIPELINE &amp; LENS FITTING</text>
+
+  <!-- Image input -->
+  <g filter="url(#shadow)">
+    <rect x="42" y="118" width="104" height="86" rx="9" fill="#0b1220" stroke="#22d3ee" stroke-width="1.4"/>
+    <rect x="52" y="128" width="38" height="32" rx="4" fill="#22d3ee" opacity="0.30"/>
+    <circle cx="61" cy="137" r="3.5" fill="#fbbf24"/>
+    <path d="M52 160 L66 142 L78 154 L84 146 L90 160 Z" fill="#10b981" opacity="0.6"/>
+    <text class="t tiny" x="52" y="178">dog · tree · cat</text>
+    <text class="t tiny" x="52" y="191">image patches</text>
+  </g>
+
+  <!-- Vision encoder -->
+  <g filter="url(#shadow)">
+    <rect x="170" y="118" width="118" height="86" rx="9" fill="url(#encGrad)" opacity="0.9"/>
+    <text class="t h" x="229" y="142" text-anchor="middle" fill="#06131f">Vision Encoder</text>
+    <text class="t bodyD" x="229" y="160" text-anchor="middle" fill="#062a3a">h^E_{ℓ,p}  (patch states)</text>
+    <text class="t bodyD" x="229" y="176" text-anchor="middle" fill="#062a3a">E25 = last encoder layer</text>
+    <rect x="186" y="184" width="86" height="12" rx="6" fill="#06131f" opacity="0.45"/>
+    <text class="t tiny" x="229" y="193" text-anchor="middle" fill="#a5f3fc">V-Lens fitted here</text>
+  </g>
+
+  <!-- Connector -->
+  <g filter="url(#shadow)">
+    <rect x="312" y="118" width="106" height="86" rx="9" fill="url(#connGrad)" opacity="0.9"/>
+    <text class="t h" x="365" y="142" text-anchor="middle" fill="#1b0a2a">Connector</text>
+    <text class="t bodyD" x="365" y="160" text-anchor="middle" fill="#2b0a3f">patches → tokens</text>
+    <text class="t bodyD" x="365" y="176" text-anchor="middle" fill="#2b0a3f">h^C_{ℓ,p}</text>
+    <rect x="328" y="184" width="74" height="12" rx="6" fill="#1b0a2a" opacity="0.45"/>
+    <text class="t tiny" x="365" y="193" text-anchor="middle" fill="#fbcfe8">C1 = boundary</text>
+  </g>
+
+  <!-- Language decoder -->
+  <g filter="url(#shadow)">
+    <rect x="442" y="118" width="126" height="86" rx="9" fill="url(#decGrad)" opacity="0.92"/>
+    <text class="t h" x="505" y="142" text-anchor="middle" fill="#2a1503">Language Decoder</text>
+    <text class="t bodyD" x="505" y="160" text-anchor="middle" fill="#3d2205">img · txt · template tokens</text>
+    <text class="t bodyD" x="505" y="176" text-anchor="middle" fill="#3d2205">h^D_{ℓ,p}</text>
+    <rect x="460" y="184" width="90" height="12" rx="6" fill="#2a1503" opacity="0.45"/>
+    <text class="t tiny" x="505" y="193" text-anchor="middle" fill="#fde68a">L-Lens · q ≥ p (causal)</text>
+  </g>
+
+  <!-- Output -->
+  <g filter="url(#shadow)">
+    <rect x="592" y="118" width="104" height="86" rx="9" fill="#0b1220" stroke="#fbbf24" stroke-width="1.4"/>
+    <text class="t h" x="644" y="140" text-anchor="middle" fill="#fcd34d">Output Head</text>
+    <text class="t bodyD" x="644" y="158" text-anchor="middle">Norm + W_U</text>
+    <rect x="610" y="166" width="68" height="18" rx="5" fill="#fbbf24" opacity="0.22" stroke="#fbbf24"/>
+    <text class="t body" x="644" y="179" text-anchor="middle" fill="#fde68a">"cat"</text>
+    <text class="t tiny" x="644" y="197" text-anchor="middle">logits over vocabulary</text>
+  </g>
+
+  <!-- Shared vocabulary -->
+  <g filter="url(#shadow)">
+    <rect x="720" y="118" width="238" height="86" rx="9" fill="#0b1220" stroke="#10b981" stroke-width="1.4"/>
+    <text class="t h" x="839" y="138" text-anchor="middle" fill="#6ee7b7">Shared Output Vocabulary / J-space</text>
+    <rect x="734" y="146" width="52" height="17" rx="4" fill="#10b981" opacity="0.25"/>
+    <rect x="792" y="146" width="52" height="17" rx="4" fill="#10b981" opacity="0.35"/>
+    <rect x="850" y="146" width="52" height="17" rx="4" fill="#10b981" opacity="0.45"/>
+    <rect x="908" y="146" width="40" height="17" rx="4" fill="#10b981" opacity="0.18"/>
+    <text class="t tiny" x="760" y="158" text-anchor="middle" fill="#a7f3d0">dog</text>
+    <text class="t tiny" x="818" y="158" text-anchor="middle" fill="#a7f3d0">tree</text>
+    <text class="t tiny" x="876" y="158" text-anchor="middle" fill="#a7f3d0">cat</text>
+    <text class="t tiny" x="928" y="158" text-anchor="middle" fill="#a7f3d0">…</text>
+    <text class="t bodyD" x="839" y="178" text-anchor="middle">ϕ_{ℓ,w} = J_ℓᵀ u_w  →  unit vocabulary directions</text>
+    <text class="t bodyD" x="839" y="193" text-anchor="middle">J-space: non-negative combinations of ≤ k directions</text>
+  </g>
+
+  <!-- arrows pipeline -->
+  <line x1="146" y1="161" x2="168" y2="161" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="288" y1="161" x2="310" y2="161" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="418" y1="161" x2="440" y2="161" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="568" y1="161" x2="590" y2="161" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="696" y1="161" x2="718" y2="161" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Lens fitting band -->
+  <rect x="42" y="206" width="916" height="1" fill="#334155"/>
+  <g>
+    <rect x="170" y="196" width="118" height="14" rx="7" fill="#0f172a" stroke="#22d3ee" stroke-width="1"/>
+    <text class="t tiny" x="229" y="206" text-anchor="middle" fill="#67e8f9">V-Lens: Eq. 7</text>
+    <rect x="442" y="196" width="126" height="14" rx="7" fill="#0f172a" stroke="#fbbf24" stroke-width="1"/>
+    <text class="t tiny" x="505" y="206" text-anchor="middle" fill="#fcd34d">L-Lens: Eq. 6 (balanced categories)</text>
+  </g>
+
+  <!-- ================= STAGE 2: MC-LENS COMPONENTS ================= -->
+  <rect x="26" y="232" width="948" height="196" rx="12" fill="#0f172a" opacity="0.6" stroke="#1e293b"/>
+  <text class="t hsm" x="42" y="252">STAGE 2 · MC-LENS: READING, DIRECTION SETS &amp; CAUSAL INTERVENTIONS</text>
+
+  <!-- Panel A: readout -->
+  <g filter="url(#shadow)">
+    <rect x="42" y="262" width="286" height="152" rx="10" fill="#111c33" stroke="#10b981" stroke-width="1.5"/>
+    <rect x="42" y="262" width="286" height="22" rx="10" fill="#10b981" opacity="0.85"/>
+    <rect x="42" y="274" width="286" height="10" fill="#10b981" opacity="0.85"/>
+    <text class="t h" x="56" y="278" fill="#052e22">A · Vocabulary Concept Readout</text>
+    <text class="t formula" x="56" y="302">score_ℓ(w|h) = u_wᵀ Norm[ J_ℓ h ]</text>
+    <text class="t formula" x="56" y="318">lens_ℓ(h) = softmax(W_U Norm[J_ℓ h])</text>
+    <rect x="56" y="328" width="258" height="34" rx="6" fill="#0b1220" stroke="#334155"/>
+    <text class="t tiny" x="66" y="341">Readout state h:</text>
+    <text class="t tiny" x="66" y="354">single patch/token  ·  mean over position set S</text>
+    <text class="t body" x="56" y="376">• Reference centring: h ← h − μ_ℓ  (mean over N_ref images)</text>
+    <text class="t body" x="56" y="392">• Visual readouts need centring to surface object names</text>
+    <text class="t bodyD" x="56" y="407">Rank of token = accessibility of concept (smaller = better)</text>
+  </g>
+
+  <!-- Panel B: direction sets -->
+  <g filter="url(#shadow)">
+    <rect x="344" y="262" width="300" height="152" rx="10" fill="#111c33" stroke="#22d3ee" stroke-width="1.5"/>
+    <rect x="344" y="262" width="300" height="22" rx="10" fill="#22d3ee" opacity="0.85"/>
+    <rect x="344" y="274" width="300" height="10" fill="#22d3ee" opacity="0.85"/>
+    <text class="t h" x="358" y="278" fill="#062a3a">B · Concept Direction Sets</text>
+    <text class="t hsm" x="358" y="300" fill="#a5f3fc">Word-form selection  F≤j(c)</text>
+    <text class="t bodyD" x="358" y="314">F0 name token · F1 case/space · F2 aliases</text>
+    <text class="t bodyD" x="358" y="327">F3 first tokens of multi-token forms</text>
+    <text class="t hsm" x="358" y="346" fill="#a5f3fc">Greedy selection  J@k  (OMP)</text>
+    <text class="t bodyD" x="358" y="360">1) pick dir with max ⟨ϕ̄,e⟩  2) NNLS refit</text>
+    <text class="t bodyD" x="358" y="373">3) update residual e = Δz − Bβ; repeat to k tokens</text>
+    <rect x="358" y="381" width="272" height="26" rx="6" fill="#0b1220" stroke="#334155"/>
+    <text class="t tiny" x="368" y="393">e.g. bicycle: ␣bicycle · ␣bike · ␣road · ␣riders · ␣handle</text>
+    <text class="t tiny" x="368" y="404">Canada: ␣Canada · ␣Canadian · ␣maple (J@25)</text>
+  </g>
+
+  <!-- Panel C: interventions -->
+  <g filter="url(#shadow)">
+    <rect x="660" y="262" width="298" height="152" rx="10" fill="#111c33" stroke="#f43f5e" stroke-width="1.5"/>
+    <rect x="660" y="262" width="298" height="22" rx="10" fill="#f43f5e" opacity="0.85"/>
+    <rect x="660" y="274" width="298" height="10" fill="#f43f5e" opacity="0.85"/>
+    <text class="t h" x="674" y="278" fill="#4c0519">C · Counterfactual Interventions</text>
+    <text class="t body" x="674" y="300">Source concept s  →  target concept t  (same question)</text>
+    <text class="t bodyD" x="674" y="315">P_ℓ = B_ℓ B_ℓ⁺ projector onto concept-direction span</text>
+    <text class="t hsm" x="674" y="333" fill="#fecdd3">SubRep:  h′ = (I−P)h_s + P h_t</text>
+    <text class="t hsm" x="674" y="350" fill="#fecdd3">PairSwap: swap F0 name-token coordinates</text>
+    <text class="t hsm" x="674" y="367" fill="#fecdd3">AbIn: remove source comp. + α·r·v_t</text>
+    <text class="t hsm" x="674" y="384" fill="#fecdd3">FullRep: h′ = h_t  (control)</text>
+    <text class="t tiny" x="674" y="402">Edits applied layer-by-layer in depth order</text>
+  </g>
+
+  <!-- ================= STAGE 3: EXPERIMENTS ================= -->
+  <rect x="26" y="440" width="948" height="288" rx="12" fill="#0f172a" opacity="0.6" stroke="#1e293b"/>
+  <text class="t hsm" x="42" y="460">STAGE 3 · FOUR EXPERIMENTAL AXES (Qwen3-VL-8B primary; 9 VLMs for cross-model analysis)</text>
+
+  <!-- Axis 1 -->
+  <g filter="url(#shadow)">
+    <rect x="42" y="472" width="216" height="242" rx="10" fill="#111c33" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect x="42" y="472" width="216" height="26" rx="10" fill="#0ea5e9" opacity="0.9"/>
+    <rect x="42" y="486" width="216" height="12" fill="#0ea5e9" opacity="0.9"/>
+    <text class="t h" x="56" y="490" fill="#082f49">① Accessibility &amp; Selectivity</text>
+    <text class="t body" x="56" y="514">Evidence conditions (§3.1)</text>
+    <text class="t bodyD" x="56" y="528">image / text / both / neither · A-OKVQA</text>
+    <text class="t body" x="56" y="546">Readout carriers (§3.2)</text>
+    <text class="t bodyD" x="56" y="560">F0 vs F≤j vs J@k · Coverage@10, Recon</text>
+    <text class="t body" x="56" y="578">Spatial maps (§3.3)</text>
+    <text class="t bodyD" x="56" y="592">per-patch objects, colours, materials</text>
+    <text class="t body" x="56" y="610">Query-dependent access (§4.1)</text>
+    <text class="t bodyD" x="56" y="624">selective sensitivity, image vs blank</text>
+    <text class="t body" x="56" y="642">Autoregressive (§4.2)</text>
+    <text class="t bodyD" x="56" y="656">prefix-by-prefix rank heatmaps</text>
+    <rect x="56" y="668" width="188" height="34" rx="6" fill="#082f49" opacity="0.75"/>
+    <text class="t tiny" x="150" y="682" text-anchor="middle" fill="#7dd3fc">Finding: concepts readable &amp; query-selected</text>
+    <text class="t tiny" x="150" y="695" text-anchor="middle" fill="#7dd3fc">inside the estimated workspace</text>
+  </g>
+
+  <!-- Axis 2 -->
+  <g filter="url(#shadow)">
+    <rect x="274" y="472" width="216" height="242" rx="10" fill="#111c33" stroke="#fb7185" stroke-width="1.5"/>
+    <rect x="274" y="472" width="216" height="26" rx="10" fill="#e11d48" opacity="0.9"/>
+    <rect x="274" y="486" width="216" height="12" fill="#e11d48" opacity="0.9"/>
+    <text class="t h" x="288" y="490" fill="#4c0519">② Causal Role in Reasoning</text>
+    <text class="t body" x="288" y="514">Direct &amp; one-hop VQA (§5.1)</text>
+    <text class="t bodyD" x="288" y="528">country → capital, flag images (50)</text>
+    <text class="t body" x="288" y="546">Necessity / sufficiency (§5.2)</text>
+    <text class="t bodyD" x="288" y="560">grey-image control → NR, SR, NSR</text>
+    <text class="t body" x="288" y="578">Cross-task reuse (§5.3)</text>
+    <text class="t bodyD" x="288" y="592">ISO-3, capital, currency, continent…</text>
+    <text class="t body" x="288" y="610">Multi-hop (§5.4)</text>
+    <text class="t bodyD" x="288" y="624">c1 → c2 → answer; c1 vs c1+c2</text>
+    <rect x="288" y="644" width="188" height="58" rx="6" fill="#4c0519" opacity="0.55"/>
+    <text class="t tiny" x="382" y="658" text-anchor="middle" fill="#fda4af">J@25 + SubRep redirects one-hop &amp;</text>
+    <text class="t tiny" x="382" y="671" text-anchor="middle" fill="#fda4af">multi-hop answers; F0 + PairSwap</text>
+    <text class="t tiny" x="382" y="684" text-anchor="middle" fill="#fda4af">fails on the one-hop task</text>
+    <text class="t tiny" x="382" y="697" text-anchor="middle" fill="#fda4af">→ concepts are used, not displayed</text>
+  </g>
+
+  <!-- Axis 3 -->
+  <g filter="url(#shadow)">
+    <rect x="506" y="472" width="216" height="242" rx="10" fill="#111c33" stroke="#a78bfa" stroke-width="1.5"/>
+    <rect x="506" y="472" width="216" height="26" rx="10" fill="#7c3aed" opacity="0.9"/>
+    <rect x="506" y="486" width="216" height="12" fill="#7c3aed" opacity="0.9"/>
+    <text class="t h" x="520" y="490" fill="#2e1065">③ Cross-Modal Alignment</text>
+    <text class="t body" x="520" y="514">Controlled training setup (§7)</text>
+    <text class="t bodyD" x="520" y="528">frozen CLIP ViT-L/14-336 → gated MLP</text>
+    <text class="t bodyD" x="520" y="541">→ frozen Gemma-2-9B-it, 12k steps</text>
+    <text class="t body" x="520" y="560">J-state cosine (Eq. 32)</text>
+    <text class="t bodyD" x="520" y="574">cos(Bᵀe_I, Bᵀe_T) on concept dirs</text>
+    <text class="t body" x="520" y="592">ReconCov (Eq. 35)</text>
+    <text class="t bodyD" x="520" y="606">1 − ‖e_I − Bβ*‖² / ‖e_I‖²</text>
+    <text class="t body" x="520" y="624">Baseline: hidden-state cosine</text>
+    <text class="t bodyD" x="520" y="638">concept discrimination = mean AUC</text>
+    <rect x="520" y="652" width="188" height="50" rx="6" fill="#2e1065" opacity="0.6"/>
+    <text class="t tiny" x="614" y="666" text-anchor="middle" fill="#c4b5fd">Accessibility improves early;</text>
+    <text class="t tiny" x="614" y="679" text-anchor="middle" fill="#c4b5fd">reliable selective access develops later</text>
+    <text class="t tiny" x="614" y="692" text-anchor="middle" fill="#c4b5fd">J-space metrics &gt; hidden-state cosine</text>
+  </g>
+
+  <!-- Axis 4 -->
+  <g filter="url(#shadow)">
+    <rect x="738" y="472" width="220" height="242" rx="10" fill="#111c33" stroke="#34d399" stroke-width="1.5"/>
+    <rect x="738" y="472" width="220" height="26" rx="10" fill="#059669" opacity="0.9"/>
+    <rect x="738" y="486" width="220" height="12" fill="#059669" opacity="0.9"/>
+    <text class="t h" x="752" y="490" fill="#022c22">④ Shared Functions across VLMs</text>
+    <text class="t body" x="752" y="514">Nine models (§6)</text>
+    <text class="t bodyD" x="752" y="528">Qwen3-VL 2/8/32B</text>
+    <text class="t bodyD" x="752" y="541">DeepSeek-VL2 Tiny/Small/Full</text>
+    <text class="t bodyD" x="752" y="554">Gemma 3 4/12/27B</text>
+    <text class="t body" x="752" y="574">J-space geometry: CKA + dim ratio@90%</text>
+    <text class="t body" x="752" y="594">Prediction agreement@8</text>
+    <text class="t body" x="752" y="614">Readout + selective sensitivity</text>
+    <text class="t body" x="752" y="634">NR / SR / NSR, cross-task rates</text>
+    <rect x="752" y="654" width="192" height="48" rx="6" fill="#022c22" opacity="0.6"/>
+    <text class="t tiny" x="848" y="668" text-anchor="middle" fill="#6ee7b7">Shared patterns despite differing</text>
+    <text class="t tiny" x="848" y="681" text-anchor="middle" fill="#6ee7b7">internal workspace organisation</text>
+    <text class="t tiny" x="848" y="694" text-anchor="middle" fill="#6ee7b7">sensory → workspace → motor</text>
+  </g>
+
+  <!-- ================= WORKSPACE STRIP ================= -->
+  <rect x="42" y="722" width="916" height="60" rx="10" fill="#0b1220" stroke="#334155"/>
+  <text class="t hsm" x="54" y="740">ESTIMATED GLOBAL WORKSPACE (WS) — shared semantic space, selection &amp; broadcast to downstream processes</text>
+  <rect x="54" y="748" width="130" height="22" rx="4" fill="#334155" opacity="0.7"/>
+  <text class="t tiny" x="119" y="762" text-anchor="middle">Sensory (pre-WS)</text>
+  <rect x="190" y="744" width="420" height="30" rx="6" fill="url(#wsGrad)" stroke="#818cf8" stroke-width="1.3"/>
+  <text class="t hsm" x="400" y="763" text-anchor="middle" fill="#c7d2fe">Estimated workspace · concepts most readable &amp; selectively accessed</text>
+  <rect x="616" y="748" width="120" height="22" rx="4" fill="#334155" opacity="0.7"/>
+  <text class="t tiny" x="676" y="762" text-anchor="middle">Motor (output prep.)</text>
+  <g transform="translate(752,738)">
+    <rect x="0" y="0" width="196" height="34" rx="7" fill="#1e293b" stroke="#475569"/>
+    <text class="t tiny" x="98" y="15" text-anchor="middle" fill="#94a3b8">GWT mapping:</text>
+    <text class="t tiny" x="98" y="28" text-anchor="middle" fill="#cbd5e1">selection → shared workspace → broadcast</text>
+  </g>
+
+  <!-- legend -->
+  <g transform="translate(54,776)">
+    <circle cx="5" cy="0" r="4.5" fill="#22d3ee"/><text class="t tinyL" x="14" y="4">V-Lens</text>
+    <circle cx="75" cy="0" r="4.5" fill="#fbbf24"/><text class="t tinyL" x="84" y="4">L-Lens</text>
+    <circle cx="145" cy="0" r="4.5" fill="#10b981"/><text class="t tinyL" x="154" y="4">readout</text>
+    <circle cx="215" cy="0" r="4.5" fill="#f43f5e"/><text class="t tinyL" x="224" y="4">intervention</text>
+    <circle cx="305" cy="0" r="4.5" fill="#a855f7"/><text class="t tinyL" x="314" y="4">connector</text>
+    <circle cx="395" cy="0" r="4.5" fill="#6366f1"/><text class="t tinyL" x="404" y="4">workspace</text>
+    <text class="t tinyL" x="470" y="4">Method flow only — no consciousness claims (see footnote 1)</text>
+  </g>
+</svg>
+                    </div>
+                </div>
+                <div class="quiz-tabs">
+                <div class="quiz-tab" title="Click To Open Question #1">Q1
+                    <div class="quiz-popup" data-answer="To prevent image-token abundance from overwhelming the lens while giving image, text, and template categories equal total weight." data-lang="en">
+                        <div class="quiz-question">1. Why does the L-Lens average image, text, and template token positions within separate categories before averaging the categories?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="To ensure that the more numerous image tokens dominate the fitted lens.">To ensure that the more numerous image tokens dominate the fitted lens.</div><div class="quiz-choice long-text" data-value="To prevent image-token abundance from overwhelming the lens while giving image, text, and template categories equal total weight.">To prevent image-token abundance from overwhelming the lens while giving image, text, and template categories equal total weight.</div><div class="quiz-choice" data-value="To restrict all lens fitting to the vision encoder and exclude decoder activity.">To restrict all lens fitting to the vision encoder and exclude decoder activity.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="为了避免图像 token 数量过多而淹没其他位置的贡献，同时让图像、文本和模板类别具有相等总权重。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">1. 为什么 L-Lens 要先分别平均图像、文本和模板 token 位置，再对各类别进行平均？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="为了让数量更多的图像 token 在镜头估计中占据主导。">为了让数量更多的图像 token 在镜头估计中占据主导。</div><div class="quiz-choice" data-value="为了避免图像 token 数量过多而淹没其他位置的贡献，同时让图像、文本和模板类别具有相等总权重。">为了避免图像 token 数量过多而淹没其他位置的贡献，同时让图像、文本和模板类别具有相等总权重。</div><div class="quiz-choice" data-value="为了只用视觉编码器拟合镜头，并完全排除解码器活动。">为了只用视觉编码器拟合镜头，并完全排除解码器活动。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #2">Q2
+                    <div class="quiz-popup" data-answer="Greedy directions can capture concept information beyond readable word forms, enabling more reliable redirection of downstream answers." data-lang="en">
+                        <div class="quiz-question">2. What conclusion is best supported when greedy concept sets outperform word-form sets in one-hop SubRep interventions?</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="Concept-related information useful for reasoning must always have a top-ten vocabulary rank.">Concept-related information useful for reasoning must always have a top-ten vocabulary rank.</div><div class="quiz-choice" data-value="Expanding a concept direction set necessarily reduces its ability to redirect answers.">Expanding a concept direction set necessarily reduces its ability to redirect answers.</div><div class="quiz-choice long-text" data-value="Greedy directions can capture concept information beyond readable word forms, enabling more reliable redirection of downstream answers.">Greedy directions can capture concept information beyond readable word forms, enabling more reliable redirection of downstream answers.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="贪心方向能够捕获可读词形之外的概念信息，因此更可靠地重定向下游答案。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">2. 当贪心概念集在单跳 SubRep 干预中优于词形集时，哪项结论最受结果支持？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="参与推理的概念相关信息必须始终具有前十名以内的词汇排名。">参与推理的概念相关信息必须始终具有前十名以内的词汇排名。</div><div class="quiz-choice" data-value="扩大概念方向集合必然会降低其重定向答案的能力。">扩大概念方向集合必然会降低其重定向答案的能力。</div><div class="quiz-choice" data-value="贪心方向能够捕获可读词形之外的概念信息，因此更可靠地重定向下游答案。">贪心方向能够捕获可读词形之外的概念信息，因此更可靠地重定向下游答案。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-tab" title="Click To Open Question #3">Q3
+                    <div class="quiz-popup" data-answer="Concept accessibility improved early, reliable query-dependent selection emerged later, and J-space metrics tracked concept discrimination better than hidden-state cosine." data-lang="en">
+                        <div class="quiz-question">3. Which development pattern was observed during controlled vision-language connector training?</div>
+                        <div class="quiz-choices"><div class="quiz-choice long-text" data-value="Concept accessibility improved early, reliable query-dependent selection emerged later, and J-space metrics tracked concept discrimination better than hidden-state cosine.">Concept accessibility improved early, reliable query-dependent selection emerged later, and J-space metrics tracked concept discrimination better than hidden-state cosine.</div><div class="quiz-choice long-text" data-value="Reliable selection appeared before concept accessibility, while hidden-state cosine clearly outperformed both J-space metrics.">Reliable selection appeared before concept accessibility, while hidden-state cosine clearly outperformed both J-space metrics.</div><div class="quiz-choice long-text" data-value="Concept accessibility and selection changed simultaneously, and none of the alignment metrics improved during training.">Concept accessibility and selection changed simultaneously, and none of the alignment metrics improved during training.</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-popup" data-answer="概念可访问性较早改善，可靠的查询依赖选择随后才出现，而且 J-space 指标比隐藏状态余弦更能追踪概念区分能力。" data-lang="zh" style="display:none">
+                        <div class="quiz-question">3. 在受控视觉—语言连接器训练中观察到了哪种发展模式？</div>
+                        <div class="quiz-choices"><div class="quiz-choice" data-value="概念可访问性较早改善，可靠的查询依赖选择随后才出现，而且 J-space 指标比隐藏状态余弦更能追踪概念区分能力。">概念可访问性较早改善，可靠的查询依赖选择随后才出现，而且 J-space 指标比隐藏状态余弦更能追踪概念区分能力。</div><div class="quiz-choice" data-value="可靠选择先于概念可访问性出现，并且隐藏状态余弦明显优于两种 J-space 指标。">可靠选择先于概念可访问性出现，并且隐藏状态余弦明显优于两种 J-space 指标。</div><div class="quiz-choice" data-value="概念可访问性与选择性同时变化，而且所有对齐指标在训练期间都没有改善。">概念可访问性与选择性同时变化，而且所有对齐指标在训练期间都没有改善。</div></div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+
+    
+    <div class="daily-tips-section">
+        <h2 class="tips-heading">
+            <span data-lang="en">Today's Reading Tips</span>
+            <span data-lang="zh" style="display:none">今日阅读推荐</span>
+        </h2>
+        <div class="tips-content" data-lang="en">Read MC-Lens first: it is the most conceptually expansive, showing how multimodal concepts become internally readable yet selectively accessed in VLMs, and its counterfactual intervention and Jacobian-alignment toolkit is reusable on the other two papers' models. Next take cmHC, whose geometric contraction of the Birkhoff polytope is a crisp, tightly proved refinement of Hyper-Connections with concrete Ascend latency gains. Finish with NoPeWorld, the most applied piece — the claim that frozen DiT hidden states anticipate obstacle contact before pixels appear, plus a 74%→16% violation drop, makes it a satisfying payoff; note that all three share a theme of controlling or revealing how information flows between components of a system.</div>
+        <div class="tips-content" data-lang="zh" style="display:none">建议先读 MC-Lens：它概念性最强，揭示多模态概念在 VLM 内部何时变得可读、何时被选择性访问，其反事实干预与 Jacobian 对齐方法也可复用于另外两篇的模型。随后读 cmHC：它对 Birkhoff 多胞形做几何收缩，是对 Hyper-Connections 边界清晰、证明严密且有真实昇腾加速收益的改进。最后读 NoPeWorld：应用性最强，冻结的 DiT 隐状态在像素生成前即可预判障碍接触，加上违规率从 74% 降到 16%，结论很有说服力；值得注意的是三篇都围绕同一主线——如何控制或揭示模型内部组件之间的信息流动。</div>
+    </div>
+    
+
+    <!-- Personal Takeaways Section -->
+    <div id="takeaways-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- MathJax for LaTeX rendering (only for takeaways section) -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    // Disable automatic processing - we'll only process takeaways manually
+                    return Promise.resolve();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        function toggleLang() {
+            var btn = document.getElementById('lang-btn');
+            var isZh = document.body.classList.contains('lang-zh');
+            if (isZh) {
+                document.body.classList.remove('lang-zh');
+                btn.textContent = 'ZH';
+                localStorage.setItem('-paper-lang', 'en');
+            } else {
+                document.body.classList.add('lang-zh');
+                btn.textContent = 'EN';
+                localStorage.setItem('-paper-lang', 'zh');
+            }
+            var enEls = document.querySelectorAll('[data-lang="en"]');
+            var zhEls = document.querySelectorAll('[data-lang="zh"]');
+            for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = isZh ? '' : 'none'; }
+            for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = isZh ? 'none' : ''; }
+        }
+
+        function getActivePopup(tab) {
+            var lang = document.body.classList.contains('lang-zh') ? 'zh' : 'en';
+            return tab.querySelector('.quiz-popup[data-lang="' + lang + '"]');
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore language preference
+            var savedLang = localStorage.getItem('-paper-lang');
+            if (savedLang === 'zh') {
+                document.body.classList.add('lang-zh');
+                document.getElementById('lang-btn').textContent = 'EN';
+                var enEls = document.querySelectorAll('[data-lang="en"]');
+                var zhEls = document.querySelectorAll('[data-lang="zh"]');
+                for (var i = 0; i < enEls.length; i++) { enEls[i].style.display = 'none'; }
+                for (var i = 0; i < zhEls.length; i++) { zhEls[i].style.display = ''; }
+            }
+
+            // Load and render markdown takeaways
+            const dateMatch = document.querySelector('h1').textContent.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const date = dateMatch[1];
+                const mdPath = `../notes/${date}.md`;
+
+                // Use XMLHttpRequest for better file:// protocol support
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('XHR Status:', xhr.status, 'Response length:', xhr.responseText.length);
+
+                        if (xhr.status === 200 || xhr.status === 0) {  // status 0 for file://
+                            const markdown = xhr.responseText;
+
+                            if (!markdown || markdown.trim().length === 0) {
+                                console.log('Empty markdown file');
+                                return;
+                            }
+
+                            console.log('Markdown loaded, length:', markdown.length);
+
+                            // Check if marked is loaded
+                            if (typeof marked === 'undefined') {
+                                console.error('marked.js library not loaded');
+                                return;
+                            }
+
+                            // Convert markdown to HTML
+                            const htmlContent = marked.parse(markdown);
+                            console.log('HTML converted, length:', htmlContent.length);
+
+                            // Fix image paths
+                            const fixedContent = htmlContent.replace(
+                                /src="(?!http:\/\/|https:\/\/|\/|\.\.\/)([^"]+)"/g,
+                                `src="../images/${date}/$1"`
+                            );
+
+                            // Wrap in styled divs
+                            const wrappedHtml = `
+                                <div class="takeaways-section">
+                                    <h2>📝 My Takeaways</h2>
+                                    <div class="takeaways-content">
+                                        ${fixedContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('takeaways-container').innerHTML = wrappedHtml;
+                            console.log('Takeaways section rendered');
+
+                            // Trigger MathJax to render LaTeX equations
+                            if (typeof MathJax !== 'undefined') {
+                                MathJax.typesetPromise([document.getElementById('takeaways-container')])
+                                    .then(() => {
+                                        console.log('MathJax rendering complete');
+                                    })
+                                    .catch((err) => console.error('MathJax rendering error:', err));
+                            }
+                        } else {
+                            console.log('XHR failed - Status:', xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', mdPath, true);
+                console.log('Loading markdown from:', mdPath);
+                xhr.send();
+            }
+
+            // 创建遮罩层
+            const backdrop = document.createElement('div');
+            backdrop.className = 'popup-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // 获取所有问题标签
+            const quizTabs = document.querySelectorAll('.quiz-tab');
+            
+            // 设置点击事件处理
+            quizTabs.forEach(tab => {
+                // 为所有 popup 阻止冒泡
+                tab.querySelectorAll('.quiz-popup').forEach(function(p) {
+                    p.addEventListener('click', function(e) { e.stopPropagation(); });
+                });
+
+                tab.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var popup = getActivePopup(tab);
+                    if (!popup) return;
+
+                    if (popup.classList.contains('active')) {
+                        popup.classList.remove('active');
+                        backdrop.classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.quiz-popup').forEach(function(p) {
+                            p.classList.remove('active');
+                        });
+                        document.body.appendChild(popup);
+                        popup.classList.add('active');
+                        backdrop.classList.add('active');
+                    }
+                });
+            });
+            
+            // 点击遮罩层或页面任何其他位置时隐藏所有问题卡
+            backdrop.addEventListener('click', closeAllPopups);
+            document.addEventListener('click', closeAllPopups);
+            
+            function closeAllPopups() {
+                document.querySelectorAll('.quiz-popup').forEach(popup => {
+                    popup.classList.remove('active');
+                });
+                backdrop.classList.remove('active');
+            }
+            
+            // 为每个选项添加点击事件
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const choiceContainer = this.closest('.quiz-choices');
+                    const popupContainer = this.closest('.quiz-popup');
+                    const feedbackElement = popupContainer.querySelector('.quiz-feedback');
+                    const correctAnswer = popupContainer.getAttribute('data-answer');
+                    
+                    // 重置所有选项
+                    choiceContainer.querySelectorAll('.quiz-choice').forEach(c => {
+                        c.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // 标记当前选项为已选
+                    this.classList.add('selected');
+                    
+                    // 检查是否正确
+                    if (this.getAttribute('data-value') === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackElement.textContent = '✔️ Correct！';
+                        feedbackElement.classList.add('correct');
+                        feedbackElement.classList.remove('incorrect');
+                    } else {
+                        this.classList.add('incorrect');
+                        feedbackElement.textContent = '❌ Wrong！';
+                        feedbackElement.classList.add('incorrect');
+                        feedbackElement.classList.remove('correct');
+                    }
+                    
+                    feedbackElement.style.display = 'block';
+                });
+            });
+            
+            // 卡片轮播功能 - 新增
+            const cardDecks = document.querySelectorAll('.card-deck');
+            
+            cardDecks.forEach(cardDeck => {
+                const cards = cardDeck.querySelectorAll('.paper-card');
+                const counter = cardDeck.querySelector('.card-counter');
+                let currentIndex = 0;
+                const totalCards = cards.length;
+                
+                // 更新计数器显示
+                function updateCounter() {
+                    if (counter) {
+                        counter.textContent = `${currentIndex + 1}/${totalCards}`;
+                    }
+                }
+                
+                // 显示指定索引的卡片
+                function showCard(index) {
+                    // 处理循环
+                    if (index >= totalCards) index = 0;
+                    if (index < 0) index = totalCards - 1;
+                    
+                    // 更新当前索引
+                    currentIndex = index;
+                    
+                    // 更新卡片显示
+                    cards.forEach((card, i) => {
+                        if (i === currentIndex) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // 更新计数器
+                    updateCounter();
+                }
+                
+                // 下一张卡片
+                function nextCard(e) {
+                    e.stopPropagation(); // 防止事件冒泡导致问题卡关闭
+                    showCard(currentIndex + 1);
+                }
+                
+                // 为每个卡片添加点击事件（而不是整个容器）
+                cards.forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        // 只有点击在卡片内部时才切换
+                        // 检查是否是流程图卡片的滚动条区域
+                        if (this.classList.contains('flowchart-card')) {
+                            const rect = this.getBoundingClientRect();
+                            const isScrollbarClick =
+                                (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.right - 20 && e.clientX <= rect.right) ||
+                                (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.bottom - 20 && e.clientY <= rect.bottom);
+
+                            if (!isScrollbarClick) {
+                                nextCard(e);
+                            }
+                        } else {
+                            nextCard(e);
+                        }
+                    });
+                });
+                
+                // 键盘导航
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight') {
+                        showCard(currentIndex + 1);
+                    } else if (e.key === 'ArrowLeft') {
+                        showCard(currentIndex - 1);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- AI Assistant Scripts - Load in correct order (relative paths for subpages) -->
+    <script src="../../js/ai-assistant-constants.js"></script>
+    <script src="../../js/ai-assistant-storage.js"></script>
+    <script src="../../js/ai-assistant-positioning.js"></script>
+    <script src="../../js/ai-assistant-templates.js"></script>
+    <script src="../../js/ai-assistant-dom-utils.js"></script>
+    <script src="../../js/ai-assistant-config.js"></script>
+    <script src="../../js/ai-assistant.js"></script>
+</body>
+</html>
